@@ -1,0 +1,12 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    @template local_course_banner_builder/banner
+
+    Course banner image layers.
+}}
+<div class="local-course-banner-builder" aria-hidden="true">
+    {{#layers}}
+        <img class="banner-layer banner-layer-{{index}}" src="{{url}}" alt="" loading="lazy">
+    {{/layers}}
+</div>

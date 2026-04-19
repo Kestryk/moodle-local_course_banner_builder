@@ -1,0 +1,154 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    @template local_course_banner_builder/admin_selected
+
+    Selected banner source summary.
+}}
+{{#hasselection}}
+    <div class="local-course-banner-builder-summary">
+        <p class="local-course-banner-builder-summary-title"><strong>{{categoryname}}</strong></p>
+        {{#hasconfiguration}}
+            <dl class="local-course-banner-builder-summary-meta">
+                <div>
+                    <dt>{{#str}}compositionmode, local_course_banner_builder{{/str}}</dt>
+                    <dd>{{compositionmodelabel}}</dd>
+                </div>
+                <div>
+                    <dt>{{#str}}fitmode, local_course_banner_builder{{/str}}</dt>
+                    <dd>{{fitmodelabel}}</dd>
+                </div>
+                <div>
+                    <dt>{{#str}}fitapplyscope, local_course_banner_builder{{/str}}</dt>
+                    <dd>{{fitapplyscopelabel}}</dd>
+                </div>
+            </dl>
+            {{#candeletecategory}}
+                <p class="mb-0">
+                    <a class="btn btn-danger btn-sm" href="{{deletecategoryurl}}">{{#str}}deletecategorycontent, local_course_banner_builder{{/str}}</a>
+                    {{#candeleteimages}}
+                        <a class="btn btn-outline-danger btn-sm ml-2" href="{{deletecategoryimagesurl}}">{{#str}}deletecategoryimages, local_course_banner_builder{{/str}}</a>
+                    {{/candeleteimages}}
+                </p>
+            {{/candeletecategory}}
+        {{/hasconfiguration}}
+        {{^hasconfiguration}}
+            <p class="mb-0">{{#str}}selectedcategoryempty, local_course_banner_builder{{/str}}</p>
+        {{/hasconfiguration}}
+    </div>
+    {{#haselements}}
+        <div class="local-course-banner-builder-table-heading">
+            <h3 class="h5 local-course-banner-builder-table-title">{{#str}}sourcelayerslist, local_course_banner_builder{{/str}}</h3>
+            <button type="button"
+                class="btn btn-outline-secondary btn-sm btn-border-dashed local-course-banner-builder-dashed-action"
+                data-toggle="modal"
+                data-target="#local-course-banner-builder-add-layer-modal">
+                <i class="icon fa fa-plus fa-fw" aria-hidden="true"></i>
+                <span>{{#str}}addlayer, local_course_banner_builder{{/str}}</span>
+            </button>
+        </div>
+        <form id="local-course-banner-builder-bulk-delete" method="post" action="">
+            <input type="hidden" name="sesskey" value="{{sesskey}}">
+            <input type="hidden" name="categoryid" value="{{categoryid}}">
+            <input type="hidden" name="deleteselectedlayers" value="1">
+        </form>
+        <form id="local-course-banner-builder-bulk-update" method="post" action="">
+            <input type="hidden" name="sesskey" value="{{sesskey}}">
+            <input type="hidden" name="categoryid" value="{{categoryid}}">
+            <input type="hidden" name="updatelayersbulk" value="1">
+        </form>
+        <div class="table-responsive">
+            <table class="generaltable">
+                <thead>
+                    <tr>
+                        <th scope="col">
+                            <div class="local-course-banner-builder-select-actions mt-1">
+                                <button type="button" class="btn btn-secondary btn-sm"
+                                    data-action="local-course-banner-builder-toggle-selection"
+                                    data-select-all-label="{{#str}}selectall, local_course_banner_builder{{/str}}"
+                                    data-deselect-all-label="{{#str}}deselectall, local_course_banner_builder{{/str}}">
+                                    {{#str}}selectall, local_course_banner_builder{{/str}}
+                                </button>
+                            </div>
+                        </th>
+                        <th scope="col">{{#str}}sortorder, local_course_banner_builder{{/str}}</th>
+                        <th scope="col">{{#str}}layername, local_course_banner_builder{{/str}}</th>
+                        <th scope="col">{{#str}}enabled, local_course_banner_builder{{/str}}</th>
+                        <th scope="col">{{#str}}fitoverride, local_course_banner_builder{{/str}}</th>
+                        <th scope="col">{{#str}}bannerimage, local_course_banner_builder{{/str}}</th>
+                        <th scope="col">{{#str}}actions, local_course_banner_builder{{/str}}</th>
+                    </tr>
+                </thead>
+                <tbody class="local-course-banner-builder-layer-sortable" data-layer-sortable="{{#iscumulative}}1{{/iscumulative}}{{^iscumulative}}0{{/iscumulative}}">
+                    {{#elements}}
+                        <tr class="local-course-banner-builder-layer-row" data-layer-row="1" {{#iscumulative}}draggable="true"{{/iscumulative}}>
+                            <td class="local-course-banner-builder-layer-select-cell">
+                                {{#iscumulative}}
+                                    <i class="icon fa fa-arrows fa-fw local-course-banner-builder-drag-corner" title="{{#str}}dragreorderlayer, local_course_banner_builder{{/str}}" aria-hidden="true"></i>
+                                {{/iscumulative}}
+                                <input class="local-course-banner-builder-layer-select" type="checkbox" name="selectedelements[]" value="{{id}}" form="local-course-banner-builder-bulk-delete">
+                            </td>
+                            <td>
+                                <input class="local-course-banner-builder-sort-input" type="hidden" name="sortorder_inline[{{id}}]" value="{{sortorder}}" form="local-course-banner-builder-bulk-update">
+                                <span class="local-course-banner-builder-sort-position" data-sort-display>{{sortorder}}</span>
+                                {{^iscumulative}}
+                                    <span class="text-muted d-block small">{{#str}}sortordercumulativeonly, local_course_banner_builder{{/str}}</span>
+                                {{/iscumulative}}
+                            </td>
+                            <td>
+                                <input class="form-control form-control-sm" type="text" name="layername_inline[{{id}}]" value="{{name}}" form="local-course-banner-builder-bulk-update">
+                            </td>
+                            <td>
+                                <input type="checkbox" name="isenabled_inline[{{id}}]" value="1" form="local-course-banner-builder-bulk-update" {{#enabledchecked}}checked{{/enabledchecked}}>
+                            </td>
+                            <td class="{{fitoverridecellclass}}">
+                                <select class="custom-select custom-select-sm" name="fitmodeoverride_inline[{{id}}]" form="local-course-banner-builder-bulk-update" title="{{fitoverridehelp}}">
+                                    {{#fitoverrideoptions}}
+                                        <option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>
+                                    {{/fitoverrideoptions}}
+                                </select>
+                                {{#hasfitoverride}}
+                                    <details class="easyedu-help-bubble local-course-banner-builder-override-help">
+                                        <summary title="{{fitoverridehelp}}">?</summary>
+                                        <div>{{fitoverridehelp}}</div>
+                                    </details>
+                                {{/hasfitoverride}}
+                            </td>
+                            <td>
+                                {{#imageurl}}
+                                    <div class="local-course-banner-builder-admin-preview">
+                                        <img src="{{imageurl}}" alt="">
+                                    </div>
+                                {{/imageurl}}
+                            </td>
+                            <td>
+                                <div class="local-course-banner-builder-action-list">
+                                    <a class="btn btn-secondary btn-sm" href="{{editurl}}">{{#str}}editimage, local_course_banner_builder{{/str}}</a>
+                                    <a class="btn btn-danger btn-sm" href="{{deleteurl}}">{{#str}}delete{{/str}}</a>
+                                </div>
+                            </td>
+                        </tr>
+                    {{/elements}}
+                </tbody>
+            </table>
+        </div>
+        <button type="submit" class="btn btn-primary mt-3" form="local-course-banner-builder-bulk-update">
+            {{#str}}savelayerchanges, local_course_banner_builder{{/str}}
+        </button>
+        <div class="easyedu-bottom-actionbar local-course-banner-builder-bulk-actions">
+            <span>{{#str}}bulkselectedlayers, local_course_banner_builder{{/str}}</span>
+            <button type="submit" class="btn btn-danger btn-sm" form="local-course-banner-builder-bulk-delete"
+                data-modal="confirmation"
+                data-modal-title="{{#str}}confirm{{/str}}"
+                data-modal-content="{{#str}}deleteselectedlayersconfirm, local_course_banner_builder{{/str}}"
+                data-modal-yes-button="{{#str}}delete{{/str}}">
+                {{#str}}deleteselectedlayers, local_course_banner_builder{{/str}}
+            </button>
+        </div>
+    {{/haselements}}
+    {{^haselements}}
+        {{#hasconfiguration}}
+            <p>{{#str}}nobannerconfigured, local_course_banner_builder{{/str}}</p>
+        {{/hasconfiguration}}
+    {{/haselements}}
+{{/hasselection}}

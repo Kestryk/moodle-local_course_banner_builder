@@ -1,0 +1,78 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    @template local_course_banner_builder/admin_manage
+
+    Configured banner list.
+}}
+{{#hasitems}}
+    <div class="table-responsive">
+        <table class="generaltable">
+            <thead>
+                <tr>
+                    <th scope="col">{{#str}}hierarchy, local_course_banner_builder{{/str}}</th>
+                    <th scope="col">{{#str}}source, local_course_banner_builder{{/str}}</th>
+                    <th scope="col">{{#str}}layers, local_course_banner_builder{{/str}}</th>
+                    <th scope="col">{{#str}}compositionmode, local_course_banner_builder{{/str}}</th>
+                    <th scope="col">{{#str}}fitmode, local_course_banner_builder{{/str}}</th>
+                    <th scope="col">{{#str}}fitapplyscope, local_course_banner_builder{{/str}}</th>
+                    <th scope="col">{{#str}}bannerimage, local_course_banner_builder{{/str}}</th>
+                    <th scope="col">{{#str}}actions, local_course_banner_builder{{/str}}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#items}}
+                    <tr class="{{rowclass}}">
+                        <td>
+                            <span class="local-course-banner-builder-hierarchy">
+                                {{hierarchyarrows}}{{hierarchylabel}}
+                            </span>
+                            {{#isisolated}}
+                                <a class="btn btn-link p-0 ml-2 icon-no-margin easyedu-popover-warning local-course-banner-builder-shortcircuit-help"
+                                   role="button"
+                                   data-container="body"
+                                   data-toggle="popover"
+                                   data-placement="right"
+                                   data-content="{{shortcircuitpopovercontent}}"
+                                   data-html="true"
+                                   data-trigger="focus"
+                                   data-template="<div class=&quot;popover easyedu-feedback-warning local-course-banner-builder-warning-popover&quot; role=&quot;tooltip&quot;><div class=&quot;arrow&quot;></div><h3 class=&quot;popover-header&quot;></h3><div class=&quot;popover-body&quot;></div></div>"
+                                   tabindex="0"
+                                   aria-label="{{shortcircuithelp}}">
+                                    <i class="icon fa fa-circle-question text-warning fa-fw" title="{{shortcircuithelp}}" role="img" aria-label="{{shortcircuithelp}}"></i>
+                                </a>
+                            {{/isisolated}}
+                        </td>
+                        <td><a href="{{categoryadminurl}}">{{categoryname}}</a></td>
+                        <td>{{layercount}}</td>
+                        <td>{{compositionmodelabel}}</td>
+                        <td>{{fitmodelabel}}</td>
+                        <td>{{fitapplyscopelabel}}</td>
+                        <td>
+                            <div class="local-course-banner-builder-thumb-list">
+                                {{#thumbnails}}
+                                    <div class="local-course-banner-builder-thumb-item" title="{{name}}">
+                                        <img src="{{imageurl}}" alt="">
+                                    </div>
+                                {{/thumbnails}}
+                                {{#hasmorethumbnails}}
+                                    <div class="local-course-banner-builder-thumb-more">+{{morethumbnailscount}}</div>
+                                {{/hasmorethumbnails}}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="local-course-banner-builder-action-list">
+                                <a class="btn btn-secondary btn-sm" href="{{editurl}}">{{#str}}edit{{/str}}</a>
+                                <a class="btn btn-outline-danger btn-sm" href="{{deletecategoryimagesurl}}">{{#str}}deletecategoryimages, local_course_banner_builder{{/str}}</a>
+                                <a class="btn btn-danger btn-sm" href="{{deletecategoryurl}}">{{#str}}deletecategorycontent, local_course_banner_builder{{/str}}</a>
+                            </div>
+                        </td>
+                    </tr>
+                {{/items}}
+            </tbody>
+        </table>
+    </div>
+{{/hasitems}}
+{{^hasitems}}
+    <p>{{#str}}noconfiguredcategories, local_course_banner_builder{{/str}}</p>
+{{/hasitems}}
