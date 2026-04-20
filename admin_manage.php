@@ -336,15 +336,34 @@ document.addEventListener('click', function(e) {
     }
     if (label) {
         label.textContent = option.getAttribute('data-label') || option.textContent.trim();
-        label.classList.add('active');
-        label.classList.remove('btn-outline-secondary');
-        label.classList.add('btn-primary');
     }
+    localCourseBannerBuilderSyncSourceDropdownButton(dropdown);
     localCourseBannerBuilderSyncSourceSubmit(dropdown);
     Array.prototype.slice.call(dropdown.querySelectorAll('[data-source-option]')).forEach(function(item) {
         item.classList.toggle('active', item === option);
     });
 });
+
+function localCourseBannerBuilderSyncSourceDropdownButton(dropdown) {
+    if (!dropdown) {
+        return;
+    }
+    var input = document.querySelector(dropdown.getAttribute('data-input'));
+    var label = dropdown.querySelector('[data-source-dropdown-label]');
+    if (!input || !label) {
+        return;
+    }
+    var selectedValue = parseInt(input.value || '0', 10);
+    var hasSelection = selectedValue > 0;
+    var selectedOption = dropdown.querySelector('[data-source-option][data-value=\"' + selectedValue + '\"]');
+
+    if (hasSelection && selectedOption) {
+        label.textContent = selectedOption.getAttribute('data-label') || selectedOption.textContent.trim();
+    }
+
+    label.classList.toggle('active', hasSelection);
+    label.classList.toggle('is-selected', hasSelection);
+}
 
 function localCourseBannerBuilderSyncSourceSubmit(dropdown) {
     if (!dropdown) {
@@ -386,7 +405,7 @@ function localCourseBannerBuilderSyncBulkFields() {
     var isBulkUpload = files.length > 1;
     [namefield, sortfield].forEach(function(field) {
         field.disabled = isBulkUpload;
-        field.classList.toggle('easyedu-input-disabled', isBulkUpload);
+        field.classList.toggle('local-course-banner-builder-input-disabled', isBulkUpload);
         if (isBulkUpload) {
             field.setAttribute('aria-disabled', 'true');
         } else {
@@ -457,7 +476,7 @@ function localCourseBannerBuilderSyncStickyHeader() {
     holder.style.right = rightSpace + 'px';
     holder.style.width = 'calc(100vw - ' + rightSpace + 'px)';
     holder.style.top = top + 'px';
-    holder.style.setProperty('--easyedu-sticky-header-right-space', '0px');
+    holder.style.setProperty('--local-course-banner-builder-sticky-header-right-space', '0px');
     holder.style.minHeight = header.offsetHeight + 'px';
     document.body.style.setProperty('--local-course-banner-builder-sticky-header-space', header.offsetHeight + 'px');
 }
@@ -468,7 +487,10 @@ document.addEventListener('DOMContentLoaded', function() {
     localCourseBannerBuilderSyncLayerSortOrders();
     localCourseBannerBuilderSyncBulkFields();
     localCourseBannerBuilderSyncStickyHeader();
-    Array.prototype.slice.call(document.querySelectorAll('[data-source-dropdown]')).forEach(localCourseBannerBuilderSyncSourceSubmit);
+    Array.prototype.slice.call(document.querySelectorAll('[data-source-dropdown]')).forEach(function(dropdown) {
+        localCourseBannerBuilderSyncSourceDropdownButton(dropdown);
+        localCourseBannerBuilderSyncSourceSubmit(dropdown);
+    });
     var params = new URLSearchParams(window.location.search);
     var settings = document.getElementById('local-course-banner-builder-source-settings');
     if (settings && parseInt(params.get('categoryid') || '0', 10) > 0) {
@@ -491,7 +513,11 @@ document.addEventListener('DOMContentLoaded', function() {
 ");
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('managebanners', 'local_course_banner_builder'));
+echo $OUTPUT->heading(
+    get_string('managebanners', 'local_course_banner_builder'),
+    2,
+    'local-course-banner-builder-page-title'
+);
 
 $selectedcategorylabel = '';
 foreach ($categoryoptions as $option) {
@@ -518,9 +544,9 @@ if ($selectedcategorylabel !== '') {
             html_writer::tag('strong', s($selectedcategorylabel), [
                 'class' => 'local-course-banner-builder-sticky-title',
             ]),
-            'focus-navigation-buttons focus-navigation-buttons--floating easyedu-sticky-header local-course-banner-builder-selected-source-sticky'
+            'focus-navigation-buttons focus-navigation-buttons--floating local-course-banner-builder-selected-source-sticky'
         ),
-        'focus-navigation-buttons-holder focus-navigation-buttons-holder--floating easyedu-sticky-header-holder local-course-banner-builder-selected-source-sticky-holder'
+        'focus-navigation-buttons-holder focus-navigation-buttons-holder--floating local-course-banner-builder-selected-source-sticky-holder'
     );
 }
 
@@ -563,9 +589,9 @@ if (empty($categoryoptions)) {
     );
     echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'categoryid', 'id' => 'id_categoryid', 'value' => $selectedcategoryid]);
     $selectedcategorybuttonlabel = $selectedcategorylabel ?: get_string('choosecategorydefault', 'local_course_banner_builder');
-    $categorybuttonclass = 'btn btn-outline-secondary dropdown-toggle local-course-banner-builder-source-dropdown-toggle';
+    $categorybuttonclass = 'btn btn-outline-primary dropdown-toggle local-course-banner-builder-source-dropdown-toggle';
     if ($selectedcategoryid) {
-        $categorybuttonclass = 'btn btn-primary dropdown-toggle local-course-banner-builder-source-dropdown-toggle active';
+        $categorybuttonclass .= ' active is-selected';
     }
     echo html_writer::start_div('dropdown local-course-banner-builder-source-dropdown mb-2', [
         'data-source-dropdown' => 'category',
@@ -639,7 +665,9 @@ if (empty($categoryoptions)) {
     echo html_writer::end_tag('form');
 
     echo html_writer::start_div('local-course-banner-builder-source-column local-course-banner-builder-source-column-disabled');
-    echo html_writer::tag('h3', get_string('coursecustomfields', 'local_course_banner_builder'), ['class' => 'h5']);
+    echo html_writer::tag('h3', get_string('coursecustomfields', 'local_course_banner_builder'), [
+        'class' => 'h5 local-course-banner-builder-source-title local-course-banner-builder-source-title--plain',
+    ]);
     $customfieldsearchattributes = [
         'type' => 'search',
         'id' => 'id_customfield_search',
@@ -661,7 +689,7 @@ if (empty($categoryoptions)) {
         get_string('choosecustomfielddefault', 'local_course_banner_builder'), [
         'type' => 'button',
         'id' => 'id_customfield_dropdown_button',
-        'class' => 'btn btn-outline-secondary dropdown-toggle local-course-banner-builder-source-dropdown-toggle',
+        'class' => 'btn btn-outline-primary dropdown-toggle local-course-banner-builder-source-dropdown-toggle',
         'data-toggle' => 'dropdown',
         'aria-haspopup' => 'true',
         'aria-expanded' => 'false',
@@ -834,6 +862,22 @@ if (empty($categoryoptions)) {
 }
 
 if ($selectedcategoryid) {
+    echo html_writer::div(
+        html_writer::tag(
+            'button',
+            html_writer::tag('i', '', ['class' => 'fa fa-plus py-2 me-3', 'aria-hidden' => 'true']) .
+                html_writer::span(get_string('addlayer', 'local_course_banner_builder')),
+            [
+                'type' => 'button',
+                'class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action ' .
+                    'local-course-banner-builder-add-layer-primary',
+                'data-toggle' => 'modal',
+                'data-target' => '#local-course-banner-builder-add-layer-modal',
+            ]
+        ),
+        'local-course-banner-builder-add-layer-primary-wrap'
+    );
+
     echo html_writer::start_tag('details', ['class' => 'local-course-banner-builder-section mb-4', 'open' => 'open']);
     echo html_writer::tag(
         'summary',
@@ -842,11 +886,12 @@ if ($selectedcategoryid) {
         ]) .
         html_writer::tag(
             'button',
-            html_writer::tag('i', '', ['class' => 'icon fa fa-cog fa-fw', 'aria-hidden' => 'true']) .
+            html_writer::tag('i', '', ['class' => 'fa fa-cog py-2 me-3', 'aria-hidden' => 'true']) .
                 html_writer::span(get_string('sourcesettingsshort', 'local_course_banner_builder')),
             [
                 'type' => 'button',
-                'class' => 'btn btn-outline-secondary btn-sm btn-border-dashed local-course-banner-builder-dashed-action',
+                'class' => 'btn btn-outline-secondary btn-sm local-course-banner-builder-dashed-action ' .
+                    'local-course-banner-builder-settings-action',
                 'data-action' => 'local-course-banner-builder-summary-action',
                 'data-toggle' => 'modal',
                 'data-target' => '#local-course-banner-builder-source-settings-modal',

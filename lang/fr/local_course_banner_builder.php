@@ -23,7 +23,7 @@
  */
 
 $string['actions'] = 'Actions';
-$string['addlayer'] = 'Ajouter un calque';
+$string['addlayer'] = 'Ajouter un ou plusieurs calque(s)';
 $string['bannerdeleted'] = 'Bannière supprimée.';
 $string['bannerimage'] = 'Image de bannière';
 $string['bannerimage_help'] = 'Déposez une ou plusieurs images. Si plusieurs images sont envoyées en une fois, les noms de calque et l’ordre de tri sont créés automatiquement.';

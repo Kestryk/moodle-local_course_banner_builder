@@ -15,26 +15,25 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Hook callbacks.
+ * Redirect to the generated course card thumbnail.
+ *
+ * This lightweight route lets the plugin progressively enhance native Moodle
+ * course cards without overriding Moodle core renderers or theme templates.
  *
  * @package    local_course_banner_builder
  * @copyright  2026
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+require_once(__DIR__ . '/../../config.php');
 
-$callbacks = [
-    [
-        'hook' => \core_course\hook\after_course_created::class,
-        'callback' => \local_course_banner_builder\hook_callbacks::class . '::after_course_created',
-    ],
-    [
-        'hook' => \core_course\hook\after_course_updated::class,
-        'callback' => \local_course_banner_builder\hook_callbacks::class . '::after_course_updated',
-    ],
-    [
-        'hook' => \core\hook\output\before_footer_html_generation::class,
-        'callback' => \local_course_banner_builder\hook_callbacks::class . '::before_footer_html_generation',
-    ],
-];
+$courseid = required_param('courseid', PARAM_INT);
+
+require_login();
+
+$url = \local_course_banner_builder\manager::get_course_card_image_url($courseid);
+if (!$url) {
+    send_file_not_found();
+}
+
+redirect($url, '', 0);
