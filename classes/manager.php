@@ -29,7 +29,11 @@ class manager {
     /** @var string */
     public const FILEAREA = 'bannerimage';
     /** @var string */
+    public const CARD_FILEAREA = 'coursecard';
+    /** @var string */
     public const MANAGED_OVERVIEW_PREFIX = 'course_banner_builder_auto';
+    /** @var string */
+    public const MANAGED_CARD_PREFIX = 'course_banner_builder_card';
     /** @var string */
     public const MODE_CUMULATIVE = 'cumulative';
     /** @var string */
@@ -48,6 +52,10 @@ class manager {
     protected const DEFAULT_CANVAS_WIDTH = 1600;
     /** @var int */
     protected const DEFAULT_CANVAS_HEIGHT = 400;
+    /** @var int */
+    protected const CARD_CANVAS_WIDTH = 800;
+    /** @var int */
+    protected const CARD_CANVAS_HEIGHT = 600;
     /** @var int */
     public const CONFIG_EXPORT_VERSION = 1;
 
@@ -779,6 +787,10 @@ class manager {
         if (!in_array((string)$fitmodeoverride, $allowedmodes, true)) {
             $fitmodeoverride = null;
         }
+        $sourcefitmode = self::get_category_settings((int)$record->categoryid)->fitmode ?? self::FIT_MODE_BANNER;
+        if ($fitmodeoverride === $sourcefitmode) {
+            $fitmodeoverride = '';
+        }
 
         $record->name = trim($name);
         $record->sortorder = max(0, $sortorder);
@@ -817,11 +829,15 @@ class manager {
         }
 
         $allowedmodes = array_merge([''], array_keys(self::get_fit_mode_options()));
+        $sourcefitmode = self::get_category_settings($categoryid)->fitmode ?? self::FIT_MODE_BANNER;
         $now = time();
         foreach ($records as $record) {
             $elementid = (int)$record->id;
             $fitmodeoverride = (string)($fitmodeoverrides[$elementid] ?? '');
             if (!in_array($fitmodeoverride, $allowedmodes, true)) {
+                $fitmodeoverride = '';
+            }
+            if ($fitmodeoverride === $sourcefitmode) {
                 $fitmodeoverride = '';
             }
 
@@ -1246,7 +1262,7 @@ class manager {
             return [];
         }
 
-        $records = self::get_enabled_category_elements_for_course($course);
+        $records = self::sort_layer_specs(self::get_enabled_category_elements_for_course($course));
         $layers = [];
         foreach ($records as $index => $layer) {
             $imageurl = self::get_banner_image_url($layer['record']);
@@ -1290,12 +1306,26 @@ class manager {
             return;
         }
 
-        $category = \core_course_category::get($categoryid, IGNORE_MISSING);
+        $category = $DB->get_record('course_categories', ['id' => $categoryid], 'id,path', IGNORE_MISSING);
         if (!$category) {
             return;
         }
 
-        $categoryids = array_merge([$categoryid], $category->get_all_children_ids());
+        $categorypath = trim((string)$category->path, '/');
+        if ($categorypath === '') {
+            return;
+        }
+
+        $likepath = $DB->sql_like('path', ':path', false, false);
+        $categoryids = $DB->get_fieldset_select(
+            'course_categories',
+            'id',
+            'id = :categoryid OR ' . $likepath,
+            [
+                'categoryid' => $categoryid,
+                'path' => '/' . $categorypath . '/%',
+            ]
+        );
         [$insql, $params] = $DB->get_in_or_equal($categoryids, SQL_PARAMS_NAMED);
         $courses = $DB->get_records_select('course', 'category ' . $insql, $params, '', 'id, category');
 
@@ -1316,16 +1346,14 @@ class manager {
     public static function sync_all_courses_from_category_banners(): void {
         global $DB;
 
-        $records = $DB->get_records('local_course_banner_elements', null, '', 'categoryid');
-        $categoryids = [];
-        foreach ($records as $record) {
-            if (!empty($record->categoryid)) {
-                $categoryids[(int)$record->categoryid] = (int)$record->categoryid;
-            }
-        }
+        $categoryids = $DB->get_fieldset_select(
+            'local_course_banner_elements',
+            'DISTINCT categoryid',
+            'categoryid IS NOT NULL'
+        );
 
         foreach ($categoryids as $categoryid) {
-            self::sync_courses_for_category_tree($categoryid);
+            self::sync_courses_for_category_tree((int)$categoryid);
         }
     }
 
@@ -1342,6 +1370,7 @@ class manager {
 
         $context = \context_course::instance($course->id);
         self::delete_managed_course_overview_images($context->id);
+        self::delete_managed_course_card_images($context->id);
 
         if (self::course_has_custom_overview_image($context->id)) {
             self::purge_course_caches();
@@ -1354,6 +1383,7 @@ class manager {
             return;
         }
 
+        $revision = self::get_layers_revision($records);
         $sourcefile = null;
         $generatedfilepath = null;
         if (count($records) === 1 && ($records[0]['fitmode'] ?? self::FIT_MODE_BANNER) === self::FIT_MODE_ORIGINAL) {
@@ -1373,16 +1403,28 @@ class manager {
             'filearea' => 'overviewfiles',
             'itemid' => 0,
             'filepath' => '/',
-            'filename' => self::MANAGED_OVERVIEW_PREFIX . '.png',
+            'filename' => self::MANAGED_OVERVIEW_PREFIX . '_' . $revision . '.png',
         ];
 
         $fs = get_file_storage();
         if ($sourcefile) {
             $extension = pathinfo($sourcefile->get_filename(), PATHINFO_EXTENSION);
-            $fileinfo['filename'] = self::MANAGED_OVERVIEW_PREFIX . ($extension ? '.' . $extension : '.png');
+            $fileinfo['filename'] = self::MANAGED_OVERVIEW_PREFIX . '_' . $revision . ($extension ? '.' . $extension : '.png');
             $fs->create_file_from_storedfile($fileinfo, $sourcefile);
         } else {
             $fs->create_file_from_pathname($fileinfo, $generatedfilepath);
+        }
+
+        $cardfilepath = self::build_course_card_image($records, $course->id);
+        if ($cardfilepath) {
+            $fs->create_file_from_pathname([
+                'contextid' => $context->id,
+                'component' => 'local_course_banner_builder',
+                'filearea' => self::CARD_FILEAREA,
+                'itemid' => 0,
+                'filepath' => '/',
+                'filename' => self::MANAGED_CARD_PREFIX . '_' . $revision . '.png',
+            ], $cardfilepath);
         }
         self::purge_course_caches();
     }
@@ -1404,6 +1446,59 @@ class manager {
     }
 
     /**
+     * Delete plugin-managed card thumbnails from a course context.
+     *
+     * @param int $contextid
+     * @return void
+     */
+    public static function delete_managed_course_card_images(int $contextid): void {
+        $fs = get_file_storage();
+        $fs->delete_area_files($contextid, 'local_course_banner_builder', self::CARD_FILEAREA, 0);
+    }
+
+    /**
+     * Get the generated course card thumbnail URL when available.
+     *
+     * @param int $courseid
+     * @return \moodle_url|null
+     */
+    public static function get_course_card_image_url(int $courseid): ?\moodle_url {
+        if (!$courseid) {
+            return null;
+        }
+
+        $context = \context_course::instance($courseid, IGNORE_MISSING);
+        if (!$context) {
+            return null;
+        }
+
+        $fs = get_file_storage();
+        $files = $fs->get_area_files(
+            $context->id,
+            'local_course_banner_builder',
+            self::CARD_FILEAREA,
+            0,
+            'filename DESC',
+            false
+        );
+
+        foreach ($files as $file) {
+            if ($file->is_valid_image() && str_starts_with($file->get_filename(), self::MANAGED_CARD_PREFIX)) {
+                return \moodle_url::make_pluginfile_url(
+                    $context->id,
+                    'local_course_banner_builder',
+                    self::CARD_FILEAREA,
+                    0,
+                    '/',
+                    $file->get_filename()
+                );
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Determine whether the course already has a custom overview image.
      *
      * @param int $contextid
@@ -1422,6 +1517,33 @@ class manager {
         }
 
         return false;
+    }
+
+    /**
+     * Build a deterministic revision for generated course overview files.
+     *
+     * @param array $layerspecs
+     * @return string
+     */
+    protected static function get_layers_revision(array $layerspecs): string {
+        $layerspecs = self::sort_layer_specs($layerspecs);
+        $parts = [];
+        foreach ($layerspecs as $position => $layerspec) {
+            $record = $layerspec['record'];
+            $file = self::get_banner_image_file($record);
+            $parts[] = implode(':', [
+                $position,
+                (int)($layerspec['categoryorder'] ?? 0),
+                (int)$record->id,
+                (int)$record->categoryid,
+                (int)$record->sortorder,
+                (int)$record->timemodified,
+                (string)($layerspec['fitmode'] ?? ''),
+                $file ? $file->get_contenthash() : '',
+            ]);
+        }
+
+        return substr(sha1(implode('|', $parts)), 0, 12);
     }
 
     /**
@@ -1457,6 +1579,10 @@ class manager {
             $fitoverride = '';
             if (self::table_field_exists('local_course_banner_elements', 'fitmodeoverride')) {
                 $fitoverride = (string)($record->fitmodeoverride ?? '');
+            }
+            $sourcefitmode = $settings->fitmode ?? self::FIT_MODE_BANNER;
+            if ($fitoverride === $sourcefitmode) {
+                $fitoverride = '';
             }
             $elements[] = [
                 'id' => (int)$record->id,
@@ -1536,7 +1662,7 @@ class manager {
         $categoryids = array_slice($categoryids, $startindex);
         $boundarycategoryid = $categoryids[0] ?? 0;
         $records = [];
-        foreach ($categoryids as $categoryid) {
+        foreach ($categoryids as $categoryindex => $categoryid) {
             $settings = self::get_category_settings($categoryid);
             if (
                 $categoryid !== $targetcategoryid &&
@@ -1577,7 +1703,20 @@ class manager {
             }
         }
 
-        usort($records, static function(array $a, array $b): int {
+        return self::sort_layer_specs($records);
+    }
+
+    /**
+     * Sort layer specs in the exact draw order used by generated course banners.
+     *
+     * Lower sort orders are painted first. Higher sort orders are painted later
+     * and therefore appear above previous layers.
+     *
+     * @param array $layerspecs
+     * @return array
+     */
+    protected static function sort_layer_specs(array $layerspecs): array {
+        usort($layerspecs, static function(array $a, array $b): int {
             $arecord = $a['record'];
             $brecord = $b['record'];
             $categorycompare = ((int)($a['categoryorder'] ?? 0)) <=> ((int)($b['categoryorder'] ?? 0));
@@ -1593,7 +1732,7 @@ class manager {
             return ((int)$arecord->id) <=> ((int)$brecord->id);
         });
 
-        return $records;
+        return $layerspecs;
     }
 
     /**
@@ -1913,37 +2052,7 @@ class manager {
      * @return array
      */
     protected static function get_canvas_dimensions(array $layerspecs): array {
-        $hasbannerfit = false;
-        $maxwidth = 0;
-        $maxheight = 0;
-
-        foreach ($layerspecs as $layerspec) {
-            if (($layerspec['fitmode'] ?? self::FIT_MODE_BANNER) === self::FIT_MODE_BANNER) {
-                $hasbannerfit = true;
-            }
-
-            $file = self::get_banner_image_file($layerspec['record']);
-            if (!$file) {
-                continue;
-            }
-
-            $imagesize = @getimagesizefromstring($file->get_content());
-            if (!$imagesize) {
-                continue;
-            }
-
-            $maxwidth = max($maxwidth, (int)$imagesize[0]);
-            $maxheight = max($maxheight, (int)$imagesize[1]);
-        }
-
-        if ($hasbannerfit) {
-            return [self::DEFAULT_CANVAS_WIDTH, self::DEFAULT_CANVAS_HEIGHT];
-        }
-
-        return [
-            $maxwidth > 0 ? $maxwidth : self::DEFAULT_CANVAS_WIDTH,
-            $maxheight > 0 ? $maxheight : self::DEFAULT_CANVAS_HEIGHT,
-        ];
+        return [self::DEFAULT_CANVAS_WIDTH, self::DEFAULT_CANVAS_HEIGHT];
     }
 
     /**
@@ -1953,10 +2062,12 @@ class manager {
      * @return array
      */
     protected static function get_category_chain(int $categoryid): array {
+        global $DB;
+
         $chain = [];
 
         while ($categoryid > 0) {
-            $category = \core_course_category::get($categoryid, IGNORE_MISSING);
+            $category = $DB->get_record('course_categories', ['id' => $categoryid], 'id,parent', IGNORE_MISSING);
             if (!$category) {
                 break;
             }
@@ -1979,9 +2090,58 @@ class manager {
         if (!function_exists('imagecreatetruecolor') || empty($layerspecs)) {
             return null;
         }
+        raise_memory_limit(MEMORY_EXTRA);
 
+        return self::build_composite_image(
+            $layerspecs,
+            self::DEFAULT_CANVAS_WIDTH,
+            self::DEFAULT_CANVAS_HEIGHT,
+            'course_' . $courseid . '_banner.png',
+            false
+        );
+    }
+
+    /**
+     * Build a thumbnail-friendly course card image from category layers.
+     *
+     * @param array $layerspecs
+     * @param int $courseid
+     * @return string|null
+     */
+    protected static function build_course_card_image(array $layerspecs, int $courseid): ?string {
+        if (!function_exists('imagecreatetruecolor') || empty($layerspecs)) {
+            return null;
+        }
+        raise_memory_limit(MEMORY_EXTRA);
+
+        return self::build_composite_image(
+            $layerspecs,
+            self::CARD_CANVAS_WIDTH,
+            self::CARD_CANVAS_HEIGHT,
+            'course_' . $courseid . '_card.png',
+            true
+        );
+    }
+
+    /**
+     * Build a composite image from layer specs.
+     *
+     * @param array $layerspecs
+     * @param int $width
+     * @param int $height
+     * @param string $filename
+     * @param bool $cardmode
+     * @return string|null
+     */
+    protected static function build_composite_image(
+        array $layerspecs,
+        int $width,
+        int $height,
+        string $filename,
+        bool $cardmode = false
+    ): ?string {
         $canvas = null;
-        [$width, $height] = self::get_canvas_dimensions($layerspecs);
+        $layerspecs = self::sort_layer_specs($layerspecs);
 
         foreach ($layerspecs as $layerspec) {
             $record = $layerspec['record'];
@@ -1991,7 +2151,8 @@ class manager {
                 continue;
             }
 
-            $layer = @imagecreatefromstring($file->get_content());
+            $loadedlayer = self::load_layer_image($file);
+            $layer = $loadedlayer['image'] ?? null;
             if (!$layer) {
                 continue;
             }
@@ -2009,11 +2170,20 @@ class manager {
 
             imagealphablending($canvas, true);
             if ($fitmode === self::FIT_MODE_BANNER) {
-                imagecopyresampled($canvas, $layer, 0, 0, 0, 0, $width, $height, $layerwidth, $layerheight);
+                if ($cardmode) {
+                    self::copy_layer_cover($canvas, $layer, $width, $height, $layerwidth, $layerheight);
+                } else {
+                    imagecopyresampled($canvas, $layer, 0, 0, 0, 0, $width, $height, $layerwidth, $layerheight);
+                }
             } else {
-                imagecopy($canvas, $layer, 0, 0, 0, 0, $layerwidth, $layerheight);
+                $destinationx = (int)floor(($width - $layerwidth) / 2);
+                $destinationy = (int)floor(($height - $layerheight) / 2);
+                imagecopy($canvas, $layer, $destinationx, $destinationy, 0, 0, $layerwidth, $layerheight);
             }
             imagedestroy($layer);
+            if (!empty($loadedlayer['tempfile'])) {
+                @unlink($loadedlayer['tempfile']);
+            }
         }
 
         if (!$canvas) {
@@ -2024,10 +2194,81 @@ class manager {
         imagesavealpha($canvas, true);
 
         $tempdir = make_temp_directory('local_course_banner_builder');
-        $filepath = $tempdir . DIRECTORY_SEPARATOR . 'course_' . $courseid . '_banner.png';
+        $filepath = $tempdir . DIRECTORY_SEPARATOR . $filename;
         imagepng($canvas, $filepath);
         imagedestroy($canvas);
 
         return $filepath;
+    }
+
+    /**
+     * Copy a layer so it covers the target canvas without distorting its ratio.
+     *
+     * @param resource|\GdImage $canvas
+     * @param resource|\GdImage $layer
+     * @param int $width
+     * @param int $height
+     * @param int $layerwidth
+     * @param int $layerheight
+     * @return void
+     */
+    protected static function copy_layer_cover($canvas, $layer, int $width, int $height, int $layerwidth, int $layerheight): void {
+        if ($layerwidth <= 0 || $layerheight <= 0) {
+            return;
+        }
+
+        $scale = max($width / $layerwidth, $height / $layerheight);
+        $targetwidth = (int)ceil($layerwidth * $scale);
+        $targetheight = (int)ceil($layerheight * $scale);
+        $destinationx = (int)floor(($width - $targetwidth) / 2);
+        $destinationy = (int)floor(($height - $targetheight) / 2);
+
+        imagecopyresampled(
+            $canvas,
+            $layer,
+            $destinationx,
+            $destinationy,
+            0,
+            0,
+            $targetwidth,
+            $targetheight,
+            $layerwidth,
+            $layerheight
+        );
+    }
+
+    /**
+     * Load a stored image file into GD while avoiding an additional in-memory file content string.
+     *
+     * @param \stored_file $file
+     * @return array{image:mixed,tempfile:string|null}|array
+     */
+    protected static function load_layer_image(\stored_file $file): array {
+        $tempfile = $file->copy_content_to_temp('local_course_banner_builder', 'layer_');
+        if (!$tempfile) {
+            return [];
+        }
+
+        $mimetype = $file->get_mimetype();
+        $image = null;
+        if ($mimetype === 'image/jpeg' || $mimetype === 'image/pjpeg') {
+            $image = @imagecreatefromjpeg($tempfile);
+        } else if ($mimetype === 'image/png') {
+            $image = @imagecreatefrompng($tempfile);
+        } else if ($mimetype === 'image/gif') {
+            $image = @imagecreatefromgif($tempfile);
+        } else if ($mimetype === 'image/webp' && function_exists('imagecreatefromwebp')) {
+            $image = @imagecreatefromwebp($tempfile);
+        }
+
+        if (!$image) {
+            @unlink($tempfile);
+            return [];
+        }
+
+        return [
+            'image' => $image,
+            'tempfile' => $tempfile,
+        ];
     }
 }

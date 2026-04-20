@@ -39,13 +39,6 @@
     {{#haselements}}
         <div class="local-course-banner-builder-table-heading">
             <h3 class="h5 local-course-banner-builder-table-title">{{#str}}sourcelayerslist, local_course_banner_builder{{/str}}</h3>
-            <button type="button"
-                class="btn btn-outline-secondary btn-sm btn-border-dashed local-course-banner-builder-dashed-action"
-                data-toggle="modal"
-                data-target="#local-course-banner-builder-add-layer-modal">
-                <i class="icon fa fa-plus fa-fw" aria-hidden="true"></i>
-                <span>{{#str}}addlayer, local_course_banner_builder{{/str}}</span>
-            </button>
         </div>
         <form id="local-course-banner-builder-bulk-delete" method="post" action="">
             <input type="hidden" name="sesskey" value="{{sesskey}}">
@@ -108,7 +101,7 @@
                                     {{/fitoverrideoptions}}
                                 </select>
                                 {{#hasfitoverride}}
-                                    <details class="easyedu-help-bubble local-course-banner-builder-override-help">
+                                    <details class="local-course-banner-builder-help-bubble local-course-banner-builder-override-help">
                                         <summary title="{{fitoverridehelp}}">?</summary>
                                         <div>{{fitoverridehelp}}</div>
                                     </details>
@@ -135,7 +128,7 @@
         <button type="submit" class="btn btn-primary mt-3" form="local-course-banner-builder-bulk-update">
             {{#str}}savelayerchanges, local_course_banner_builder{{/str}}
         </button>
-        <div class="easyedu-bottom-actionbar local-course-banner-builder-bulk-actions">
+        <div class="local-course-banner-builder-bottom-actionbar local-course-banner-builder-bulk-actions">
             <span>{{#str}}bulkselectedlayers, local_course_banner_builder{{/str}}</span>
             <button type="submit" class="btn btn-danger btn-sm" form="local-course-banner-builder-bulk-delete"
                 data-modal="confirmation"

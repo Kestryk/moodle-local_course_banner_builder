@@ -38,6 +38,27 @@ defined('MOODLE_INTERNAL') || die();
  */
 function local_course_banner_builder_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload,
         array $options = []) {
+    if ($filearea === 'coursecard') {
+        if ($context->contextlevel !== CONTEXT_COURSE) {
+            return false;
+        }
+
+        require_login();
+
+        $filename = array_pop($args);
+        if (!$filename) {
+            return false;
+        }
+
+        $fs = get_file_storage();
+        $file = $fs->get_file($context->id, 'local_course_banner_builder', $filearea, 0, '/', $filename);
+        if (!$file || $file->is_directory()) {
+            send_file_not_found();
+        }
+
+        send_stored_file($file, 60 * 60, 0, $forcedownload, $options);
+    }
+
     if ($context->contextlevel !== CONTEXT_SYSTEM || $filearea !== 'bannerimage') {
         return false;
     }

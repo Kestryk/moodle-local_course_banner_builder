@@ -27,6 +27,20 @@ defined('MOODLE_INTERNAL') || die();
  */
 class hook_callbacks {
     /**
+     * Load the native Moodle course card thumbnail enhancer.
+     *
+     * @param \core\hook\output\before_footer_html_generation $hook
+     * @return void
+     */
+    public static function before_footer_html_generation(
+        \core\hook\output\before_footer_html_generation $hook
+    ): void {
+        global $PAGE;
+
+        $PAGE->requires->js_call_amd('local_course_banner_builder/coursecards', 'init');
+    }
+
+    /**
      * Sync the managed banner image after course creation.
      *
      * @param \core_course\hook\after_course_created $hook
