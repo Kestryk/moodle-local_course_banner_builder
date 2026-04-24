@@ -5,8 +5,8 @@
 
     Course banner image layers.
 }}
-<div class="local-course-banner-builder" aria-hidden="true">
+<div class="local-course-banner-builder position-relative w-100 overflow-hidden" aria-hidden="true">
     {{#layers}}
-        <img class="banner-layer banner-layer-{{index}}" src="{{url}}" alt="" loading="lazy">
+        <img class="banner-layer banner-layer-{{index}} img-fluid w-100 h-100" src="{{url}}" alt="" loading="lazy">
     {{/layers}}
 </div>

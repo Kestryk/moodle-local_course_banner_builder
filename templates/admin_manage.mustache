@@ -44,7 +44,7 @@
                             {{/isisolated}}
                         </td>
                         <td><a href="{{categoryadminurl}}">{{categoryname}}</a></td>
-                        <td>{{layercount}}</td>
+                        <td>{{layercountdisplay}}</td>
                         <td>{{compositionmodelabel}}</td>
                         <td>{{fitmodelabel}}</td>
                         <td>{{fitapplyscopelabel}}</td>
@@ -53,18 +53,59 @@
                                 {{#thumbnails}}
                                     <div class="local-course-banner-builder-thumb-item" title="{{name}}">
                                         <img src="{{imageurl}}" alt="">
+                                        {{#isdynamic}}
+                                            <span class="local-course-banner-builder-thumb-dynamic-badge"
+                                                role="button"
+                                                data-container="body"
+                                                data-toggle="popover"
+                                                data-placement="right"
+                                                data-content="{{dynamicpopovercontent}}"
+                                                data-html="true"
+                                                data-trigger="hover focus"
+                                                tabindex="0"
+                                                aria-label="{{dynamiclabel}}"
+                                                title="{{dynamiclabel}}">D</span>
+                                        {{/isdynamic}}
                                     </div>
                                 {{/thumbnails}}
                                 {{#hasmorethumbnails}}
                                     <div class="local-course-banner-builder-thumb-more">+{{morethumbnailscount}}</div>
                                 {{/hasmorethumbnails}}
                             </div>
+                            {{#hasbordercaption}}
+                                <div class="local-course-banner-builder-thumb-caption text-muted">{{bordercaption}}</div>
+                            {{/hasbordercaption}}
+                            {{^hasthumbnails}}
+                                <span class="text-muted{{#nothumbnailsisborderlabel}} fw-bold{{/nothumbnailsisborderlabel}}">{{nothumbnailslabel}}</span>
+                            {{/hasthumbnails}}
                         </td>
                         <td>
                             <div class="local-course-banner-builder-action-list">
                                 <a class="btn btn-secondary btn-sm" href="{{editurl}}">{{#str}}edit{{/str}}</a>
-                                <a class="btn btn-outline-danger btn-sm" href="{{deletecategoryimagesurl}}">{{#str}}deletecategoryimages, local_course_banner_builder{{/str}}</a>
-                                <a class="btn btn-danger btn-sm" href="{{deletecategoryurl}}">{{#str}}deletecategorycontent, local_course_banner_builder{{/str}}</a>
+                                <form method="post" action="" class="d-inline">
+                                    <input type="hidden" name="sesskey" value="{{sesskey}}">
+                                    {{#sourcekey}}<input type="hidden" name="deletesourceimages" value="{{sourcekey}}">{{/sourcekey}}
+                                    {{^sourcekey}}<input type="hidden" name="deletecategoryimages" value="{{categoryid}}">{{/sourcekey}}
+                                    <button type="submit" class="btn btn-outline-danger btn-sm"
+                                        data-modal="confirmation"
+                                        data-modal-title="{{#str}}confirm{{/str}}"
+                                        data-modal-content="{{#str}}deletecategoryimagesconfirm, local_course_banner_builder{{/str}}"
+                                        data-modal-yes-button="{{#str}}delete{{/str}}">
+                                        {{#str}}deletecategoryimages, local_course_banner_builder{{/str}}
+                                    </button>
+                                </form>
+                                <form method="post" action="" class="d-inline">
+                                    <input type="hidden" name="sesskey" value="{{sesskey}}">
+                                    {{#sourcekey}}<input type="hidden" name="deletesourcecontent" value="{{sourcekey}}">{{/sourcekey}}
+                                    {{^sourcekey}}<input type="hidden" name="deletecategorycontent" value="{{categoryid}}">{{/sourcekey}}
+                                    <button type="submit" class="btn btn-danger btn-sm"
+                                        data-modal="confirmation"
+                                        data-modal-title="{{#str}}confirm{{/str}}"
+                                        data-modal-content="{{#str}}deletecategorycontentconfirm, local_course_banner_builder{{/str}}"
+                                        data-modal-yes-button="{{#str}}delete{{/str}}">
+                                        {{#str}}deletecategorycontent, local_course_banner_builder{{/str}}
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>

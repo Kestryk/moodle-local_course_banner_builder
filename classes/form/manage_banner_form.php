@@ -39,13 +39,40 @@ class manage_banner_form extends \moodleform {
         $filemanageroptions = $this->_customdata['filemanageroptions'] ?? [];
         $elementid = (int)($this->_customdata['elementid'] ?? 0);
         $uploadguidance = (string)($this->_customdata['uploadguidance'] ?? '');
+        $showmoodlepreview = !empty($this->_customdata['showmoodlepreview']);
+        $previewdefinition = $this->_customdata['previewdefinition'] ?? [];
+        $borderconflictmessage = (string)($this->_customdata['borderconflictmessage'] ?? get_string('sourcealreadyhasborder', 'local_course_banner_builder'));
+        $borderconflictmessageinline = (string)($this->_customdata['borderconflictmessageinline'] ?? get_string('sourcealreadyhasborderinline', 'local_course_banner_builder'));
+        $sourcehasborderlayer = !empty($this->_customdata['sourcehasborderlayer']);
+        $currentisborderlayer = !empty($this->_customdata['currentisborderlayer']);
+        $formmode = (string)($this->_customdata['formmode'] ?? 'create');
+        $showfilemanager = !in_array($formmode, ['editborder', 'editimage'], true);
+        $showadvanced = $formmode !== 'editborder';
+        $showborder = $formmode !== 'editimage';
+        $iscreatewithborderconflict = !$elementid && $sourcehasborderlayer;
 
-        $mform->addElement('hidden', 'categoryid', $selectedcategoryid);
+        $mform->addElement('hidden', 'categoryid', $selectedcategoryid, ['id' => 'id_categoryid']);
         $mform->setType('categoryid', PARAM_INT);
         $mform->setDefault('categoryid', $selectedcategoryid);
 
-        $mform->addElement('hidden', 'elementid', $elementid);
+        $mform->addElement('hidden', 'sourcekey', (string)($this->_customdata['sourcekey'] ?? ''), ['id' => 'id_sourcekey']);
+        $mform->setType('sourcekey', PARAM_RAW_TRIMMED);
+
+        $mform->addElement('hidden', 'elementid', $elementid, ['id' => 'id_elementid']);
         $mform->setType('elementid', PARAM_INT);
+
+        $mform->addElement('hidden', 'hasexistingimage', 0, ['id' => 'id_hasexistingimage']);
+        $mform->setType('hasexistingimage', PARAM_INT);
+
+        $mform->addElement('hidden', 'sourcehasborderlayer', $sourcehasborderlayer ? 1 : 0, ['id' => 'id_sourcehasborderlayer']);
+        $mform->setType('sourcehasborderlayer', PARAM_INT);
+
+        $mform->addElement('hidden', 'currentisborderlayer', 0, ['id' => 'id_currentisborderlayer']);
+        $mform->setType('currentisborderlayer', PARAM_INT);
+
+        $mform->addElement('hidden', 'bordersidesvalue', '', ['id' => 'id_bordersidesvalue']);
+        $mform->setType('bordersidesvalue', PARAM_RAW_TRIMMED);
+        $mform->setDefault('bordersidesvalue', 'top,right,bottom,left');
 
         $mform->addElement('text', 'name', get_string('layername', 'local_course_banner_builder'));
         $mform->setType('name', PARAM_TEXT);
@@ -53,12 +80,17 @@ class manage_banner_form extends \moodleform {
         $mform->addElement('text', 'sortorder', get_string('sortorder', 'local_course_banner_builder'));
         $mform->setType('sortorder', PARAM_INT);
         $mform->setDefault('sortorder', 0);
+        $mform->updateElementAttr('sortorder', [
+            'data-upgrade-number' => '1',
+            'data-number-min' => '0',
+            'data-number-step' => '1',
+        ]);
 
         if (!$elementid) {
             $mform->addElement('static', 'bulkuploadnote', '', get_string('bulkuploadnote', 'local_course_banner_builder'));
         }
 
-        if ($uploadguidance !== '') {
+        if ($showfilemanager && $uploadguidance !== '') {
             $guidancehtml = \html_writer::tag(
                 'details',
                 \html_writer::tag('summary', get_string('uploadguidancetitle', 'local_course_banner_builder')) . $uploadguidance,
@@ -70,15 +102,802 @@ class manage_banner_form extends \moodleform {
         $mform->addElement('advcheckbox', 'isenabled', get_string('enabled', 'local_course_banner_builder'));
         $mform->setDefault('isenabled', 0);
 
-        $mform->addElement(
-            'filemanager',
-            'bannerimage_filemanager',
-            get_string('bannerimage', 'local_course_banner_builder'),
-            null,
-            $filemanageroptions
+        if ($showfilemanager) {
+            $mform->addElement(
+                'filemanager',
+                'bannerimage_filemanager',
+                get_string('bannerimage', 'local_course_banner_builder'),
+                ['data-banner-filemanager' => '1'],
+                $filemanageroptions
+            );
+            $mform->addHelpButton('bannerimage_filemanager', 'bannerimage', 'local_course_banner_builder');
+            $mform->addElement('static', 'bannerimage_disabled_notice', '', \html_writer::div(
+                get_string('bannerimagedisabledforborder', 'local_course_banner_builder'),
+                'alert alert-light border d-none mb-0 local-course-banner-builder-filemanager-disabled-note',
+                ['data-border-filemanager-note' => '1']
+            ));
+        } else {
+            $mform->addElement('hidden', 'bannerimage_filemanager', 0);
+            $mform->setType('bannerimage_filemanager', PARAM_INT);
+        }
+
+        $this->add_advanced_options(
+            $mform,
+            $iscreatewithborderconflict,
+            $currentisborderlayer,
+            $showadvanced,
+            $showborder,
+            $showmoodlepreview,
+            is_array($previewdefinition) ? $previewdefinition : [],
+            $borderconflictmessage,
+            $borderconflictmessageinline
         );
-        $mform->addHelpButton('bannerimage_filemanager', 'bannerimage', 'local_course_banner_builder');
+        $mform->addElement('static', 'layervalidationwarning', '', \html_writer::div(
+            get_string('layercontentrequired', 'local_course_banner_builder'),
+            'alert alert-warning d-none',
+            ['data-layer-validation-warning' => '1']
+        ));
 
         $this->add_action_buttons(false, get_string('savebannerlayers', 'local_course_banner_builder'));
+    }
+
+    /**
+     * Add advanced display and border options.
+     *
+     * @param \MoodleQuickForm $mform
+     * @param bool $iscreatewithborderconflict
+     * @param bool $currentisborderlayer
+     * @param bool $showadvanced
+     * @param bool $showborder
+     * @param bool $showmoodlepreview
+     * @param array $previewdefinition
+     * @param string $borderconflictmessage
+     * @param string $borderconflictmessageinline
+     * @return void
+     */
+    protected function add_advanced_options(
+        \MoodleQuickForm $mform,
+        bool $iscreatewithborderconflict = false,
+        bool $currentisborderlayer = false,
+        bool $showadvanced = true,
+        bool $showborder = true,
+        bool $showmoodlepreview = false,
+        array $previewdefinition = [],
+        string $borderconflictmessage = '',
+        string $borderconflictmessageinline = ''
+    ): void {
+        $fitoptions = ['' => get_string('fitoverride:categorydefault', 'local_course_banner_builder')]
+            + \local_course_banner_builder\manager::get_editable_fit_mode_options(true);
+
+        if ($showadvanced) {
+            $advancedattrs = [
+                'class' => 'local-course-banner-builder-advanced-accordion',
+                'data-layer-advanced-section' => '1',
+            ];
+            if ($formmode === 'editimage') {
+                $advancedattrs['open'] = 'open';
+            }
+            $mform->addElement('html', \html_writer::start_tag('details', $advancedattrs));
+            $mform->addElement(
+                'html',
+                \html_writer::tag('summary',
+                    self::render_collapse_expand_icon($formmode !== 'editimage') .
+                    get_string('layeradvanced', 'local_course_banner_builder')
+                )
+            );
+            $mform->addElement(
+                'static',
+                'layeradvancedhelp',
+                '',
+                \html_writer::div(get_string('layeradvanced_help', 'local_course_banner_builder'),
+                    'form-text text-muted local-course-banner-builder-advanced-help')
+            );
+        }
+
+        if ($showadvanced) {
+        $mform->addElement('select', 'fitmodeoverride', get_string('fitoverride', 'local_course_banner_builder'), $fitoptions);
+        $mform->setType('fitmodeoverride', PARAM_ALPHA);
+        $mform->addElement('static', 'fitoverridehelp', '', \html_writer::div(
+            get_string('fitoverridehelp', 'local_course_banner_builder'),
+            'form-text text-muted'
+        ));
+
+        $customsizeattrs = [
+            'size' => 6,
+            'data-upgrade-number' => '1',
+            'data-number-min' => '0',
+            'data-number-step' => '1',
+            'data-field-suffix' => '%',
+            'data-layer-custom-size' => '1',
+        ];
+        $mform->addElement('text', 'customwidthpercent', get_string('customwidthpercent', 'local_course_banner_builder'), $customsizeattrs + [
+            'data-custom-size-dimension' => 'width',
+            'data-percent-slider-input' => '1',
+        ]);
+        $mform->setType('customwidthpercent', PARAM_FLOAT);
+        $mform->setDefault('customwidthpercent', 100);
+        $this->add_percent_slider_static($mform, 'customwidthpercent', 0, 100, 1);
+
+        $mform->addElement('text', 'customheightpercent', get_string('customheightpercent', 'local_course_banner_builder'), $customsizeattrs + [
+            'data-custom-size-dimension' => 'height',
+            'data-percent-slider-input' => '1',
+        ]);
+        $mform->setType('customheightpercent', PARAM_FLOAT);
+        $mform->setDefault('customheightpercent', 100);
+        $this->add_percent_slider_static($mform, 'customheightpercent', 0, 100, 1);
+
+        $mform->addElement('advcheckbox', 'customsizekeepaspect', get_string('customsizekeepaspect', 'local_course_banner_builder'), '', [
+            'data-custom-size-keep-aspect' => '1',
+        ]);
+        $mform->setDefault('customsizekeepaspect', 1);
+
+        $mform->addElement(
+            'advcheckbox',
+            'dynamicimagesizeenabled',
+            get_string('dynamicimagesizeenabled', 'local_course_banner_builder')
+        );
+        $mform->setDefault('dynamicimagesizeenabled', 0);
+        $mform->addHelpButton('dynamicimagesizeenabled', 'dynamicimagesizeenabled', 'local_course_banner_builder');
+
+        $mform->addElement(
+            'select',
+            'positionanchor',
+            get_string('positionanchor', 'local_course_banner_builder'),
+            \local_course_banner_builder\manager::get_position_anchor_options(),
+            ['data-layer-position-anchor' => '1']
+        );
+        $mform->setType('positionanchor', PARAM_ALPHAEXT);
+        $mform->setDefault('positionanchor', \local_course_banner_builder\manager::POSITION_CENTER);
+        $mform->addHelpButton('positionanchor', 'positionanchor', 'local_course_banner_builder');
+
+        $offsetattrs = [
+            'size' => 6,
+            'data-layer-offset-input' => '1',
+            'data-upgrade-number' => '1',
+            'data-number-min' => '0',
+            'data-number-step' => '1',
+            'data-field-suffix' => '%',
+            'data-percent-slider-input' => '1',
+        ];
+        $this->add_offset_field($mform, 'offsettoppercent', get_string('layeroffsettoppercent', 'local_course_banner_builder'), 'top', $offsetattrs);
+        $this->add_offset_field($mform, 'offsetrightpercent', get_string('layeroffsetrightpercent', 'local_course_banner_builder'), 'right', $offsetattrs);
+        $this->add_offset_field($mform, 'offsetbottompercent', get_string('layeroffsetbottompercent', 'local_course_banner_builder'), 'bottom', $offsetattrs);
+        $this->add_offset_field($mform, 'offsetleftpercent', get_string('layeroffsetleftpercent', 'local_course_banner_builder'), 'left', $offsetattrs);
+        $mform->addElement('static', 'layeroffsethelp', '', \html_writer::div(
+            get_string('layeroffsethelp', 'local_course_banner_builder'),
+            'form-text text-muted'
+        ));
+
+        }
+        if ($showadvanced) {
+            $mform->addElement('html', '</details>');
+        }
+        if ($showadvanced) {
+            $mform->addElement('static', 'imagepreview', '', $this->render_banner_preview_panel(
+                'imagepreview',
+                $previewdefinition,
+                $showmoodlepreview,
+                true,
+                false,
+                get_string('imagepreviewhelp', 'local_course_banner_builder')
+            ));
+        }
+        if (!$showborder) {
+            return;
+        }
+        $borderdetailsattrs = [
+            'class' => 'local-course-banner-builder-advanced-accordion local-course-banner-builder-border-accordion',
+            'data-border-section' => '1',
+            'data-border-accordion' => '1',
+            'data-create-border-locked' => $iscreatewithborderconflict ? '1' : '0',
+        ];
+        if ($iscreatewithborderconflict) {
+            $borderdetailsattrs['class'] .= ' local-course-banner-builder-disabled';
+        }
+        if ($currentisborderlayer) {
+            $borderdetailsattrs['open'] = 'open';
+        }
+        $mform->addElement('html', \html_writer::start_tag('details', $borderdetailsattrs));
+        $summarycontent = \html_writer::span(
+            get_string('layerborder', 'local_course_banner_builder'),
+            'local-course-banner-builder-border-summary-title'
+        );
+        $summarycontent = self::render_collapse_expand_icon(!$currentisborderlayer) . $summarycontent;
+        $summarycontent .= \html_writer::span(
+            $borderconflictmessageinline,
+            'local-course-banner-builder-border-summary-note text-danger ms-2' . ($iscreatewithborderconflict ? '' : ' d-none'),
+            ['data-border-existing-note-inline' => '1']
+        );
+        $mform->addElement(
+            'html',
+            \html_writer::tag('summary', $summarycontent, $iscreatewithborderconflict ? [
+                'aria-disabled' => 'true',
+                'tabindex' => '-1',
+            ] : [])
+        );
+
+        $mform->addElement('advcheckbox', 'borderenabled', get_string('borderenabled', 'local_course_banner_builder'), '', [
+            'data-border-toggle' => '1',
+        ]);
+        $mform->setDefault('borderenabled', $currentisborderlayer ? 1 : 0);
+        if ($iscreatewithborderconflict || $currentisborderlayer) {
+            $mform->updateElementAttr('borderenabled', [
+                'disabled' => 'disabled',
+                'aria-disabled' => 'true',
+            ]);
+        }
+        $mform->addElement('static', 'borderenabled_existing_notice', '', \html_writer::div(
+            $borderconflictmessage,
+            'alert alert-danger mb-3 d-none',
+            ['data-border-existing-note' => '1']
+        ));
+
+        $bordercolorgroup = [];
+        $bordercolorgroup[] = $mform->createElement('text', 'bordercolor', '', [
+            'data-border-color-text' => '1',
+        ]);
+        $bordercolorgroup[] = $mform->createElement('html',
+            \html_writer::empty_tag('input', [
+                'type' => 'color',
+                'id' => 'id_bordercolor_picker',
+                'class' => 'form-control form-control-color local-course-banner-builder-color-picker',
+                'value' => '#56B9C0',
+                'data-border-color-picker' => '1',
+                'aria-label' => get_string('bordercolor', 'local_course_banner_builder'),
+                'title' => get_string('bordercolor', 'local_course_banner_builder'),
+                'disabled' => $iscreatewithborderconflict ? 'disabled' : null,
+            ])
+        );
+        $mform->addGroup(
+            $bordercolorgroup,
+            'bordercolorgroup',
+            get_string('bordercolor', 'local_course_banner_builder'),
+            '',
+            false
+        );
+        $mform->setType('bordercolor', PARAM_RAW_TRIMMED);
+        $mform->setDefault('bordercolor', '#56B9C0');
+        $mform->addHelpButton('bordercolorgroup', 'bordercolor', 'local_course_banner_builder');
+
+        $mform->addElement('text', 'borderwidth', get_string('borderwidth', 'local_course_banner_builder'), [
+            'class' => 'theme-easyedu-range',
+            'data-range-upgrade' => '1',
+            'data-range-min' => '0',
+            'data-range-max' => '100',
+            'data-range-step' => '0.1',
+            'data-range-output' => '1',
+            'data-range-suffix' => '%',
+        ]);
+        $mform->setType('borderwidth', PARAM_FLOAT);
+        $mform->setDefault('borderwidth', 2.5);
+
+        $mform->addElement('text', 'borderopacity', get_string('borderopacity', 'local_course_banner_builder'), [
+            'class' => 'theme-easyedu-range',
+            'data-range-upgrade' => '1',
+            'data-range-min' => '0',
+            'data-range-max' => '100',
+            'data-range-step' => '1',
+            'data-range-output' => '1',
+            'data-range-suffix' => '%',
+        ]);
+        $mform->setType('borderopacity', PARAM_FLOAT);
+        $mform->setDefault('borderopacity', 0);
+
+        $mform->addElement('text', 'borderfade', get_string('borderfade', 'local_course_banner_builder'), [
+            'class' => 'theme-easyedu-range',
+            'data-range-upgrade' => '1',
+            'data-range-min' => '0',
+            'data-range-max' => '100',
+            'data-range-step' => '1',
+            'data-range-output' => '1',
+            'data-range-suffix' => '%',
+        ]);
+        $mform->setType('borderfade', PARAM_FLOAT);
+        $mform->setDefault('borderfade', 0);
+
+        $mform->addElement(
+            'select',
+            'borderstyle',
+            get_string('borderstyle', 'local_course_banner_builder'),
+            \local_course_banner_builder\manager::get_border_style_options()
+        );
+        $mform->setType('borderstyle', PARAM_ALPHA);
+        $mform->setDefault('borderstyle', \local_course_banner_builder\manager::BORDER_STYLE_SOLID);
+
+        $mform->addElement('text', 'borderdashlength', get_string('borderdashlength', 'local_course_banner_builder'), [
+            'class' => 'theme-easyedu-range',
+            'data-range-upgrade' => '1',
+            'data-range-min' => '4',
+            'data-range-max' => '80',
+            'data-range-step' => '1',
+            'data-range-output' => '1',
+            'data-range-suffix' => 'px',
+            'data-border-dash-length' => '1',
+        ]);
+        $mform->setType('borderdashlength', PARAM_FLOAT);
+        $mform->setDefault('borderdashlength', 24);
+
+        $sidegroup = [];
+        $sidegroup[] = $mform->createElement(
+            'advcheckbox',
+            'bordersides[all]',
+            '',
+            get_string('bordersides:all', 'local_course_banner_builder'),
+            ['data-border-side-all' => '1']
+        );
+        foreach (['top', 'right', 'bottom', 'left'] as $side) {
+            $sidegroup[] = $mform->createElement(
+                'advcheckbox',
+                'bordersides[' . $side . ']',
+                '',
+                get_string('bordersides:' . $side, 'local_course_banner_builder'),
+                ['data-border-side' => $side]
+            );
+        }
+        $mform->addGroup($sidegroup, 'bordersidesgroup', get_string('bordersides', 'local_course_banner_builder'), '<br>');
+        $mform->setDefault('bordersides[all]', 1);
+        $mform->setDefault('bordersides[top]', 1);
+        $mform->setDefault('bordersides[right]', 1);
+        $mform->setDefault('bordersides[bottom]', 1);
+        $mform->setDefault('bordersides[left]', 1);
+
+        $mform->addElement('advcheckbox', 'borderinnerrounded', get_string('borderinnerrounded', 'local_course_banner_builder'), '', [
+            'data-border-inner-rounded' => '1',
+        ]);
+        $mform->setDefault('borderinnerrounded', 0);
+
+        if ($iscreatewithborderconflict) {
+            $mform->updateElementAttr('borderenabled', [
+                'disabled' => 'disabled',
+                'aria-disabled' => 'true',
+            ]);
+            $mform->updateElementAttr('bordercolor', ['disabled' => 'disabled']);
+            $mform->updateElementAttr('borderwidth', ['disabled' => 'disabled']);
+            $mform->updateElementAttr('borderopacity', ['disabled' => 'disabled']);
+            $mform->updateElementAttr('borderfade', ['disabled' => 'disabled']);
+            $mform->updateElementAttr('borderstyle', ['disabled' => 'disabled']);
+            $mform->updateElementAttr('borderdashlength', ['disabled' => 'disabled']);
+            $mform->updateElementAttr('borderinnerrounded', [
+                'disabled' => 'disabled',
+                'aria-disabled' => 'true',
+            ]);
+        }
+
+        $mform->addElement('static', 'borderpreview', '', $this->render_banner_preview_panel(
+            'borderpreview',
+            $previewdefinition,
+            $showmoodlepreview,
+            false,
+            true,
+            get_string('borderpreviewhelp', 'local_course_banner_builder')
+        ));
+
+        $mform->addElement('html', '</details>');
+    }
+
+    /**
+     * Add one offset field with anchor-based visibility metadata.
+     *
+     * @param \MoodleQuickForm $mform
+     * @param string $name
+     * @param string $label
+     * @param string $side
+     * @param array $attributes
+     * @return void
+     */
+    protected function add_offset_field(\MoodleQuickForm $mform, string $name, string $label, string $side, array $attributes = []): void {
+        $mform->addElement(
+            'text',
+            $name,
+            $label,
+            $attributes + ['data-offset-side' => $side]
+        );
+        $mform->setType($name, PARAM_FLOAT);
+        $mform->setDefault($name, 0);
+        $this->add_percent_slider_static($mform, $name, 0, 100, 1, [
+            'data-offset-side' => $side,
+        ]);
+    }
+
+    /**
+     * Render a synced percent slider under one numeric field.
+     *
+     * @param \MoodleQuickForm $mform
+     * @param string $targetname
+     * @param int|float $min
+     * @param int|float $max
+     * @param int|float $step
+     * @param array $attributes
+     * @return void
+     */
+    protected function add_percent_slider_static(
+        \MoodleQuickForm $mform,
+        string $targetname,
+        $min,
+        $max,
+        $step,
+        array $attributes = []
+    ): void {
+        $slidername = $targetname . '_slider';
+        $sliderid = 'id_' . $slidername;
+        $targetid = 'id_' . $targetname;
+
+        $mform->addElement('static', $slidername, '', \html_writer::div(
+            \html_writer::empty_tag('input', [
+                'type' => 'range',
+                'id' => $sliderid,
+                'class' => 'theme-easyedu-range local-course-banner-builder-linked-range',
+                'min' => (string)$min,
+                'max' => (string)$max,
+                'step' => (string)$step,
+                'data-percent-slider-for' => $targetid,
+                'data-range-suffix' => '%',
+            ] + $attributes) .
+            \html_writer::tag('span', '', [
+                'class' => 'theme-easyedu-range-output',
+                'data-percent-slider-output-for' => $targetid,
+                'aria-live' => 'polite',
+            ]),
+            'local-course-banner-builder-linked-range-wrapper',
+            [
+                'data-percent-slider-wrapper-for' => $targetid,
+            ]
+        ));
+    }
+
+    /**
+     * Render one banner preview frame.
+     *
+     * @param string $variant
+     * @param string $bound
+     * @param array $previewdefinition
+     * @param bool $showcurrentimage
+     * @param bool $showcurrentborder
+     * @return string
+     */
+    protected function render_border_preview_frame(
+        string $variant,
+        string $bound,
+        array $previewdefinition = [],
+        bool $showcurrentimage = false,
+        bool $showcurrentborder = false
+    ): string {
+        $contextlayershtml = '';
+        foreach (($previewdefinition['contextlayers'] ?? []) as $layer) {
+            if (is_array($layer)) {
+                $contextlayershtml .= $this->render_preview_context_layer($layer);
+            }
+        }
+
+        $currentlayer = is_array($previewdefinition['currentlayer'] ?? null) ? $previewdefinition['currentlayer'] : [];
+        $currentimagelayer = $showcurrentimage ? $this->render_preview_current_image_layer($currentlayer) : '';
+        $currentborderlayer = $showcurrentborder ? $this->render_preview_border_overlay([
+            'class' => 'local-course-banner-builder-preview-border-layer local-course-banner-builder-preview-border-layer--current',
+            'attributes' => [
+                'data-preview-current-border' => '1',
+                'data-preview-sortorder' => (string)($currentlayer['sortorder'] ?? 0),
+                'data-preview-zindex' => (string)($currentlayer['zindex'] ?? (1000 + (int)($currentlayer['sortorder'] ?? 0))),
+            ],
+            'style' => 'z-index: ' . (int)($currentlayer['zindex'] ?? (1000 + (int)($currentlayer['sortorder'] ?? 0))) . ';',
+            'dynamic' => true,
+        ]) : '';
+
+        return \html_writer::div(
+            \html_writer::div('', 'local-course-banner-builder-banner-preview-base') .
+            $contextlayershtml .
+            $currentimagelayer .
+            $currentborderlayer,
+            'local-course-banner-builder-border-preview-frame local-course-banner-builder-border-preview-frame--' . $variant,
+            [
+                'data-border-preview-frame' => $showcurrentborder ? $bound : '0',
+                'data-banner-preview-frame' => '1',
+            ]
+        );
+    }
+
+    /**
+     * Render the shared live banner preview panel.
+     *
+     * @param string $fieldname
+     * @param array $previewdefinition
+     * @param bool $showmoodlepreview
+     * @param bool $showcurrentimage
+     * @param bool $showcurrentborder
+     * @param string $helptext
+     * @return string
+     */
+    protected function render_banner_preview_panel(
+        string $fieldname,
+        array $previewdefinition,
+        bool $showmoodlepreview,
+        bool $showcurrentimage,
+        bool $showcurrentborder,
+        string $helptext
+    ): string {
+        global $PAGE;
+
+        $toggleid = 'id_' . $fieldname . '_show_context_layers';
+        $activethemename = (string)($PAGE->theme->name ?? 'EasyEdu');
+        $activethemename = $activethemename !== '' ? ucfirst($activethemename) : 'EasyEdu';
+        $toolbarcontent = !empty($previewdefinition['hascontextlayers']) ? \html_writer::div(
+                \html_writer::tag(
+                    'label',
+                    \html_writer::empty_tag('input', [
+                        'type' => 'checkbox',
+                        'id' => $toggleid,
+                        'data-preview-context-toggle' => '1',
+                    ]) . \html_writer::span('', 'easyedu-toggle-switch__slider'),
+                    [
+                        'class' => 'easyedu-toggle-switch easyedu-toggle-switch--32px mb-0',
+                    ]
+                ) .
+                \html_writer::tag('label', get_string('bannerpreviewtogglecontext', 'local_course_banner_builder'), [
+                    'class' => 'mb-0',
+                    'for' => $toggleid,
+                ]),
+                'local-course-banner-builder-banner-preview-toolbar-toggle'
+            ) : '';
+
+        $toolbar = $toolbarcontent === '' ? '' : \html_writer::div(
+            $toolbarcontent,
+            'local-course-banner-builder-banner-preview-toolbar'
+        );
+
+        return \html_writer::div(
+            $toolbar .
+            \html_writer::div(
+                \html_writer::div(
+                    \html_writer::div(
+                        get_string('bannerpreviewthemeused', 'local_course_banner_builder', $activethemename),
+                        'local-course-banner-builder-border-preview-label'
+                    ) .
+                    $this->render_border_preview_frame(
+                        'easyedu',
+                        '1',
+                        $previewdefinition,
+                        $showcurrentimage,
+                        $showcurrentborder
+                    ),
+                    'local-course-banner-builder-border-preview-variant'
+                ) .
+                ($showmoodlepreview ? \html_writer::div(
+                    \html_writer::div(
+                        get_string('bannerpreviewthemeused', 'local_course_banner_builder', 'Moodle natif'),
+                        'local-course-banner-builder-border-preview-label'
+                    ) .
+                    $this->render_border_preview_frame(
+                        'moodle',
+                        '1',
+                        $previewdefinition,
+                        $showcurrentimage,
+                        $showcurrentborder
+                    ),
+                    'local-course-banner-builder-border-preview-variant'
+                ) : ''),
+                'local-course-banner-builder-border-preview' . ($showmoodlepreview ? ' local-course-banner-builder-border-preview--dual' : ''),
+                [
+                    'data-border-preview' => $showcurrentborder ? '1' : '0',
+                    'data-layer-banner-preview' => '1',
+                    'data-default-fitmode' => (string)($previewdefinition['defaultfitmode'] ?? \local_course_banner_builder\manager::FIT_MODE_BANNER),
+                ]
+            ) .
+            \html_writer::div($helptext, 'form-text text-muted'),
+            'local-course-banner-builder-banner-preview-panel'
+        );
+    }
+
+    /**
+     * Render one persisted context layer.
+     *
+     * @param array $layer
+     * @return string
+     */
+    protected function render_preview_context_layer(array $layer): string {
+        if (($layer['type'] ?? '') === 'image') {
+            return $this->render_preview_image_layer($layer, true, false);
+        }
+
+        if (($layer['type'] ?? '') === 'border') {
+            $zindex = (int)($layer['zindex'] ?? (1000 + (int)($layer['sortorder'] ?? 0)));
+            return $this->render_preview_border_overlay([
+                'class' => 'local-course-banner-builder-preview-border-layer local-course-banner-builder-preview-border-layer--context',
+                'attributes' => [
+                    'data-preview-context-layer' => '1',
+                    'data-preview-inherited' => !empty($layer['isinherited']) ? '1' : '0',
+                    'data-preview-sortorder' => (string)($layer['sortorder'] ?? 0),
+                    'data-preview-zindex' => (string)$zindex,
+                ],
+                'style' => trim((string)($layer['wrapperstyle'] ?? '')) . ' z-index: ' . $zindex . ';',
+                'sidestyles' => (array)($layer['sidestyles'] ?? []),
+                'dynamic' => false,
+            ]);
+        }
+
+        return '';
+    }
+
+    /**
+     * Render the editable image layer placeholder.
+     *
+     * @param array $currentlayer
+     * @return string
+     */
+    protected function render_preview_current_image_layer(array $currentlayer): string {
+        $attributes = [
+            'data-preview-current-image' => '1',
+            'data-preview-fitmode' => (string)($currentlayer['fitmode'] ?? ''),
+            'data-preview-anchor' => (string)($currentlayer['positionanchor'] ?? \local_course_banner_builder\manager::POSITION_CENTER),
+            'data-preview-custom-width' => (string)($currentlayer['customwidthpercent'] ?? 100),
+            'data-preview-custom-height' => (string)($currentlayer['customheightpercent'] ?? 100),
+            'data-preview-keep-aspect' => !empty($currentlayer['customsizekeepaspect']) ? '1' : '0',
+            'data-preview-dynamic-image' => !empty($currentlayer['dynamicimagesizeenabled']) ? '1' : '0',
+            'data-preview-offset-top' => (string)($currentlayer['offsettoppercent'] ?? 0),
+            'data-preview-offset-right' => (string)($currentlayer['offsetrightpercent'] ?? 0),
+            'data-preview-offset-bottom' => (string)($currentlayer['offsetbottompercent'] ?? 0),
+            'data-preview-offset-left' => (string)($currentlayer['offsetleftpercent'] ?? 0),
+            'data-preview-natural-width' => (string)($currentlayer['imagewidth'] ?? 0),
+            'data-preview-natural-height' => (string)($currentlayer['imageheight'] ?? 0),
+            'data-preview-current-url' => (string)($currentlayer['url'] ?? ''),
+            'data-preview-zindex' => (string)($currentlayer['zindex'] ?? ((int)($currentlayer['sortorder'] ?? 0) + 1)),
+        ];
+
+        return $this->render_preview_image_layer($currentlayer, false, true, $attributes);
+    }
+
+    /**
+     * Render one image layer.
+     *
+     * @param array $layer
+     * @param bool $iscontext
+     * @param bool $iscurrent
+     * @param array $attributes
+     * @return string
+     */
+    protected function render_preview_image_layer(
+        array $layer,
+        bool $iscontext = true,
+        bool $iscurrent = false,
+        array $attributes = []
+    ): string {
+        $classes = 'local-course-banner-builder-preview-image-layer';
+        if ($iscontext) {
+            $classes .= ' local-course-banner-builder-preview-image-layer--context';
+            $attributes['data-preview-context-layer'] = '1';
+            $attributes['data-preview-inherited'] = !empty($layer['isinherited']) ? '1' : '0';
+        }
+        if ($iscurrent) {
+            $classes .= ' local-course-banner-builder-preview-image-layer--current';
+        }
+
+        $zindex = (int)($layer['zindex'] ?? ((int)($layer['sortorder'] ?? 0) + 1));
+        $style = trim((string)($layer['wrapperstyle'] ?? ''));
+        $attributes['style'] = trim($style . ' z-index: ' . $zindex . ';');
+        $attributes['data-preview-sortorder'] = (string)($layer['sortorder'] ?? 0);
+        $attributes['data-preview-zindex'] = (string)$zindex;
+
+        if ($iscurrent && empty($layer['url'])) {
+            $attributes['hidden'] = 'hidden';
+        }
+
+        return \html_writer::tag(
+            'div',
+            \html_writer::empty_tag('img', [
+                'src' => (string)($layer['url'] ?? ''),
+                'alt' => '',
+                'class' => 'local-course-banner-builder-preview-image',
+                'style' => (string)($layer['imagestyle'] ?? ''),
+                'data-preview-image-tag' => '1',
+            ]),
+            ['class' => $classes] + $attributes
+        );
+    }
+
+    /**
+     * Render one border overlay.
+     *
+     * @param array $options
+     * @return string
+     */
+    protected function render_preview_border_overlay(array $options = []): string {
+        $sidestyles = (array)($options['sidestyles'] ?? []);
+        $dynamic = !empty($options['dynamic']);
+        $wrapperattributes = $options['attributes'] ?? [];
+        if (!empty($options['style'])) {
+            $wrapperattributes['style'] = (string)$options['style'];
+        }
+
+        $renderpart = function(string $type, string $name, string $class) use ($sidestyles, $dynamic): string {
+            $attributes = [];
+            if ($dynamic) {
+                $attributes['data-border-preview-' . $type] = $name;
+            }
+            if ($type === 'side' && !empty($sidestyles[$name])) {
+                $attributes['style'] = $sidestyles[$name];
+            }
+            return \html_writer::span('', $class, $attributes);
+        };
+
+        $wrapperattributes['class'] = trim(
+            (string)($options['class'] ?? 'local-course-banner-builder-preview-border-layer') .
+            ' ' . (string)($wrapperattributes['class'] ?? '')
+        );
+
+        return \html_writer::tag(
+            'div',
+            $renderpart('side', 'top', 'local-course-banner-builder-border-preview-side local-course-banner-builder-border-preview-side-top') .
+            $renderpart('side', 'right', 'local-course-banner-builder-border-preview-side local-course-banner-builder-border-preview-side-right') .
+            $renderpart('side', 'bottom', 'local-course-banner-builder-border-preview-side local-course-banner-builder-border-preview-side-bottom') .
+            $renderpart('side', 'left', 'local-course-banner-builder-border-preview-side local-course-banner-builder-border-preview-side-left') .
+            $renderpart('corner', 'top-left', 'local-course-banner-builder-border-preview-corner local-course-banner-builder-border-preview-corner-top-left') .
+            $renderpart('corner', 'top-right', 'local-course-banner-builder-border-preview-corner local-course-banner-builder-border-preview-corner-top-right') .
+            $renderpart('corner', 'bottom-right', 'local-course-banner-builder-border-preview-corner local-course-banner-builder-border-preview-corner-bottom-right') .
+            $renderpart('corner', 'bottom-left', 'local-course-banner-builder-border-preview-corner local-course-banner-builder-border-preview-corner-bottom-left') .
+            \html_writer::span('', 'local-course-banner-builder-border-preview-hole', $dynamic ? ['data-border-preview-hole' => '1'] : []),
+            $wrapperattributes
+        );
+    }
+
+    /**
+     * Render the standard Moodle collapse/expand icon wrapper.
+     *
+     * @param bool $collapsed
+     * @return string
+     */
+    protected static function render_collapse_expand_icon(bool $collapsed = true): string {
+        global $OUTPUT;
+
+        return \html_writer::span(
+            \html_writer::span(
+                $OUTPUT->pix_icon('t/expandedchevron', get_string('collapse', 'core')),
+                'expanded-icon icon-no-margin p-2'
+            ) .
+            \html_writer::span(
+                \html_writer::span($OUTPUT->pix_icon('t/collapsedchevron', get_string('expand', 'core')), 'dir-rtl-hide') .
+                \html_writer::span($OUTPUT->pix_icon('t/collapsedchevron_rtl', get_string('expand', 'core')), 'dir-ltr-hide'),
+                'collapsed-icon icon-no-margin p-2'
+            ),
+            'btn btn-icon me-2 icons-collapse-expand local-course-banner-builder-collapse-icon' . ($collapsed ? ' collapsed' : ''),
+            ['aria-hidden' => 'true', 'data-local-details-toggle-icon' => '1']
+        );
+    }
+
+    /**
+     * Validate layer creation modes.
+     *
+     * @param array $data
+     * @param array $files
+     * @return array
+     */
+    public function validation($data, $files): array {
+        $errors = parent::validation($data, $files);
+        $draftfiles = \local_course_banner_builder\manager::get_draft_files((int)($data['bannerimage_filemanager'] ?? 0));
+        $hasimage = !empty($draftfiles) || !empty($data['hasexistingimage']);
+        $hasborder = !empty($data['borderenabled']) || (!empty($data['elementid']) && !empty($data['currentisborderlayer']));
+
+        if (!$hasimage && !$hasborder) {
+            $errors['bannerimage_filemanager'] = get_string('layercontentrequired', 'local_course_banner_builder');
+        }
+
+        if ($hasimage && $hasborder) {
+            $errors['borderenabled'] = get_string('layercontentexclusive', 'local_course_banner_builder');
+        }
+
+        if ($hasborder && !empty($data['sourcehasborderlayer']) && empty($data['elementid'])) {
+            $errors['borderenabled'] = get_string('sourcealreadyhasborder', 'local_course_banner_builder');
+        }
+
+        if (($data['fitmodeoverride'] ?? '') === \local_course_banner_builder\manager::FIT_MODE_CUSTOM) {
+            $width = (float)($data['customwidthpercent'] ?? 0);
+            $height = (float)($data['customheightpercent'] ?? 0);
+            $keepaspect = !empty($data['customsizekeepaspect']);
+            if ($width <= 0) {
+                $errors['customwidthpercent'] = get_string('customsizerequiredwidth', 'local_course_banner_builder');
+            }
+            if (!$keepaspect && $height <= 0) {
+                $errors['customheightpercent'] = get_string('customsizerequiredheight', 'local_course_banner_builder');
+            }
+        }
+
+        return $errors;
     }
 }
