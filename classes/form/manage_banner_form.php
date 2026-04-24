@@ -129,6 +129,7 @@ class manage_banner_form extends \moodleform {
             $showborder,
             $showmoodlepreview,
             is_array($previewdefinition) ? $previewdefinition : [],
+            $formmode,
             $borderconflictmessage,
             $borderconflictmessageinline
         );
@@ -163,6 +164,7 @@ class manage_banner_form extends \moodleform {
         bool $showborder = true,
         bool $showmoodlepreview = false,
         array $previewdefinition = [],
+        string $formmode = 'create',
         string $borderconflictmessage = '',
         string $borderconflictmessageinline = ''
     ): void {

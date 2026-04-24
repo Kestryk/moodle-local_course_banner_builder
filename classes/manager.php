@@ -4119,7 +4119,8 @@ class manager {
         }
 
         $items = [];
-        $hascustomsize = (
+        $fitmodeoverride = (string)($record->fitmodeoverride ?? '');
+        $hascustomsize = $fitmodeoverride === self::FIT_MODE_CUSTOM && (
             self::normalise_percentage((float)($record->customwidthpercent ?? 100)) !== 100.0 ||
             self::normalise_percentage((float)($record->customheightpercent ?? 100)) !== 100.0
         );

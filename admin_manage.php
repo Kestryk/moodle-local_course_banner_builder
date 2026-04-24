@@ -2099,42 +2099,23 @@ function localCourseBannerBuilderEnhanceAccordions(root) {
             icon.setAttribute('data-accordion-chevron', '1');
             icon.setAttribute('aria-hidden', 'true');
             icon.textContent = '';
-            icon.style.display = 'inline-block';
-            icon.style.width = 'auto';
-            icon.style.height = 'auto';
-            icon.style.borderRight = '0';
-            icon.style.borderBottom = '0';
-            icon.style.color = '#121212';
-            icon.style.fontSize = '1.95rem';
-            icon.style.fontWeight = '800';
-            icon.style.lineHeight = '1';
-            icon.style.marginRight = '0.75rem';
-            icon.style.transition = 'transform .18s ease';
             var firstChild = summary.firstChild;
             summary.insertBefore(icon, firstChild);
         }
         icon.setAttribute('data-accordion-chevron', '1');
         icon.setAttribute('aria-hidden', 'true');
-        icon.className = 'btn btn-icon me-2 icons-collapse-expand local-course-banner-builder-section-chevron';
+        icon.className = 'btn btn-icon me-2 icons-collapse-expand local-course-banner-builder-collapse-icon';
         if (!icon.querySelector('.expanded-icon')) {
             icon.innerHTML = '<span class=\"expanded-icon icon-no-margin p-2\"><i class=\"icon fa fa-chevron-down fa-fw\" aria-hidden=\"true\"></i></span>' +
                 '<span class=\"collapsed-icon icon-no-margin p-2\"><i class=\"icon fa fa-chevron-right fa-fw\" aria-hidden=\"true\"></i></span>';
         }
-        icon.style.width = 'auto';
-        icon.style.height = 'auto';
-        icon.style.borderRight = '0';
-        icon.style.borderBottom = '0';
-        icon.style.color = '#121212';
-        icon.style.fontSize = '1.95rem';
-        icon.style.fontWeight = '800';
-        icon.style.lineHeight = '1';
-        icon.style.transform = 'none';
+        icon.removeAttribute('style');
         icon.classList.toggle('collapsed', !details.hasAttribute('open'));
         if (!details.dataset.chevronBound) {
             details.addEventListener('toggle', function() {
                 var toggleIcon = summary.querySelector('[data-accordion-chevron=\"1\"], [data-local-details-toggle-icon=\"1\"], .icons-collapse-expand');
                 if (toggleIcon) {
-                    toggleIcon.style.transform = 'none';
+                    toggleIcon.style.removeProperty('transform');
                     toggleIcon.classList.toggle('collapsed', !details.hasAttribute('open'));
                 }
             });
@@ -2834,7 +2815,7 @@ if ($selectedsource) {
                     html_writer::span($OUTPUT->pix_icon('t/collapsedchevron_rtl', get_string('expand', 'core')), 'dir-ltr-hide'),
                     'collapsed-icon icon-no-margin p-2'
                 ),
-                'btn btn-icon me-2 icons-collapse-expand local-course-banner-builder-section-chevron',
+                'btn btn-icon me-2 icons-collapse-expand local-course-banner-builder-collapse-icon',
                 [
                 'data-accordion-chevron' => '1',
                 'aria-hidden' => 'true',
@@ -2881,7 +2862,7 @@ echo html_writer::tag(
                 html_writer::span($OUTPUT->pix_icon('t/collapsedchevron_rtl', get_string('expand', 'core')), 'dir-ltr-hide'),
                 'collapsed-icon icon-no-margin p-2'
             ),
-            'btn btn-icon me-2 icons-collapse-expand local-course-banner-builder-section-chevron',
+            'btn btn-icon me-2 icons-collapse-expand local-course-banner-builder-collapse-icon',
             [
             'data-accordion-chevron' => '1',
             'aria-hidden' => 'true',
