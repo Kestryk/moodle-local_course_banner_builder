@@ -3381,10 +3381,7 @@ class manager {
                 'hasfitoverride' => $fitoverride !== '',
                 'fitoverridehelp' => get_string('fitoverridehelp', 'local_course_banner_builder'),
                 'fitoverridecellclass' => $fitoverride !== '' ? 'local-course-banner-builder-override-cell' : '',
-                'fitoverridecellstyle' => self::get_layer_override_cell_style(
-                    $record,
-                    $fitoverride !== '' || self::has_layer_override_highlight($record)
-                ),
+                'fitoverridecellstyle' => self::get_layer_override_cell_style($record, $fitoverride !== ''),
                 'haslayersummary' => !empty($layersummary),
                 'layersummaryitems' => $layersummary,
                 'hasbordersummary' => !empty($bordersummary),
@@ -3506,32 +3503,13 @@ class manager {
     }
 
     /**
-     * Whether one layer should visually highlight the override summary cell.
-     *
-     * This intentionally ignores the "dynamic image" flag on its own: the cell
-     * should keep the row color when the layer still uses the source setting and
-     * has no effective size/spacing override.
+     * Whether one image layer explicitly uses the custom-size fit override.
      *
      * @param \stdClass $record
      * @return bool
      */
-    protected static function has_layer_override_highlight(\stdClass $record): bool {
-        if (!self::get_banner_image_file($record)) {
-            return false;
-        }
-
-        if (self::normalise_percentage((float)($record->customwidthpercent ?? 100)) !== 100.0 ||
-                self::normalise_percentage((float)($record->customheightpercent ?? 100)) !== 100.0) {
-            return true;
-        }
-
-        foreach (['top', 'right', 'bottom', 'left'] as $side) {
-            if (self::normalise_percentage((float)($record->{'offset' . $side . 'percent'} ?? 0)) > 0) {
-                return true;
-            }
-        }
-
-        return false;
+    protected static function layer_uses_custom_fit_override(\stdClass $record): bool {
+        return (string)($record->fitmodeoverride ?? '') === self::FIT_MODE_CUSTOM;
     }
 
     /**
@@ -4119,8 +4097,7 @@ class manager {
         }
 
         $items = [];
-        $fitmodeoverride = (string)($record->fitmodeoverride ?? '');
-        $hascustomsize = $fitmodeoverride === self::FIT_MODE_CUSTOM && (
+        $hascustomsize = self::layer_uses_custom_fit_override($record) && (
             self::normalise_percentage((float)($record->customwidthpercent ?? 100)) !== 100.0 ||
             self::normalise_percentage((float)($record->customheightpercent ?? 100)) !== 100.0
         );
@@ -4137,13 +4114,15 @@ class manager {
         }
 
         $offsets = [];
-        foreach (['top', 'right', 'bottom', 'left'] as $side) {
-            $value = self::normalise_percentage((float)($record->{'offset' . $side . 'percent'} ?? 0));
-            if ($value <= 0) {
-                continue;
+        if (self::layer_uses_custom_fit_override($record)) {
+            foreach (['top', 'right', 'bottom', 'left'] as $side) {
+                $value = self::normalise_percentage((float)($record->{'offset' . $side . 'percent'} ?? 0));
+                if ($value <= 0) {
+                    continue;
+                }
+                $offsets[] = get_string('bordersides:' . $side, 'local_course_banner_builder') . ' ' .
+                    self::format_css_percentage($value);
             }
-            $offsets[] = get_string('bordersides:' . $side, 'local_course_banner_builder') . ' ' .
-                self::format_css_percentage($value);
         }
         if (!empty($offsets)) {
             $items[] = [
