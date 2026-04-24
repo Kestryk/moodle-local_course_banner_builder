@@ -37,7 +37,10 @@ class hook_callbacks {
     ): void {
         global $PAGE;
 
-        $PAGE->requires->js_call_amd('local_course_banner_builder/coursecards', 'init');
+        $courseid = (int)($PAGE->course->id ?? 0);
+        $PAGE->requires->js_call_amd('local_course_banner_builder/coursecards', 'init', [
+            $courseid > SITEID ? $courseid : 0,
+        ]);
     }
 
     /**

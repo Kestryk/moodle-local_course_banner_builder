@@ -24,6 +24,8 @@ define(['core/config'], function(Config) {
     const GENERATED_BANNER_MARKER = 'course_banner_builder_auto_';
     const COURSE_FILEAREA_MARKER = '/course/overviewfiles/';
     const PROCESSED_ATTRIBUTE = 'data-course-banner-builder-card-processed';
+    const OVERLAY_PROCESSED_ATTRIBUTE = 'data-course-banner-builder-overlays-processed';
+    const OVERLAY_CONTAINER_CLASS = 'local-course-banner-builder-fixed-overlays';
 
     const BACKGROUND_TARGETS = [
         '.dashboard-card-img',
@@ -41,6 +43,36 @@ define(['core/config'], function(Config) {
         '.card',
         '[data-region="course-content"]'
     ].join(',');
+
+    const HEADER_BANNER_TARGETS = [
+        '#page-header .page-header-banner',
+        '.page-header-banner',
+        '.local-course-banner-builder'
+    ].join(',');
+
+    const HOST_INLINE_STYLE = [
+        'position:relative',
+        'overflow:hidden'
+    ].join(';');
+
+    const CONTAINER_INLINE_STYLE = [
+        'position:absolute',
+        'top:0',
+        'right:0',
+        'bottom:0',
+        'left:0',
+        'z-index:5',
+        'overflow:hidden',
+        'pointer-events:none'
+    ].join(';');
+
+    const IMAGE_INLINE_STYLE = [
+        'position:absolute',
+        'display:block',
+        'max-width:none',
+        'object-fit:contain',
+        'pointer-events:none'
+    ].join(';');
 
     let observer = null;
     let scheduled = false;
@@ -92,6 +124,33 @@ define(['core/config'], function(Config) {
      */
     const getCardUrl = function(courseId) {
         return Config.wwwroot + '/local/course_banner_builder/card.php?courseid=' + encodeURIComponent(courseId);
+    };
+
+    /**
+     * Build the positioned overlays URL.
+     *
+     * @param {String|Number} courseId
+     * @returns {String}
+     */
+    const getOverlaysUrl = function(courseId) {
+        return Config.wwwroot + '/local/course_banner_builder/overlays.php?courseid=' + encodeURIComponent(courseId);
+    };
+
+    /**
+     * Fallback course id extraction for pages where the hook cannot expose one.
+     *
+     * @returns {String|Number}
+     */
+    const getCurrentCourseId = function() {
+        const bodyClass = document.body && document.body.className ?
+            document.body.className.match(/(?:^|\s)course-(\d+)(?:\s|$)/) :
+            null;
+        if (bodyClass && bodyClass[1]) {
+            return bodyClass[1];
+        }
+
+        const query = new URLSearchParams(window.location.search);
+        return query.get('id') || 0;
     };
 
     /**
@@ -184,6 +243,97 @@ define(['core/config'], function(Config) {
     };
 
     /**
+     * Build one overlay image element.
+     *
+     * @param {Object} overlay
+     * @returns {HTMLImageElement}
+     */
+    const buildOverlayImage = function(overlay) {
+        const image = document.createElement('img');
+        image.className = 'local-course-banner-builder-fixed-overlay-image';
+        image.src = overlay.url;
+        image.alt = '';
+        image.loading = 'lazy';
+        image.setAttribute('aria-hidden', 'true');
+        image.setAttribute('style', IMAGE_INLINE_STYLE + ';' + (overlay.style || ''));
+        return image;
+    };
+
+    /**
+     * Add overlay images to one banner target.
+     *
+     * @param {Element} target
+     * @param {Array} overlays
+     * @param {String|Number} courseId
+     */
+    const applyOverlaysToTarget = function(target, overlays, courseId, force) {
+        if (target.getAttribute(OVERLAY_PROCESSED_ATTRIBUTE) === String(courseId)) {
+            return;
+        }
+
+        if (target.closest('.page-header-banner-border-hole')) {
+            return;
+        }
+
+        if (target.querySelector(':scope > .page-header-banner-overlays')) {
+            target.setAttribute(OVERLAY_PROCESSED_ATTRIBUTE, String(courseId));
+            return;
+        }
+
+        const inlineUrl = extractBackgroundUrl(target.style.backgroundImage);
+        const computedUrl = inlineUrl || extractBackgroundUrl(window.getComputedStyle(target).backgroundImage);
+        if (!force && !isManagedBannerUrl(computedUrl) && !target.classList.contains('local-course-banner-builder')) {
+            return;
+        }
+
+        target.classList.add('local-course-banner-builder-overlay-host');
+        target.style.cssText += ';' + HOST_INLINE_STYLE;
+        let container = target.querySelector(':scope > .' + OVERLAY_CONTAINER_CLASS);
+        if (!container) {
+            container = document.createElement('div');
+            container.className = OVERLAY_CONTAINER_CLASS;
+            container.setAttribute('aria-hidden', 'true');
+            container.setAttribute('style', CONTAINER_INLINE_STYLE);
+            target.appendChild(container);
+        }
+
+        container.replaceChildren();
+        overlays.forEach(function(overlay) {
+            container.appendChild(buildOverlayImage(overlay));
+        });
+        target.setAttribute(OVERLAY_PROCESSED_ATTRIBUTE, String(courseId));
+    };
+
+    /**
+     * Fetch and inject course header overlays.
+     *
+     * @param {String|Number} courseId
+     */
+    const applyHeaderOverlays = function(courseId) {
+        if (!courseId) {
+            return;
+        }
+
+        fetch(getOverlaysUrl(courseId), {credentials: 'same-origin'})
+            .then(function(response) {
+                return response.ok ? response.json() : null;
+            })
+            .then(function(payload) {
+                const overlays = payload && Array.isArray(payload.overlays) ? payload.overlays : [];
+                if (!overlays.length) {
+                    return;
+                }
+
+                document.querySelectorAll(HEADER_BANNER_TARGETS).forEach(function(target) {
+                    applyOverlaysToTarget(target, overlays, courseId, true);
+                });
+            })
+            .catch(function() {
+                // The generated PNG remains a safe fallback if overlays cannot be loaded.
+            });
+    };
+
+    /**
      * Debounce scans caused by AJAX course-card rendering.
      */
     const scheduleScan = function() {
@@ -197,8 +347,9 @@ define(['core/config'], function(Config) {
     /**
      * Initialise the course card enhancer.
      */
-    const init = function() {
+    const init = function(currentCourseId) {
         scan();
+        applyHeaderOverlays(currentCourseId || getCurrentCourseId());
 
         if (observer) {
             return;

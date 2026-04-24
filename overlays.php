@@ -15,17 +15,23 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information.
+ * Course header positioned image overlays.
  *
  * @package    local_course_banner_builder
  * @copyright  2026
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+require_once(__DIR__ . '/../../config.php');
 
-$plugin->component = 'local_course_banner_builder';
-$plugin->release = '0.6.5';
-$plugin->version = 2026042301;
-$plugin->requires = 2024100700;
-$plugin->maturity = MATURITY_ALPHA;
+$courseid = required_param('courseid', PARAM_INT);
+$course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
+
+require_login($course);
+
+\core\session\manager::write_close();
+
+header('Content-Type: application/json; charset=utf-8');
+echo json_encode([
+    'overlays' => \local_course_banner_builder\manager::get_course_header_image_overlays($course),
+]);

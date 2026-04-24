@@ -9,45 +9,111 @@
     <div class="local-course-banner-builder-summary">
         <p class="local-course-banner-builder-summary-title"><strong>{{categoryname}}</strong></p>
         {{#hasconfiguration}}
-            <dl class="local-course-banner-builder-summary-meta">
-                <div>
-                    <dt>{{#str}}compositionmode, local_course_banner_builder{{/str}}</dt>
-                    <dd>{{compositionmodelabel}}</dd>
-                </div>
-                <div>
-                    <dt>{{#str}}fitmode, local_course_banner_builder{{/str}}</dt>
-                    <dd>{{fitmodelabel}}</dd>
-                </div>
-                <div>
-                    <dt>{{#str}}fitapplyscope, local_course_banner_builder{{/str}}</dt>
-                    <dd>{{fitapplyscopelabel}}</dd>
-                </div>
-            </dl>
+            {{#hassummaryfields}}
+                <dl class="local-course-banner-builder-summary-meta">
+                    {{#summaryfields}}
+                        <div class="local-course-banner-builder-summary-meta-row" data-inline-setting-row="1">
+                            <dt>{{label}}</dt>
+                            <dd>
+                                <form method="post" action="" class="local-course-banner-builder-summary-inline-form">
+                                    <input type="hidden" name="sesskey" value="{{sesskey}}">
+                                    <input type="hidden" name="updatesourcesettingfield" value="1">
+                                    <input type="hidden" name="fieldname" value="{{fieldname}}">
+                                    <input type="hidden" name="categoryid" value="{{categoryid}}">
+                                    <input type="hidden" name="sourcekey" value="{{sourcekey}}">
+                                    <div class="local-course-banner-builder-summary-inline-view">
+                                        <span class="local-course-banner-builder-summary-inline-value">{{displayvalue}}</span>
+                                        <button type="button" class="btn btn-link p-0 icon-no-margin local-course-banner-builder-summary-inline-trigger" data-action="local-course-banner-builder-inline-edit" aria-label="{{#str}}edit{{/str}}">
+                                            <i class="icon fa fa-pen fa-fw" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                    <div class="local-course-banner-builder-summary-inline-edit">
+                                        <label class="sr-only" for="{{fieldid}}">{{label}}</label>
+                                        <select id="{{fieldid}}" class="custom-select custom-select-sm" name="fieldvalue" data-inline-setting-select="1" data-initial-value="{{#options}}{{#selected}}{{value}}{{/selected}}{{/options}}" disabled title="{{helptext}}">
+                                            {{#options}}
+                                                <option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>
+                                            {{/options}}
+                                        </select>
+                                        <button type="submit" class="btn btn-link p-0 icon-no-margin local-course-banner-builder-summary-inline-submit" aria-label="{{#str}}savechanges{{/str}}">
+                                            <i class="icon fa fa-check fa-fw" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-link p-0 icon-no-margin local-course-banner-builder-summary-inline-cancel" data-action="local-course-banner-builder-inline-cancel" aria-label="{{#str}}cancel{{/str}}">
+                                            <i class="icon fa fa-xmark fa-fw" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                </form>
+                            </dd>
+                        </div>
+                    {{/summaryfields}}
+                </dl>
+            {{/hassummaryfields}}
             {{#candeletecategory}}
                 <p class="mb-0">
-                    <a class="btn btn-danger btn-sm" href="{{deletecategoryurl}}">{{#str}}deletecategorycontent, local_course_banner_builder{{/str}}</a>
+                    <form method="post" action="" class="d-inline">
+                        <input type="hidden" name="sesskey" value="{{sesskey}}">
+                        {{#sourcekey}}<input type="hidden" name="deletesourcecontent" value="{{sourcekey}}">{{/sourcekey}}
+                        {{^sourcekey}}<input type="hidden" name="deletecategorycontent" value="{{categoryid}}">{{/sourcekey}}
+                        <button type="submit" class="btn btn-danger btn-sm"
+                            data-modal="confirmation"
+                            data-modal-title="{{#str}}confirm{{/str}}"
+                            data-modal-content="{{#str}}deletecategorycontentconfirm, local_course_banner_builder{{/str}}"
+                            data-modal-yes-button="{{#str}}delete{{/str}}">
+                            {{#str}}deletecategorycontent, local_course_banner_builder{{/str}}
+                        </button>
+                    </form>
                     {{#candeleteimages}}
-                        <a class="btn btn-outline-danger btn-sm ml-2" href="{{deletecategoryimagesurl}}">{{#str}}deletecategoryimages, local_course_banner_builder{{/str}}</a>
+                        <form method="post" action="" class="d-inline">
+                            <input type="hidden" name="sesskey" value="{{sesskey}}">
+                            {{#sourcekey}}<input type="hidden" name="deletesourceimages" value="{{sourcekey}}">{{/sourcekey}}
+                            {{^sourcekey}}<input type="hidden" name="deletecategoryimages" value="{{categoryid}}">{{/sourcekey}}
+                            <button type="submit" class="btn btn-outline-danger btn-sm ml-2"
+                                data-modal="confirmation"
+                                data-modal-title="{{#str}}confirm{{/str}}"
+                                data-modal-content="{{#str}}deletecategoryimagesconfirm, local_course_banner_builder{{/str}}"
+                                data-modal-yes-button="{{#str}}delete{{/str}}">
+                                {{#str}}deletecategoryimages, local_course_banner_builder{{/str}}
+                            </button>
+                        </form>
                     {{/candeleteimages}}
                 </p>
             {{/candeletecategory}}
         {{/hasconfiguration}}
         {{^hasconfiguration}}
-            <p class="mb-0">{{#str}}selectedcategoryempty, local_course_banner_builder{{/str}}</p>
+            <p class="mb-0">
+                {{#str}}selectedcategoryempty, local_course_banner_builder{{/str}}
+                <button type="button"
+                    class="btn btn-link p-0 align-baseline local-course-banner-builder-empty-settings-link"
+                    data-toggle="modal"
+                    data-target="#local-course-banner-builder-source-settings-modal">
+                    {{#str}}selectedcategoryemptycta, local_course_banner_builder{{/str}}
+                </button>
+            </p>
         {{/hasconfiguration}}
     </div>
+    <div class="local-course-banner-builder-table-heading">
+        <h3 class="h6 local-course-banner-builder-table-title">
+            {{#str}}sourcelayerslist, local_course_banner_builder{{/str}}
+        </h3>
+        <button type="button"
+            class="btn btn-outline-secondary local-course-banner-builder-dashed-action local-course-banner-builder-add-layer-primary local-course-banner-builder-table-heading-action"
+            data-toggle="modal"
+            data-target="#local-course-banner-builder-add-layer-modal">
+            <i class="fa fa-plus py-2 me-3" aria-hidden="true"></i>
+            <span>{{#str}}addlayer, local_course_banner_builder{{/str}}</span>
+        </button>
+        <span class="local-course-banner-builder-table-heading-spacer" aria-hidden="true"></span>
+    </div>
     {{#haselements}}
-        <div class="local-course-banner-builder-table-heading">
-            <h3 class="h5 local-course-banner-builder-table-title">{{#str}}sourcelayerslist, local_course_banner_builder{{/str}}</h3>
-        </div>
         <form id="local-course-banner-builder-bulk-delete" method="post" action="">
             <input type="hidden" name="sesskey" value="{{sesskey}}">
             <input type="hidden" name="categoryid" value="{{categoryid}}">
+            <input type="hidden" name="sourcekey" value="{{sourcekey}}">
             <input type="hidden" name="deleteselectedlayers" value="1">
         </form>
         <form id="local-course-banner-builder-bulk-update" method="post" action="">
             <input type="hidden" name="sesskey" value="{{sesskey}}">
             <input type="hidden" name="categoryid" value="{{categoryid}}">
+            <input type="hidden" name="sourcekey" value="{{sourcekey}}">
             <input type="hidden" name="updatelayersbulk" value="1">
         </form>
         <div class="table-responsive">
@@ -74,10 +140,27 @@
                 </thead>
                 <tbody class="local-course-banner-builder-layer-sortable" data-layer-sortable="{{#iscumulative}}1{{/iscumulative}}{{^iscumulative}}0{{/iscumulative}}">
                     {{#elements}}
-                        <tr class="local-course-banner-builder-layer-row" data-layer-row="1" {{#iscumulative}}draggable="true"{{/iscumulative}}>
+                        <tr class="{{rowclass}}" data-layer-row="1" {{#iscumulative}}{{#isreorderable}}draggable="true"{{/isreorderable}}{{/iscumulative}}>
                             <td class="local-course-banner-builder-layer-select-cell">
                                 {{#iscumulative}}
+                                    {{#isreorderable}}
                                     <i class="icon fa fa-arrows fa-fw local-course-banner-builder-drag-corner" title="{{#str}}dragreorderlayer, local_course_banner_builder{{/str}}" aria-hidden="true"></i>
+                                    {{/isreorderable}}
+                                    {{#hasorderlockhelp}}
+                                    <a class="btn btn-link p-0 icon-no-margin local-course-banner-builder-lock-help local-course-banner-builder-lock-help--{{#isborderlayer}}border{{/isborderlayer}}{{#isdynamiclayer}}dynamic{{/isdynamiclayer}}"
+                                       role="button"
+                                       data-container="body"
+                                       data-toggle="popover"
+                                       data-placement="right"
+                                       data-content="{{orderlockpopovercontent}}"
+                                       data-html="true"
+                                       data-trigger="hover focus"
+                                       data-template="<div class=&quot;popover local-course-banner-builder-lock-popover local-course-banner-builder-lock-popover--{{#isborderlayer}}border{{/isborderlayer}}{{#isdynamiclayer}}dynamic{{/isdynamiclayer}}&quot; role=&quot;tooltip&quot;><div class=&quot;arrow&quot;></div><h3 class=&quot;popover-header&quot;></h3><div class=&quot;popover-body&quot;></div></div>"
+                                       tabindex="0"
+                                       aria-label="{{orderlocklabel}}">
+                                        <i class="icon fa fa-lock fa-fw" title="{{orderlocklabel}}" role="img" aria-label="{{orderlocklabel}}"></i>
+                                    </a>
+                                    {{/hasorderlockhelp}}
                                 {{/iscumulative}}
                                 <input class="local-course-banner-builder-layer-select" type="checkbox" name="selectedelements[]" value="{{id}}" form="local-course-banner-builder-bulk-delete">
                             </td>
@@ -94,10 +177,10 @@
                             <td>
                                 <input type="checkbox" name="isenabled_inline[{{id}}]" value="1" form="local-course-banner-builder-bulk-update" {{#enabledchecked}}checked{{/enabledchecked}}>
                             </td>
-                            <td class="{{fitoverridecellclass}}">
+                            <td class="{{fitoverridecellclass}}" {{#fitoverridecellstyle}}style="{{fitoverridecellstyle}}"{{/fitoverridecellstyle}}>
                                 <select class="custom-select custom-select-sm" name="fitmodeoverride_inline[{{id}}]" form="local-course-banner-builder-bulk-update" title="{{fitoverridehelp}}">
                                     {{#fitoverrideoptions}}
-                                        <option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>
+                                        <option value="{{value}}" {{#selected}}selected{{/selected}} {{#disabled}}disabled{{/disabled}}>{{label}}</option>
                                     {{/fitoverrideoptions}}
                                 </select>
                                 {{#hasfitoverride}}
@@ -106,17 +189,51 @@
                                         <div>{{fitoverridehelp}}</div>
                                     </details>
                                 {{/hasfitoverride}}
+                                {{#haslayersummary}}
+                                    <div class="local-course-banner-builder-border-summary mt-2">
+                                        <dl class="local-course-banner-builder-border-summary-list">
+                                            {{#layersummaryitems}}
+                                                <div>
+                                                    <dt>{{label}}</dt>
+                                                    <dd>{{value}}</dd>
+                                                </div>
+                                            {{/layersummaryitems}}
+                                        </dl>
+                                    </div>
+                                {{/haslayersummary}}
                             </td>
                             <td>
-                                {{#imageurl}}
-                                    <div class="local-course-banner-builder-admin-preview">
-                                        <img src="{{imageurl}}" alt="">
+                                {{#hasbordersummary}}
+                                    <div class="local-course-banner-builder-border-summary">
+                                        <strong class="local-course-banner-builder-border-summary-title">{{bordersummarytitle}}</strong>
+                                        <dl class="local-course-banner-builder-border-summary-list">
+                                            {{#bordersummaryitems}}
+                                                <div>
+                                                    <dt>{{label}}</dt>
+                                                    <dd>{{value}}</dd>
+                                                </div>
+                                            {{/bordersummaryitems}}
+                                        </dl>
                                     </div>
-                                {{/imageurl}}
+                                {{/hasbordersummary}}
+                                {{^hasbordersummary}}
+                                    {{#imageurl}}
+                                        <div class="local-course-banner-builder-admin-preview">
+                                            <img src="{{imageurl}}" alt="">
+                                        </div>
+                                    {{/imageurl}}
+                                    {{^imageurl}}
+                                        <span class="text-muted">{{#str}}nolayeradded, local_course_banner_builder{{/str}}</span>
+                                    {{/imageurl}}
+                                {{/hasbordersummary}}
                             </td>
                             <td>
                                 <div class="local-course-banner-builder-action-list">
-                                    <a class="btn btn-secondary btn-sm" href="{{editurl}}">{{#str}}editimage, local_course_banner_builder{{/str}}</a>
+                                    <button type="button"
+                                        class="btn btn-secondary btn-sm"
+                                        data-edit-layer-url="{{editurl}}">
+                                        {{#str}}editimage, local_course_banner_builder{{/str}}
+                                    </button>
                                     <a class="btn btn-danger btn-sm" href="{{deleteurl}}">{{#str}}delete{{/str}}</a>
                                 </div>
                             </td>
