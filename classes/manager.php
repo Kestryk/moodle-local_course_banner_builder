@@ -3348,9 +3348,6 @@ class manager {
             if ($isborderlayer) {
                 $rowclass .= ' local-course-banner-builder-layer-row--border';
             }
-            if ($isdynamiclayer) {
-                $rowclass .= ' local-course-banner-builder-layer-row--dynamic';
-            }
             $orderlocklabel = $isborderlayer
                 ? get_string('borderlayerlockedorderlabel', 'local_course_banner_builder')
                 : get_string('dynamiclayerlockedorderlabel', 'local_course_banner_builder');
