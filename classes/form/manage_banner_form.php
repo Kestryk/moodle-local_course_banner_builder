@@ -49,7 +49,7 @@ class manage_banner_form extends \moodleform {
         $showfilemanager = !in_array($formmode, ['editborder', 'editimage'], true);
         $showadvanced = $formmode !== 'editborder';
         $showborder = $formmode !== 'editimage';
-        $iscreatewithborderconflict = !$elementid && $sourcehasborderlayer;
+        $iscreatewithborderconflict = $sourcehasborderlayer && !$currentisborderlayer;
 
         $mform->addElement('hidden', 'categoryid', $selectedcategoryid, ['id' => 'id_categoryid']);
         $mform->setType('categoryid', PARAM_INT);
@@ -168,6 +168,7 @@ class manage_banner_form extends \moodleform {
         string $borderconflictmessage = '',
         string $borderconflictmessageinline = ''
     ): void {
+        $usesharedcreatepreview = $formmode === 'create' && $showadvanced && $showborder;
         $fitoptions = ['' => get_string('fitoverride:categorydefault', 'local_course_banner_builder')]
             + \local_course_banner_builder\manager::get_editable_fit_mode_options(true);
 
@@ -208,7 +209,7 @@ class manage_banner_form extends \moodleform {
             'size' => 6,
             'data-upgrade-number' => '1',
             'data-number-min' => '0',
-            'data-number-step' => '1',
+            'data-number-step' => '0.1',
             'data-field-suffix' => '%',
             'data-layer-custom-size' => '1',
         ];
@@ -218,7 +219,7 @@ class manage_banner_form extends \moodleform {
         ]);
         $mform->setType('customwidthpercent', PARAM_FLOAT);
         $mform->setDefault('customwidthpercent', 100);
-        $this->add_percent_slider_static($mform, 'customwidthpercent', 0, 100, 1);
+        $this->add_percent_slider_static($mform, 'customwidthpercent', 0, 100, 0.1);
 
         $mform->addElement('text', 'customheightpercent', get_string('customheightpercent', 'local_course_banner_builder'), $customsizeattrs + [
             'data-custom-size-dimension' => 'height',
@@ -226,7 +227,7 @@ class manage_banner_form extends \moodleform {
         ]);
         $mform->setType('customheightpercent', PARAM_FLOAT);
         $mform->setDefault('customheightpercent', 100);
-        $this->add_percent_slider_static($mform, 'customheightpercent', 0, 100, 1);
+        $this->add_percent_slider_static($mform, 'customheightpercent', 0, 100, 0.1);
 
         $mform->addElement('advcheckbox', 'customsizekeepaspect', get_string('customsizekeepaspect', 'local_course_banner_builder'), '', [
             'data-custom-size-keep-aspect' => '1',
@@ -256,8 +257,8 @@ class manage_banner_form extends \moodleform {
             'size' => 6,
             'data-layer-offset-input' => '1',
             'data-upgrade-number' => '1',
-            'data-number-min' => '0',
-            'data-number-step' => '1',
+            'data-number-min' => '-100',
+            'data-number-step' => '0.1',
             'data-field-suffix' => '%',
             'data-percent-slider-input' => '1',
         ];
@@ -274,7 +275,7 @@ class manage_banner_form extends \moodleform {
         if ($showadvanced) {
             $mform->addElement('html', '</details>');
         }
-        if ($showadvanced) {
+        if ($showadvanced && !$usesharedcreatepreview) {
             $mform->addElement('static', 'imagepreview', '', $this->render_banner_preview_panel(
                 'imagepreview',
                 $previewdefinition,
@@ -330,7 +331,7 @@ class manage_banner_form extends \moodleform {
         }
         $mform->addElement('static', 'borderenabled_existing_notice', '', \html_writer::div(
             $borderconflictmessage,
-            'alert alert-danger mb-3 d-none',
+            'local-course-banner-builder-border-existing-inline text-danger d-none',
             ['data-border-existing-note' => '1']
         ));
 
@@ -465,16 +466,29 @@ class manage_banner_form extends \moodleform {
             ]);
         }
 
-        $mform->addElement('static', 'borderpreview', '', $this->render_banner_preview_panel(
-            'borderpreview',
-            $previewdefinition,
-            $showmoodlepreview,
-            false,
-            true,
-            get_string('borderpreviewhelp', 'local_course_banner_builder')
-        ));
+        if (!$usesharedcreatepreview) {
+            $mform->addElement('static', 'borderpreview', '', $this->render_banner_preview_panel(
+                'borderpreview',
+                $previewdefinition,
+                $showmoodlepreview,
+                false,
+                true,
+                get_string('borderpreviewhelp', 'local_course_banner_builder')
+            ));
+        }
 
         $mform->addElement('html', '</details>');
+
+        if ($usesharedcreatepreview) {
+            $mform->addElement('static', 'layerpreview', '', $this->render_banner_preview_panel(
+                'layerpreview',
+                $previewdefinition,
+                $showmoodlepreview,
+                true,
+                true,
+                get_string('imagepreviewhelp', 'local_course_banner_builder')
+            ));
+        }
     }
 
     /**
@@ -496,7 +510,7 @@ class manage_banner_form extends \moodleform {
         );
         $mform->setType($name, PARAM_FLOAT);
         $mform->setDefault($name, 0);
-        $this->add_percent_slider_static($mform, $name, 0, 100, 1, [
+        $this->add_percent_slider_static($mform, $name, -100, 100, 0.1, [
             'data-offset-side' => $side,
         ]);
     }
@@ -781,15 +795,40 @@ class manage_banner_form extends \moodleform {
             $attributes['hidden'] = 'hidden';
         }
 
-        return \html_writer::tag(
-            'div',
-            \html_writer::empty_tag('img', [
+        $content = \html_writer::empty_tag('img', [
                 'src' => (string)($layer['url'] ?? ''),
                 'alt' => '',
                 'class' => 'local-course-banner-builder-preview-image',
                 'style' => (string)($layer['imagestyle'] ?? ''),
                 'data-preview-image-tag' => '1',
-            ]),
+            ]);
+
+        if ($iscurrent) {
+            $attributes['data-preview-current-layer'] = '1';
+            $content .= \html_writer::span('', 'local-course-banner-builder-preview-resize-handle', [
+                'data-preview-resize-handle' => '1',
+                'data-preview-resize-mode' => 'corner',
+                'data-preview-resize-edge' => 'bottom-right',
+                'aria-hidden' => 'true',
+            ]);
+            foreach ([
+                'top' => 'local-course-banner-builder-preview-resize-handle--top',
+                'right' => 'local-course-banner-builder-preview-resize-handle--right',
+                'bottom' => 'local-course-banner-builder-preview-resize-handle--bottom',
+                'left' => 'local-course-banner-builder-preview-resize-handle--left',
+            ] as $edge => $class) {
+                $content .= \html_writer::span('', 'local-course-banner-builder-preview-resize-handle ' . $class, [
+                    'data-preview-resize-handle' => '1',
+                    'data-preview-resize-mode' => 'edge',
+                    'data-preview-resize-edge' => $edge,
+                    'aria-hidden' => 'true',
+                ]);
+            }
+        }
+
+        return \html_writer::tag(
+            'div',
+            $content,
             ['class' => $classes] + $attributes
         );
     }
@@ -885,7 +924,8 @@ class manage_banner_form extends \moodleform {
         }
 
         if ($hasborder && !empty($data['sourcehasborderlayer']) && empty($data['elementid'])) {
-            $errors['borderenabled'] = get_string('sourcealreadyhasborder', 'local_course_banner_builder');
+            $errors['borderenabled'] = (string)($this->_customdata['borderconflictmessage'] ??
+                get_string('sourcealreadyhasborder', 'local_course_banner_builder'));
         }
 
         if (($data['fitmodeoverride'] ?? '') === \local_course_banner_builder\manager::FIT_MODE_CUSTOM) {

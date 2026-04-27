@@ -103,32 +103,45 @@
         </button>
         <span class="local-course-banner-builder-table-heading-spacer" aria-hidden="true"></span>
     </div>
-    {{#haselements}}
-        <form id="local-course-banner-builder-bulk-delete" method="post" action="">
-            <input type="hidden" name="sesskey" value="{{sesskey}}">
-            <input type="hidden" name="categoryid" value="{{categoryid}}">
-            <input type="hidden" name="sourcekey" value="{{sourcekey}}">
-            <input type="hidden" name="deleteselectedlayers" value="1">
-        </form>
-        <form id="local-course-banner-builder-bulk-update" method="post" action="">
-            <input type="hidden" name="sesskey" value="{{sesskey}}">
-            <input type="hidden" name="categoryid" value="{{categoryid}}">
-            <input type="hidden" name="sourcekey" value="{{sourcekey}}">
-            <input type="hidden" name="updatelayersbulk" value="1">
-        </form>
+    {{#haslayertable}}
+        {{#haselements}}
+            <form id="local-course-banner-builder-bulk-delete" method="post" action="">
+                <input type="hidden" name="sesskey" value="{{sesskey}}">
+                <input type="hidden" name="categoryid" value="{{categoryid}}">
+                <input type="hidden" name="sourcekey" value="{{sourcekey}}">
+                <input type="hidden" name="deleteselectedlayers" value="1">
+            </form>
+            <form id="local-course-banner-builder-bulk-update" method="post" action="">
+                <input type="hidden" name="sesskey" value="{{sesskey}}">
+                <input type="hidden" name="categoryid" value="{{categoryid}}">
+                <input type="hidden" name="sourcekey" value="{{sourcekey}}">
+                <input type="hidden" name="updatelayersbulk" value="1">
+            </form>
+        {{/haselements}}
         <div class="table-responsive">
             <table class="generaltable">
+                <colgroup>
+                    <col style="width: 14%;">
+                    <col style="width: 10%;">
+                    <col style="width: 22%;">
+                    <col style="width: 8%;">
+                    <col style="width: 16%;">
+                    <col style="width: 18%;">
+                    <col style="width: 12%;">
+                </colgroup>
                 <thead>
                     <tr>
                         <th scope="col">
-                            <div class="local-course-banner-builder-select-actions mt-1">
-                                <button type="button" class="btn btn-secondary btn-sm"
-                                    data-action="local-course-banner-builder-toggle-selection"
-                                    data-select-all-label="{{#str}}selectall, local_course_banner_builder{{/str}}"
-                                    data-deselect-all-label="{{#str}}deselectall, local_course_banner_builder{{/str}}">
-                                    {{#str}}selectall, local_course_banner_builder{{/str}}
-                                </button>
-                            </div>
+                            {{#haselements}}
+                                <div class="local-course-banner-builder-select-actions mt-1">
+                                    <button type="button" class="btn btn-secondary btn-sm"
+                                        data-action="local-course-banner-builder-toggle-selection"
+                                        data-select-all-label="{{#str}}selectall, local_course_banner_builder{{/str}}"
+                                        data-deselect-all-label="{{#str}}deselectall, local_course_banner_builder{{/str}}">
+                                        {{#str}}selectall, local_course_banner_builder{{/str}}
+                                    </button>
+                                </div>
+                            {{/haselements}}
                         </th>
                         <th scope="col">{{#str}}sortorder, local_course_banner_builder{{/str}}</th>
                         <th scope="col">{{#str}}layername, local_course_banner_builder{{/str}}</th>
@@ -218,7 +231,19 @@
                                 {{/hasbordersummary}}
                                 {{^hasbordersummary}}
                                     {{#imageurl}}
-                                        <div class="local-course-banner-builder-admin-preview">
+                                        <div class="local-course-banner-builder-admin-preview{{#isdynamiclayer}} local-course-banner-builder-admin-preview--dynamic{{/isdynamiclayer}}"
+                                            {{#isdynamiclayer}}
+                                            role="button"
+                                            tabindex="0"
+                                            data-container="body"
+                                            data-toggle="popover"
+                                            data-placement="left"
+                                            data-content="{{dynamicpopovercontent}}"
+                                            data-html="true"
+                                            data-trigger="hover focus"
+                                            aria-label="{{dynamiclabel}}"
+                                            title="{{dynamiclabel}}"
+                                            {{/isdynamiclayer}}>
                                             <img src="{{imageurl}}" alt="">
                                         </div>
                                     {{/imageurl}}
@@ -242,23 +267,65 @@
                 </tbody>
             </table>
         </div>
-        <button type="submit" class="btn btn-primary mt-3" form="local-course-banner-builder-bulk-update">
-            {{#str}}savelayerchanges, local_course_banner_builder{{/str}}
-        </button>
-        <div class="local-course-banner-builder-bottom-actionbar local-course-banner-builder-bulk-actions">
-            <span>{{#str}}bulkselectedlayers, local_course_banner_builder{{/str}}</span>
-            <button type="submit" class="btn btn-danger btn-sm" form="local-course-banner-builder-bulk-delete"
-                data-modal="confirmation"
-                data-modal-title="{{#str}}confirm{{/str}}"
-                data-modal-content="{{#str}}deleteselectedlayersconfirm, local_course_banner_builder{{/str}}"
-                data-modal-yes-button="{{#str}}delete{{/str}}">
-                {{#str}}deleteselectedlayers, local_course_banner_builder{{/str}}
+        {{#haschainborderlayer}}
+            <div class="table-responsive local-course-banner-builder-chain-table">
+                <table class="generaltable">
+                    <colgroup>
+                        <col style="width: 14%;">
+                        <col style="width: 10%;">
+                        <col style="width: 22%;">
+                        <col style="width: 8%;">
+                        <col style="width: 16%;">
+                        <col style="width: 18%;">
+                        <col style="width: 12%;">
+                    </colgroup>
+                    <tbody>
+                        {{#chainborderlayer}}
+                            <tr class="{{rowclass}}" data-chain-border-row="1">
+                                <td class="local-course-banner-builder-layer-select-cell">
+                                    <strong>{{actionlabel}}</strong>
+                                </td>
+                                <td>
+                                    <span class="local-course-banner-builder-sort-position" aria-hidden="true">&mdash;</span>
+                                </td>
+                                <td>
+                                    <strong>{{name}}</strong>
+                                </td>
+                                <td>{{enabledlabel}}</td>
+                                <td>
+                                    <span class="text-muted">{{#str}}inherited, local_course_banner_builder{{/str}}</span>
+                                </td>
+                                <td></td>
+                                <td>
+                                    <a class="btn btn-secondary btn-sm" href="{{sourceediturl}}">
+                                        {{#str}}editsourceoflayer, local_course_banner_builder{{/str}}
+                                    </a>
+                                </td>
+                            </tr>
+                        {{/chainborderlayer}}
+                    </tbody>
+                </table>
+            </div>
+        {{/haschainborderlayer}}
+        {{#haselements}}
+            <button type="submit" class="btn btn-primary mt-3 local-course-banner-builder-bulk-save-button" form="local-course-banner-builder-bulk-update">
+                {{#str}}savelayerchanges, local_course_banner_builder{{/str}}
             </button>
-        </div>
-    {{/haselements}}
-    {{^haselements}}
+            <div class="local-course-banner-builder-bottom-actionbar local-course-banner-builder-bulk-actions">
+                <span>{{#str}}bulkselectedlayers, local_course_banner_builder{{/str}}</span>
+                <button type="submit" class="btn btn-danger btn-sm" form="local-course-banner-builder-bulk-delete"
+                    data-modal="confirmation"
+                    data-modal-title="{{#str}}confirm{{/str}}"
+                    data-modal-content="{{#str}}deleteselectedlayersconfirm, local_course_banner_builder{{/str}}"
+                    data-modal-yes-button="{{#str}}delete{{/str}}">
+                    {{#str}}deleteselectedlayers, local_course_banner_builder{{/str}}
+                </button>
+            </div>
+        {{/haselements}}
+    {{/haslayertable}}
+    {{^haslayertable}}
         {{#hasconfiguration}}
             <p>{{#str}}nobannerconfigured, local_course_banner_builder{{/str}}</p>
         {{/hasconfiguration}}
-    {{/haselements}}
+    {{/haslayertable}}
 {{/hasselection}}
