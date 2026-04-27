@@ -47,8 +47,8 @@ function local_course_banner_builder_render_layer_modal(
         'aria-labelledby' => $modalid . '-title',
         'aria-hidden' => 'true',
     ] + $attributes);
-    echo html_writer::start_div('modal-dialog modal-xl', ['role' => 'document']);
-    echo html_writer::start_div('modal-content');
+    echo html_writer::start_div('modal-dialog modal-xl local-course-banner-builder-layer-modal-dialog', ['role' => 'document']);
+    echo html_writer::start_div('modal-content local-course-banner-builder-layer-modal-content');
     echo html_writer::start_div('modal-header');
     echo html_writer::tag('h5', $title, [
         'class' => 'modal-title',
@@ -61,7 +61,7 @@ function local_course_banner_builder_render_layer_modal(
         'aria-label' => get_string('closebuttontitle'),
     ]);
     echo html_writer::end_div();
-    echo html_writer::start_div('modal-body');
+    echo html_writer::start_div('modal-body local-course-banner-builder-layer-modal-body');
     if ($bodyrenderer) {
         $bodyrenderer();
     }
@@ -871,6 +871,23 @@ function localCourseBannerBuilderSetDisabledState(container, disabled, exceptSel
     container.setAttribute('aria-disabled', disabled ? 'true' : 'false');
 }
 
+function localCourseBannerBuilderPlaceExistingBorderNote(layerForm, note, borderToggle) {
+    if (!layerForm || !note || !borderToggle || note.dataset.inlinePlaced === '1') {
+        return;
+    }
+    var toggleItem = borderToggle.closest('.fitem, .form-group, .mb-3, .row');
+    var target = toggleItem ? (toggleItem.querySelector('.felement, .col-md-9, .form-check') || toggleItem) : null;
+    if (!target) {
+        return;
+    }
+    target.appendChild(note);
+    note.dataset.inlinePlaced = '1';
+    var originalItem = layerForm.querySelector('#fitem_id_borderenabled_existing_notice');
+    if (originalItem) {
+        originalItem.hidden = true;
+    }
+}
+
 function localCourseBannerBuilderSyncLayerInputModes(scope) {
     var layerForm = localCourseBannerBuilderGetLayerScope(scope);
     var filemanager = layerForm ? layerForm.querySelector('#fitem_id_bannerimage_filemanager') : null;
@@ -899,11 +916,11 @@ function localCourseBannerBuilderSyncLayerInputModes(scope) {
     var createBorderLocked = !!(borderSection && parseInt(borderSection.getAttribute('data-create-border-locked') || '0', 10) > 0);
     var editBorderLocked = !!(layerForm && layerForm.getAttribute('data-edit-border-locked') === '1');
     var hasExistingElement = !!(elementIdInput && parseInt(elementIdInput.value || '0', 10) > 0);
-    var isCreateMode = !hasExistingElement;
     var hasImage = hasFiles || hasExistingImage;
     var isBorderOnly = borderToggle.checked && !hasImage;
     var isExistingBorderLayer = hasExistingElement && (currentIsBorderLayer || editBorderLocked);
-    var sourceBlocksNewBorder = (sourceHasBorderLayer || createBorderLocked) && isCreateMode;
+    var sourceBlocksNewBorder = (sourceHasBorderLayer || createBorderLocked) && !isExistingBorderLayer;
+    localCourseBannerBuilderPlaceExistingBorderNote(layerForm, existingBorderNote, borderToggle);
 
     localCourseBannerBuilderSetDisabledState(filemanager, isBorderOnly, '[data-banner-filemanager=\"1\"]');
     localCourseBannerBuilderSetDisabledState(borderSection, hasImage, '[data-border-toggle=\"1\"]');
@@ -926,8 +943,11 @@ function localCourseBannerBuilderSyncLayerInputModes(scope) {
     if (filemanagerNoteItem) {
         filemanagerNoteItem.hidden = !isBorderOnly;
     }
-    if (existingBorderNoteItem) {
+    if (existingBorderNoteItem && (!existingBorderNote || existingBorderNote.dataset.inlinePlaced !== '1')) {
         existingBorderNoteItem.hidden = !sourceBlocksNewBorder;
+    }
+    if (existingBorderNote) {
+        existingBorderNote.classList.toggle('d-none', !sourceBlocksNewBorder);
     }
     if (existingBorderInlineNote) {
         existingBorderInlineNote.classList.toggle('d-none', !sourceBlocksNewBorder);
@@ -943,6 +963,7 @@ function localCourseBannerBuilderSyncLayerInputModes(scope) {
         borderSummary.tabIndex = sourceBlocksNewBorder ? -1 : 0;
     }
     localCourseBannerBuilderSyncBorderAccordion(layerForm);
+    localCourseBannerBuilderSyncBorderPreview(layerForm);
 }
 
 function localCourseBannerBuilderSyncOffsetFields(scope) {
@@ -990,6 +1011,18 @@ function localCourseBannerBuilderSyncOffsetFields(scope) {
             sliderWrapper.hidden = !isVisible;
         }
     });
+}
+
+function localCourseBannerBuilderNormaliseNumericValue(value, fallback) {
+    if (value === null || value === undefined) {
+        return fallback;
+    }
+    var normalised = String(value).replace(',', '.').trim();
+    if (normalised === '') {
+        return fallback;
+    }
+    var parsed = parseFloat(normalised);
+    return isNaN(parsed) ? fallback : parsed;
 }
 
 function localCourseBannerBuilderSyncCustomSizeFields(scope) {
@@ -1063,10 +1096,11 @@ function localCourseBannerBuilderBindPercentSliders(scope) {
         }
 
         var syncFromInput = function() {
-            var value = targetInput.value === '' ? String(targetInput.getAttribute('data-number-min') || slider.min || '0') : targetInput.value;
-            slider.value = value;
+            var fallbackValue = localCourseBannerBuilderNormaliseNumericValue(targetInput.getAttribute('data-number-min') || slider.min || '0', 0);
+            var value = localCourseBannerBuilderNormaliseNumericValue(targetInput.value, fallbackValue);
+            slider.value = String(value);
             if (output) {
-                output.textContent = value + (slider.getAttribute('data-range-suffix') || '%');
+                output.textContent = String(value) + (slider.getAttribute('data-range-suffix') || '%');
             }
         };
 
@@ -1158,6 +1192,14 @@ function localCourseBannerBuilderUpgradeNumberInputs() {
             suffixNode.textContent = suffix;
             input.insertAdjacentElement('afterend', suffixNode);
         }
+        var normalise = function() {
+            if (input.value === '') {
+                return;
+            }
+            input.value = String(localCourseBannerBuilderNormaliseNumericValue(input.value, 0));
+        };
+        input.addEventListener('change', normalise);
+        input.addEventListener('blur', normalise);
         input.dataset.numberReady = '1';
     });
 }
@@ -1242,7 +1284,7 @@ function localCourseBannerBuilderParseColor(value, fallbackAlpha) {
                 red: parseInt(parts[0], 10) || 255,
                 green: parseInt(parts[1], 10) || 255,
                 blue: parseInt(parts[2], 10) || 255,
-                alpha: parts.length >= 4 ? Math.max(0, Math.min(1, parseFloat(parts[3]) || 0)) * fallbackAlpha : fallbackAlpha
+                alpha: parts.length >= 4 ? Math.max(0, Math.min(1, localCourseBannerBuilderNormaliseNumericValue(parts[3], 0))) * fallbackAlpha : fallbackAlpha
             };
         }
     }
@@ -1263,22 +1305,30 @@ function localCourseBannerBuilderSyncBorderPreview(scope) {
     var styleInput = layerScope.querySelector('#id_borderstyle');
     var dashLengthInput = layerScope.querySelector('[data-border-dash-length=\"1\"]');
     var roundedInput = layerScope.querySelector('[data-border-inner-rounded=\"1\"][type=\"checkbox\"]');
+    var borderToggle = layerScope.querySelector('[data-border-toggle=\"1\"][type=\"checkbox\"]');
+    var showCurrentBorder = !!(borderToggle && borderToggle.checked);
     var sides = localCourseBannerBuilderGetBorderSides(layerScope);
-    var widthPercent = Math.max(0, Math.min(100, parseFloat(widthInput && widthInput.value ? widthInput.value : '0')));
-    var transparency = Math.max(0, Math.min(100, parseFloat(transparencyInput && transparencyInput.value ? transparencyInput.value : '0')));
+    var widthPercent = Math.max(0, Math.min(100, localCourseBannerBuilderNormaliseNumericValue(widthInput && widthInput.value ? widthInput.value : '0', 0)));
+    var transparency = Math.max(0, Math.min(100, localCourseBannerBuilderNormaliseNumericValue(transparencyInput && transparencyInput.value ? transparencyInput.value : '0', 0)));
     var opacity = 1 - (transparency / 100);
-    var fade = Math.max(0, Math.min(100, parseFloat(fadeInput && fadeInput.value ? fadeInput.value : '0')));
+    var fade = Math.max(0, Math.min(100, localCourseBannerBuilderNormaliseNumericValue(fadeInput && fadeInput.value ? fadeInput.value : '0', 0)));
     var color = colorInput && colorInput.value ? colorInput.value : '#FFFFFF';
     var colorInfo = localCourseBannerBuilderParseColor(color, opacity);
     var solid = 'rgba(' + colorInfo.red + ', ' + colorInfo.green + ', ' + colorInfo.blue + ', ' + colorInfo.alpha + ')';
     var transparent = 'rgba(' + colorInfo.red + ', ' + colorInfo.green + ', ' + colorInfo.blue + ', 0)';
     var fadeStop = Math.max(0, 100 - fade) + '%';
     var isDashed = !!(styleInput && styleInput.value === 'dashed');
-    var dashLength = Math.max(4, Math.min(80, parseFloat(dashLengthInput && dashLengthInput.value ? dashLengthInput.value : '24')));
+    var dashLength = Math.max(4, Math.min(80, localCourseBannerBuilderNormaliseNumericValue(dashLengthInput && dashLengthInput.value ? dashLengthInput.value : '24', 24)));
     var dashGap = Math.max(2, Math.round(dashLength * 0.7));
     var rounded = !!(roundedInput && roundedInput.checked);
 
     frames.forEach(function(frame) {
+        Array.prototype.slice.call(frame.querySelectorAll('[data-preview-current-border=\"1\"]')).forEach(function(borderLayer) {
+            borderLayer.hidden = !showCurrentBorder;
+        });
+        if (!showCurrentBorder) {
+            return;
+        }
         var frameRect = frame.getBoundingClientRect();
         var previewReference = Math.max(0, Math.min(frameRect.width || 0, frameRect.height || 0));
         var previewWidth = widthPercent > 0 && previewReference > 0
@@ -1507,16 +1557,16 @@ function localCourseBannerBuilderSyncCurrentImagePreview(scope) {
         var fitMode = fitOverride && fitOverride.value ? fitOverride.value : (storedFitMode || defaultFitMode);
         var anchor = anchorInput && anchorInput.value ? anchorInput.value : (layer.getAttribute('data-preview-anchor') || 'center');
         var offsets = {
-            top: (offsetTopInput && offsetTopInput.value ? offsetTopInput.value : (layer.getAttribute('data-preview-offset-top') || '0')) + '%',
-            right: (offsetRightInput && offsetRightInput.value ? offsetRightInput.value : (layer.getAttribute('data-preview-offset-right') || '0')) + '%',
-            bottom: (offsetBottomInput && offsetBottomInput.value ? offsetBottomInput.value : (layer.getAttribute('data-preview-offset-bottom') || '0')) + '%',
-            left: (offsetLeftInput && offsetLeftInput.value ? offsetLeftInput.value : (layer.getAttribute('data-preview-offset-left') || '0')) + '%'
+            top: String(localCourseBannerBuilderNormaliseNumericValue(offsetTopInput && offsetTopInput.value ? offsetTopInput.value : (layer.getAttribute('data-preview-offset-top') || '0'), 0)) + '%',
+            right: String(localCourseBannerBuilderNormaliseNumericValue(offsetRightInput && offsetRightInput.value ? offsetRightInput.value : (layer.getAttribute('data-preview-offset-right') || '0'), 0)) + '%',
+            bottom: String(localCourseBannerBuilderNormaliseNumericValue(offsetBottomInput && offsetBottomInput.value ? offsetBottomInput.value : (layer.getAttribute('data-preview-offset-bottom') || '0'), 0)) + '%',
+            left: String(localCourseBannerBuilderNormaliseNumericValue(offsetLeftInput && offsetLeftInput.value ? offsetLeftInput.value : (layer.getAttribute('data-preview-offset-left') || '0'), 0)) + '%'
         };
-        var customWidth = Math.max(0, Math.min(100, parseFloat(widthInput && widthInput.value ? widthInput.value : (layer.getAttribute('data-preview-custom-width') || '100'))));
-        var customHeight = Math.max(0, Math.min(100, parseFloat(heightInput && heightInput.value ? heightInput.value : (layer.getAttribute('data-preview-custom-height') || '100'))));
+        var customWidth = Math.max(0, Math.min(100, localCourseBannerBuilderNormaliseNumericValue(widthInput && widthInput.value ? widthInput.value : (layer.getAttribute('data-preview-custom-width') || '100'), 100)));
+        var customHeight = Math.max(0, Math.min(100, localCourseBannerBuilderNormaliseNumericValue(heightInput && heightInput.value ? heightInput.value : (layer.getAttribute('data-preview-custom-height') || '100'), 100)));
         var keepAspect = keepAspectInput ? keepAspectInput.checked : (layer.getAttribute('data-preview-keep-aspect') === '1');
-        var naturalWidth = parseFloat(layer.getAttribute('data-preview-natural-width') || image.naturalWidth || '0');
-        var naturalHeight = parseFloat(layer.getAttribute('data-preview-natural-height') || image.naturalHeight || '0');
+        var naturalWidth = localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-natural-width') || image.naturalWidth || '0', 0);
+        var naturalHeight = localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-natural-height') || image.naturalHeight || '0', 0);
         var dynamicImage = layer.getAttribute('data-preview-dynamic-image') === '1';
         var imageUrl = localCourseBannerBuilderGetPreviewImageUrl(form, layer);
         var sortOrder = Math.max(0, parseInt(sortOrderInput && sortOrderInput.value ? sortOrderInput.value : (layer.getAttribute('data-preview-sortorder') || '0'), 10) || 0);
@@ -1600,6 +1650,194 @@ function localCourseBannerBuilderSyncLayerBannerPreview(scope) {
     localCourseBannerBuilderSyncCurrentImagePreview(layerScope);
 }
 
+var localCourseBannerBuilderPreviewInteraction = null;
+
+function localCourseBannerBuilderRoundPreviewPercent(value) {
+    return Math.round(Math.max(0, Math.min(100, value)) * 10) / 10;
+}
+
+function localCourseBannerBuilderSetPreviewFieldValue(field, value) {
+    if (!field) {
+        return;
+    }
+    field.value = String(localCourseBannerBuilderRoundPreviewPercent(value));
+    field.dispatchEvent(new Event('input', {bubbles: true}));
+    field.dispatchEvent(new Event('change', {bubbles: true}));
+}
+
+function localCourseBannerBuilderEnsurePreviewCustomMode(form) {
+    if (!form) {
+        return false;
+    }
+    var fitOverride = form.querySelector('#id_fitmodeoverride');
+    var anchorInput = form.querySelector('[data-layer-position-anchor=\"1\"]');
+    if (!fitOverride || !anchorInput) {
+        return false;
+    }
+    if (fitOverride.value !== 'custom') {
+        fitOverride.value = 'custom';
+        fitOverride.dispatchEvent(new Event('change', {bubbles: true}));
+    }
+    if (anchorInput.value !== 'top-left') {
+        anchorInput.value = 'top-left';
+        anchorInput.dispatchEvent(new Event('change', {bubbles: true}));
+    }
+    return true;
+}
+
+function localCourseBannerBuilderClampPreviewSize(state, widthPercent, heightPercent) {
+    var maxWidth = Math.max(1, 200 - state.leftPercent);
+    var maxHeight = Math.max(1, 200 - state.topPercent);
+    widthPercent = Math.max(1, Math.min(maxWidth, widthPercent));
+    heightPercent = Math.max(1, Math.min(maxHeight, heightPercent));
+    return {
+        width: widthPercent,
+        height: heightPercent
+    };
+}
+
+function localCourseBannerBuilderApplyPreviewDrag(state, event) {
+    var deltaX = event.clientX - state.startX;
+    var deltaY = event.clientY - state.startY;
+    var leftPercent = localCourseBannerBuilderRoundPreviewPercent(((state.startLeftPx + deltaX) / state.frameWidth) * 100);
+    var topPercent = localCourseBannerBuilderRoundPreviewPercent(((state.startTopPx + deltaY) / state.frameHeight) * 100);
+    leftPercent = Math.max(-state.widthPercent, Math.min(100, leftPercent));
+    topPercent = Math.max(-state.heightPercent, Math.min(100, topPercent));
+    localCourseBannerBuilderSetPreviewFieldValue(state.offsetLeftInput, leftPercent);
+    localCourseBannerBuilderSetPreviewFieldValue(state.offsetTopInput, topPercent);
+}
+
+function localCourseBannerBuilderApplyPreviewResize(state, event) {
+    var deltaX = event.clientX - state.startX;
+    var deltaY = event.clientY - state.startY;
+    var widthPercent = localCourseBannerBuilderRoundPreviewPercent(((state.startWidthPx + deltaX) / state.frameWidth) * 100);
+    var heightPercent = localCourseBannerBuilderRoundPreviewPercent(((state.startHeightPx + deltaY) / state.frameHeight) * 100);
+
+    if (state.mode === 'resize-edge') {
+        switch (state.edge) {
+            case 'left':
+                widthPercent = localCourseBannerBuilderRoundPreviewPercent(((state.startWidthPx - deltaX) / state.frameWidth) * 100);
+                var nextLeft = localCourseBannerBuilderRoundPreviewPercent(((state.startLeftPx + deltaX) / state.frameWidth) * 100);
+                nextLeft = Math.max(-widthPercent, Math.min(state.startLeftPercent + state.startWidthPercent - 1, nextLeft));
+                widthPercent = Math.max(1, state.startLeftPercent + state.startWidthPercent - nextLeft);
+                localCourseBannerBuilderSetPreviewFieldValue(state.offsetLeftInput, nextLeft);
+                break;
+            case 'right':
+                widthPercent = localCourseBannerBuilderRoundPreviewPercent(((state.startWidthPx + deltaX) / state.frameWidth) * 100);
+                break;
+            case 'top':
+                heightPercent = localCourseBannerBuilderRoundPreviewPercent(((state.startHeightPx - deltaY) / state.frameHeight) * 100);
+                var nextTop = localCourseBannerBuilderRoundPreviewPercent(((state.startTopPx + deltaY) / state.frameHeight) * 100);
+                nextTop = Math.max(-heightPercent, Math.min(state.startTopPercent + state.startHeightPercent - 1, nextTop));
+                heightPercent = Math.max(1, state.startTopPercent + state.startHeightPercent - nextTop);
+                localCourseBannerBuilderSetPreviewFieldValue(state.offsetTopInput, nextTop);
+                break;
+            case 'bottom':
+                heightPercent = localCourseBannerBuilderRoundPreviewPercent(((state.startHeightPx + deltaY) / state.frameHeight) * 100);
+                break;
+        }
+    }
+
+    if (state.keepAspect) {
+        var aspectRatio = state.startWidthPx > 0 && state.startHeightPx > 0 ? (state.startWidthPx / state.startHeightPx) : 1;
+        widthPercent = Math.max(1, widthPercent);
+        heightPercent = (widthPercent * state.frameWidth) / (Math.max(1, aspectRatio) * state.frameHeight);
+        var clampedAspect = localCourseBannerBuilderClampPreviewSize(state, widthPercent, heightPercent);
+        if (clampedAspect.height !== heightPercent) {
+            heightPercent = clampedAspect.height;
+            widthPercent = (heightPercent * aspectRatio * state.frameHeight) / state.frameWidth;
+        } else {
+            widthPercent = clampedAspect.width;
+            heightPercent = (widthPercent * state.frameWidth) / (Math.max(1, aspectRatio) * state.frameHeight);
+        }
+    } else {
+        var clamped = localCourseBannerBuilderClampPreviewSize(state, widthPercent, heightPercent);
+        widthPercent = clamped.width;
+        heightPercent = clamped.height;
+    }
+
+    localCourseBannerBuilderSetPreviewFieldValue(state.widthInput, widthPercent);
+    localCourseBannerBuilderSetPreviewFieldValue(state.heightInput, heightPercent);
+}
+
+function localCourseBannerBuilderStopPreviewInteraction() {
+    if (localCourseBannerBuilderPreviewInteraction && localCourseBannerBuilderPreviewInteraction.form) {
+        var currentLayer = localCourseBannerBuilderPreviewInteraction.form.querySelector('[data-preview-current-layer=\"1\"]');
+        if (currentLayer) {
+            currentLayer.removeAttribute('data-preview-active-edge');
+        }
+    }
+    localCourseBannerBuilderPreviewInteraction = null;
+}
+
+function localCourseBannerBuilderHandlePreviewPointerMove(event) {
+    var state = localCourseBannerBuilderPreviewInteraction;
+    if (!state) {
+        return;
+    }
+    event.preventDefault();
+    if (state.mode === 'resize' || state.mode === 'resize-edge') {
+        localCourseBannerBuilderApplyPreviewResize(state, event);
+        return;
+    }
+    localCourseBannerBuilderApplyPreviewDrag(state, event);
+}
+
+function localCourseBannerBuilderStartPreviewInteraction(event, mode, layer) {
+    if (!layer || event.button !== 0) {
+        return;
+    }
+    var form = localCourseBannerBuilderGetLayerScope(layer);
+    var frame = layer.closest('[data-banner-preview-frame=\"1\"]');
+    var image = layer.querySelector('[data-preview-image-tag=\"1\"]');
+    var widthInput = form ? form.querySelector('#id_customwidthpercent') : null;
+    var heightInput = form ? form.querySelector('#id_customheightpercent') : null;
+    var keepAspectInput = form ? form.querySelector('[data-custom-size-keep-aspect=\"1\"][type=\"checkbox\"]') : null;
+    var offsetTopInput = form ? form.querySelector('#id_offsettoppercent') : null;
+    var offsetLeftInput = form ? form.querySelector('#id_offsetleftpercent') : null;
+    if (!form || !frame || !image || !widthInput || !heightInput || !offsetTopInput || !offsetLeftInput) {
+        return;
+    }
+    if (!localCourseBannerBuilderEnsurePreviewCustomMode(form)) {
+        return;
+    }
+
+    window.setTimeout(function() {
+        var refreshedFrame = layer.closest('[data-banner-preview-frame=\"1\"]');
+        var frameRect = refreshedFrame ? refreshedFrame.getBoundingClientRect() : null;
+        var layerRect = layer.getBoundingClientRect();
+        if (!frameRect || !frameRect.width || !frameRect.height || layer.hidden) {
+            return;
+        }
+        localCourseBannerBuilderPreviewInteraction = {
+            mode: mode,
+            edge: layer.getAttribute('data-preview-active-edge') || '',
+            form: form,
+            frameWidth: frameRect.width,
+            frameHeight: frameRect.height,
+            startX: event.clientX,
+            startY: event.clientY,
+            startLeftPx: layerRect.left - frameRect.left,
+            startTopPx: layerRect.top - frameRect.top,
+            startWidthPx: layerRect.width,
+            startHeightPx: layerRect.height,
+            widthPercent: localCourseBannerBuilderRoundPreviewPercent((layerRect.width / frameRect.width) * 100),
+            heightPercent: localCourseBannerBuilderRoundPreviewPercent((layerRect.height / frameRect.height) * 100),
+            startWidthPercent: localCourseBannerBuilderRoundPreviewPercent((layerRect.width / frameRect.width) * 100),
+            startHeightPercent: localCourseBannerBuilderRoundPreviewPercent((layerRect.height / frameRect.height) * 100),
+            leftPercent: localCourseBannerBuilderRoundPreviewPercent(((layerRect.left - frameRect.left) / frameRect.width) * 100),
+            topPercent: localCourseBannerBuilderRoundPreviewPercent(((layerRect.top - frameRect.top) / frameRect.height) * 100),
+            startLeftPercent: localCourseBannerBuilderRoundPreviewPercent(((layerRect.left - frameRect.left) / frameRect.width) * 100),
+            startTopPercent: localCourseBannerBuilderRoundPreviewPercent(((layerRect.top - frameRect.top) / frameRect.height) * 100),
+            widthInput: widthInput,
+            heightInput: heightInput,
+            offsetTopInput: offsetTopInput,
+            offsetLeftInput: offsetLeftInput,
+            keepAspect: !!(keepAspectInput && keepAspectInput.checked)
+        };
+    }, 0);
+}
+
 function localCourseBannerBuilderBindLayerPreviewEvents(scope) {
     var form = localCourseBannerBuilderGetLayerScope(scope);
     if (!form) {
@@ -1611,6 +1849,27 @@ function localCourseBannerBuilderBindLayerPreviewEvents(scope) {
         };
         form.addEventListener('input', syncPreview, true);
         form.addEventListener('change', syncPreview, true);
+        form.addEventListener('pointerdown', function(event) {
+            var resizeHandle = event.target.closest('[data-preview-resize-handle=\"1\"]');
+            var currentLayer = event.target.closest('[data-preview-current-layer=\"1\"]');
+            if (!currentLayer || currentLayer.hidden) {
+                return;
+            }
+            if (resizeHandle) {
+                event.preventDefault();
+                currentLayer.setAttribute('data-preview-active-edge', resizeHandle.getAttribute('data-preview-resize-edge') || '');
+                localCourseBannerBuilderStartPreviewInteraction(
+                    event,
+                    resizeHandle.getAttribute('data-preview-resize-mode') === 'edge' ? 'resize-edge' : 'resize',
+                    currentLayer
+                );
+                return;
+            }
+            if (event.target.closest('[data-preview-image-tag=\"1\"]') || event.target === currentLayer) {
+                event.preventDefault();
+                localCourseBannerBuilderStartPreviewInteraction(event, 'drag', currentLayer);
+            }
+        });
         form.dataset.previewEventsBound = '1';
     }
 
@@ -1625,6 +1884,10 @@ function localCourseBannerBuilderBindLayerPreviewEvents(scope) {
 
     localCourseBannerBuilderSyncLayerBannerPreview(form);
 }
+
+document.addEventListener('pointermove', localCourseBannerBuilderHandlePreviewPointerMove);
+document.addEventListener('pointerup', localCourseBannerBuilderStopPreviewInteraction);
+document.addEventListener('pointercancel', localCourseBannerBuilderStopPreviewInteraction);
 
 function localCourseBannerBuilderSyncDetailsCollapseIcons(scope) {
     var root = scope || document;
@@ -2059,7 +2322,35 @@ function localCourseBannerBuilderPrepareDynamicLayerModal(modal) {
 }
 
 function localCourseBannerBuilderAlignModalActionButtons(root) {
-    Array.prototype.slice.call((root || document).querySelectorAll('.modal .fitem_actionbuttons, .fitem_actionbuttons')).forEach(function(row) {
+    var scope = root || document;
+    var modals = [];
+    if (scope.nodeType === 1 && scope.matches && scope.matches('.modal[id^=\"local-course-banner-builder-\"]')) {
+        modals.push(scope);
+    }
+    modals = modals.concat(Array.prototype.slice.call(scope.querySelectorAll ? scope.querySelectorAll('.modal[id^=\"local-course-banner-builder-\"]') : []));
+
+    modals.forEach(function(modal) {
+        Array.prototype.slice.call(modal.querySelectorAll('form input[type=\"submit\"], form button[type=\"submit\"]')).forEach(function(button) {
+            var row = button.closest('.fitem_actionbuttons, #fgroup_id_buttonar, .fitem, .form-group, .mb-3, .row, .text-end');
+            if (!row || row.tagName === 'FORM') {
+                row = button.parentElement;
+            }
+            if (!row || row.tagName === 'FORM') {
+                return;
+            }
+            row.classList.add('local-course-banner-builder-submit-actions');
+            row.style.display = 'flex';
+            row.style.justifyContent = 'flex-end';
+            row.style.alignItems = 'center';
+            row.style.width = '100%';
+            row.style.maxWidth = '100%';
+            row.style.marginLeft = 'auto';
+            button.style.marginLeft = 'auto';
+            button.style.display = 'inline-flex';
+        });
+    });
+
+    Array.prototype.slice.call(scope.querySelectorAll ? scope.querySelectorAll('.modal[id^=\"local-course-banner-builder-\"] .fitem_actionbuttons') : []).forEach(function(row) {
         var rowItem = row.closest('.fitem, .form-group, .mb-3, .row');
         if (rowItem) {
             rowItem.style.display = 'flex';
@@ -2755,7 +3046,7 @@ if (empty($categoryoptions)) {
         echo html_writer::tag('div', get_string('fitapplyscope_help', 'local_course_banner_builder'), ['class' => 'form-text text-muted mt-2']);
         echo html_writer::end_div();
 
-        echo html_writer::start_div('text-end');
+        echo html_writer::start_div('local-course-banner-builder-submit-actions');
         echo html_writer::empty_tag('input', [
             'type' => 'submit',
             'value' => get_string('savecategorysettings', 'local_course_banner_builder'),

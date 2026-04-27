@@ -1691,15 +1691,200 @@ class manager {
      * @return bool
      */
     public static function source_has_border_layer(\stdClass $source, int $excludeid = 0): bool {
+        return self::get_source_border_layer_record($source, $excludeid) !== null;
+    }
+
+    /**
+     * Get the first border layer stored directly in one source.
+     *
+     * @param \stdClass $source
+     * @param int $excludeid
+     * @return \stdClass|null
+     */
+    protected static function get_source_border_layer_record(\stdClass $source, int $excludeid = 0): ?\stdClass {
         foreach (self::get_source_elements($source) as $element) {
             if ($excludeid > 0 && (int)$element->id === $excludeid) {
                 continue;
             }
             if (!empty($element->borderenabled)) {
-                return true;
+                return $element;
             }
         }
-        return false;
+        return null;
+    }
+
+    /**
+     * Get the category ids that inherit from, or are inherited by, one category source.
+     *
+     * @param \stdClass $source
+     * @return int[]
+     */
+    protected static function get_inherited_chain_category_ids_for_source(\stdClass $source): array {
+        global $DB;
+
+        if (($source->type ?? self::SOURCE_TYPE_CATEGORY) !== self::SOURCE_TYPE_CATEGORY || empty($source->categoryid)) {
+            return [];
+        }
+
+        $sourcecategoryid = (int)$source->categoryid;
+        $category = $DB->get_record('course_categories', ['id' => $sourcecategoryid], 'id,path', IGNORE_MISSING);
+        if (!$category) {
+            return [];
+        }
+
+        $categoryids = [];
+        foreach (self::get_category_chain($sourcecategoryid) as $categoryid) {
+            if ($categoryid !== $sourcecategoryid) {
+                $categoryids[] = $categoryid;
+            }
+        }
+
+        $descendants = $DB->get_fieldset_select(
+            'course_categories',
+            'id',
+            'path LIKE :pathlike AND id <> :categoryid',
+            [
+                'pathlike' => (string)$category->path . '/%',
+                'categoryid' => $sourcecategoryid,
+            ],
+            'path ASC'
+        );
+        foreach ($descendants as $descendantid) {
+            $descendantid = (int)$descendantid;
+            if (in_array($sourcecategoryid, self::get_category_chain($descendantid), true)) {
+                $categoryids[] = $descendantid;
+            }
+        }
+
+        return array_values(array_unique(array_filter($categoryids)));
+    }
+
+    /**
+     * Get course category ids where a custom-field-value source applies.
+     *
+     * @param \stdClass $source
+     * @return int[]
+     */
+    protected static function get_category_ids_for_customfield_source(\stdClass $source): array {
+        global $DB;
+
+        if (($source->type ?? '') !== self::SOURCE_TYPE_CUSTOMFIELD || empty($source->customfieldid)) {
+            return [];
+        }
+
+        $field = $DB->get_record(
+            'customfield_field',
+            ['id' => (int)$source->customfieldid],
+            'id,name,type,configdata',
+            IGNORE_MISSING
+        );
+        if (!$field) {
+            return [];
+        }
+
+        $categories = [];
+        $datarecords = $DB->get_records('customfield_data', ['fieldid' => (int)$field->id], '', 'id,instanceid,fieldid,intvalue,value,charvalue,shortcharvalue');
+        foreach ($datarecords as $datarecord) {
+            if (self::extract_customfield_data_value($field, $datarecord) !== (string)($source->customfieldvalue ?? '')) {
+                continue;
+            }
+            $categoryid = (int)$DB->get_field('course', 'category', ['id' => (int)$datarecord->instanceid], IGNORE_MISSING);
+            if ($categoryid > 0) {
+                $categories[] = $categoryid;
+            }
+        }
+
+        return array_values(array_unique($categories));
+    }
+
+    /**
+     * Build the effective category chain after source short-circuit rules.
+     *
+     * @param int $targetcategoryid
+     * @return int[]
+     */
+    protected static function get_effective_category_chain_for_target(int $targetcategoryid): array {
+        $categoryids = self::get_category_chain($targetcategoryid);
+        $startindex = 0;
+        foreach ($categoryids as $index => $categoryid) {
+            $settings = self::get_category_settings($categoryid);
+            if (($settings->fitapplyscope ?? self::FIT_SCOPE_SELF) !== self::FIT_SCOPE_SELF) {
+                continue;
+            }
+
+            $startindex = $index;
+        }
+
+        return array_slice($categoryids, $startindex);
+    }
+
+    /**
+     * Find a border layer in the effective category chain for one target category.
+     *
+     * @param int $targetcategoryid
+     * @param int $excludeid
+     * @param int $excludedcategoryid
+     * @return array|null
+     */
+    protected static function get_category_chain_border_layer_for_target(
+        int $targetcategoryid,
+        int $excludeid = 0,
+        int $excludedcategoryid = 0
+    ): ?array {
+        foreach (self::get_category_chain($targetcategoryid) as $categoryid) {
+            if ($excludedcategoryid > 0 && $categoryid === $excludedcategoryid) {
+                continue;
+            }
+            $chainsource = self::resolve_source(self::get_category_source_key($categoryid));
+            if (!$chainsource) {
+                continue;
+            }
+            $borderrecord = self::get_source_border_layer_record($chainsource, $excludeid);
+            if ($borderrecord) {
+                return [
+                    'source' => $chainsource,
+                    'record' => $borderrecord,
+                ];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Find a border layer in the inherited category source chain.
+     *
+     * @param \stdClass $source
+     * @param int $excludeid
+     * @return array|null
+     */
+    public static function get_source_chain_border_layer(\stdClass $source, int $excludeid = 0): ?array {
+        if (($source->type ?? '') === self::SOURCE_TYPE_CUSTOMFIELD) {
+            foreach (self::get_category_ids_for_customfield_source($source) as $categoryid) {
+                $chainborder = self::get_category_chain_border_layer_for_target($categoryid, $excludeid);
+                if ($chainborder) {
+                    return $chainborder;
+                }
+            }
+
+            return null;
+        }
+
+        foreach (self::get_inherited_chain_category_ids_for_source($source) as $categoryid) {
+            $chainsource = self::resolve_source(self::get_category_source_key($categoryid));
+            if (!$chainsource) {
+                continue;
+            }
+            $borderrecord = self::get_source_border_layer_record($chainsource, $excludeid);
+            if ($borderrecord) {
+                return [
+                    'source' => $chainsource,
+                    'record' => $borderrecord,
+                ];
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -1710,43 +1895,7 @@ class manager {
      * @return bool
      */
     public static function source_chain_has_border_layer(\stdClass $source, int $excludeid = 0): bool {
-        global $DB;
-
-        if (($source->type ?? self::SOURCE_TYPE_CATEGORY) !== self::SOURCE_TYPE_CATEGORY || empty($source->categoryid)) {
-            return false;
-        }
-
-        $category = $DB->get_record('course_categories', ['id' => (int)$source->categoryid], 'id,path', IGNORE_MISSING);
-        if (!$category) {
-            return false;
-        }
-
-        $categoryids = array_values(array_unique(array_filter(array_map('intval', explode('/', trim((string)$category->path, '/'))))));
-        $descendants = $DB->get_fieldset_select(
-            'course_categories',
-            'id',
-            'path LIKE :pathlike AND id <> :categoryid',
-            [
-                'pathlike' => (string)$category->path . '/%',
-                'categoryid' => (int)$category->id,
-            ]
-        );
-        foreach ($descendants as $descendantid) {
-            $categoryids[] = (int)$descendantid;
-        }
-
-        $categoryids = array_values(array_unique(array_filter($categoryids)));
-        foreach ($categoryids as $categoryid) {
-            if ($categoryid === (int)$source->categoryid) {
-                continue;
-            }
-            $chainsource = self::resolve_source(self::get_category_source_key($categoryid));
-            if ($chainsource && self::source_has_border_layer($chainsource)) {
-                return true;
-            }
-        }
-
-        return false;
+        return self::get_source_chain_border_layer($source, $excludeid) !== null;
     }
 
     /**
@@ -2459,7 +2608,7 @@ class manager {
             'sourcekey' => $source->sourcekey,
             'hasexistingimage' => self::get_banner_image_file($record) ? 1 : 0,
             'currentisborderlayer' => (!self::get_banner_image_file($record) && !empty($record->borderenabled)) ? 1 : 0,
-            'sourcehasborderlayer' => self::source_has_border_layer($source, (int)$record->id) ? 1 : 0,
+            'sourcehasborderlayer' => !empty(self::get_source_border_conflict_state($source, (int)$record->id)['blocked']) ? 1 : 0,
             'bordersidesvalue' => implode(',', array_values(array_filter($bordersides, static function(string $side): bool {
                 return $side !== 'all';
             }))),
@@ -3131,7 +3280,8 @@ class manager {
         if (
             count($records) === 1 &&
             ($records[0]['fitmode'] ?? self::FIT_MODE_BANNER) === self::FIT_MODE_ORIGINAL &&
-            self::get_banner_image_file($records[0]['record'])
+            self::get_banner_image_file($records[0]['record']) &&
+            !self::should_render_as_course_header_overlay($records, 0)
         ) {
             $sourcefile = self::get_banner_image_file($records[0]['record']);
         } else {
@@ -3371,6 +3521,10 @@ class manager {
                 'enabledlabel' => $record->isenabled ? get_string('yes') : get_string('no'),
                 'enabledchecked' => (bool)$record->isenabled,
                 'imageurl' => $imageurl ? $imageurl->out(false) : '',
+                'dynamiclabel' => get_string('dynamicimagesizeenabled', 'local_course_banner_builder'),
+                'dynamicpopovercontent' => '<div class="no-overflow"><p>' .
+                    get_string('dynamicimagesizeenabled', 'local_course_banner_builder') .
+                    '</p></div>',
                 'categoryid' => $categoryid,
                 'sourcekey' => $source->sourcekey,
                 'sesskey' => sesskey(),
@@ -3395,6 +3549,7 @@ class manager {
                 ]))->out(false),
             ];
         }
+        $chainborderlayer = self::source_has_border_layer($source) ? [] : self::export_source_chain_border_row($source);
         $hasconfiguration = $hasstoredsettings || !empty($elements);
 
         $summaryfields = [
@@ -3471,9 +3626,43 @@ class manager {
             'candeleteimages' => !empty($elements),
             'sesskey' => sesskey(),
             'haselements' => !empty($elements),
+            'haslayertable' => !empty($elements) || !empty($chainborderlayer),
             'elements' => $elements,
+            'haschainborderlayer' => !empty($chainborderlayer),
+            'chainborderlayer' => $chainborderlayer,
             'summaryfields' => $summaryfields,
             'hassummaryfields' => !empty($summaryfields),
+        ];
+    }
+
+    /**
+     * Export the inherited border row shown in the selected source layer table.
+     *
+     * @param \stdClass $source
+     * @return array
+     */
+    protected static function export_source_chain_border_row(\stdClass $source): array {
+        $chainborder = self::get_source_chain_border_layer($source);
+        if (!$chainborder) {
+            return [];
+        }
+
+        $bordersource = $chainborder['source'];
+        $borderrecord = $chainborder['record'];
+        $bordersummary = self::export_border_summary($borderrecord);
+
+        return [
+            'rowclass' => 'local-course-banner-builder-layer-row--border local-course-banner-builder-layer-row--chain-border',
+            'actionlabel' => get_string('chainborderexistinglabel', 'local_course_banner_builder'),
+            'name' => $borderrecord->name ?: get_string('bannerimage', 'local_course_banner_builder') . ' #' . $borderrecord->id,
+            'sourcelabel' => $bordersource->label ?? $bordersource->sourcekey,
+            'enabledlabel' => $borderrecord->isenabled ? get_string('yes') : get_string('no'),
+            'hasbordersummary' => !empty($bordersummary),
+            'bordersummarytitle' => get_string('bordertitle', 'local_course_banner_builder'),
+            'bordersummaryitems' => $bordersummary,
+            'sourceediturl' => (new \moodle_url('/local/course_banner_builder/admin_manage.php', [
+                'sourcekey' => $bordersource->sourcekey,
+            ]))->out(false),
         ];
     }
 
@@ -3826,18 +4015,7 @@ class manager {
         }
 
         $targetcategoryid = (int)$course->category;
-        $categoryids = self::get_category_chain($targetcategoryid);
-        $startindex = 0;
-        foreach ($categoryids as $index => $categoryid) {
-            $settings = self::get_category_settings($categoryid);
-            if (($settings->fitapplyscope ?? self::FIT_SCOPE_SELF) !== self::FIT_SCOPE_SELF) {
-                continue;
-            }
-
-            $startindex = $index;
-        }
-
-        $categoryids = array_slice($categoryids, $startindex);
+        $categoryids = self::get_effective_category_chain_for_target($targetcategoryid);
         $boundarycategoryid = $categoryids[0] ?? 0;
         $records = [];
         foreach ($categoryids as $categoryindex => $categoryid) {
@@ -4224,16 +4402,7 @@ class manager {
                 return [];
             }
 
-            $categoryids = self::get_category_chain($targetcategoryid);
-            $startindex = 0;
-            foreach ($categoryids as $index => $categoryid) {
-                $settings = self::get_category_settings($categoryid);
-                if (($settings->fitapplyscope ?? self::FIT_SCOPE_SELF) === self::FIT_SCOPE_SELF) {
-                    $startindex = $index;
-                }
-            }
-
-            $categoryids = array_slice($categoryids, $startindex);
+            $categoryids = self::get_effective_category_chain_for_target($targetcategoryid);
             $boundarycategoryid = $categoryids[0] ?? 0;
             foreach ($categoryids as $categoryindex => $categoryid) {
                 $settings = self::get_category_settings($categoryid);
@@ -4845,14 +5014,17 @@ class manager {
         }
         raise_memory_limit(MEMORY_EXTRA);
 
-        $overviewlayers = array_values(array_filter($layerspecs, static function(array $layerspec): bool {
+        $layerspecs = self::sort_layer_specs($layerspecs);
+        $overviewlayers = [];
+        foreach ($layerspecs as $index => $layerspec) {
             $record = $layerspec['record'];
-            $fitmode = $layerspec['fitmode'] ?? self::FIT_MODE_BANNER;
-            if (self::get_banner_image_file($record) && self::is_html_positioned_layer($record, $fitmode)) {
-                return false;
+            if (self::get_banner_image_file($record) && self::should_render_as_course_header_overlay($layerspecs, $index)) {
+                continue;
             }
-            return self::get_banner_image_file($record) || empty($record->borderenabled);
-        }));
+            if (self::get_banner_image_file($record) || empty($record->borderenabled)) {
+                $overviewlayers[] = $layerspec;
+            }
+        }
 
         if (empty($overviewlayers)) {
             return self::build_blank_image(
@@ -5492,19 +5664,11 @@ class manager {
 
         $style = self::normalise_border_style((string)($record->borderstyle ?? self::BORDER_STYLE_SOLID));
         $fade = self::normalise_unit_float((float)($record->borderfade ?? 0), 0);
-        $dashpattern = null;
+        $dashspec = null;
         if ($style === self::BORDER_STYLE_DASHED) {
             $dashlength = max(1, min(80, (int)round((float)($record->borderdashlength ?? 24))));
             $dashgap = max(1, (int)round($dashlength * 0.7));
-            $dashpattern = array_merge(
-                array_fill(0, $dashlength, $color),
-                array_fill(0, $dashgap, IMG_COLOR_TRANSPARENT)
-            );
-        }
-
-        imagesetthickness($canvas, $borderwidth);
-        if ($dashpattern !== null) {
-            imagesetstyle($canvas, $dashpattern);
+            $dashspec = [$dashlength, $dashgap];
         }
 
         $left = max(0, (int)$bounds['x']);
@@ -5532,10 +5696,12 @@ class manager {
                 $top,
                 $right - ($hastoprightcorner ? $cutoutsize : 0),
                 $top,
+                'top',
                 $style,
                 $color,
                 $fade,
-                true
+                $borderwidth,
+                $dashspec
             );
         }
         if (in_array('right', $sides, true)) {
@@ -5545,10 +5711,12 @@ class manager {
                 $top + ($hastoprightcorner ? $cutoutsize : 0),
                 $right,
                 $bottom - ($hasbottomrightcorner ? $cutoutsize : 0),
+                'right',
                 $style,
                 $color,
                 $fade,
-                false
+                $borderwidth,
+                $dashspec
             );
         }
         if (in_array('bottom', $sides, true)) {
@@ -5558,10 +5726,12 @@ class manager {
                 $bottom,
                 $right - ($hasbottomrightcorner ? $cutoutsize : 0),
                 $bottom,
+                'bottom',
                 $style,
                 $color,
                 $fade,
-                true
+                $borderwidth,
+                $dashspec
             );
         }
         if (in_array('left', $sides, true)) {
@@ -5571,27 +5741,27 @@ class manager {
                 $top + ($hastopleftcorner ? $cutoutsize : 0),
                 $left,
                 $bottom - ($hasbottomleftcorner ? $cutoutsize : 0),
+                'left',
                 $style,
                 $color,
                 $fade,
-                false
+                $borderwidth,
+                $dashspec
             );
         }
 
         if ($hastopleftcorner) {
-            self::draw_inner_rounded_border_corner($canvas, $left, $top, $cutoutsize, $borderwidth, $color, 'top-left');
+            self::draw_inner_rounded_border_corner($canvas, $left, $top, $cutoutsize, $borderwidth, $color, 'top-left', $fade);
         }
         if ($hastoprightcorner) {
-            self::draw_inner_rounded_border_corner($canvas, $right - $cutoutsize + 1, $top, $cutoutsize, $borderwidth, $color, 'top-right');
+            self::draw_inner_rounded_border_corner($canvas, $right - $cutoutsize + 1, $top, $cutoutsize, $borderwidth, $color, 'top-right', $fade);
         }
         if ($hasbottomrightcorner) {
-            self::draw_inner_rounded_border_corner($canvas, $right - $cutoutsize + 1, $bottom - $cutoutsize + 1, $cutoutsize, $borderwidth, $color, 'bottom-right');
+            self::draw_inner_rounded_border_corner($canvas, $right - $cutoutsize + 1, $bottom - $cutoutsize + 1, $cutoutsize, $borderwidth, $color, 'bottom-right', $fade);
         }
         if ($hasbottomleftcorner) {
-            self::draw_inner_rounded_border_corner($canvas, $left, $bottom - $cutoutsize + 1, $cutoutsize, $borderwidth, $color, 'bottom-left');
+            self::draw_inner_rounded_border_corner($canvas, $left, $bottom - $cutoutsize + 1, $cutoutsize, $borderwidth, $color, 'bottom-left', $fade);
         }
-
-        imagesetthickness($canvas, 1);
     }
 
     /**
@@ -5605,6 +5775,7 @@ class manager {
      * @param int $size
      * @param int $color
      * @param string $corner
+     * @param float $fade
      * @return void
      */
     protected static function draw_inner_rounded_border_corner(
@@ -5614,7 +5785,8 @@ class manager {
         int $size,
         int $innerradius,
         int $color,
-        string $corner
+        string $corner,
+        float $fade
     ): void {
         if ($size <= 0 || $innerradius <= 0) {
             return;
@@ -5629,8 +5801,6 @@ class manager {
         imagesavealpha($cornercanvas, true);
         $transparent = imagecolorallocatealpha($cornercanvas, 0, 0, 0, 127);
         imagefilledrectangle($cornercanvas, 0, 0, $size, $size, $transparent);
-        imagefilledrectangle($cornercanvas, 0, 0, $size - 1, $size - 1, $color);
-
         $centerx = $size;
         $centery = $size;
         if ($corner === 'top-right' || $corner === 'bottom-right') {
@@ -5640,7 +5810,26 @@ class manager {
             $centery = 0;
         }
 
-        imagefilledellipse($cornercanvas, $centerx, $centery, $innerradius * 2, $innerradius * 2, $transparent);
+        [$red, $green, $blue, $basealpha] = self::extract_gd_color_channels($color);
+        $colorcache = [];
+        $fadewidth = max(1, $size - $innerradius);
+
+        for ($pixelx = 0; $pixelx < $size; $pixelx++) {
+            for ($pixely = 0; $pixely < $size; $pixely++) {
+                $dx = ($pixelx + 0.5) - $centerx;
+                $dy = ($pixely + 0.5) - $centery;
+                $distance = sqrt(($dx * $dx) + ($dy * $dy));
+                if ($distance <= $innerradius) {
+                    continue;
+                }
+
+                $progress = min(1, max(0, ($distance - $innerradius) / $fadewidth));
+                $alpha = (int)round($basealpha + ((127 - $basealpha) * (1 - $progress) * $fade));
+                $pixelcolor = self::allocate_cached_gd_alpha_color($cornercanvas, $red, $green, $blue, $alpha, $colorcache);
+                imagesetpixel($cornercanvas, $pixelx, $pixely, $pixelcolor);
+            }
+        }
+
         imagecopy($canvas, $cornercanvas, $x, $y, 0, 0, $size, $size);
         imagedestroy($cornercanvas);
     }
@@ -5657,33 +5846,99 @@ class manager {
         int $y1,
         int $x2,
         int $y2,
+        string $side,
         string $style,
         int $basecolor,
         float $fade,
-        bool $horizontal
+        int $borderwidth,
+        ?array $dashspec = null
     ): void {
-        if ($fade <= 0) {
-            imageline($canvas, $x1, $y1, $x2, $y2, $style === self::BORDER_STYLE_DASHED ? IMG_COLOR_STYLED : $basecolor);
+        if ($borderwidth <= 0) {
             return;
         }
 
-        $steps = max(1, $horizontal ? abs($x2 - $x1) : abs($y2 - $y1));
-        for ($step = 0; $step <= $steps; $step++) {
-            $progress = $steps > 0 ? ($step / $steps) : 0;
-            $alpha = (int)round(127 * min(1, $fade * $progress));
-            $linecolor = imagecolorallocatealpha(
-                $canvas,
-                ($basecolor >> 16) & 0xFF,
-                ($basecolor >> 8) & 0xFF,
-                $basecolor & 0xFF,
-                $alpha
-            );
-            if ($horizontal) {
-                imageline($canvas, $x1 + $step, $y1, $x1 + $step, $y2, $linecolor);
+        [$red, $green, $blue, $basealpha] = self::extract_gd_color_channels($basecolor);
+        $colorcache = [];
+        $isvertical = in_array($side, ['left', 'right'], true);
+        $outerstart = match ($side) {
+            'top' => $y1 - (int)floor($borderwidth / 2),
+            'bottom' => $y1 + (int)ceil($borderwidth / 2) - 1,
+            'left' => $x1 - (int)floor($borderwidth / 2),
+            'right' => $x1 + (int)ceil($borderwidth / 2) - 1,
+            default => 0,
+        };
+        $thicknesssteps = max(1, $borderwidth - 1);
+        [$dashlength, $dashgap] = $dashspec ?? [0, 0];
+        $isdashed = ($style === self::BORDER_STYLE_DASHED && $dashlength > 0);
+
+        for ($offset = 0; $offset < $borderwidth; $offset++) {
+            $progress = $offset / $thicknesssteps;
+            $alpha = (int)round($basealpha + ((127 - $basealpha) * $fade * $progress));
+            $linecolor = self::allocate_cached_gd_alpha_color($canvas, $red, $green, $blue, $alpha, $colorcache);
+
+            if ($isvertical) {
+                $linex = ($side === 'left') ? ($outerstart + $offset) : ($outerstart - $offset);
+                if ($isdashed) {
+                    $cursor = min($y1, $y2);
+                    $max = max($y1, $y2);
+                    while ($cursor <= $max) {
+                        $segmentend = min($max, $cursor + $dashlength - 1);
+                        imageline($canvas, $linex, $cursor, $linex, $segmentend, $linecolor);
+                        $cursor += $dashlength + $dashgap;
+                    }
+                } else {
+                    imageline($canvas, $linex, $y1, $linex, $y2, $linecolor);
+                }
             } else {
-                imageline($canvas, $x1, $y1 + $step, $x2, $y1 + $step, $linecolor);
+                $liney = ($side === 'top') ? ($outerstart + $offset) : ($outerstart - $offset);
+                if ($isdashed) {
+                    $cursor = min($x1, $x2);
+                    $max = max($x1, $x2);
+                    while ($cursor <= $max) {
+                        $segmentend = min($max, $cursor + $dashlength - 1);
+                        imageline($canvas, $cursor, $liney, $segmentend, $liney, $linecolor);
+                        $cursor += $dashlength + $dashgap;
+                    }
+                } else {
+                    imageline($canvas, $x1, $liney, $x2, $liney, $linecolor);
+                }
             }
         }
+    }
+
+    /**
+     * Extract RGBA channels from a GD truecolor value.
+     *
+     * @param int $gdcolor
+     * @return array{0:int,1:int,2:int,3:int}
+     */
+    protected static function extract_gd_color_channels(int $gdcolor): array {
+        return [
+            ($gdcolor >> 16) & 0xFF,
+            ($gdcolor >> 8) & 0xFF,
+            $gdcolor & 0xFF,
+            ($gdcolor >> 24) & 0x7F,
+        ];
+    }
+
+    /**
+     * Allocate one alpha variant once and reuse it while drawing.
+     *
+     * @param resource|\GdImage $canvas
+     * @param int $red
+     * @param int $green
+     * @param int $blue
+     * @param int $alpha
+     * @param array $cache
+     * @return int
+     */
+    protected static function allocate_cached_gd_alpha_color($canvas, int $red, int $green, int $blue, int $alpha, array &$cache): int {
+        $alpha = max(0, min(127, $alpha));
+        if (!array_key_exists($alpha, $cache)) {
+            $cache[$alpha] = imagecolorallocatealpha($canvas, $red, $green, $blue, $alpha);
+        }
+
+        return $cache[$alpha];
     }
 
     /**
