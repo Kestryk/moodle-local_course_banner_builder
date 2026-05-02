@@ -61,6 +61,9 @@
         <FIELD NAME="fitmode" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" DEFAULT="original"/>
         <FIELD NAME="fitapplyscope" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" DEFAULT="descendants"/>
         <FIELD NAME="customfieldpriority" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" DEFAULT="category"/>
+        <FIELD NAME="sourceparentkey" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="sourceisroot" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
+        <FIELD NAME="sourceinheritchildren" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>

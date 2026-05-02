@@ -6,26 +6,87 @@
     Configured banner list.
 }}
 {{#hasitems}}
+    <div class="local-course-banner-builder-configured-source-tools">
+        <button type="button"
+            class="btn btn-outline-secondary btn-sm local-course-banner-builder-chain-collapse-toggle"
+            data-action="local-course-banner-builder-toggle-all-source-chains"
+            data-collapse-label="{{#str}}collapseallsourcechains, local_course_banner_builder{{/str}}"
+            data-expand-label="{{#str}}expandallsourcechains, local_course_banner_builder{{/str}}">
+            <i class="icon fa fa-compress fa-fw" aria-hidden="true"></i>
+            <span>{{#str}}collapseallsourcechains, local_course_banner_builder{{/str}}</span>
+        </button>
+    </div>
     <div class="table-responsive">
-        <table class="generaltable">
+        <table class="generaltable local-course-banner-builder-configured-sources-table">
+            <colgroup>
+                <col class="local-course-banner-builder-configured-col-hierarchy">
+                <col class="local-course-banner-builder-configured-col-name">
+                <col class="local-course-banner-builder-configured-col-parent">
+                <col class="local-course-banner-builder-configured-col-type">
+                <col class="local-course-banner-builder-configured-col-layers">
+                <col class="local-course-banner-builder-configured-col-mode">
+                <col class="local-course-banner-builder-configured-col-fit">
+                <col class="local-course-banner-builder-configured-col-preview">
+                <col class="local-course-banner-builder-configured-col-actions">
+            </colgroup>
             <thead>
                 <tr>
                     <th scope="col">{{#str}}hierarchy, local_course_banner_builder{{/str}}</th>
-                    <th scope="col">{{#str}}source, local_course_banner_builder{{/str}}</th>
+                    <th scope="col">{{#str}}sourcename, local_course_banner_builder{{/str}}</th>
+                    <th scope="col">{{#str}}sourceparentkey, local_course_banner_builder{{/str}}</th>
+                    <th scope="col">{{#str}}sourcetype, local_course_banner_builder{{/str}}</th>
                     <th scope="col">{{#str}}layers, local_course_banner_builder{{/str}}</th>
                     <th scope="col">{{#str}}compositionmode, local_course_banner_builder{{/str}}</th>
                     <th scope="col">{{#str}}fitmode, local_course_banner_builder{{/str}}</th>
-                    <th scope="col">{{#str}}fitapplyscope, local_course_banner_builder{{/str}}</th>
                     <th scope="col">{{#str}}bannerimage, local_course_banner_builder{{/str}}</th>
                     <th scope="col">{{#str}}actions, local_course_banner_builder{{/str}}</th>
                 </tr>
             </thead>
             <tbody>
                 {{#items}}
-                    <tr class="{{rowclass}}">
-                        <td>
+                    <tr class="{{rowclass}}"
+                        data-source-chain-row="1"
+                        data-source-chain-key="{{sourcekeyhash}}"
+                        data-source-chain-parent="{{parentkeyhash}}"
+                        data-source-chain-level="{{hierarchylevel}}"
+                        {{#rowstyle}} style="{{rowstyle}}"{{/rowstyle}}>
+                        <td class="local-course-banner-builder-hierarchy-cell">
+                            {{#hierarchylevelmarkers}}
+                                <span class="local-course-banner-builder-hierarchy-level-line" style="{{style}}" aria-hidden="true"></span>
+                            {{/hierarchylevelmarkers}}
+                            {{#haschildren}}
+                                <button type="button"
+                                    class="btn btn-link local-course-banner-builder-chain-row-toggle"
+                                    data-action="local-course-banner-builder-toggle-source-chain"
+                                    data-source-chain-toggle="{{sourcekeyhash}}"
+                                    aria-expanded="true">
+                                    <i class="icon fa fa-chevron-down fa-fw" aria-hidden="true"></i>
+                                    <span class="sr-only">{{#str}}toggle{{/str}}</span>
+                                </button>
+                            {{/haschildren}}
+                            {{#hashierarchybadge}}
+                                <div class="local-course-banner-builder-hierarchy-topline">
+                                    {{#hasbranchsplit}}
+                                        <a class="btn btn-link p-0 icon-no-margin local-course-banner-builder-chain-split-help"
+                                           role="button"
+                                           data-container="body"
+                                           data-toggle="popover"
+                                           data-placement="right"
+                                           data-content="{{branchsplitpopovercontent}}"
+                                           data-html="true"
+                                           data-trigger="hover focus"
+                                           tabindex="0"
+                                           aria-label="{{branchsplithelp}}">
+                                            <i class="icon fa fa-code-branch fa-fw" title="{{branchsplithelp}}" role="img" aria-label="{{branchsplithelp}}"></i>
+                                        </a>
+                                    {{/hasbranchsplit}}
+                                    {{#hasbranchlabel}}
+                                        <div class="local-course-banner-builder-branch-label">{{branchlabel}}</div>
+                                    {{/hasbranchlabel}}
+                                </div>
+                            {{/hashierarchybadge}}
                             <span class="local-course-banner-builder-hierarchy">
-                                {{hierarchyarrows}}{{hierarchylabel}}
+                                {{hierarchyarrows}}{{#isrootrow}}<strong>{{hierarchylabel}}</strong>{{/isrootrow}}{{^isrootrow}}{{hierarchylabel}}{{/isrootrow}}
                             </span>
                             {{#isisolated}}
                                 <a class="btn btn-link p-0 ml-2 icon-no-margin local-course-banner-builder-shortcircuit-help"
@@ -44,10 +105,68 @@
                             {{/isisolated}}
                         </td>
                         <td><a href="{{categoryadminurl}}">{{categoryname}}</a></td>
+                        <td>
+                            <div class="local-course-banner-builder-summary-meta-row" data-inline-setting-row="1">
+                                <form method="post" action="" class="local-course-banner-builder-summary-inline-form">
+                                    <input type="hidden" name="sesskey" value="{{sesskey}}">
+                                    <input type="hidden" name="updatesourceparentfield" value="1">
+                                    <input type="hidden" name="sourcekey" value="{{sourcekey}}">
+                                    <div class="local-course-banner-builder-summary-inline-view">
+                                        <span class="local-course-banner-builder-summary-inline-value">{{parentdisplayvalue}}</span>
+                                        <button type="button" class="btn btn-link p-0 icon-no-margin local-course-banner-builder-summary-inline-trigger" data-action="local-course-banner-builder-inline-edit" aria-label="{{#str}}edit{{/str}}">
+                                            <i class="icon fa fa-pen fa-fw" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                    <div class="local-course-banner-builder-summary-inline-edit">
+                                        <label class="sr-only" for="{{parentfieldid}}">{{#str}}sourceparentkey, local_course_banner_builder{{/str}}</label>
+                                        <input type="hidden" id="{{parentfieldid}}" name="fieldvalue" value="{{parentselectedvalue}}" data-inline-setting-select="1" data-initial-value="{{parentselectedvalue}}" disabled>
+                                        <div class="dropdown local-course-banner-builder-source-dropdown local-course-banner-builder-summary-source-dropdown"
+                                             data-source-dropdown="configured-parent"
+                                             data-input="#{{parentfieldid}}">
+                                            <button type="button"
+                                                class="btn btn-outline-primary btn-sm dropdown-toggle local-course-banner-builder-source-dropdown-toggle"
+                                                data-toggle="dropdown"
+                                                aria-haspopup="true"
+                                                aria-expanded="false"
+                                                data-source-dropdown-label="1">
+                                                {{parentdisplayvalue}}
+                                            </button>
+                                            <div class="dropdown-menu local-course-banner-builder-source-dropdown-menu">
+                                                <div class="local-course-banner-builder-source-dropdown-search">
+                                                    <input type="search"
+                                                        class="form-control form-control-sm"
+                                                        placeholder="{{#str}}searchsourcesplaceholder, local_course_banner_builder{{/str}}"
+                                                        data-action="local-course-banner-builder-filter-sources"
+                                                        data-target="#{{parentoptionsid}}">
+                                                </div>
+                                                <div class="local-course-banner-builder-source-dropdown-options" id="{{parentoptionsid}}">
+                                                    {{#parentoptions}}
+                                                        <button type="button"
+                                                            class="dropdown-item local-course-banner-builder-source-option {{#selected}}active{{/selected}}"
+                                                            data-source-option="configured-parent"
+                                                            data-value="{{value}}"
+                                                            data-label="{{label}}"
+                                                            data-search="{{label}}">
+                                                            {{label}}
+                                                        </button>
+                                                    {{/parentoptions}}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-link p-0 icon-no-margin local-course-banner-builder-summary-inline-submit" aria-label="{{#str}}savechanges{{/str}}">
+                                            <i class="icon fa fa-check fa-fw" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-link p-0 icon-no-margin local-course-banner-builder-summary-inline-cancel" data-action="local-course-banner-builder-inline-cancel" aria-label="{{#str}}cancel{{/str}}">
+                                            <i class="icon fa fa-xmark fa-fw" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </td>
+                        <td>{{sourcetypelabel}}</td>
                         <td>{{layercountdisplay}}</td>
                         <td>{{compositionmodelabel}}</td>
                         <td>{{fitmodelabel}}</td>
-                        <td>{{fitapplyscopelabel}}</td>
                         <td>
                             <div class="local-course-banner-builder-thumb-list">
                                 {{#thumbnails}}
@@ -64,7 +183,7 @@
                                                 data-trigger="hover focus"
                                                 tabindex="0"
                                                 aria-label="{{dynamiclabel}}"
-                                                title="{{dynamiclabel}}">D</span>
+                                                title="{{dynamiclabel}}">T</span>
                                         {{/isdynamic}}
                                     </div>
                                 {{/thumbnails}}
@@ -79,8 +198,21 @@
                                 <span class="text-muted{{#nothumbnailsisborderlabel}} fw-bold{{/nothumbnailsisborderlabel}}">{{nothumbnailslabel}}</span>
                             {{/hasthumbnails}}
                         </td>
-                        <td>
+                        <td class="local-course-banner-builder-source-actions-cell">
                             <div class="local-course-banner-builder-action-list">
+                                <button type="button"
+                                    class="btn btn-outline-secondary btn-sm"
+                                    data-action="local-course-banner-builder-show-source-chain-preview"
+                                    data-preview-url="{{editurl}}"
+                                    data-container="body"
+                                    data-toggle="popover"
+                                    data-placement="left"
+                                    data-content="<div class=&quot;no-overflow&quot;><p>{{#str}}sourcechainpreview_help, local_course_banner_builder{{/str}}</p></div>"
+                                    data-html="true"
+                                    data-trigger="hover focus">
+                                    <i class="icon fa fa-eye fa-fw" aria-hidden="true"></i>
+                                    {{#str}}preview{{/str}}
+                                </button>
                                 <a class="btn btn-secondary btn-sm" href="{{editurl}}">{{#str}}edit{{/str}}</a>
                                 <form method="post" action="" class="d-inline">
                                     <input type="hidden" name="sesskey" value="{{sesskey}}">

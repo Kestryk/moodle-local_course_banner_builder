@@ -37,4 +37,8 @@ $callbacks = [
         'hook' => \core\hook\output\before_footer_html_generation::class,
         'callback' => \local_course_banner_builder\hook_callbacks::class . '::before_footer_html_generation',
     ],
+    [
+        'hook' => \core\hook\output\before_standard_top_of_body_html_generation::class,
+        'callback' => \local_course_banner_builder\hook_callbacks::class . '::before_standard_top_of_body_html_generation',
+    ],
 ];

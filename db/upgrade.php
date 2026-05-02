@@ -316,5 +316,23 @@ function xmldb_local_course_banner_builder_upgrade(int $oldversion): bool {
         upgrade_plugin_savepoint(true, 2026042301, 'local', 'course_banner_builder');
     }
 
+    if ($oldversion < 2026042400) {
+        $table = new xmldb_table('local_course_banner_order');
+        $fields = [
+            new xmldb_field('sourceparentkey', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'customfieldpriority'),
+            new xmldb_field('sourceisroot', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'sourceparentkey'),
+            new xmldb_field('sourceinheritchildren', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'sourceisroot'),
+        ];
+        foreach ($fields as $field) {
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+
+        require_once($CFG->dirroot . '/local/course_banner_builder/lib.php');
+        \local_course_banner_builder\manager::sync_all_courses_from_category_banners();
+        upgrade_plugin_savepoint(true, 2026042400, 'local', 'course_banner_builder');
+    }
+
     return true;
 }

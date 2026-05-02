@@ -25,7 +25,9 @@ define(['core/config'], function(Config) {
     const COURSE_FILEAREA_MARKER = '/course/overviewfiles/';
     const PROCESSED_ATTRIBUTE = 'data-course-banner-builder-card-processed';
     const OVERLAY_PROCESSED_ATTRIBUTE = 'data-course-banner-builder-overlays-processed';
+    const NATIVE_BANNER_PROCESSED_ATTRIBUTE = 'data-course-banner-builder-native-banner-processed';
     const OVERLAY_CONTAINER_CLASS = 'local-course-banner-builder-fixed-overlays';
+    const NATIVE_BANNER_CLASS = 'local-course-banner-builder-native-course-banner';
 
     const BACKGROUND_TARGETS = [
         '.dashboard-card-img',
@@ -47,7 +49,19 @@ define(['core/config'], function(Config) {
     const HEADER_BANNER_TARGETS = [
         '#page-header .page-header-banner',
         '.page-header-banner',
+        '.course-banner',
+        '.course-header-banner',
+        '[data-region="course-banner"]',
         '.local-course-banner-builder'
+    ].join(',');
+
+    const EXISTING_THEME_BANNER_TARGETS = [
+        '#page-header .page-header-banner',
+        '.page-header-banner',
+        '.course-banner',
+        '.course-header-banner',
+        '[data-region="course-banner"]',
+        '.local-course-banner-builder:not(.' + NATIVE_BANNER_CLASS + ')'
     ].join(',');
 
     const HOST_INLINE_STYLE = [
@@ -76,6 +90,8 @@ define(['core/config'], function(Config) {
 
     let observer = null;
     let scheduled = false;
+    let currentCourseOptions = {};
+    let currentCourseId = 0;
 
     /**
      * Extract a URL from a CSS background-image declaration.
@@ -124,6 +140,16 @@ define(['core/config'], function(Config) {
      */
     const getCardUrl = function(courseId) {
         return Config.wwwroot + '/local/course_banner_builder/card.php?courseid=' + encodeURIComponent(courseId);
+    };
+
+    /**
+     * Build the generated 4:1 banner URL exposed by this plugin.
+     *
+     * @param {String|Number} courseId
+     * @returns {String}
+     */
+    const getBannerUrl = function(courseId) {
+        return Config.wwwroot + '/local/course_banner_builder/banner.php?courseid=' + encodeURIComponent(courseId);
     };
 
     /**
@@ -246,17 +272,68 @@ define(['core/config'], function(Config) {
      * Build one overlay image element.
      *
      * @param {Object} overlay
-     * @returns {HTMLImageElement}
+     * @returns {HTMLDivElement}
      */
     const buildOverlayImage = function(overlay) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'local-course-banner-builder-fixed-overlay';
+        wrapper.setAttribute('aria-hidden', 'true');
+        wrapper.setAttribute('style', overlay.wrapperstyle || '');
+
         const image = document.createElement('img');
         image.className = 'local-course-banner-builder-fixed-overlay-image';
         image.src = overlay.url;
         image.alt = '';
         image.loading = 'lazy';
         image.setAttribute('aria-hidden', 'true');
-        image.setAttribute('style', IMAGE_INLINE_STYLE + ';' + (overlay.style || ''));
-        return image;
+        image.setAttribute('style', (overlay.imagestyle || (IMAGE_INLINE_STYLE + ';' + (overlay.style || ''))));
+        wrapper.appendChild(image);
+        return wrapper;
+    };
+
+    /**
+     * Build one border overlay element.
+     *
+     * @param {Object} border
+     * @returns {HTMLDivElement}
+     */
+    const buildBorderOverlay = function(border) {
+        const element = document.createElement('div');
+        element.className = 'local-course-banner-builder-fixed-border';
+        element.setAttribute('aria-hidden', 'true');
+        element.setAttribute('style', border.wrapperstyle || border.boxstyle || border.style || '');
+
+        [
+            ['top', 'local-course-banner-builder-fixed-border-side local-course-banner-builder-fixed-border-side-top'],
+            ['right', 'local-course-banner-builder-fixed-border-side local-course-banner-builder-fixed-border-side-right'],
+            ['bottom', 'local-course-banner-builder-fixed-border-side local-course-banner-builder-fixed-border-side-bottom'],
+            ['left', 'local-course-banner-builder-fixed-border-side local-course-banner-builder-fixed-border-side-left'],
+        ].forEach(function(entry) {
+            const side = document.createElement('div');
+            side.className = entry[1];
+            side.setAttribute('aria-hidden', 'true');
+            side.setAttribute('style', (border.sidestyles && border.sidestyles[entry[0]]) || '');
+            element.appendChild(side);
+        });
+
+        [
+            'top-left',
+            'top-right',
+            'bottom-right',
+            'bottom-left'
+        ].forEach(function(name) {
+            const corner = document.createElement('div');
+            corner.className = 'local-course-banner-builder-fixed-border-corner local-course-banner-builder-fixed-border-corner-' + name;
+            corner.setAttribute('aria-hidden', 'true');
+            element.appendChild(corner);
+        });
+
+        const hole = document.createElement('div');
+        hole.className = 'local-course-banner-builder-fixed-border-hole';
+        hole.setAttribute('aria-hidden', 'true');
+        element.appendChild(hole);
+
+        return element;
     };
 
     /**
@@ -265,8 +342,9 @@ define(['core/config'], function(Config) {
      * @param {Element} target
      * @param {Array} overlays
      * @param {String|Number} courseId
+     * @param {?Object} border
      */
-    const applyOverlaysToTarget = function(target, overlays, courseId, force) {
+    const applyOverlaysToTarget = function(target, overlays, courseId, force, border) {
         if (target.getAttribute(OVERLAY_PROCESSED_ATTRIBUTE) === String(courseId)) {
             return;
         }
@@ -298,6 +376,9 @@ define(['core/config'], function(Config) {
         }
 
         container.replaceChildren();
+        if (force && border) {
+            container.appendChild(buildBorderOverlay(border));
+        }
         overlays.forEach(function(overlay) {
             container.appendChild(buildOverlayImage(overlay));
         });
@@ -320,17 +401,147 @@ define(['core/config'], function(Config) {
             })
             .then(function(payload) {
                 const overlays = payload && Array.isArray(payload.overlays) ? payload.overlays : [];
-                if (!overlays.length) {
+                const border = payload && payload.border ? payload.border : null;
+                if (!overlays.length && !border) {
                     return;
                 }
 
                 document.querySelectorAll(HEADER_BANNER_TARGETS).forEach(function(target) {
-                    applyOverlaysToTarget(target, overlays, courseId, true);
+                    applyOverlaysToTarget(target, overlays, courseId, true, border);
                 });
             })
             .catch(function() {
                 // The generated PNG remains a safe fallback if overlays cannot be loaded.
             });
+    };
+
+    /**
+     * Check whether the active theme already exposes a course banner surface.
+     *
+     * @returns {Boolean}
+     */
+    const hasExistingThemeBanner = function() {
+        return Array.prototype.slice.call(document.querySelectorAll(EXISTING_THEME_BANNER_TARGETS)).some(function(target) {
+            if (target.classList.contains(NATIVE_BANNER_CLASS)) {
+                return false;
+            }
+
+            const rect = target.getBoundingClientRect();
+            const styles = window.getComputedStyle(target);
+            if (rect.width <= 0 || rect.height < 40 || styles.display === 'none' || styles.visibility === 'hidden') {
+                return false;
+            }
+
+            const backgroundUrl = extractBackgroundUrl(target.style.backgroundImage) ||
+                extractBackgroundUrl(styles.backgroundImage);
+            return !!backgroundUrl || !!target.querySelector('img, picture, [style*="background-image"]');
+        });
+    };
+
+    /**
+     * Find the safest insertion point for a native Moodle course banner.
+     *
+     * @returns {Element|null}
+     */
+    const getNativeBannerInsertionPoint = function() {
+        const courseHeader = document.querySelector('#course-header');
+        if (courseHeader) {
+            return {
+                element: courseHeader,
+                method: 'append'
+            };
+        }
+
+        const pageHeader = document.querySelector('#page-header');
+        if (pageHeader) {
+            return {
+                element: pageHeader,
+                method: 'afterend'
+            };
+        }
+
+        const fallback = document.querySelector('[data-region="mainpage"]') ||
+            document.querySelector('#region-main') ||
+            document.querySelector('main');
+        if (!fallback) {
+            return null;
+        }
+
+        return {
+            element: fallback,
+            method: 'beforebegin'
+        };
+    };
+
+    /**
+     * Inject a 4:1 course banner when the current theme does not already render one.
+     *
+     * @param {String|Number} courseId
+     * @param {Object} options
+     */
+    const injectNativeCourseBanner = function(courseId, options) {
+        if (
+            !courseId ||
+            !options ||
+            !options.enabled ||
+            !options.allowNativeBanner ||
+            options.themeHasBanner ||
+            hasExistingThemeBanner()
+        ) {
+            return;
+        }
+
+        const existingBanner = document.querySelector('.' + NATIVE_BANNER_CLASS);
+        if (existingBanner && document.body.contains(existingBanner)) {
+            applyHeaderOverlays(courseId);
+            return;
+        }
+
+        const insertion = getNativeBannerInsertionPoint();
+        if (!insertion || !insertion.element ||
+            (
+                insertion.element.getAttribute(NATIVE_BANNER_PROCESSED_ATTRIBUTE) === String(courseId) &&
+                insertion.element.querySelector('.' + NATIVE_BANNER_CLASS)
+            )
+        ) {
+            return;
+        }
+
+        const insertBanner = function(loadableUrl) {
+            if (hasExistingThemeBanner() ||
+                (
+                    insertion.element.getAttribute(NATIVE_BANNER_PROCESSED_ATTRIBUTE) === String(courseId) &&
+                    insertion.element.querySelector('.' + NATIVE_BANNER_CLASS)
+                )) {
+                return;
+            }
+
+            const banner = document.createElement('div');
+            banner.className = 'local-course-banner-builder ' + NATIVE_BANNER_CLASS;
+            banner.setAttribute('data-course-banner-builder-native', '1');
+            banner.setAttribute('aria-hidden', 'true');
+            if (loadableUrl) {
+                banner.style.backgroundImage = 'url("' + loadableUrl + '")';
+            }
+
+            if (insertion.method === 'append') {
+                insertion.element.replaceChildren(banner);
+            } else {
+                insertion.element.insertAdjacentElement(insertion.method, banner);
+            }
+            insertion.element.setAttribute(NATIVE_BANNER_PROCESSED_ATTRIBUTE, String(courseId));
+            applyHeaderOverlays(courseId);
+        };
+
+        if (!options.hasNativeBackground) {
+            insertBanner('');
+            return;
+        }
+
+        const bannerUrl = getBannerUrl(courseId);
+        applyWhenLoadable(bannerUrl, function(loadableUrl) {
+            insertBanner(loadableUrl);
+        });
     };
 
     /**
@@ -341,15 +552,37 @@ define(['core/config'], function(Config) {
             return;
         }
         scheduled = true;
-        window.setTimeout(scan, 100);
+        window.setTimeout(function() {
+            scan();
+            if (currentCourseOptions.allowNativeBanner) {
+                injectNativeCourseBanner(currentCourseId, currentCourseOptions);
+            }
+            if (currentCourseOptions.allowCourseHeaderOverlays) {
+                applyHeaderOverlays(currentCourseId);
+            }
+            scheduled = false;
+        }, 100);
     };
 
     /**
      * Initialise the course card enhancer.
      */
-    const init = function(currentCourseId) {
+    const init = function(currentCourseId, options) {
+        options = options || {};
+        const courseId = currentCourseId || getCurrentCourseId();
+        currentCourseOptions = options;
+        currentCourseId = courseId;
+        if (!options.enabled) {
+            return;
+        }
+
         scan();
-        applyHeaderOverlays(currentCourseId || getCurrentCourseId());
+        if (options.allowNativeBanner) {
+            injectNativeCourseBanner(courseId, options);
+        }
+        if (options.allowCourseHeaderOverlays) {
+            applyHeaderOverlays(courseId);
+        }
 
         if (observer) {
             return;
@@ -360,6 +593,9 @@ define(['core/config'], function(Config) {
             childList: true,
             subtree: true
         });
+
+        window.setTimeout(scheduleScan, 250);
+        window.setTimeout(scheduleScan, 1000);
     };
 
     return {
