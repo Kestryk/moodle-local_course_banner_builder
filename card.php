@@ -28,10 +28,9 @@
 require_once(__DIR__ . '/../../config.php');
 
 $courseid = required_param('courseid', PARAM_INT);
+$variant = optional_param('variant', '', PARAM_ALPHA);
 
-require_login();
-
-$url = \local_course_banner_builder\manager::get_course_card_image_url($courseid);
+$url = \local_course_banner_builder\manager::get_course_card_image_url($courseid, $variant === 'square');
 if (!$url) {
     send_file_not_found();
 }

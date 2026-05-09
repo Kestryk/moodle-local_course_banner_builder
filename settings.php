@@ -35,6 +35,25 @@ if ($hassiteconfig || has_capability('local/course_banner_builder:manage', conte
         get_string('settings', 'local_course_banner_builder'),
         'local/course_banner_builder:manage'
     );
+
+    if (\local_course_banner_builder\manager::theme_seems_to_provide_course_banner()) {
+        $settings->add(new admin_setting_heading(
+            'local_course_banner_builder/themebannerwarning',
+            '',
+            \html_writer::div(
+                get_string('themebannerwarning', 'local_course_banner_builder'),
+                'alert alert-danger mb-3'
+            )
+        ));
+    }
+
+    $settings->add(new admin_setting_configcheckbox(
+        'local_course_banner_builder/enabled',
+        get_string('enabledplugin', 'local_course_banner_builder'),
+        get_string('enabledplugin_desc', 'local_course_banner_builder'),
+        1
+    ));
+
     $settings->add(new admin_setting_configmultiselect(
         'local_course_banner_builder/enabledcustomfields',
         get_string('enabledcustomfields', 'local_course_banner_builder'),
@@ -48,6 +67,20 @@ if ($hassiteconfig || has_capability('local/course_banner_builder:manage', conte
         'local_course_banner_builder_manage',
         get_string('managebanners', 'local_course_banner_builder'),
         new moodle_url('/local/course_banner_builder/admin_manage.php'),
+        'local/course_banner_builder:manage'
+    ));
+
+    $ADMIN->add('local_course_banner_builder', new admin_externalpage(
+        'local_course_banner_builder_site',
+        get_string('managesitebanner', 'local_course_banner_builder'),
+        new moodle_url('/local/course_banner_builder/admin_site.php'),
+        'local/course_banner_builder:manage'
+    ));
+
+    $ADMIN->add('local_course_banner_builder', new admin_externalpage(
+        'local_course_banner_builder_slideshow',
+        get_string('manageslideshow', 'local_course_banner_builder'),
+        new moodle_url('/local/course_banner_builder/admin_slideshow.php'),
         'local/course_banner_builder:manage'
     ));
 

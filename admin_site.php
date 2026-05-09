@@ -15,17 +15,13 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information.
+ * Manage the site-wide banner.
  *
  * @package    local_course_banner_builder
  * @copyright  2026
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+define('LOCAL_COURSE_BANNER_BUILDER_SITE_ADMIN', true);
 
-$plugin->component = 'local_course_banner_builder';
-$plugin->release = '0.6.6';
-$plugin->version = 2026042400;
-$plugin->requires = 2024100700;
-$plugin->maturity = MATURITY_ALPHA;
+require(__DIR__ . '/admin_manage.php');

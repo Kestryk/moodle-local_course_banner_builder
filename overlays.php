@@ -34,4 +34,5 @@ require_login($course);
 header('Content-Type: application/json; charset=utf-8');
 echo json_encode([
     'overlays' => \local_course_banner_builder\manager::get_course_header_image_overlays($course),
+    'border' => \local_course_banner_builder\manager::get_course_header_border_overlay($courseid),
 ]);

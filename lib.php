@@ -25,6 +25,44 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
+ * Whether a generated plugin file URL is being opened as the main browser document.
+ *
+ * @return bool
+ */
+function local_course_banner_builder_is_document_file_request(): bool {
+    $fetchdest = strtolower((string)($_SERVER['HTTP_SEC_FETCH_DEST'] ?? ''));
+    if ($fetchdest === 'document') {
+        return true;
+    }
+    if ($fetchdest === 'image' || $fetchdest === 'style' || $fetchdest === 'script') {
+        return false;
+    }
+
+    $accept = strtolower((string)($_SERVER['HTTP_ACCEPT'] ?? ''));
+    return $accept !== '' && strpos($accept, 'text/html') !== false;
+}
+
+/**
+ * Redirect away from generated image URLs when Moodle stored one as a login wantsurl.
+ *
+ * @return void
+ */
+function local_course_banner_builder_redirect_document_file_request(): void {
+    global $CFG, $SESSION;
+
+    if (!local_course_banner_builder_is_document_file_request()) {
+        return;
+    }
+
+    if (isset($SESSION->wantsurl) && strpos((string)$SESSION->wantsurl, '/local_course_banner_builder/') !== false) {
+        unset($SESSION->wantsurl);
+    }
+
+    $target = new moodle_url($CFG->wwwroot . '/my/');
+    redirect($target, '', 0);
+}
+
+/**
  * Serve banner image files.
  *
  * @param stdClass $course
@@ -43,7 +81,7 @@ function local_course_banner_builder_pluginfile($course, $cm, $context, $fileare
             return false;
         }
 
-        require_login();
+        local_course_banner_builder_redirect_document_file_request();
 
         $filename = array_pop($args);
         if (!$filename) {
@@ -64,6 +102,7 @@ function local_course_banner_builder_pluginfile($course, $cm, $context, $fileare
     }
 
     require_login();
+    local_course_banner_builder_redirect_document_file_request();
 
     $itemid = (int)array_shift($args);
     $filepath = '/' . implode('/', array_slice($args, 0, -1)) . '/';

@@ -15,17 +15,26 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information.
+ * Serve the generated course banner image.
  *
  * @package    local_course_banner_builder
  * @copyright  2026
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+require_once(__DIR__ . '/../../config.php');
 
-$plugin->component = 'local_course_banner_builder';
-$plugin->release = '0.6.6';
-$plugin->version = 2026042400;
-$plugin->requires = 2024100700;
-$plugin->maturity = MATURITY_ALPHA;
+$courseid = required_param('courseid', PARAM_INT);
+
+require_login($courseid);
+
+$file = \local_course_banner_builder\manager::get_course_banner_image_file($courseid);
+if (!$file) {
+    send_file_not_found();
+}
+
+send_stored_file($file, 60 * 60, 0, false, [
+    'cacheability' => 'public',
+    'dontdie' => false,
+    'filename' => $file->get_filename(),
+]);
