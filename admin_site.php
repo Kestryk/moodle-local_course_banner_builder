@@ -15,24 +15,13 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Redirect to the generated course card thumbnail.
- *
- * This lightweight route lets the plugin progressively enhance native Moodle
- * course cards without overriding Moodle core renderers or theme templates.
+ * Manage the site-wide banner.
  *
  * @package    local_course_banner_builder
  * @copyright  2026
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(__DIR__ . '/../../config.php');
+define('LOCAL_COURSE_BANNER_BUILDER_SITE_ADMIN', true);
 
-$courseid = required_param('courseid', PARAM_INT);
-$variant = optional_param('variant', '', PARAM_ALPHA);
-
-$url = \local_course_banner_builder\manager::get_course_card_image_url($courseid, $variant === 'square');
-if (!$url) {
-    send_file_not_found();
-}
-
-redirect($url, '', 0);
+require(__DIR__ . '/admin_manage.php');

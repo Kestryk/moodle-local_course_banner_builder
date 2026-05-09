@@ -20,8 +20,8 @@
         <table class="generaltable local-course-banner-builder-configured-sources-table">
             <colgroup>
                 <col class="local-course-banner-builder-configured-col-hierarchy">
-                <col class="local-course-banner-builder-configured-col-name">
                 <col class="local-course-banner-builder-configured-col-parent">
+                <col class="local-course-banner-builder-configured-col-name">
                 <col class="local-course-banner-builder-configured-col-type">
                 <col class="local-course-banner-builder-configured-col-layers">
                 <col class="local-course-banner-builder-configured-col-mode">
@@ -32,11 +32,11 @@
             <thead>
                 <tr>
                     <th scope="col">{{#str}}hierarchy, local_course_banner_builder{{/str}}</th>
-                    <th scope="col">{{#str}}sourcename, local_course_banner_builder{{/str}}</th>
                     <th scope="col">{{#str}}sourceparentkey, local_course_banner_builder{{/str}}</th>
+                    <th scope="col">{{#str}}sourcename, local_course_banner_builder{{/str}}</th>
                     <th scope="col">{{#str}}sourcetype, local_course_banner_builder{{/str}}</th>
                     <th scope="col">{{#str}}layers, local_course_banner_builder{{/str}}</th>
-                    <th scope="col">{{#str}}compositionmode, local_course_banner_builder{{/str}}</th>
+                    <th scope="col">Composition</th>
                     <th scope="col">{{#str}}fitmode, local_course_banner_builder{{/str}}</th>
                     <th scope="col">{{#str}}bannerimage, local_course_banner_builder{{/str}}</th>
                     <th scope="col">{{#str}}actions, local_course_banner_builder{{/str}}</th>
@@ -64,27 +64,11 @@
                                     <span class="sr-only">{{#str}}toggle{{/str}}</span>
                                 </button>
                             {{/haschildren}}
-                            {{#hashierarchybadge}}
+                            {{#hasbranchlabel}}
                                 <div class="local-course-banner-builder-hierarchy-topline">
-                                    {{#hasbranchsplit}}
-                                        <a class="btn btn-link p-0 icon-no-margin local-course-banner-builder-chain-split-help"
-                                           role="button"
-                                           data-container="body"
-                                           data-toggle="popover"
-                                           data-placement="right"
-                                           data-content="{{branchsplitpopovercontent}}"
-                                           data-html="true"
-                                           data-trigger="hover focus"
-                                           tabindex="0"
-                                           aria-label="{{branchsplithelp}}">
-                                            <i class="icon fa fa-code-branch fa-fw" title="{{branchsplithelp}}" role="img" aria-label="{{branchsplithelp}}"></i>
-                                        </a>
-                                    {{/hasbranchsplit}}
-                                    {{#hasbranchlabel}}
-                                        <div class="local-course-banner-builder-branch-label">{{branchlabel}}</div>
-                                    {{/hasbranchlabel}}
+                                    <div class="local-course-banner-builder-branch-label">{{branchlabel}}</div>
                                 </div>
-                            {{/hashierarchybadge}}
+                            {{/hasbranchlabel}}
                             <span class="local-course-banner-builder-hierarchy">
                                 {{hierarchyarrows}}{{#isrootrow}}<strong>{{hierarchylabel}}</strong>{{/isrootrow}}{{^isrootrow}}{{hierarchylabel}}{{/isrootrow}}
                             </span>
@@ -96,16 +80,34 @@
                                    data-placement="right"
                                    data-content="{{shortcircuitpopovercontent}}"
                                    data-html="true"
-                                   data-trigger="focus"
-                                   data-template="<div class=&quot;popover warning local-course-banner-builder-warning-popover&quot; role=&quot;tooltip&quot;><div class=&quot;arrow&quot;></div><h3 class=&quot;popover-header&quot;></h3><div class=&quot;popover-body&quot;></div></div>"
+                                   data-trigger="hover"
                                    tabindex="0"
                                    aria-label="{{shortcircuithelp}}">
                                     <i class="icon fa fa-circle-question text-warning fa-fw" title="{{shortcircuithelp}}" role="img" aria-label="{{shortcircuithelp}}"></i>
                                 </a>
                             {{/isisolated}}
                         </td>
-                        <td><a href="{{categoryadminurl}}">{{categoryname}}</a></td>
-                        <td>
+                        <td class="local-course-banner-builder-source-parent-cell">
+                            {{#hasbranchhead}}
+                                <span class="local-course-banner-builder-parent-branch-connector"
+                                    role="button"
+                                    tabindex="0"
+                                    data-container="body"
+                                    data-toggle="popover"
+                                    data-placement="top"
+                                    data-content="{{branchsplitpopovercontent}}"
+                                    data-html="true"
+                                    data-trigger="hover"
+                                    aria-label="{{branchsplithelp}}"
+                                    title="{{branchsplithelp}}">
+                                    <i class="icon fa fa-code-branch fa-fw" aria-hidden="true"></i>
+                                </span>
+                            {{/hasbranchhead}}
+                            {{#hasparentconnector}}
+                                <span class="local-course-banner-builder-parent-chain-connector" aria-hidden="true">
+                                    <i class="icon fa fa-arrow-down fa-fw" aria-hidden="true"></i>
+                                </span>
+                            {{/hasparentconnector}}
                             <div class="local-course-banner-builder-summary-meta-row" data-inline-setting-row="1">
                                 <form method="post" action="" class="local-course-banner-builder-summary-inline-form">
                                     <input type="hidden" name="sesskey" value="{{sesskey}}">
@@ -163,6 +165,7 @@
                                 </form>
                             </div>
                         </td>
+                        <td><a href="{{categoryadminurl}}">{{categoryname}}</a></td>
                         <td>{{sourcetypelabel}}</td>
                         <td>{{layercountdisplay}}</td>
                         <td>{{compositionmodelabel}}</td>
@@ -180,7 +183,7 @@
                                                 data-placement="right"
                                                 data-content="{{dynamicpopovercontent}}"
                                                 data-html="true"
-                                                data-trigger="hover focus"
+                                                data-trigger="hover"
                                                 tabindex="0"
                                                 aria-label="{{dynamiclabel}}"
                                                 title="{{dynamiclabel}}">T</span>
@@ -203,13 +206,15 @@
                                 <button type="button"
                                     class="btn btn-outline-secondary btn-sm"
                                     data-action="local-course-banner-builder-show-source-chain-preview"
-                                    data-preview-url="{{editurl}}"
+                                    data-preview-url="{{previewurl}}"
+                                    data-edit-url="{{editurl}}"
+                                    data-edit-label="{{#str}}editsourcebutton, local_course_banner_builder{{/str}}"
                                     data-container="body"
                                     data-toggle="popover"
                                     data-placement="left"
-                                    data-content="<div class=&quot;no-overflow&quot;><p>{{#str}}sourcechainpreview_help, local_course_banner_builder{{/str}}</p></div>"
+                                    data-content="&lt;div class=&quot;no-overflow&quot;&gt;&lt;p&gt;{{#str}}sourcechainpreview_help, local_course_banner_builder{{/str}}&lt;/p&gt;&lt;/div&gt;"
                                     data-html="true"
-                                    data-trigger="hover focus">
+                                    data-trigger="hover">
                                     <i class="icon fa fa-eye fa-fw" aria-hidden="true"></i>
                                     {{#str}}preview{{/str}}
                                 </button>

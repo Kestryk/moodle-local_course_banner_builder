@@ -246,8 +246,8 @@ class manage_banner_form extends \moodleform {
             'size' => 6,
             'data-layer-offset-input' => '1',
             'data-upgrade-number' => '1',
-            'data-number-min' => '-300',
-            'data-number-max' => '300',
+            'data-number-min' => '-1000',
+            'data-number-max' => '1000',
             'data-number-step' => '0.1',
             'data-field-suffix' => '%',
             'data-percent-slider-input' => '1',
@@ -366,6 +366,18 @@ class manage_banner_form extends \moodleform {
         $mform->setType('borderstyle', PARAM_ALPHA);
         $mform->setDefault('borderstyle', \local_course_banner_builder\manager::BORDER_STYLE_SOLID);
 
+        $mform->addElement('text', 'borderwidth', get_string('borderwidth', 'local_course_banner_builder'), [
+            'class' => 'local-course-banner-builder-range theme-easyedu-range',
+            'data-range-upgrade' => '1',
+            'data-range-min' => '0',
+            'data-range-max' => '100',
+            'data-range-step' => '0.1',
+            'data-range-output' => '1',
+            'data-range-suffix' => '%',
+        ]);
+        $mform->setType('borderwidth', PARAM_FLOAT);
+        $mform->setDefault('borderwidth', 2.5);
+
         $mform->addElement('text', 'borderopacity', get_string('borderopacity', 'local_course_banner_builder'), [
             'class' => 'local-course-banner-builder-range theme-easyedu-range',
             'data-range-upgrade' => '1',
@@ -389,18 +401,6 @@ class manage_banner_form extends \moodleform {
         ]);
         $mform->setType('borderfade', PARAM_FLOAT);
         $mform->setDefault('borderfade', 0);
-
-        $mform->addElement('text', 'borderwidth', get_string('borderwidth', 'local_course_banner_builder'), [
-            'class' => 'local-course-banner-builder-range theme-easyedu-range',
-            'data-range-upgrade' => '1',
-            'data-range-min' => '0',
-            'data-range-max' => '100',
-            'data-range-step' => '0.1',
-            'data-range-output' => '1',
-            'data-range-suffix' => '%',
-        ]);
-        $mform->setType('borderwidth', PARAM_FLOAT);
-        $mform->setDefault('borderwidth', 2.5);
 
         $mform->addElement('text', 'borderdashlength', get_string('borderdashlength', 'local_course_banner_builder'), [
             'class' => 'local-course-banner-builder-range theme-easyedu-range',
@@ -507,7 +507,7 @@ class manage_banner_form extends \moodleform {
         );
         $mform->setType($name, PARAM_FLOAT);
         $mform->setDefault($name, 0);
-        $this->add_percent_slider_static($mform, $name, -300, 300, 0.1, [
+        $this->add_percent_slider_static($mform, $name, -1000, 1000, 0.1, [
             'data-offset-side' => $side,
         ]);
     }
@@ -721,6 +721,7 @@ class manage_banner_form extends \moodleform {
                 'class' => 'local-course-banner-builder-preview-border-layer local-course-banner-builder-preview-border-layer--context',
                 'attributes' => [
                     'data-preview-context-layer' => '1',
+                    'data-preview-layer-id' => (string)($layer['id'] ?? 0),
                     'data-preview-inherited' => !empty($layer['isinherited']) ? '1' : '0',
                     'data-preview-sortorder' => (string)($layer['sortorder'] ?? 0),
                     'data-preview-zindex' => (string)$zindex,
@@ -781,10 +782,12 @@ class manage_banner_form extends \moodleform {
         if ($iscontext) {
             $classes .= ' local-course-banner-builder-preview-image-layer--context';
             $attributes['data-preview-context-layer'] = '1';
+            $attributes['data-preview-layer-id'] = (string)($layer['id'] ?? 0);
             $attributes['data-preview-inherited'] = !empty($layer['isinherited']) ? '1' : '0';
         }
         if ($iscurrent) {
             $classes .= ' local-course-banner-builder-preview-image-layer--current';
+            $attributes['data-preview-layer-id'] = (string)($layer['id'] ?? 0);
         }
 
         $zindex = (int)($layer['zindex'] ?? ((int)($layer['sortorder'] ?? 0) + 1));
@@ -807,6 +810,25 @@ class manage_banner_form extends \moodleform {
             ]);
 
         if ($iscurrent) {
+            $aspectlocklabel = !empty($layer['customsizekeepaspect'])
+                ? get_string('allowstretchpreviewimage', 'local_course_banner_builder')
+                : get_string('keepaspectpreviewimage', 'local_course_banner_builder');
+            $content .= \html_writer::tag('button', \html_writer::tag('i', '', [
+                'class' => 'fa ' . (!empty($layer['customsizekeepaspect']) ? 'fa-lock' : 'fa-unlock'),
+                'aria-hidden' => 'true',
+            ]), [
+                'type' => 'button',
+                'class' => 'btn btn-link p-0 icon-no-margin local-course-banner-builder-preview-aspect-lock',
+                'data-action' => 'local-course-banner-builder-toggle-preview-aspect-lock',
+                'data-preview-aspect-lock' => '1',
+                'data-toggle' => 'popover',
+                'data-placement' => 'top',
+                'data-content' => '<div class="no-overflow"><p>' . s($aspectlocklabel) . '</p></div>',
+                'data-html' => 'true',
+                'data-trigger' => 'hover',
+                'aria-label' => $aspectlocklabel,
+                'title' => $aspectlocklabel,
+            ]);
             $attributes['data-preview-current-layer'] = '1';
             $content .= \html_writer::span('', 'local-course-banner-builder-preview-resize-handle', [
                 'data-preview-resize-handle' => '1',

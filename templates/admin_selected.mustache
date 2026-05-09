@@ -175,7 +175,7 @@
                         <th scope="col">
                             {{#haselements}}
                                 <div class="local-course-banner-builder-select-actions mt-1">
-                                    <button type="button" class="btn btn-secondary btn-sm"
+                                    <button type="button" class="btn btn-outline-secondary btn-sm local-course-banner-builder-chain-collapse-toggle"
                                         data-action="local-course-banner-builder-toggle-selection"
                                         data-select-all-label="{{#str}}selectall, local_course_banner_builder{{/str}}"
                                         data-deselect-all-label="{{#str}}deselectall, local_course_banner_builder{{/str}}">
@@ -184,7 +184,22 @@
                                 </div>
                             {{/haselements}}
                         </th>
-                        <th scope="col">{{#str}}sortorder, local_course_banner_builder{{/str}}</th>
+                        <th scope="col">
+                            <span class="local-course-banner-builder-layer-heading-with-help">
+                                <span>{{#str}}sortorder, local_course_banner_builder{{/str}}</span>
+                                <button type="button"
+                                    class="btn btn-link p-0 icon-no-margin local-course-banner-builder-table-help-icon"
+                                    data-container="body"
+                                    data-toggle="popover"
+                                    data-placement="top"
+                                    data-content="<div class=&quot;no-overflow&quot;><p>{{#str}}sortorder_help, local_course_banner_builder{{/str}}</p></div>"
+                                    data-html="true"
+                                    data-trigger="hover"
+                                    aria-label="{{#str}}sortorder_help, local_course_banner_builder{{/str}}">
+                                    ?
+                                </button>
+                            </span>
+                        </th>
                         <th scope="col">{{#str}}layername, local_course_banner_builder{{/str}}</th>
                         <th scope="col">{{#str}}enabled, local_course_banner_builder{{/str}}</th>
                         <th scope="col">{{#str}}fitoverride, local_course_banner_builder{{/str}}</th>
@@ -208,8 +223,7 @@
                                        data-placement="right"
                                        data-content="{{orderlockpopovercontent}}"
                                        data-html="true"
-                                       data-trigger="hover focus"
-                                       data-template="<div class=&quot;popover local-course-banner-builder-lock-popover local-course-banner-builder-lock-popover--{{#isborderlayer}}border{{/isborderlayer}}{{#isdynamiclayer}}dynamic{{/isdynamiclayer}}&quot; role=&quot;tooltip&quot;><div class=&quot;arrow&quot;></div><h3 class=&quot;popover-header&quot;></h3><div class=&quot;popover-body&quot;></div></div>"
+                                       data-trigger="hover"
                                        tabindex="0"
                                        aria-label="{{orderlocklabel}}">
                                         <i class="icon fa fa-lock fa-fw" title="{{orderlocklabel}}" role="img" aria-label="{{orderlocklabel}}"></i>
@@ -221,9 +235,6 @@
                             <td class="local-course-banner-builder-layer-preview-cell {{#hasbordersummary}}local-course-banner-builder-layer-preview-cell--border{{/hasbordersummary}}">
                                 <input class="local-course-banner-builder-sort-input" type="hidden" name="sortorder_inline[{{id}}]" value="{{sortorder}}" form="local-course-banner-builder-bulk-update">
                                 <span class="local-course-banner-builder-sort-position" data-sort-display>{{sortorder}}</span>
-                                {{^iscumulative}}
-                                    <span class="text-muted d-block small">{{#str}}sortordercumulativeonly, local_course_banner_builder{{/str}}</span>
-                                {{/iscumulative}}
                             </td>
                             <td>
                                 <input class="form-control form-control-sm" type="text" name="layername_inline[{{id}}]" value="{{name}}" form="local-course-banner-builder-bulk-update">
@@ -286,7 +297,7 @@
                                             data-placement="left"
                                             data-content="{{dynamicpopovercontent}}"
                                             data-html="true"
-                                            data-trigger="hover focus"
+                                            data-trigger="hover"
                                             aria-label="{{dynamiclabel}}"
                                             title="{{dynamiclabel}}"
                                             {{/isdynamiclayer}}>
@@ -329,13 +340,13 @@
                         {{#chainborderlayer}}
                             <tr class="{{rowclass}}" data-chain-border-row="1">
                                 <td class="local-course-banner-builder-layer-select-cell">
-                                    <strong>{{actionlabel}}</strong>
+                                    {{actionlabel}}
                                 </td>
                                 <td>
                                     <span class="local-course-banner-builder-sort-position" aria-hidden="true">&mdash;</span>
                                 </td>
                                 <td>
-                                    <strong>{{name}}</strong>
+                                    {{name}}
                                 </td>
                                 <td>{{enabledlabel}}</td>
                                 <td>

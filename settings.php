@@ -71,6 +71,20 @@ if ($hassiteconfig || has_capability('local/course_banner_builder:manage', conte
     ));
 
     $ADMIN->add('local_course_banner_builder', new admin_externalpage(
+        'local_course_banner_builder_site',
+        get_string('managesitebanner', 'local_course_banner_builder'),
+        new moodle_url('/local/course_banner_builder/admin_site.php'),
+        'local/course_banner_builder:manage'
+    ));
+
+    $ADMIN->add('local_course_banner_builder', new admin_externalpage(
+        'local_course_banner_builder_slideshow',
+        get_string('manageslideshow', 'local_course_banner_builder'),
+        new moodle_url('/local/course_banner_builder/admin_slideshow.php'),
+        'local/course_banner_builder:manage'
+    ));
+
+    $ADMIN->add('local_course_banner_builder', new admin_externalpage(
         'local_course_banner_builder_transfer',
         get_string('transferconfig', 'local_course_banner_builder'),
         new moodle_url('/local/course_banner_builder/admin_transfer.php'),

@@ -28,6 +28,8 @@ define(['core/config'], function(Config) {
     const NATIVE_BANNER_PROCESSED_ATTRIBUTE = 'data-course-banner-builder-native-banner-processed';
     const OVERLAY_CONTAINER_CLASS = 'local-course-banner-builder-fixed-overlays';
     const NATIVE_BANNER_CLASS = 'local-course-banner-builder-native-course-banner';
+    const COURSE_CARD_THUMB_CLASS = 'local-course-banner-builder-course-card-thumb';
+    const COURSE_CARD_ROOT_CLASS = 'local-course-banner-builder-course-card-root';
 
     const BACKGROUND_TARGETS = [
         '.dashboard-card-img',
@@ -136,10 +138,22 @@ define(['core/config'], function(Config) {
      * Build the stable card-thumbnail URL exposed by this plugin.
      *
      * @param {String} courseId
+     * @param {Boolean} square
      * @returns {String}
      */
-    const getCardUrl = function(courseId) {
-        return Config.wwwroot + '/local/course_banner_builder/card.php?courseid=' + encodeURIComponent(courseId);
+    const getCardUrl = function(courseId, square) {
+        const url = Config.wwwroot + '/local/course_banner_builder/card.php?courseid=' + encodeURIComponent(courseId);
+        return square ? url + '&variant=square' : url;
+    };
+
+    /**
+     * Whether a Moodle card thumbnail target is rendered in a square coursebox.
+     *
+     * @param {Element} target
+     * @returns {Boolean}
+     */
+    const isSquareCourseBoxTarget = function(target) {
+        return !!target.closest('.coursebox');
     };
 
     /**
@@ -194,6 +208,19 @@ define(['core/config'], function(Config) {
     };
 
     /**
+     * Add stable styling hooks to the native card thumbnail surface.
+     *
+     * @param {Element} target
+     * @param {Element} root
+     */
+    const markCardThumbnail = function(target, root) {
+        target.classList.add(COURSE_CARD_THUMB_CLASS);
+        if (root) {
+            root.classList.add(COURSE_CARD_ROOT_CLASS);
+        }
+    };
+
+    /**
      * Replace a background image when it points to a generated banner.
      *
      * @param {Element} target
@@ -210,9 +237,10 @@ define(['core/config'], function(Config) {
             return;
         }
 
-        const cardUrl = getCardUrl(courseId);
+        const cardUrl = getCardUrl(courseId, isSquareCourseBoxTarget(target));
         target.setAttribute(PROCESSED_ATTRIBUTE, courseId);
         applyWhenLoadable(cardUrl, function(loadableUrl) {
+            markCardThumbnail(target, target.closest(ROOT_SELECTORS));
             target.style.backgroundImage = 'url("' + loadableUrl + '")';
             target.style.backgroundPosition = 'center center';
             target.style.backgroundSize = 'cover';
@@ -231,9 +259,10 @@ define(['core/config'], function(Config) {
             return;
         }
 
-        const cardUrl = getCardUrl(courseId);
+        const cardUrl = getCardUrl(courseId, isSquareCourseBoxTarget(target));
         target.setAttribute(PROCESSED_ATTRIBUTE, courseId);
         applyWhenLoadable(cardUrl, function(loadableUrl) {
+            markCardThumbnail(target, target.closest(ROOT_SELECTORS));
             target.src = loadableUrl;
             target.style.objectFit = 'cover';
             target.style.objectPosition = 'center center';
@@ -252,6 +281,9 @@ define(['core/config'], function(Config) {
         }
 
         const root = courseElement.closest(ROOT_SELECTORS) || courseElement;
+        if (root.matches(BACKGROUND_TARGETS)) {
+            replaceBackground(root, courseId);
+        }
         root.querySelectorAll(BACKGROUND_TARGETS).forEach(function(target) {
             replaceBackground(target, courseId);
         });
@@ -443,9 +475,9 @@ define(['core/config'], function(Config) {
      *
      * @returns {Element|null}
      */
-    const getNativeBannerInsertionPoint = function() {
+    const getNativeBannerInsertionPoint = function(format) {
         const courseHeader = document.querySelector('#course-header');
-        if (courseHeader) {
+        if (courseHeader && format !== 'fullwidthtop' && format !== 'fullwidthtopcompact') {
             return {
                 element: courseHeader,
                 method: 'append'
@@ -456,7 +488,7 @@ define(['core/config'], function(Config) {
         if (pageHeader) {
             return {
                 element: pageHeader,
-                method: 'afterend'
+                method: (format === 'fullwidthtop' || format === 'fullwidthtopcompact') ? 'beforebegin' : 'afterend'
             };
         }
 
@@ -497,7 +529,10 @@ define(['core/config'], function(Config) {
             return;
         }
 
-        const insertion = getNativeBannerInsertionPoint();
+        const format = ['contentwide', 'fullwidthtop', 'fullwidthtopcompact'].indexOf(options.bannerFormat) !== -1 ?
+            options.bannerFormat :
+            'standard';
+        const insertion = getNativeBannerInsertionPoint(format);
         if (!insertion || !insertion.element ||
             (
                 insertion.element.getAttribute(NATIVE_BANNER_PROCESSED_ATTRIBUTE) === String(courseId) &&
@@ -517,8 +552,10 @@ define(['core/config'], function(Config) {
             }
 
             const banner = document.createElement('div');
-            banner.className = 'local-course-banner-builder ' + NATIVE_BANNER_CLASS;
+            banner.className = 'local-course-banner-builder ' + NATIVE_BANNER_CLASS + ' ' +
+                NATIVE_BANNER_CLASS + '--format-' + format;
             banner.setAttribute('data-course-banner-builder-native', '1');
+            banner.setAttribute('data-banner-format', format);
             banner.setAttribute('aria-hidden', 'true');
             if (loadableUrl) {
                 banner.style.backgroundImage = 'url("' + loadableUrl + '")';
