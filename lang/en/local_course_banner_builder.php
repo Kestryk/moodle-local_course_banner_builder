@@ -393,3 +393,5 @@ $string['exportoptions'] = 'Export options';
 $string['exportsectioncoursebanners'] = 'All course banner settings';
 $string['exportsectionslideshow'] = 'All slideshow settings';
 $string['exportsectionsitebanners'] = 'Site banner settings, images and borders';
+$string['importarchive'] = 'Import ZIP archive';
+$string['importjsonfallback'] = 'Or paste a legacy JSON export';

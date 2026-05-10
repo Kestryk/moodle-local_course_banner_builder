@@ -396,3 +396,5 @@ $string['exportoptions'] = 'Options d\'export';
 $string['exportsectioncoursebanners'] = 'Tous les parametrages banniere cours';
 $string['exportsectionslideshow'] = 'Tous les parametrages diaporama';
 $string['exportsectionsitebanners'] = 'Parametrages bannieres site, images et bordures';
+$string['importarchive'] = 'Importer une archive ZIP';
+$string['importjsonfallback'] = 'Ou coller un ancien export JSON';

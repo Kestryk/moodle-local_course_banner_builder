@@ -7129,6 +7129,162 @@ class manager {
     }
 
     /**
+     * Create a ZIP export containing a manifest and every referenced image file.
+     *
+     * @param array $sections
+     * @return string Absolute path to the temporary ZIP file.
+     */
+    public static function create_configuration_export_zip(array $sections = []): string {
+        global $CFG;
+
+        if (!class_exists('\ZipArchive')) {
+            throw new \coding_exception('The PHP ZipArchive extension is required to export banner settings with files.');
+        }
+
+        make_temp_directory('local_course_banner_builder');
+        $filepath = tempnam($CFG->tempdir . DIRECTORY_SEPARATOR . 'local_course_banner_builder', 'cbb_export_');
+        if ($filepath === false) {
+            throw new \coding_exception('Could not create a temporary export file.');
+        }
+        $zippath = $filepath . '.zip';
+        @rename($filepath, $zippath);
+
+        $export = self::export_configuration($sections);
+        $export['archiveformat'] = 'zip-with-manifest-and-files';
+        $files = [];
+        self::extract_embedded_export_files($export, $files);
+        $export['filecount'] = count($files);
+
+        $zip = new \ZipArchive();
+        if ($zip->open($zippath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+            @unlink($zippath);
+            throw new \coding_exception('Could not create the banner settings export archive.');
+        }
+
+        $zip->addFromString('manifest.json', json_encode($export, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+        foreach ($files as $archivepath => $content) {
+            $zip->addFromString($archivepath, $content);
+        }
+        $zip->close();
+
+        return $zippath;
+    }
+
+    /**
+     * Import a ZIP export archive.
+     *
+     * @param string $archivepath
+     * @param bool $replaceall
+     * @return array
+     */
+    public static function import_configuration_archive(string $archivepath, bool $replaceall = false): array {
+        if (!class_exists('\ZipArchive')) {
+            throw new \coding_exception('The PHP ZipArchive extension is required to import banner settings with files.');
+        }
+        if (!is_readable($archivepath)) {
+            throw new \coding_exception('The banner settings import archive is not readable.');
+        }
+
+        $zip = new \ZipArchive();
+        if ($zip->open($archivepath) !== true) {
+            throw new \coding_exception('The banner settings import archive could not be opened.');
+        }
+        $manifest = $zip->getFromName('manifest.json');
+        if ($manifest === false) {
+            $zip->close();
+            throw new \coding_exception('The banner settings import archive does not contain a manifest.json file.');
+        }
+
+        $data = json_decode($manifest, true);
+        if (!is_array($data)) {
+            $zip->close();
+            throw new \coding_exception('The banner settings import manifest is invalid.');
+        }
+
+        self::hydrate_export_files_from_archive($data, $zip);
+        $zip->close();
+
+        return self::import_configuration(json_encode($data), $replaceall);
+    }
+
+    /**
+     * Recursively move base64 file payloads out of an export tree for ZIP storage.
+     *
+     * @param mixed $node
+     * @param array $files
+     * @return void
+     */
+    protected static function extract_embedded_export_files(&$node, array &$files): void {
+        if (!is_array($node)) {
+            return;
+        }
+
+        if (!empty($node['archivepath']) && !empty($node['contentbase64'])) {
+            $archivepath = self::normalise_export_archive_path((string)$node['archivepath']);
+            if ($archivepath !== '') {
+                $files[$archivepath] = base64_decode((string)$node['contentbase64']);
+                $node['archivepath'] = $archivepath;
+            }
+        }
+        unset($node['contentbase64']);
+
+        foreach ($node as &$value) {
+            self::extract_embedded_export_files($value, $files);
+        }
+        unset($value);
+    }
+
+    /**
+     * Recursively add base64 payloads from a ZIP archive back into one import tree.
+     *
+     * @param mixed $node
+     * @param \ZipArchive $zip
+     * @return void
+     */
+    protected static function hydrate_export_files_from_archive(&$node, \ZipArchive $zip): void {
+        if (!is_array($node)) {
+            return;
+        }
+
+        if (!empty($node['archivepath']) && empty($node['contentbase64'])) {
+            $archivepath = self::normalise_export_archive_path((string)$node['archivepath']);
+            if ($archivepath !== '') {
+                $content = $zip->getFromName($archivepath);
+                if ($content !== false) {
+                    $node['archivepath'] = $archivepath;
+                    $node['contentbase64'] = base64_encode($content);
+                }
+            }
+        }
+
+        foreach ($node as &$value) {
+            self::hydrate_export_files_from_archive($value, $zip);
+        }
+        unset($value);
+    }
+
+    /**
+     * Keep archive paths relative and safe.
+     *
+     * @param string $path
+     * @return string
+     */
+    protected static function normalise_export_archive_path(string $path): string {
+        $path = str_replace('\\', '/', trim($path));
+        $path = ltrim($path, '/');
+        $parts = [];
+        foreach (explode('/', $path) as $part) {
+            if ($part === '' || $part === '.' || $part === '..') {
+                continue;
+            }
+            $parts[] = clean_param($part, PARAM_FILE);
+        }
+        return implode('/', array_filter($parts, static function(string $part): bool {
+            return $part !== '';
+        }));
+    }
+
+    /**
      * Export every course banner source, rule and layer.
      *
      * @return array

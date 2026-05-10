@@ -39,18 +39,34 @@ $PAGE->set_title(get_string('exportimport', 'local_course_banner_builder'));
 $PAGE->set_heading(get_string('exportimport', 'local_course_banner_builder'));
 
 if ($action === 'export' && confirm_sesskey()) {
-    $export = \local_course_banner_builder\manager::export_configuration($exportsections);
-    $filename = 'course_banner_builder_export_' . userdate(time(), '%Y%m%d_%H%M%S') . '.json';
-    header('Content-Type: application/json; charset=utf-8');
+    $archivepath = \local_course_banner_builder\manager::create_configuration_export_zip($exportsections);
+    $filename = 'course_banner_builder_export_' . userdate(time(), '%Y%m%d_%H%M%S') . '.zip';
+    header('Content-Type: application/zip');
     header('Content-Disposition: attachment; filename="' . $filename . '"');
-    echo json_encode($export, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    header('Content-Length: ' . filesize($archivepath));
+    readfile($archivepath);
+    @unlink($archivepath);
     exit;
 }
 
 if (optional_param('importconfig', 0, PARAM_BOOL) && confirm_sesskey()) {
-    $configjson = required_param('configjson', PARAM_RAW);
     try {
-        \local_course_banner_builder\manager::import_configuration($configjson, (bool)$replaceall);
+        $uploaded = $_FILES['configarchive'] ?? null;
+        if (is_array($uploaded) && empty($uploaded['error']) && !empty($uploaded['tmp_name']) &&
+                is_uploaded_file($uploaded['tmp_name'])) {
+            $filename = (string)($uploaded['name'] ?? '');
+            if (strtolower(pathinfo($filename, PATHINFO_EXTENSION)) === 'zip') {
+                \local_course_banner_builder\manager::import_configuration_archive($uploaded['tmp_name'], (bool)$replaceall);
+            } else {
+                \local_course_banner_builder\manager::import_configuration(
+                    (string)file_get_contents($uploaded['tmp_name']),
+                    (bool)$replaceall
+                );
+            }
+        } else {
+            $configjson = required_param('configjson', PARAM_RAW);
+            \local_course_banner_builder\manager::import_configuration($configjson, (bool)$replaceall);
+        }
         redirect($url, get_string('importedconfig', 'local_course_banner_builder'));
     } catch (Throwable $e) {
         \core\notification::error(get_string('invalidimportpayload', 'local_course_banner_builder'));
@@ -82,10 +98,28 @@ echo html_writer::end_tag('form');
 
 echo $OUTPUT->heading(get_string('importconfig', 'local_course_banner_builder'), 3);
 echo html_writer::tag('p', get_string('importconfigdesc', 'local_course_banner_builder'));
-echo html_writer::start_tag('form', ['method' => 'post', 'action' => $url->out(false)]);
+$archiveuploadlabel = get_string_manager()->string_exists('importarchive', 'local_course_banner_builder') ?
+    get_string('importarchive', 'local_course_banner_builder') : 'Import ZIP archive';
+$jsonfallbacklabel = get_string_manager()->string_exists('importjsonfallback', 'local_course_banner_builder') ?
+    get_string('importjsonfallback', 'local_course_banner_builder') : 'Or paste a legacy JSON export';
+echo html_writer::start_tag('form', [
+    'method' => 'post',
+    'action' => $url->out(false),
+    'enctype' => 'multipart/form-data',
+]);
 echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]);
 echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'importconfig', 'value' => 1]);
+echo html_writer::tag('label', $archiveuploadlabel, ['class' => 'form-label', 'for' => 'local-course-banner-builder-import-archive']);
+echo html_writer::empty_tag('input', [
+    'type' => 'file',
+    'name' => 'configarchive',
+    'id' => 'local-course-banner-builder-import-archive',
+    'class' => 'form-control mb-3',
+    'accept' => '.zip,.json,application/zip,application/json',
+]);
+echo html_writer::tag('label', $jsonfallbacklabel, ['class' => 'form-label', 'for' => 'local-course-banner-builder-import-json']);
 echo html_writer::tag('textarea', '', [
+    'id' => 'local-course-banner-builder-import-json',
     'name' => 'configjson',
     'rows' => 18,
     'class' => 'form-control mb-3',
