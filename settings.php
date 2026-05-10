@@ -54,13 +54,16 @@ if ($hassiteconfig || has_capability('local/course_banner_builder:manage', conte
         1
     ));
 
-    $settings->add(new admin_setting_configmultiselect(
-        'local_course_banner_builder/enabledcustomfields',
-        get_string('enabledcustomfields', 'local_course_banner_builder'),
-        get_string('enabledcustomfields_desc', 'local_course_banner_builder'),
-        [],
-        \local_course_banner_builder\manager::get_course_customfield_options()
-    ));
+    $customfieldoptions = \local_course_banner_builder\manager::get_course_customfield_options();
+    if (!empty($customfieldoptions)) {
+        $settings->add(new admin_setting_configmultiselect(
+            'local_course_banner_builder/enabledcustomfields',
+            get_string('enabledcustomfields', 'local_course_banner_builder'),
+            get_string('enabledcustomfields_desc', 'local_course_banner_builder'),
+            [],
+            $customfieldoptions
+        ));
+    }
     $ADMIN->add('local_course_banner_builder', $settings);
 
     $ADMIN->add('local_course_banner_builder', new admin_externalpage(

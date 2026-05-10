@@ -8087,7 +8087,6 @@ class manager {
             }
         }
 
-        \core_course\customfield\course_handler::reset_caches();
         return $fieldmap;
     }
 

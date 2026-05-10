@@ -27,12 +27,25 @@ defined('MOODLE_INTERNAL') || die();
  */
 class hook_callbacks {
     /**
+     * Whether banner hooks may safely use Moodle configuration tables.
+     *
+     * @return bool
+     */
+    protected static function can_render_banners(): bool {
+        return !function_exists('during_initial_install') || !during_initial_install();
+    }
+
+    /**
      * Build the native banner payload for the current course page.
      *
      * @param \moodle_page $page
      * @return array|null
      */
     protected static function get_native_course_banner_payload(\moodle_page $page): ?array {
+        if (!self::can_render_banners()) {
+            return null;
+        }
+
         $courseid = (int)($page->course->id ?? 0);
         $iscoursebannerpage = self::is_course_banner_page($page);
         $hascourselayers = $iscoursebannerpage && manager::course_has_applicable_banner_layers($page->course);
@@ -763,6 +776,10 @@ class hook_callbacks {
      * @return array|null
      */
     protected static function get_site_banner_payload(\moodle_page $page): ?array {
+        if (!self::can_render_banners()) {
+            return null;
+        }
+
         if (!manager::is_site_banner_enabled() || !self::is_site_banner_page($page)) {
             return null;
         }
@@ -1783,6 +1800,10 @@ JS;
         \core\hook\output\before_footer_html_generation $hook
     ): void {
         global $PAGE;
+
+        if (!self::can_render_banners()) {
+            return;
+        }
 
         $courseid = (int)($PAGE->course->id ?? 0);
         $iscourseview = self::is_course_view_page($PAGE);
