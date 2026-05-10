@@ -219,3 +219,7 @@ $string['customsizesummary'] = 'Taille personnalisée';
 $string['layeroffsetsummary'] = 'Espacements';
 $string['customsizerequiredwidth'] = 'Saisissez une largeur personnalisee superieure a 0%.';
 $string['customsizerequiredheight'] = 'Saisissez une hauteur personnalisee superieure a 0%.';
+$string['exportoptions'] = 'Options d\'export';
+$string['exportsectioncoursebanners'] = 'Tous les parametrages banniere cours';
+$string['exportsectionslideshow'] = 'Tous les parametrages diaporama';
+$string['exportsectionsitebanners'] = 'Parametrages bannieres site, images et bordures';

@@ -216,3 +216,7 @@ $string['customsizesummary'] = 'Custom size';
 $string['layeroffsetsummary'] = 'Spacing';
 $string['customsizerequiredwidth'] = 'Enter a custom width greater than 0%.';
 $string['customsizerequiredheight'] = 'Enter a custom height greater than 0%.';
+$string['exportoptions'] = 'Export options';
+$string['exportsectioncoursebanners'] = 'All course banner settings';
+$string['exportsectionslideshow'] = 'All slideshow settings';
+$string['exportsectionsitebanners'] = 'Site banner settings, images and borders';
