@@ -392,3 +392,7 @@ $string['slideshow:type:siteannouncements'] = 'Annonces site';
 $string['slideshow:type:assignment'] = 'Devoir';
 $string['slideshow:type:quiz'] = 'Quiz';
 $string['disabled'] = 'Desactive';
+$string['exportoptions'] = 'Options d\'export';
+$string['exportsectioncoursebanners'] = 'Tous les parametrages banniere cours';
+$string['exportsectionslideshow'] = 'Tous les parametrages diaporama';
+$string['exportsectionsitebanners'] = 'Parametrages bannieres site, images et bordures';

@@ -27,6 +27,7 @@ require_once($CFG->libdir . '/adminlib.php');
 
 $action = optional_param('action', '', PARAM_ALPHA);
 $replaceall = optional_param('replaceall', 0, PARAM_BOOL);
+$exportsections = optional_param_array('exportsections', [], PARAM_ALPHAEXT);
 
 admin_externalpage_setup('local_course_banner_builder_transfer');
 require_capability('local/course_banner_builder:manage', context_system::instance());
@@ -38,7 +39,7 @@ $PAGE->set_title(get_string('exportimport', 'local_course_banner_builder'));
 $PAGE->set_heading(get_string('exportimport', 'local_course_banner_builder'));
 
 if ($action === 'export' && confirm_sesskey()) {
-    $export = \local_course_banner_builder\manager::export_configuration();
+    $export = \local_course_banner_builder\manager::export_configuration($exportsections);
     $filename = 'course_banner_builder_export_' . userdate(time(), '%Y%m%d_%H%M%S') . '.json';
     header('Content-Type: application/json; charset=utf-8');
     header('Content-Disposition: attachment; filename="' . $filename . '"');
@@ -59,12 +60,25 @@ if (optional_param('importconfig', 0, PARAM_BOOL) && confirm_sesskey()) {
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('exportimport', 'local_course_banner_builder'));
 
-$exporturl = new moodle_url('/local/course_banner_builder/admin_transfer.php', [
-    'action' => 'export',
-    'sesskey' => sesskey(),
-]);
 echo html_writer::tag('p', get_string('exportconfigdesc', 'local_course_banner_builder'));
-echo html_writer::link($exporturl, get_string('exportconfig', 'local_course_banner_builder'), ['class' => 'btn btn-primary mb-4']);
+$exportoptionslabel = get_string_manager()->string_exists('exportoptions', 'local_course_banner_builder') ?
+    get_string('exportoptions', 'local_course_banner_builder') : 'Export options';
+echo $OUTPUT->heading($exportoptionslabel, 3);
+echo html_writer::start_tag('form', ['method' => 'post', 'action' => $url->out(false), 'class' => 'mb-4']);
+echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]);
+echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'action', 'value' => 'export']);
+foreach (\local_course_banner_builder\manager::get_export_section_options() as $section => $label) {
+    echo html_writer::div(
+        html_writer::checkbox('exportsections[]', $section, true, $label),
+        'form-check mb-2'
+    );
+}
+echo html_writer::empty_tag('input', [
+    'type' => 'submit',
+    'value' => get_string('exportconfig', 'local_course_banner_builder'),
+    'class' => 'btn btn-primary mt-2',
+]);
+echo html_writer::end_tag('form');
 
 echo $OUTPUT->heading(get_string('importconfig', 'local_course_banner_builder'), 3);
 echo html_writer::tag('p', get_string('importconfigdesc', 'local_course_banner_builder'));

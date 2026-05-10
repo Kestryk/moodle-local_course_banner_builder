@@ -224,7 +224,13 @@ class manager {
     /** @var int */
     protected const CARD_SQUARE_CANVAS_SIZE = 960;
     /** @var int */
-    public const CONFIG_EXPORT_VERSION = 1;
+    public const CONFIG_EXPORT_VERSION = 2;
+    /** @var string */
+    public const EXPORT_SECTION_COURSE_BANNERS = 'coursebanners';
+    /** @var string */
+    public const EXPORT_SECTION_SLIDESHOW = 'slideshow';
+    /** @var string */
+    public const EXPORT_SECTION_SITE_BANNERS = 'sitebanners';
 
     /** @var array */
     protected const HIERARCHY_ROW_CLASSES = [
@@ -7023,69 +7029,563 @@ class manager {
     }
 
     /**
-     * Export current plugin configuration as a versioned array.
+     * Available export sections.
      *
      * @return array
      */
-    public static function export_configuration(): array {
-        global $DB, $CFG;
+    protected static function get_export_section_keys(): array {
+        return [
+            self::EXPORT_SECTION_COURSE_BANNERS,
+            self::EXPORT_SECTION_SLIDESHOW,
+            self::EXPORT_SECTION_SITE_BANNERS,
+        ];
+    }
 
+    /**
+     * Available export sections with labels.
+     *
+     * @return array
+     */
+    public static function get_export_section_options(): array {
+        return [
+            self::EXPORT_SECTION_COURSE_BANNERS => self::get_local_string_or_fallback(
+                'exportsectioncoursebanners',
+                'All course banner settings'
+            ),
+            self::EXPORT_SECTION_SLIDESHOW => self::get_local_string_or_fallback(
+                'exportsectionslideshow',
+                'All slideshow settings'
+            ),
+            self::EXPORT_SECTION_SITE_BANNERS => self::get_local_string_or_fallback(
+                'exportsectionsitebanners',
+                'Site banner settings, images and borders'
+            ),
+        ];
+    }
+
+    /**
+     * Return a plugin string without raising debugging notices before caches are rebuilt.
+     *
+     * @param string $identifier
+     * @param string $fallback
+     * @return string
+     */
+    protected static function get_local_string_or_fallback(string $identifier, string $fallback): string {
+        $manager = get_string_manager();
+        return $manager->string_exists($identifier, 'local_course_banner_builder')
+            ? get_string($identifier, 'local_course_banner_builder')
+            : $fallback;
+    }
+
+    /**
+     * Normalise requested export sections.
+     *
+     * @param array $sections
+     * @return array
+     */
+    public static function normalise_export_sections(array $sections = []): array {
+        $allowed = self::get_export_section_keys();
+        if (empty($sections)) {
+            return $allowed;
+        }
+
+        $sections = array_values(array_intersect($allowed, array_map('strval', $sections)));
+        return empty($sections) ? $allowed : $sections;
+    }
+
+    /**
+     * Export current configuration as a versioned array.
+     *
+     * @param array $sections
+     * @return array
+     */
+    public static function export_configuration(array $sections = []): array {
+        global $CFG;
+
+        $sections = self::normalise_export_sections($sections);
         $export = [
             'schema' => self::CONFIG_EXPORT_VERSION,
-            'archiveformat' => 'json-with-embedded-images',
+            'archiveformat' => 'json-with-embedded-files',
             'ziparchiveplanned' => true,
-            'pluginversion' => $CFG->version,
+            'moodleversion' => $CFG->version,
             'exportedat' => time(),
-            'categories' => [],
+            'selectedsections' => $sections,
+            'sections' => [],
         ];
 
-        $categoryids = $DB->get_fieldset_select('local_course_banner_elements', 'DISTINCT categoryid', 'categoryid IS NOT NULL');
-        foreach ($categoryids as $categoryid) {
-            $categoryrecord = $DB->get_record('course_categories', ['id' => $categoryid], 'id,name,idnumber,path,parent');
-            if (!$categoryrecord) {
-                continue;
-            }
-
-            $settings = self::get_category_settings((int)$categoryid);
-            $elements = [];
-            foreach (self::get_category_elements((int)$categoryid) as $element) {
-                $file = self::get_banner_image_file($element);
-                $elements[] = [
-                    'name' => $element->name,
-                    'sortorder' => (int)$element->sortorder,
-                    'isenabled' => (int)$element->isenabled,
-                    'fitmodeoverride' => self::table_field_exists('local_course_banner_elements', 'fitmodeoverride') ?
-                        ($element->fitmodeoverride ?? null) : null,
-                    'filename' => $file ? $file->get_filename() : null,
-                    'archivepath' => $file ? 'images/category_' . $categoryid . '/element_' . $element->id . '_' .
-                        clean_filename($file->get_filename()) : null,
-                    'contentbase64' => $file ? base64_encode($file->get_content()) : null,
-                ];
-            }
-
-            $pathnames = [];
-            $pathids = array_filter(array_map('intval', explode('/', trim((string)$categoryrecord->path, '/'))));
-            foreach ($pathids as $pathid) {
-                $pathcategory = $DB->get_record('course_categories', ['id' => $pathid], 'name');
-                if ($pathcategory) {
-                    $pathnames[] = $pathcategory->name;
-                }
-            }
-
-            $export['categories'][] = [
-                'idnumber' => $categoryrecord->idnumber,
-                'name' => $categoryrecord->name,
-                'pathnames' => $pathnames,
-                'settings' => [
-                    'compositionmode' => $settings->compositionmode ?? self::MODE_RANDOM,
-                    'fitmode' => $settings->fitmode ?? self::FIT_MODE_ORIGINAL,
-                    'fitapplyscope' => $settings->fitapplyscope ?? self::FIT_SCOPE_DESCENDANTS,
-                ],
-                'elements' => $elements,
-            ];
+        if (in_array(self::EXPORT_SECTION_COURSE_BANNERS, $sections, true)) {
+            $coursebannerdata = self::export_course_banner_configuration();
+            $export['sections'][self::EXPORT_SECTION_COURSE_BANNERS] = $coursebannerdata;
+            $export['categories'] = $coursebannerdata['legacycategories'];
+        }
+        if (in_array(self::EXPORT_SECTION_SLIDESHOW, $sections, true)) {
+            $export['sections'][self::EXPORT_SECTION_SLIDESHOW] = self::export_slideshow_configuration();
+        }
+        if (in_array(self::EXPORT_SECTION_SITE_BANNERS, $sections, true)) {
+            $export['sections'][self::EXPORT_SECTION_SITE_BANNERS] = self::export_site_banner_configuration();
         }
 
         return $export;
+    }
+
+    /**
+     * Export every course banner source, rule and layer.
+     *
+     * @return array
+     */
+    protected static function export_course_banner_configuration(): array {
+        global $DB;
+
+        $settings = $DB->get_records('local_course_banner_order', null, 'id ASC');
+        $elements = $DB->get_records('local_course_banner_elements', null, 'sortorder ASC, id ASC');
+        $sourcekeys = [];
+        foreach ($settings as $record) {
+            $sourcekeys[self::get_record_source_key($record)] = true;
+        }
+        foreach ($elements as $record) {
+            $sourcekeys[self::get_record_source_key($record)] = true;
+        }
+
+        $sources = [];
+        $legacycategories = [];
+        $customfieldids = [];
+        foreach (array_keys($sourcekeys) as $sourcekey) {
+            $source = self::resolve_source($sourcekey);
+            if ($source && self::is_site_source($source)) {
+                continue;
+            }
+            $sourceexport = self::export_source_configuration($sourcekey, $source, $settings, $elements, 'coursebanners');
+            if (!$sourceexport) {
+                continue;
+            }
+            $sources[] = $sourceexport;
+            if (($sourceexport['sourcetype'] ?? '') === self::SOURCE_TYPE_CUSTOMFIELD && !empty($sourceexport['customfield']['shortname'])) {
+                $customfieldids[(int)$sourceexport['customfield']['legacyid']] = true;
+            }
+            if (($sourceexport['sourcetype'] ?? '') === self::SOURCE_TYPE_CATEGORY) {
+                $legacycategories[] = [
+                    'idnumber' => $sourceexport['category']['idnumber'] ?? '',
+                    'name' => $sourceexport['category']['name'] ?? '',
+                    'pathnames' => $sourceexport['category']['pathnames'] ?? [],
+                    'settings' => $sourceexport['settings'] ?? [],
+                    'elements' => $sourceexport['elements'] ?? [],
+                ];
+            }
+        }
+
+        return [
+            'settings' => [
+                'enabled' => self::is_display_enabled(),
+                'bannerformat' => self::get_course_banner_format(),
+                'activitypagesenabled' => self::course_banners_on_activity_pages_enabled(),
+            ],
+            'customfieldcategories' => self::export_course_customfield_definitions(array_keys($customfieldids)),
+            'sources' => $sources,
+            'legacycategories' => $legacycategories,
+        ];
+    }
+
+    /**
+     * Export one configured source.
+     *
+     * @param string $sourcekey
+     * @param \stdClass|null $source
+     * @param array $settingsrecords
+     * @param array $elementrecords
+     * @return array|null
+     */
+    protected static function export_source_configuration(
+        string $sourcekey,
+        ?\stdClass $source,
+        array $settingsrecords,
+        array $elementrecords,
+        string $archiveprefix = 'coursebanners'
+    ): ?array {
+        $settings = null;
+        foreach ($settingsrecords as $record) {
+            if (self::get_record_source_key($record) === $sourcekey) {
+                $settings = $record;
+                break;
+            }
+        }
+
+        $elements = [];
+        foreach ($elementrecords as $record) {
+            if (self::get_record_source_key($record) !== $sourcekey) {
+                continue;
+            }
+            $elements[] = self::export_element_record($record, $archiveprefix);
+        }
+
+        if (!$source && !$settings && empty($elements)) {
+            return null;
+        }
+
+        $sourcetype = $source->type ?? ($settings->sourcetype ?? self::SOURCE_TYPE_CATEGORY);
+        $export = [
+            'sourcekey' => $sourcekey,
+            'sourcetype' => $sourcetype,
+            'label' => $source->label ?? '',
+            'settings' => $settings ? self::export_settings_record($settings) : [],
+            'elements' => $elements,
+        ];
+
+        if ($sourcetype === self::SOURCE_TYPE_SITE) {
+            $export['site'] = [
+                'key' => self::SITE_SOURCE_KEY,
+                'label' => $source->label ?? get_string('sitebanner', 'local_course_banner_builder'),
+            ];
+        } else if ($sourcetype === self::SOURCE_TYPE_CATEGORY) {
+            $categoryid = (int)($source->categoryid ?? $settings->categoryid ?? 0);
+            $export['category'] = self::export_course_category_identity($categoryid);
+        } else {
+            $fieldid = (int)($source->customfieldid ?? $settings->coursecustomfieldid ?? $settings->customfieldid ?? 0);
+            $export['customfield'] = self::export_customfield_identity($fieldid, (string)($source->customfieldvalue ?? $settings->customfieldvalue ?? ''));
+        }
+
+        return $export;
+    }
+
+    /**
+     * Export source settings row.
+     *
+     * @param \stdClass $record
+     * @return array
+     */
+    protected static function export_settings_record(\stdClass $record): array {
+        return [
+            'categoryid' => isset($record->categoryid) ? (int)$record->categoryid : null,
+            'sourcetype' => $record->sourcetype ?? self::SOURCE_TYPE_CATEGORY,
+            'sourcekey' => self::get_record_source_key($record),
+            'elementids' => $record->elementids ?? null,
+            'coursecustomfieldid' => isset($record->coursecustomfieldid) ? (int)$record->coursecustomfieldid : null,
+            'customfieldvalue' => $record->customfieldvalue ?? null,
+            'compositionmode' => $record->compositionmode ?? self::MODE_RANDOM,
+            'fitmode' => $record->fitmode ?? self::FIT_MODE_ORIGINAL,
+            'fitapplyscope' => $record->fitapplyscope ?? self::FIT_SCOPE_DESCENDANTS,
+            'customfieldpriority' => $record->customfieldpriority ?? self::CUSTOMFIELD_PRIORITY_CATEGORY,
+            'sourceparentkey' => $record->sourceparentkey ?? '',
+            'sourceisroot' => (int)($record->sourceisroot ?? 0),
+            'sourceinheritchildren' => (int)($record->sourceinheritchildren ?? 0),
+        ];
+    }
+
+    /**
+     * Export one layer, including image content when present.
+     *
+     * @param \stdClass $record
+     * @return array
+     */
+    protected static function export_element_record(\stdClass $record, string $archiveprefix = 'coursebanners'): array {
+        $file = self::get_banner_image_file($record);
+        return [
+            'elementtype' => $record->elementtype ?? 'background_image',
+            'name' => $record->name ?? '',
+            'sortorder' => (int)($record->sortorder ?? 0),
+            'isenabled' => (int)($record->isenabled ?? 0),
+            'fitmodeoverride' => $record->fitmodeoverride ?? null,
+            'positionanchor' => $record->positionanchor ?? self::POSITION_CENTER,
+            'offsettoppercent' => (float)($record->offsettoppercent ?? 0),
+            'offsetrightpercent' => (float)($record->offsetrightpercent ?? 0),
+            'offsetbottompercent' => (float)($record->offsetbottompercent ?? 0),
+            'offsetleftpercent' => (float)($record->offsetleftpercent ?? 0),
+            'customwidthpercent' => (float)($record->customwidthpercent ?? 100),
+            'customheightpercent' => (float)($record->customheightpercent ?? 100),
+            'customsizekeepaspect' => (int)($record->customsizekeepaspect ?? 1),
+            'dynamicimagesizeenabled' => (int)($record->dynamicimagesizeenabled ?? 0),
+            'borderenabled' => (int)($record->borderenabled ?? 0),
+            'bordercolor' => $record->bordercolor ?? '#56B9C0',
+            'borderwidth' => (float)($record->borderwidth ?? 2.5),
+            'borderopacity' => (float)($record->borderopacity ?? 0),
+            'borderfade' => (float)($record->borderfade ?? 0),
+            'borderstyle' => $record->borderstyle ?? self::BORDER_STYLE_SOLID,
+            'borderdashlength' => (int)($record->borderdashlength ?? 24),
+            'bordersides' => $record->bordersides ?? 'top,right,bottom,left',
+            'borderinnerrounded' => (int)($record->borderinnerrounded ?? 0),
+            'filename' => $file ? $file->get_filename() : null,
+            'archivepath' => $file ? $archiveprefix . '/elements/' . (int)$record->id . '_' .
+                clean_filename($file->get_filename()) : null,
+            'contentbase64' => $file ? base64_encode($file->get_content()) : null,
+        ];
+    }
+
+    /**
+     * Export a Moodle course category identity with its path.
+     *
+     * @param int $categoryid
+     * @return array
+     */
+    protected static function export_course_category_identity(int $categoryid): array {
+        global $DB;
+
+        $category = $categoryid > 0 ? $DB->get_record(
+            'course_categories',
+            ['id' => $categoryid],
+            'id,name,idnumber,path,parent,sortorder',
+            IGNORE_MISSING
+        ) : null;
+        if (!$category) {
+            return [];
+        }
+
+        $pathnames = [];
+        $pathidnumbers = [];
+        $pathids = array_filter(array_map('intval', explode('/', trim((string)$category->path, '/'))));
+        foreach ($pathids as $pathid) {
+            $pathcategory = $DB->get_record('course_categories', ['id' => $pathid], 'id,name,idnumber', IGNORE_MISSING);
+            if ($pathcategory) {
+                $pathnames[] = (string)$pathcategory->name;
+                $pathidnumbers[] = (string)$pathcategory->idnumber;
+            }
+        }
+
+        return [
+            'legacyid' => (int)$category->id,
+            'name' => (string)$category->name,
+            'idnumber' => (string)$category->idnumber,
+            'pathnames' => $pathnames,
+            'pathidnumbers' => $pathidnumbers,
+            'sortorder' => (int)$category->sortorder,
+        ];
+    }
+
+    /**
+     * Export one custom field identity used as a source.
+     *
+     * @param int $fieldid
+     * @param string $value
+     * @return array
+     */
+    protected static function export_customfield_identity(int $fieldid, string $value): array {
+        global $DB;
+
+        $field = $fieldid > 0 ? $DB->get_record('customfield_field', ['id' => $fieldid], '*', IGNORE_MISSING) : null;
+        if (!$field) {
+            return [
+                'legacyid' => $fieldid,
+                'value' => $value,
+            ];
+        }
+
+        $category = $DB->get_record('customfield_category', ['id' => $field->categoryid], '*', IGNORE_MISSING);
+        return [
+            'legacyid' => (int)$field->id,
+            'shortname' => (string)$field->shortname,
+            'name' => (string)$field->name,
+            'type' => (string)$field->type,
+            'value' => $value,
+            'valuehash' => sha1(self::normalise_customfield_value($value)),
+            'categoryname' => $category ? (string)$category->name : '',
+        ];
+    }
+
+    /**
+     * Export Moodle course custom field definitions used by sources.
+     *
+     * @param array $fieldids
+     * @return array
+     */
+    protected static function export_course_customfield_definitions(array $fieldids = []): array {
+        global $DB;
+
+        if (empty($fieldids)) {
+            return [];
+        }
+
+        [$insql, $params] = $DB->get_in_or_equal(array_map('intval', $fieldids), SQL_PARAMS_NAMED);
+        $records = $DB->get_records_sql(
+            "SELECT f.*
+               FROM {customfield_field} f
+              WHERE f.id $insql
+           ORDER BY f.categoryid, f.sortorder, f.id",
+            $params
+        );
+        $categoryids = array_unique(array_map(static function(\stdClass $record): int {
+            return (int)$record->categoryid;
+        }, $records));
+
+        $categories = [];
+        foreach ($categoryids as $categoryid) {
+            $category = $DB->get_record('customfield_category', ['id' => $categoryid], '*', IGNORE_MISSING);
+            if (!$category) {
+                continue;
+            }
+            $categories[(int)$category->id] = [
+                'name' => (string)$category->name,
+                'description' => (string)($category->description ?? ''),
+                'descriptionformat' => (int)($category->descriptionformat ?? FORMAT_HTML),
+                'sortorder' => (int)($category->sortorder ?? 0),
+                'fields' => [],
+            ];
+        }
+
+        foreach ($records as $field) {
+            if (empty($categories[(int)$field->categoryid])) {
+                continue;
+            }
+            $categories[(int)$field->categoryid]['fields'][] = [
+                'legacyid' => (int)$field->id,
+                'shortname' => (string)$field->shortname,
+                'name' => (string)$field->name,
+                'type' => (string)$field->type,
+                'description' => (string)($field->description ?? ''),
+                'descriptionformat' => (int)($field->descriptionformat ?? FORMAT_HTML),
+                'sortorder' => (int)($field->sortorder ?? 0),
+                'configdata' => (string)($field->configdata ?? ''),
+            ];
+        }
+
+        return array_values($categories);
+    }
+
+    /**
+     * Export native course/site slideshow settings, plus legacy EasyEdu settings for compatibility.
+     *
+     * @return array
+     */
+    protected static function export_slideshow_configuration(): array {
+        return [
+            'native' => [
+                self::SLIDESHOW_CONTEXT_COURSE => self::prepare_slideshow_config_for_export(
+                    self::get_slideshow_config(self::SLIDESHOW_CONTEXT_COURSE)
+                ),
+                self::SLIDESHOW_CONTEXT_SITE => self::prepare_slideshow_config_for_export(
+                    self::get_slideshow_config(self::SLIDESHOW_CONTEXT_SITE)
+                ),
+            ],
+            'legacy_easyedu' => self::export_easyedu_slideshow_configuration(),
+        ];
+    }
+
+    /**
+     * Keep slideshow exports explicit about opacity units.
+     *
+     * @param array $config
+     * @return array
+     */
+    protected static function prepare_slideshow_config_for_export(array $config): array {
+        unset($config['overlayrgb']);
+        $config['overlayopacitypercent'] = round(((float)($config['overlayopacity'] ?? 0)) * 100, 2);
+        return $config;
+    }
+
+    /**
+     * Export native site banner settings, layers and legacy EasyEdu site banner settings.
+     *
+     * @return array
+     */
+    protected static function export_site_banner_configuration(): array {
+        global $DB;
+
+        $settings = $DB->get_records('local_course_banner_order', null, 'id ASC');
+        $elements = $DB->get_records('local_course_banner_elements', null, 'sortorder ASC, id ASC');
+        $source = self::get_site_source();
+
+        return [
+            'settings' => [
+                'enabled' => (bool)get_config('local_course_banner_builder', 'sitebannerenabled'),
+                'displayenabled' => self::is_display_enabled(),
+                'bannerformat' => self::get_site_banner_format(),
+            ],
+            'source' => self::export_source_configuration(
+                self::SITE_SOURCE_KEY,
+                $source,
+                $settings,
+                $elements,
+                'sitebanners'
+            ),
+            'legacy_easyedu' => self::export_easyedu_site_banner_configuration(),
+        ];
+    }
+
+    /**
+     * Export EasyEdu slideshow settings.
+     *
+     * @return array
+     */
+    protected static function export_easyedu_slideshow_configuration(): array {
+        $keys = ['carouselheight'];
+        $slidecount = defined('SLIDES_NUMBER') ? SLIDES_NUMBER : 3;
+        for ($i = 1; $i <= $slidecount; $i++) {
+            array_push($keys, 'carouseltitle' . $i, 'carouseltext' . $i, 'carousellink' . $i);
+        }
+        $fileareas = [];
+        for ($i = 1; $i <= $slidecount; $i++) {
+            $fileareas[] = 'carouselbgimage' . $i;
+        }
+
+        return [
+            'settings' => self::export_theme_settings($keys),
+            'files' => self::export_theme_fileareas($fileareas, 'slideshow'),
+        ];
+    }
+
+    /**
+     * Export EasyEdu site banner/frontpage visual settings.
+     *
+     * @return array
+     */
+    protected static function export_easyedu_site_banner_configuration(): array {
+        $keys = ['frontpageblockvideo', 'frontpageblocktext'];
+        $fileareas = ['bannerbgimage', 'coursebgimage', 'categorybgimage', 'frontpageblockimage'];
+        $adcount = defined('ADS_NUMBER') ? ADS_NUMBER : 6;
+        $adlinkcount = defined('AD_LINKS_NUMBER') ? AD_LINKS_NUMBER : 1;
+        for ($i = 1; $i <= $adcount; $i++) {
+            array_push($keys, 'adtitle' . $i, 'adorder' . $i, 'adhide' . $i);
+            $fileareas[] = 'adbgimage' . $i;
+            if ($adlinkcount === 1) {
+                $keys[] = 'adbtnlink' . $i;
+            } else {
+                for ($j = 1; $j <= $adlinkcount; $j++) {
+                    $keys[] = 'adlink' . $i . '_' . $j;
+                }
+            }
+        }
+
+        return [
+            'settings' => self::export_theme_settings($keys),
+            'files' => self::export_theme_fileareas($fileareas, 'sitebanners'),
+        ];
+    }
+
+    /**
+     * Export theme config values.
+     *
+     * @param array $keys
+     * @return array
+     */
+    protected static function export_theme_settings(array $keys): array {
+        $settings = [];
+        foreach ($keys as $key) {
+            $settings[$key] = get_config('theme_easyedu', $key);
+        }
+        return $settings;
+    }
+
+    /**
+     * Export stored files from theme EasyEdu fileareas.
+     *
+     * @param array $fileareas
+     * @param string $section
+     * @return array
+     */
+    protected static function export_theme_fileareas(array $fileareas, string $section): array {
+        $context = \context_system::instance();
+        $fs = get_file_storage();
+        $files = [];
+        foreach ($fileareas as $filearea) {
+            $storedfiles = $fs->get_area_files($context->id, 'theme_easyedu', $filearea, 0, 'id ASC', false);
+            foreach ($storedfiles as $file) {
+                $files[] = [
+                    'filearea' => $filearea,
+                    'filename' => $file->get_filename(),
+                    'filepath' => $file->get_filepath(),
+                    'archivepath' => $section . '/' . $filearea . '/' . clean_filename($file->get_filename()),
+                    'contentbase64' => base64_encode($file->get_content()),
+                ];
+            }
+        }
+        return $files;
     }
 
     /**
@@ -7142,53 +7642,472 @@ class manager {
      * @return array
      */
     public static function import_configuration(string $json, bool $replaceall = false): array {
-        global $DB;
-
         $data = json_decode($json, true);
-        if (!is_array($data) || empty($data['schema']) || empty($data['categories']) || !is_array($data['categories'])) {
+        if (!is_array($data) || empty($data['schema'])) {
+            throw new \coding_exception('Invalid course banner builder import payload.');
+        }
+
+        if (!empty($data['sections']) && is_array($data['sections'])) {
+            $summary = [];
+            if (!empty($data['sections'][self::EXPORT_SECTION_COURSE_BANNERS])) {
+                if ($replaceall) {
+                    self::delete_all_configuration();
+                }
+                $summary += self::import_course_banner_configuration($data['sections'][self::EXPORT_SECTION_COURSE_BANNERS]);
+            }
+            if (!empty($data['sections'][self::EXPORT_SECTION_SLIDESHOW])) {
+                $summary += self::import_slideshow_configuration($data['sections'][self::EXPORT_SECTION_SLIDESHOW]);
+            }
+            if (!empty($data['sections'][self::EXPORT_SECTION_SITE_BANNERS])) {
+                $summary += self::import_site_banner_configuration($data['sections'][self::EXPORT_SECTION_SITE_BANNERS]);
+            }
+            theme_reset_all_caches();
+            return $summary;
+        }
+
+        if (empty($data['categories']) || !is_array($data['categories'])) {
             throw new \coding_exception('Invalid course banner builder import payload.');
         }
 
         if ($replaceall) {
             self::delete_all_configuration();
         }
+        return self::import_legacy_course_banner_configuration($data['categories']);
+    }
 
-        $imported = 0;
-        foreach ($data['categories'] as $categorydata) {
-            $categoryid = self::resolve_import_category_id($categorydata);
-            if (!$categoryid) {
+    /**
+     * Import the current full course banner export format.
+     *
+     * @param array $data
+     * @return array
+     */
+    protected static function import_course_banner_configuration(array $data): array {
+        $fieldmap = self::import_course_customfield_definitions($data['customfieldcategories'] ?? []);
+        if (!empty($data['settings']) && is_array($data['settings'])) {
+            if (array_key_exists('enabled', $data['settings'])) {
+                set_config('enabled', empty($data['settings']['enabled']) ? 0 : 1, 'local_course_banner_builder');
+            }
+            if (!empty($data['settings']['bannerformat'])) {
+                self::set_course_banner_format((string)$data['settings']['bannerformat']);
+            }
+            if (array_key_exists('activitypagesenabled', $data['settings'])) {
+                set_config(
+                    'coursebanneractivitiesenabled',
+                    empty($data['settings']['activitypagesenabled']) ? 0 : 1,
+                    'local_course_banner_builder'
+                );
+            }
+        }
+        $resolvedsources = [];
+        $sourcekeymap = [];
+        foreach (($data['sources'] ?? []) as $sourcedata) {
+            $source = self::resolve_import_source($sourcedata, $fieldmap);
+            if (!$source) {
                 continue;
             }
+            $resolvedsources[] = [$sourcedata, $source];
+            if (!empty($sourcedata['sourcekey'])) {
+                $sourcekeymap[(string)$sourcedata['sourcekey']] = (string)$source->sourcekey;
+            }
+        }
 
-            self::delete_category_content($categoryid);
-            self::save_category_settings(
-                $categoryid,
+        $imported = 0;
+        foreach ($resolvedsources as [$sourcedata, $source]) {
+            $parentkey = (string)($sourcedata['settings']['sourceparentkey'] ?? '');
+            if ($parentkey !== '') {
+                $parentkey = $sourcekeymap[$parentkey] ?? $parentkey;
+            }
+
+            self::delete_source_content($source);
+            self::save_source_settings(
+                $source,
+                (string)($sourcedata['settings']['compositionmode'] ?? self::MODE_RANDOM),
+                (string)($sourcedata['settings']['fitmode'] ?? self::FIT_MODE_ORIGINAL),
+                (string)($sourcedata['settings']['fitapplyscope'] ?? self::FIT_SCOPE_DESCENDANTS),
+                (string)($sourcedata['settings']['customfieldpriority'] ?? self::CUSTOMFIELD_PRIORITY_CATEGORY),
+                $parentkey,
+                !empty($sourcedata['settings']['sourceisroot']),
+                !empty($sourcedata['settings']['sourceinheritchildren'])
+            );
+
+            foreach (($sourcedata['elements'] ?? []) as $elementdata) {
+                self::import_source_element($source, $elementdata);
+            }
+
+            self::sync_courses_for_source($source);
+            $imported++;
+        }
+
+        return ['importedsources' => $imported];
+    }
+
+    /**
+     * Import native slideshow settings and optional legacy EasyEdu slideshow settings.
+     *
+     * @param array $data
+     * @return array
+     */
+    protected static function import_slideshow_configuration(array $data): array {
+        $imported = 0;
+        if (!empty($data['native']) && is_array($data['native'])) {
+            foreach ([self::SLIDESHOW_CONTEXT_COURSE, self::SLIDESHOW_CONTEXT_SITE] as $context) {
+                if (empty($data['native'][$context]) || !is_array($data['native'][$context])) {
+                    continue;
+                }
+                self::import_slideshow_context_config($context, $data['native'][$context]);
+                $imported++;
+            }
+        } else {
+            $legacy = self::import_easyedu_theme_configuration($data);
+            return ['importedslideshowcontexts' => 0] + $legacy;
+        }
+
+        if (!empty($data['legacy_easyedu']) && is_array($data['legacy_easyedu'])) {
+            $legacy = self::import_easyedu_theme_configuration($data['legacy_easyedu']);
+            return ['importedslideshowcontexts' => $imported] + $legacy;
+        }
+
+        return ['importedslideshowcontexts' => $imported];
+    }
+
+    /**
+     * Import one native slideshow context.
+     *
+     * @param string $context
+     * @param array $config
+     * @return void
+     */
+    protected static function import_slideshow_context_config(string $context, array $config): void {
+        $values = $config;
+        unset($values['context'], $values['overlayrgb']);
+        if (isset($values['overlayopacitypercent'])) {
+            $values['overlayopacity'] = (float)$values['overlayopacitypercent'];
+        } else if (isset($values['overlayopacity']) && (float)$values['overlayopacity'] <= 1) {
+            $values['overlayopacity'] = (float)$values['overlayopacity'] * 100;
+        }
+        if (!empty($values['labelcolors']) && is_array($values['labelcolors'])) {
+            foreach ($values['labelcolors'] as $type => $colours) {
+                if (!is_array($colours)) {
+                    continue;
+                }
+                if (array_key_exists('background', $colours)) {
+                    $values['label_' . $type . '_background'] = $colours['background'];
+                }
+                if (array_key_exists('text', $colours)) {
+                    $values['label_' . $type . '_text'] = $colours['text'];
+                }
+            }
+        }
+        unset($values['labelcolors'], $values['overlayopacitypercent']);
+        self::set_slideshow_config($context, $values);
+    }
+
+    /**
+     * Import native site banner settings/layers and optional legacy EasyEdu settings.
+     *
+     * @param array $data
+     * @return array
+     */
+    protected static function import_site_banner_configuration(array $data): array {
+        if (!empty($data['settings']) && is_array($data['settings'])) {
+            if (array_key_exists('displayenabled', $data['settings'])) {
+                set_config('enabled', empty($data['settings']['displayenabled']) ? 0 : 1, 'local_course_banner_builder');
+            }
+            if (array_key_exists('enabled', $data['settings'])) {
+                set_config('sitebannerenabled', empty($data['settings']['enabled']) ? 0 : 1, 'local_course_banner_builder');
+            }
+            if (!empty($data['settings']['bannerformat'])) {
+                self::set_site_banner_format((string)$data['settings']['bannerformat']);
+            }
+        }
+
+        $imported = 0;
+        if (!empty($data['source']) && is_array($data['source'])) {
+            $source = self::get_site_source();
+            self::delete_source_content($source);
+            self::save_source_settings(
+                $source,
+                (string)($data['source']['settings']['compositionmode'] ?? self::MODE_CUMULATIVE),
+                (string)($data['source']['settings']['fitmode'] ?? self::FIT_MODE_ORIGINAL),
+                (string)($data['source']['settings']['fitapplyscope'] ?? self::FIT_SCOPE_SELF),
+                (string)($data['source']['settings']['customfieldpriority'] ?? self::CUSTOMFIELD_PRIORITY_CATEGORY),
+                '',
+                true,
+                false
+            );
+            foreach (($data['source']['elements'] ?? []) as $elementdata) {
+                self::import_source_element($source, $elementdata);
+            }
+            self::sync_courses_for_source($source);
+            $imported = 1;
+        } else {
+            $legacy = self::import_easyedu_theme_configuration($data);
+            return ['importedsitebannersources' => 0] + $legacy;
+        }
+
+        if (!empty($data['legacy_easyedu']) && is_array($data['legacy_easyedu'])) {
+            $legacy = self::import_easyedu_theme_configuration($data['legacy_easyedu']);
+            return ['importedsitebannersources' => $imported] + $legacy;
+        }
+
+        return ['importedsitebannersources' => $imported];
+    }
+
+    /**
+     * Import Moodle custom field categories/fields and return legacy-id map.
+     *
+     * @param array $categories
+     * @return array
+     */
+    protected static function import_course_customfield_definitions(array $categories): array {
+        global $DB;
+
+        $handler = \core_course\customfield\course_handler::create();
+        $context = $handler->get_configuration_context();
+        $fieldmap = [];
+        $now = time();
+        foreach ($categories as $categorydata) {
+            $categoryname = trim((string)($categorydata['name'] ?? ''));
+            if ($categoryname === '') {
+                continue;
+            }
+            $category = $DB->get_record('customfield_category', [
+                'component' => 'core_course',
+                'area' => 'course',
+                'itemid' => 0,
+                'name' => $categoryname,
+            ], '*', IGNORE_MISSING);
+            if (!$category) {
+                $category = (object)[
+                    'name' => $categoryname,
+                    'description' => (string)($categorydata['description'] ?? ''),
+                    'descriptionformat' => (int)($categorydata['descriptionformat'] ?? FORMAT_HTML),
+                    'sortorder' => (int)($categorydata['sortorder'] ?? 0),
+                    'component' => 'core_course',
+                    'area' => 'course',
+                    'itemid' => 0,
+                    'contextid' => $context->id,
+                    'timecreated' => $now,
+                    'timemodified' => $now,
+                ];
+                $category->id = $DB->insert_record('customfield_category', $category);
+            }
+
+            foreach (($categorydata['fields'] ?? []) as $fielddata) {
+                $shortname = trim((string)($fielddata['shortname'] ?? ''));
+                $type = (string)($fielddata['type'] ?? '');
+                if ($shortname === '' || $type === '') {
+                    continue;
+                }
+                $field = $DB->get_record('customfield_field', [
+                    'categoryid' => $category->id,
+                    'shortname' => $shortname,
+                ], '*', IGNORE_MISSING);
+                if (!$field) {
+                    $field = (object)[
+                        'shortname' => $shortname,
+                        'name' => (string)($fielddata['name'] ?? $shortname),
+                        'type' => $type,
+                        'description' => (string)($fielddata['description'] ?? ''),
+                        'descriptionformat' => (int)($fielddata['descriptionformat'] ?? FORMAT_HTML),
+                        'sortorder' => (int)($fielddata['sortorder'] ?? 0),
+                        'categoryid' => $category->id,
+                        'configdata' => (string)($fielddata['configdata'] ?? ''),
+                        'timecreated' => $now,
+                        'timemodified' => $now,
+                    ];
+                    $field->id = $DB->insert_record('customfield_field', $field);
+                } else {
+                    $field->name = (string)($fielddata['name'] ?? $field->name);
+                    $field->description = (string)($fielddata['description'] ?? $field->description);
+                    $field->descriptionformat = (int)($fielddata['descriptionformat'] ?? $field->descriptionformat);
+                    $field->configdata = (string)($fielddata['configdata'] ?? $field->configdata);
+                    $field->timemodified = $now;
+                    $DB->update_record('customfield_field', $field);
+                }
+                if (!empty($fielddata['legacyid'])) {
+                    $fieldmap[(int)$fielddata['legacyid']] = (int)$field->id;
+                }
+            }
+        }
+
+        \core_course\customfield\course_handler::reset_caches();
+        return $fieldmap;
+    }
+
+    /**
+     * Resolve an imported source to a local source object.
+     *
+     * @param array $sourcedata
+     * @param array $fieldmap
+     * @return \stdClass|null
+     */
+    protected static function resolve_import_source(array $sourcedata, array $fieldmap): ?\stdClass {
+        if (($sourcedata['sourcetype'] ?? '') === self::SOURCE_TYPE_SITE ||
+                (string)($sourcedata['sourcekey'] ?? '') === self::SITE_SOURCE_KEY) {
+            return self::get_site_source();
+        }
+
+        if (($sourcedata['sourcetype'] ?? '') === self::SOURCE_TYPE_CUSTOMFIELD) {
+            $customfield = $sourcedata['customfield'] ?? [];
+            $legacyid = (int)($customfield['legacyid'] ?? 0);
+            $fieldid = $fieldmap[$legacyid] ?? 0;
+            if (!$fieldid && !empty($customfield['shortname'])) {
+                $fieldid = self::find_course_customfield_id((string)$customfield['shortname']);
+            }
+            if (!$fieldid) {
+                return null;
+            }
+            $value = (string)($customfield['value'] ?? $sourcedata['settings']['customfieldvalue'] ?? '');
+            return (object)[
+                'type' => self::SOURCE_TYPE_CUSTOMFIELD,
+                'sourcekey' => self::get_customfield_source_key($fieldid, $value),
+                'categoryid' => null,
+                'customfieldid' => $fieldid,
+                'customfieldvalue' => $value,
+                'label' => (string)($sourcedata['label'] ?? ''),
+            ];
+        }
+
+        $categoryid = self::resolve_import_category_id($sourcedata['category'] ?? []);
+        return $categoryid ? self::resolve_source(self::get_category_source_key($categoryid)) : null;
+    }
+
+    /**
+     * Find a course custom field by shortname.
+     *
+     * @param string $shortname
+     * @return int
+     */
+    protected static function find_course_customfield_id(string $shortname): int {
+        global $DB;
+
+        $record = $DB->get_record_sql(
+            "SELECT f.id
+               FROM {customfield_field} f
+               JOIN {customfield_category} c ON c.id = f.categoryid
+              WHERE c.component = :component
+                AND c.area = :area
+                AND c.itemid = 0
+                AND f.shortname = :shortname",
+            ['component' => 'core_course', 'area' => 'course', 'shortname' => $shortname],
+            IGNORE_MISSING
+        );
+        return $record ? (int)$record->id : 0;
+    }
+
+    /**
+     * Import one layer into a source.
+     *
+     * @param \stdClass $source
+     * @param array $elementdata
+     * @return void
+     */
+    protected static function import_source_element(\stdClass $source, array $elementdata): void {
+        global $DB;
+
+        $record = self::create_source_element($source);
+        foreach ([
+            'elementtype', 'name', 'fitmodeoverride', 'positionanchor', 'bordercolor', 'borderstyle', 'bordersides',
+        ] as $field) {
+            if (self::table_field_exists('local_course_banner_elements', $field) || property_exists($record, $field)) {
+                $record->{$field} = $elementdata[$field] ?? $record->{$field};
+            }
+        }
+        foreach ([
+            'sortorder', 'isenabled', 'customsizekeepaspect', 'dynamicimagesizeenabled', 'borderenabled',
+            'borderdashlength', 'borderinnerrounded',
+        ] as $field) {
+            if (self::table_field_exists('local_course_banner_elements', $field) || property_exists($record, $field)) {
+                $record->{$field} = (int)($elementdata[$field] ?? $record->{$field});
+            }
+        }
+        foreach ([
+            'offsettoppercent', 'offsetrightpercent', 'offsetbottompercent', 'offsetleftpercent',
+            'customwidthpercent', 'customheightpercent', 'borderwidth', 'borderopacity', 'borderfade',
+        ] as $field) {
+            if (self::table_field_exists('local_course_banner_elements', $field) || property_exists($record, $field)) {
+                $record->{$field} = (float)($elementdata[$field] ?? $record->{$field});
+            }
+        }
+        $record->timemodified = time();
+        $DB->update_record('local_course_banner_elements', $record);
+
+        if (!empty($elementdata['contentbase64']) && !empty($elementdata['filename'])) {
+            self::store_content_in_element(
+                $record,
+                (string)$elementdata['filename'],
+                base64_decode((string)$elementdata['contentbase64'])
+            );
+        }
+    }
+
+    /**
+     * Import EasyEdu theme settings and stored files.
+     *
+     * @param array $data
+     * @return array
+     */
+    protected static function import_easyedu_theme_configuration(array $data): array {
+        foreach (($data['settings'] ?? []) as $key => $value) {
+            set_config((string)$key, $value, 'theme_easyedu');
+        }
+
+        $context = \context_system::instance();
+        $fs = get_file_storage();
+        $touchedfileareas = [];
+        foreach (($data['files'] ?? []) as $filedata) {
+            $filearea = (string)($filedata['filearea'] ?? '');
+            $filename = (string)($filedata['filename'] ?? '');
+            if ($filearea === '' || $filename === '' || empty($filedata['contentbase64'])) {
+                continue;
+            }
+            if (empty($touchedfileareas[$filearea])) {
+                $fs->delete_area_files($context->id, 'theme_easyedu', $filearea, 0);
+                $touchedfileareas[$filearea] = true;
+            }
+            $fs->create_file_from_string([
+                'contextid' => $context->id,
+                'component' => 'theme_easyedu',
+                'filearea' => $filearea,
+                'itemid' => 0,
+                'filepath' => (string)($filedata['filepath'] ?? '/'),
+                'filename' => $filename,
+            ], base64_decode((string)$filedata['contentbase64']));
+            set_config($filearea, $filename, 'theme_easyedu');
+        }
+
+        return ['importedthemesettings' => count($data['settings'] ?? [])];
+    }
+
+    /**
+     * Import the legacy category-only export format.
+     *
+     * @param array $categories
+     * @return array
+     */
+    protected static function import_legacy_course_banner_configuration(array $categories): array {
+        $imported = 0;
+        foreach ($categories as $categorydata) {
+            $source = self::resolve_import_source([
+                'sourcetype' => self::SOURCE_TYPE_CATEGORY,
+                'category' => $categorydata,
+                'settings' => $categorydata['settings'] ?? [],
+            ], []);
+            if (!$source) {
+                continue;
+            }
+            self::delete_source_content($source);
+            self::save_source_settings(
+                $source,
                 (string)($categorydata['settings']['compositionmode'] ?? self::MODE_RANDOM),
                 (string)($categorydata['settings']['fitmode'] ?? self::FIT_MODE_ORIGINAL),
                 (string)($categorydata['settings']['fitapplyscope'] ?? self::FIT_SCOPE_DESCENDANTS)
             );
-
             foreach (($categorydata['elements'] ?? []) as $elementdata) {
-                $record = self::create_category_element($categoryid);
-                $record->name = (string)($elementdata['name'] ?? '');
-                $record->sortorder = max(0, (int)($elementdata['sortorder'] ?? 0));
-                $record->isenabled = empty($elementdata['isenabled']) ? 0 : 1;
-                if (self::table_field_exists('local_course_banner_elements', 'fitmodeoverride')) {
-                    $record->fitmodeoverride = $elementdata['fitmodeoverride'] ?? null;
-                }
-                $record->timemodified = time();
-                $DB->update_record('local_course_banner_elements', $record);
-
-                if (!empty($elementdata['contentbase64']) && !empty($elementdata['filename'])) {
-                    self::store_content_in_element(
-                        $record,
-                        (string)$elementdata['filename'],
-                        base64_decode((string)$elementdata['contentbase64'])
-                    );
-                }
+                self::import_source_element($source, $elementdata);
             }
-
-            self::sync_courses_for_category_tree($categoryid);
+            self::sync_courses_for_source($source);
             $imported++;
         }
 
