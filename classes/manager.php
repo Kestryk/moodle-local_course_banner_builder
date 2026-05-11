@@ -1969,18 +1969,23 @@ class manager {
         if (!$record && self::table_field_exists('local_course_banner_elements', 'sourcekey')) {
             $record = $DB->get_record('local_course_banner_elements', ['sourcekey' => $sourcekey], '*', IGNORE_MISSING);
         }
-        if (!$record || empty($record->customfieldid)) {
+        if (!$record) {
             return null;
         }
 
-        $field = $DB->get_record('customfield_field', ['id' => $record->customfieldid], 'id,name,type,configdata', IGNORE_MISSING);
+        $fieldid = (int)($record->customfieldid ?? $record->coursecustomfieldid ?? 0);
+        if (empty($fieldid)) {
+            return null;
+        }
+
+        $field = $DB->get_record('customfield_field', ['id' => $fieldid], 'id,name,type,configdata', IGNORE_MISSING);
         $rawvalue = (string)($record->customfieldvalue ?? '');
         $label = $field ? format_string($field->name) . ': ' . self::get_customfield_value_label($field, $rawvalue) : $rawvalue;
         return (object)[
             'type' => self::SOURCE_TYPE_CUSTOMFIELD,
             'sourcekey' => $sourcekey,
             'categoryid' => null,
-            'customfieldid' => (int)$record->customfieldid,
+            'customfieldid' => $fieldid,
             'customfieldvalue' => $rawvalue,
             'label' => $label,
         ];
@@ -3632,12 +3637,6 @@ class manager {
         if (self::table_field_exists('local_course_banner_elements', 'customsizekeepaspect') &&
                 property_exists($data, 'customsizekeepaspect')) {
             $record->customsizekeepaspect = empty($data->customsizekeepaspect) ? 0 : 1;
-        }
-        if (!empty($record->customsizekeepaspect) &&
-                ($fitmodeoverride === self::FIT_MODE_CUSTOM ||
-                    (empty($fitmodeoverride) && $sourcefitmode === self::FIT_MODE_CUSTOM)) &&
-                self::table_field_exists('local_course_banner_elements', 'customheightpercent')) {
-            $record->customheightpercent = $record->customwidthpercent ?? 100;
         }
         if (self::table_field_exists('local_course_banner_elements', 'dynamicimagesizeenabled') &&
                 property_exists($data, 'dynamicimagesizeenabled')) {
@@ -5762,9 +5761,7 @@ class manager {
                 'fieldname' => 'customfieldpriority',
                 'fieldid' => 'local-course-banner-builder-summary-customfieldpriority',
                 'label' => get_string('customfieldpriority', 'local_course_banner_builder'),
-                'displayvalue' => self::get_customfield_priority_options()[
-                    $settings->customfieldpriority ?? self::CUSTOMFIELD_PRIORITY_CATEGORY
-                ] ?? '',
+                'displayvalue' => self::get_customfield_priority_options()[$settings->customfieldpriority ?? self::CUSTOMFIELD_PRIORITY_CATEGORY] ?? '',
                 'helptext' => get_string('customfieldpriority_help', 'local_course_banner_builder'),
                 'options' => self::export_inline_setting_options(
                     self::get_customfield_priority_options(),
@@ -6085,24 +6082,37 @@ class manager {
         $corners = self::get_border_corner_radii($sides, $radius);
         $dashlength = max(4, min(80, (int)round((float)($borderrecord->borderdashlength ?? 24))));
         $dashgap = max(2, (int)round($dashlength * 0.7));
+        $hastop = in_array('top', $sides, true);
+        $hasright = in_array('right', $sides, true);
+        $hasbottom = in_array('bottom', $sides, true);
+        $hasleft = in_array('left', $sides, true);
+        $rounded = !empty($borderrecord->borderinnerrounded);
+        $topleftoffset = ($hastop && $hasleft) ? ($rounded ? $cutout : $squareoffset) : $zerowidth;
+        $toprightoffset = ($hastop && $hasright) ? ($rounded ? $cutout : $squareoffset) : $zerowidth;
+        $bottomleftoffset = ($hasbottom && $hasleft) ? ($rounded ? $cutout : $squareoffset) : $zerowidth;
+        $bottomrightoffset = ($hasbottom && $hasright) ? ($rounded ? $cutout : $squareoffset) : $zerowidth;
+        $topleftcorner = ($hastop && $hasleft) ? ($rounded ? $cutout : $activewidth) : $zerowidth;
+        $toprightcorner = ($hastop && $hasright) ? ($rounded ? $cutout : $activewidth) : $zerowidth;
+        $bottomrightcorner = ($hasbottom && $hasright) ? ($rounded ? $cutout : $activewidth) : $zerowidth;
+        $bottomleftcorner = ($hasbottom && $hasleft) ? ($rounded ? $cutout : $activewidth) : $zerowidth;
 
         $stylestring = implode(' ', [
-            '--page-header-border-top-width: ' . (in_array('top', $sides, true) ? $activewidth : $zerowidth) . ';',
-            '--page-header-border-right-width: ' . (in_array('right', $sides, true) ? $activewidth : $zerowidth) . ';',
-            '--page-header-border-bottom-width: ' . (in_array('bottom', $sides, true) ? $activewidth : $zerowidth) . ';',
-            '--page-header-border-left-width: ' . (in_array('left', $sides, true) ? $activewidth : $zerowidth) . ';',
-            '--page-header-border-top-left-offset: ' . (in_array('top', $sides, true) && in_array('left', $sides, true) ? (!empty($borderrecord->borderinnerrounded) ? $cutout : $squareoffset) : $zerowidth) . ';',
-            '--page-header-border-top-right-offset: ' . (in_array('top', $sides, true) && in_array('right', $sides, true) ? (!empty($borderrecord->borderinnerrounded) ? $cutout : $squareoffset) : $zerowidth) . ';',
-            '--page-header-border-bottom-left-offset: ' . (in_array('bottom', $sides, true) && in_array('left', $sides, true) ? (!empty($borderrecord->borderinnerrounded) ? $cutout : $squareoffset) : $zerowidth) . ';',
-            '--page-header-border-bottom-right-offset: ' . (in_array('bottom', $sides, true) && in_array('right', $sides, true) ? (!empty($borderrecord->borderinnerrounded) ? $cutout : $squareoffset) : $zerowidth) . ';',
-            '--page-header-border-right-top-offset: ' . (in_array('top', $sides, true) && in_array('right', $sides, true) ? (!empty($borderrecord->borderinnerrounded) ? $cutout : $squareoffset) : $zerowidth) . ';',
-            '--page-header-border-right-bottom-offset: ' . (in_array('bottom', $sides, true) && in_array('right', $sides, true) ? (!empty($borderrecord->borderinnerrounded) ? $cutout : $squareoffset) : $zerowidth) . ';',
-            '--page-header-border-left-top-offset: ' . (in_array('top', $sides, true) && in_array('left', $sides, true) ? (!empty($borderrecord->borderinnerrounded) ? $cutout : $squareoffset) : $zerowidth) . ';',
-            '--page-header-border-left-bottom-offset: ' . (in_array('bottom', $sides, true) && in_array('left', $sides, true) ? (!empty($borderrecord->borderinnerrounded) ? $cutout : $squareoffset) : $zerowidth) . ';',
-            '--page-header-border-top-left-corner-size: ' . (in_array('top', $sides, true) && in_array('left', $sides, true) ? (!empty($borderrecord->borderinnerrounded) ? $cutout : $activewidth) : $zerowidth) . ';',
-            '--page-header-border-top-right-corner-size: ' . (in_array('top', $sides, true) && in_array('right', $sides, true) ? (!empty($borderrecord->borderinnerrounded) ? $cutout : $activewidth) : $zerowidth) . ';',
-            '--page-header-border-bottom-right-corner-size: ' . (in_array('bottom', $sides, true) && in_array('right', $sides, true) ? (!empty($borderrecord->borderinnerrounded) ? $cutout : $activewidth) : $zerowidth) . ';',
-            '--page-header-border-bottom-left-corner-size: ' . (in_array('bottom', $sides, true) && in_array('left', $sides, true) ? (!empty($borderrecord->borderinnerrounded) ? $cutout : $activewidth) : $zerowidth) . ';',
+            '--page-header-border-top-width: ' . ($hastop ? $activewidth : $zerowidth) . ';',
+            '--page-header-border-right-width: ' . ($hasright ? $activewidth : $zerowidth) . ';',
+            '--page-header-border-bottom-width: ' . ($hasbottom ? $activewidth : $zerowidth) . ';',
+            '--page-header-border-left-width: ' . ($hasleft ? $activewidth : $zerowidth) . ';',
+            '--page-header-border-top-left-offset: ' . $topleftoffset . ';',
+            '--page-header-border-top-right-offset: ' . $toprightoffset . ';',
+            '--page-header-border-bottom-left-offset: ' . $bottomleftoffset . ';',
+            '--page-header-border-bottom-right-offset: ' . $bottomrightoffset . ';',
+            '--page-header-border-right-top-offset: ' . $toprightoffset . ';',
+            '--page-header-border-right-bottom-offset: ' . $bottomrightoffset . ';',
+            '--page-header-border-left-top-offset: ' . $topleftoffset . ';',
+            '--page-header-border-left-bottom-offset: ' . $bottomleftoffset . ';',
+            '--page-header-border-top-left-corner-size: ' . $topleftcorner . ';',
+            '--page-header-border-top-right-corner-size: ' . $toprightcorner . ';',
+            '--page-header-border-bottom-right-corner-size: ' . $bottomrightcorner . ';',
+            '--page-header-border-bottom-left-corner-size: ' . $bottomleftcorner . ';',
             '--page-header-border-top-left-fade-start: ' . ($radiuspixels + ($widthpixels * $fade)) . 'px;',
             '--page-header-border-top-right-fade-start: ' . ($radiuspixels + ($widthpixels * $fade)) . 'px;',
             '--page-header-border-bottom-right-fade-start: ' . ($radiuspixels + ($widthpixels * $fade)) . 'px;',
@@ -6200,6 +6210,16 @@ class manager {
         return self::sort_layer_specs($records);
     }
 
+    /**
+     * Return the resolved layer specs for one source and its parent chain.
+     *
+     * @param \stdClass $source Source record.
+     * @param int $targetcategoryid Target course category id.
+     * @param int $categoryorder Order offset inherited from the target category.
+     * @param array $visited Source keys already visited.
+     * @param int $courseid Course id used for random layer selection.
+     * @return array
+     */
     protected static function get_layer_specs_for_source_chain(
         \stdClass $source,
         int $targetcategoryid,
@@ -6774,6 +6794,33 @@ class manager {
     }
 
     /**
+     * Get the visible contained image box as percentages of the canonical banner.
+     *
+     * @param int $imagewidth
+     * @param int $imageheight
+     * @return array{width:float,height:float}
+     */
+    protected static function get_contained_overlay_box_percentages(int $imagewidth, int $imageheight): array {
+        if ($imagewidth <= 0 || $imageheight <= 0) {
+            return ['width' => 100.0, 'height' => 100.0];
+        }
+
+        $imageaspect = $imagewidth / $imageheight;
+        $banneraspect = self::DEFAULT_CANVAS_WIDTH / self::DEFAULT_CANVAS_HEIGHT;
+        if ($imageaspect >= $banneraspect) {
+            return [
+                'width' => 100.0,
+                'height' => 100.0 * ($banneraspect / $imageaspect),
+            ];
+        }
+
+        return [
+            'width' => 100.0 * ($imageaspect / $banneraspect),
+            'height' => 100.0,
+        ];
+    }
+
+    /**
      * Build responsive admin preview styles for one image layer.
      *
      * @param \stdClass $record
@@ -6804,8 +6851,19 @@ class manager {
             $wrapperstyles[] = 'inset: 0;';
             $imagestyles[] = 'object-fit: fill;';
         } else if ($fitmode === self::FIT_MODE_COVER) {
-            $wrapperstyles[] = 'inset: 0;';
-            $imagestyles[] = 'object-fit: contain;';
+            $imageinfo = $file ? $file->get_imageinfo() : [];
+            $imagewidth = (int)($imageinfo['width'] ?? 0);
+            $imageheight = (int)($imageinfo['height'] ?? 0);
+            if ($imagewidth > 0 && $imageheight > 0) {
+                $box = self::get_contained_overlay_box_percentages($imagewidth, $imageheight);
+                $wrapperstyles[] = 'width: ' . self::format_css_percentage($box['width']) . ';';
+                $wrapperstyles[] = 'height: ' . self::format_css_percentage($box['height']) . ';';
+                $wrapperstyles = array_merge($wrapperstyles, self::get_html_overlay_position_styles($record, $anchor));
+                $imagestyles[] = 'object-fit: fill;';
+            } else {
+                $wrapperstyles[] = 'inset: 0;';
+                $imagestyles[] = 'object-fit: contain;';
+            }
             $imagestyles[] = 'object-position: ' . self::get_css_object_position_for_anchor($anchor) . ';';
         } else if ($fitmode === self::FIT_MODE_CUSTOM) {
             $imageinfo = $file ? $file->get_imageinfo() : [];
@@ -6875,6 +6933,23 @@ class manager {
         $cutout = !empty($record->borderinnerrounded) && $haswidth ? 'calc(' . $width . ' + ' . $radius . ')' : $width;
         $squareoffset = $width;
         $fadestart = 'calc(' . $radius . ' + ' . self::format_border_height_relative_length($widthpercent * $fade) . ')';
+        $hastop = in_array('top', $sides, true);
+        $hasright = in_array('right', $sides, true);
+        $hasbottom = in_array('bottom', $sides, true);
+        $hasleft = in_array('left', $sides, true);
+        $rounded = !empty($record->borderinnerrounded);
+        $topleftradius = ($rounded && $hastop && $hasleft) ? $radius : '0px';
+        $toprightradius = ($rounded && $hastop && $hasright) ? $radius : '0px';
+        $bottomrightradius = ($rounded && $hasbottom && $hasright) ? $radius : '0px';
+        $bottomleftradius = ($rounded && $hasbottom && $hasleft) ? $radius : '0px';
+        $topleftoffset = ($hastop && $hasleft) ? ($rounded ? $cutout : $squareoffset) : $zerowidth;
+        $toprightoffset = ($hastop && $hasright) ? ($rounded ? $cutout : $squareoffset) : $zerowidth;
+        $bottomleftoffset = ($hasbottom && $hasleft) ? ($rounded ? $cutout : $squareoffset) : $zerowidth;
+        $bottomrightoffset = ($hasbottom && $hasright) ? ($rounded ? $cutout : $squareoffset) : $zerowidth;
+        $topleftcorner = ($hastop && $hasleft) ? ($rounded ? $cutout : $width) : $zerowidth;
+        $toprightcorner = ($hastop && $hasright) ? ($rounded ? $cutout : $width) : $zerowidth;
+        $bottomrightcorner = ($hasbottom && $hasright) ? ($rounded ? $cutout : $width) : $zerowidth;
+        $bottomleftcorner = ($hasbottom && $hasleft) ? ($rounded ? $cutout : $width) : $zerowidth;
 
         return implode(' ', [
             'position: absolute;',
@@ -6883,22 +6958,22 @@ class manager {
             '--local-course-banner-builder-preview-right-width: ' . $rightwidth . ';',
             '--local-course-banner-builder-preview-bottom-width: ' . $bottomwidth . ';',
             '--local-course-banner-builder-preview-left-width: ' . $leftwidth . ';',
-            '--local-course-banner-builder-preview-top-left-radius: ' . (!empty($record->borderinnerrounded) && in_array('top', $sides, true) && in_array('left', $sides, true) ? $radius : '0px') . ';',
-            '--local-course-banner-builder-preview-top-right-radius: ' . (!empty($record->borderinnerrounded) && in_array('top', $sides, true) && in_array('right', $sides, true) ? $radius : '0px') . ';',
-            '--local-course-banner-builder-preview-bottom-right-radius: ' . (!empty($record->borderinnerrounded) && in_array('bottom', $sides, true) && in_array('right', $sides, true) ? $radius : '0px') . ';',
-            '--local-course-banner-builder-preview-bottom-left-radius: ' . (!empty($record->borderinnerrounded) && in_array('bottom', $sides, true) && in_array('left', $sides, true) ? $radius : '0px') . ';',
-            '--local-course-banner-builder-preview-top-left-offset: ' . (in_array('top', $sides, true) && in_array('left', $sides, true) ? (!empty($record->borderinnerrounded) ? $cutout : $squareoffset) : $zerowidth) . ';',
-            '--local-course-banner-builder-preview-top-right-offset: ' . (in_array('top', $sides, true) && in_array('right', $sides, true) ? (!empty($record->borderinnerrounded) ? $cutout : $squareoffset) : $zerowidth) . ';',
-            '--local-course-banner-builder-preview-bottom-left-offset: ' . (in_array('bottom', $sides, true) && in_array('left', $sides, true) ? (!empty($record->borderinnerrounded) ? $cutout : $squareoffset) : $zerowidth) . ';',
-            '--local-course-banner-builder-preview-bottom-right-offset: ' . (in_array('bottom', $sides, true) && in_array('right', $sides, true) ? (!empty($record->borderinnerrounded) ? $cutout : $squareoffset) : $zerowidth) . ';',
-            '--local-course-banner-builder-preview-right-top-offset: ' . (in_array('top', $sides, true) && in_array('right', $sides, true) ? (!empty($record->borderinnerrounded) ? $cutout : $squareoffset) : $zerowidth) . ';',
-            '--local-course-banner-builder-preview-right-bottom-offset: ' . (in_array('bottom', $sides, true) && in_array('right', $sides, true) ? (!empty($record->borderinnerrounded) ? $cutout : $squareoffset) : $zerowidth) . ';',
-            '--local-course-banner-builder-preview-left-top-offset: ' . (in_array('top', $sides, true) && in_array('left', $sides, true) ? (!empty($record->borderinnerrounded) ? $cutout : $squareoffset) : $zerowidth) . ';',
-            '--local-course-banner-builder-preview-left-bottom-offset: ' . (in_array('bottom', $sides, true) && in_array('left', $sides, true) ? (!empty($record->borderinnerrounded) ? $cutout : $squareoffset) : $zerowidth) . ';',
-            '--local-course-banner-builder-preview-top-left-corner-size: ' . (in_array('top', $sides, true) && in_array('left', $sides, true) ? (!empty($record->borderinnerrounded) ? $cutout : $width) : $zerowidth) . ';',
-            '--local-course-banner-builder-preview-top-right-corner-size: ' . (in_array('top', $sides, true) && in_array('right', $sides, true) ? (!empty($record->borderinnerrounded) ? $cutout : $width) : $zerowidth) . ';',
-            '--local-course-banner-builder-preview-bottom-right-corner-size: ' . (in_array('bottom', $sides, true) && in_array('right', $sides, true) ? (!empty($record->borderinnerrounded) ? $cutout : $width) : $zerowidth) . ';',
-            '--local-course-banner-builder-preview-bottom-left-corner-size: ' . (in_array('bottom', $sides, true) && in_array('left', $sides, true) ? (!empty($record->borderinnerrounded) ? $cutout : $width) : $zerowidth) . ';',
+            '--local-course-banner-builder-preview-top-left-radius: ' . $topleftradius . ';',
+            '--local-course-banner-builder-preview-top-right-radius: ' . $toprightradius . ';',
+            '--local-course-banner-builder-preview-bottom-right-radius: ' . $bottomrightradius . ';',
+            '--local-course-banner-builder-preview-bottom-left-radius: ' . $bottomleftradius . ';',
+            '--local-course-banner-builder-preview-top-left-offset: ' . $topleftoffset . ';',
+            '--local-course-banner-builder-preview-top-right-offset: ' . $toprightoffset . ';',
+            '--local-course-banner-builder-preview-bottom-left-offset: ' . $bottomleftoffset . ';',
+            '--local-course-banner-builder-preview-bottom-right-offset: ' . $bottomrightoffset . ';',
+            '--local-course-banner-builder-preview-right-top-offset: ' . $toprightoffset . ';',
+            '--local-course-banner-builder-preview-right-bottom-offset: ' . $bottomrightoffset . ';',
+            '--local-course-banner-builder-preview-left-top-offset: ' . $topleftoffset . ';',
+            '--local-course-banner-builder-preview-left-bottom-offset: ' . $bottomleftoffset . ';',
+            '--local-course-banner-builder-preview-top-left-corner-size: ' . $topleftcorner . ';',
+            '--local-course-banner-builder-preview-top-right-corner-size: ' . $toprightcorner . ';',
+            '--local-course-banner-builder-preview-bottom-right-corner-size: ' . $bottomrightcorner . ';',
+            '--local-course-banner-builder-preview-bottom-left-corner-size: ' . $bottomleftcorner . ';',
             '--local-course-banner-builder-preview-top-left-fade-start: ' . $fadestart . ';',
             '--local-course-banner-builder-preview-top-right-fade-start: ' . $fadestart . ';',
             '--local-course-banner-builder-preview-bottom-right-fade-start: ' . $fadestart . ';',
@@ -7026,6 +7101,34 @@ class manager {
         foreach (array_unique(array_map('intval', $categoryids)) as $categoryid) {
             self::sync_courses_for_category_tree($categoryid);
         }
+    }
+
+    /**
+     * Delete all runtime configuration owned by this plugin, keeping the installed plugin version intact.
+     *
+     * @return void
+     */
+    public static function delete_all_plugin_configuration(): void {
+        global $DB;
+
+        self::delete_all_configuration();
+        self::delete_source_content(self::get_site_source());
+
+        $context = \context_system::instance();
+        $fs = get_file_storage();
+        $fs->delete_area_files($context->id, 'local_course_banner_builder', self::FILEAREA);
+        $fs->delete_area_files($context->id, 'local_course_banner_builder', self::CARD_FILEAREA);
+
+        $DB->delete_records_select(
+            'config_plugins',
+            'plugin = :plugin AND name <> :versionname',
+            [
+                'plugin' => 'local_course_banner_builder',
+                'versionname' => 'version',
+            ]
+        );
+
+        theme_reset_all_caches();
     }
 
     /**
@@ -7334,6 +7437,7 @@ class manager {
                 'enabled' => self::is_display_enabled(),
                 'bannerformat' => self::get_course_banner_format(),
                 'activitypagesenabled' => self::course_banners_on_activity_pages_enabled(),
+                'enabledcustomfields' => (string)get_config('local_course_banner_builder', 'enabledcustomfields'),
             ],
             'customfieldcategories' => self::export_course_customfield_definitions(array_keys($customfieldids)),
             'sources' => $sources,
@@ -7378,11 +7482,22 @@ class manager {
         }
 
         $sourcetype = $source->type ?? ($settings->sourcetype ?? self::SOURCE_TYPE_CATEGORY);
+        $settingsdata = $settings ? self::export_settings_record($settings) : [];
+        if (!empty($settingsdata['sourceparentkey'])) {
+            $parentsource = self::resolve_source((string)$settingsdata['sourceparentkey']);
+            if ($parentsource) {
+                $settingsdata['sourceparent'] = self::export_source_reference(
+                    (string)$settingsdata['sourceparentkey'],
+                    $parentsource
+                );
+            }
+        }
+
         $export = [
             'sourcekey' => $sourcekey,
             'sourcetype' => $sourcetype,
             'label' => $source->label ?? '',
-            'settings' => $settings ? self::export_settings_record($settings) : [],
+            'settings' => $settingsdata,
             'elements' => $elements,
         ];
 
@@ -7400,6 +7515,40 @@ class manager {
         }
 
         return $export;
+    }
+
+    /**
+     * Export enough source identity data to resolve a referenced source during import.
+     *
+     * @param string $sourcekey
+     * @param \stdClass $source
+     * @return array
+     */
+    protected static function export_source_reference(string $sourcekey, \stdClass $source): array {
+        $reference = [
+            'sourcekey' => $sourcekey,
+            'sourcetype' => $source->type ?? self::SOURCE_TYPE_CATEGORY,
+            'label' => $source->label ?? '',
+        ];
+
+        if (($source->type ?? '') === self::SOURCE_TYPE_CUSTOMFIELD) {
+            $reference['customfield'] = self::export_customfield_identity(
+                (int)($source->customfieldid ?? 0),
+                (string)($source->customfieldvalue ?? '')
+            );
+            return $reference;
+        }
+
+        if (($source->type ?? '') === self::SOURCE_TYPE_SITE) {
+            $reference['site'] = [
+                'key' => self::SITE_SOURCE_KEY,
+                'label' => $source->label ?? get_string('sitebanner', 'local_course_banner_builder'),
+            ];
+            return $reference;
+        }
+
+        $reference['category'] = self::export_course_category_identity((int)($source->categoryid ?? 0));
+        return $reference;
     }
 
     /**
@@ -7853,6 +8002,20 @@ class manager {
                     'local_course_banner_builder'
                 );
             }
+            if (array_key_exists('enabledcustomfields', $data['settings'])) {
+                $enabledcustomfields = array_filter(array_map('intval', explode(',', (string)$data['settings']['enabledcustomfields'])));
+                $enabledcustomfields = array_values(array_unique(array_filter(array_map(
+                    static function(int $fieldid) use ($fieldmap): int {
+                        return (int)($fieldmap[$fieldid] ?? $fieldid);
+                    },
+                    $enabledcustomfields
+                ))));
+                set_config(
+                    'enabledcustomfields',
+                    implode(',', $enabledcustomfields),
+                    'local_course_banner_builder'
+                );
+            }
         }
         $resolvedsources = [];
         $sourcekeymap = [];
@@ -7866,13 +8029,11 @@ class manager {
                 $sourcekeymap[(string)$sourcedata['sourcekey']] = (string)$source->sourcekey;
             }
         }
+        self::enable_customfields_from_imported_sources($resolvedsources);
 
         $imported = 0;
         foreach ($resolvedsources as [$sourcedata, $source]) {
-            $parentkey = (string)($sourcedata['settings']['sourceparentkey'] ?? '');
-            if ($parentkey !== '') {
-                $parentkey = $sourcekeymap[$parentkey] ?? $parentkey;
-            }
+            $parentkey = self::resolve_import_parent_key($sourcedata, $sourcekeymap, $fieldmap);
 
             self::delete_source_content($source);
             self::save_source_settings(
@@ -7894,7 +8055,83 @@ class manager {
             $imported++;
         }
 
+        foreach ($resolvedsources as [$sourcedata, $source]) {
+            $parentkey = self::resolve_import_parent_key($sourcedata, $sourcekeymap, $fieldmap);
+            if ($parentkey === '') {
+                continue;
+            }
+            $settings = self::get_source_settings($source);
+            if (empty($settings->id) || (string)($settings->sourceparentkey ?? '') === $parentkey) {
+                continue;
+            }
+            self::save_source_settings(
+                $source,
+                (string)($settings->compositionmode ?? self::MODE_RANDOM),
+                (string)($settings->fitmode ?? self::FIT_MODE_ORIGINAL),
+                (string)($settings->fitapplyscope ?? self::FIT_SCOPE_DESCENDANTS),
+                (string)($settings->customfieldpriority ?? self::CUSTOMFIELD_PRIORITY_CATEGORY),
+                $parentkey,
+                false,
+                !empty($settings->sourceinheritchildren)
+            );
+        }
+
         return ['importedsources' => $imported];
+    }
+
+    /**
+     * Ensure imported custom field sources are selectable in the admin source dropdown.
+     *
+     * @param array $resolvedsources
+     * @return void
+     */
+    protected static function enable_customfields_from_imported_sources(array $resolvedsources): void {
+        $enabled = array_filter(array_map('intval', explode(',', (string)get_config(
+            'local_course_banner_builder',
+            'enabledcustomfields'
+        ))));
+
+        foreach ($resolvedsources as $entry) {
+            $source = $entry[1] ?? null;
+            if (($source->type ?? '') === self::SOURCE_TYPE_CUSTOMFIELD && !empty($source->customfieldid)) {
+                $enabled[] = (int)$source->customfieldid;
+            }
+        }
+
+        $enabled = array_values(array_unique(array_filter($enabled)));
+        set_config('enabledcustomfields', implode(',', $enabled), 'local_course_banner_builder');
+    }
+
+    /**
+     * Resolve the imported parent source key using local source mappings and exported source identity data.
+     *
+     * @param array $sourcedata
+     * @param array $sourcekeymap
+     * @param array $fieldmap
+     * @return string
+     */
+    protected static function resolve_import_parent_key(array $sourcedata, array $sourcekeymap, array $fieldmap): string {
+        if (!empty($sourcedata['settings']['sourceisroot'])) {
+            return '';
+        }
+
+        $parentkey = (string)($sourcedata['settings']['sourceparentkey'] ?? '');
+        if ($parentkey === '') {
+            return '';
+        }
+
+        if (isset($sourcekeymap[$parentkey])) {
+            return (string)$sourcekeymap[$parentkey];
+        }
+
+        if (!empty($sourcedata['settings']['sourceparent']) && is_array($sourcedata['settings']['sourceparent'])) {
+            $parentsource = self::resolve_import_source($sourcedata['settings']['sourceparent'], $fieldmap);
+            if ($parentsource) {
+                return (string)$parentsource->sourcekey;
+            }
+        }
+
+        return $parentkey;
     }
 
     /**
@@ -8670,16 +8907,22 @@ class manager {
             $styles[] = 'height: 100%;';
             $styles[] = 'object-fit: fill;';
         } else if ($fitmode === self::FIT_MODE_COVER) {
-            $styles[] = 'width: 100%;';
-            $styles[] = 'height: 100%;';
-            $styles[] = 'object-fit: contain;';
+            $box = self::get_contained_overlay_box_percentages($layerwidth, $layerheight);
+            $styles[] = 'width: ' . self::format_css_percentage($box['width']) . ';';
+            $styles[] = 'height: ' . self::format_css_percentage($box['height']) . ';';
+            $styles[] = 'object-fit: fill;';
             $styles[] = 'object-position: ' . self::get_css_object_position_for_anchor($anchor) . ';';
         } else if ($fitmode === self::FIT_MODE_CUSTOM) {
-            $styles[] = 'width: ' . self::format_css_percentage((float)($record->customwidthpercent ?? 100)) . ';';
             if (!empty($record->customsizekeepaspect)) {
+                $widthlimit = self::normalise_percentage((float)($record->customwidthpercent ?? 100), 0.0, 300.0);
+                $heightlimit = self::normalise_percentage((float)($record->customheightpercent ?? 100), 0.0, 300.0);
+                $imageaspect = $layerwidth / $layerheight;
+                $heightlimitedwidth = $heightlimit * $imageaspect;
+                $styles[] = 'width: min(' . self::format_css_percentage($widthlimit) . ', ' .
+                    rtrim(rtrim(sprintf('%.6F', $heightlimitedwidth), '0'), '.') . 'cqh);';
                 $styles[] = 'height: auto;';
-                $styles[] = 'max-height: ' . self::format_css_percentage((float)($record->customheightpercent ?? 100)) . ';';
             } else {
+                $styles[] = 'width: ' . self::format_css_percentage((float)($record->customwidthpercent ?? 100)) . ';';
                 $styles[] = 'height: ' . self::format_css_percentage((float)($record->customheightpercent ?? 100)) . ';';
             }
         } else {
@@ -8687,7 +8930,9 @@ class manager {
             $styles[] = 'height: auto;';
         }
 
-        if ($fitmode !== self::FIT_MODE_BANNER) {
+        if ($fitmode !== self::FIT_MODE_BANNER && $fitmode !== self::FIT_MODE_COVER) {
+            $styles = array_merge($styles, self::get_html_overlay_position_styles($record, $anchor));
+        } else if ($fitmode === self::FIT_MODE_COVER) {
             $styles = array_merge($styles, self::get_html_overlay_position_styles($record, $anchor));
         } else {
             $styles[] = 'left: 0;';
@@ -8892,15 +9137,7 @@ class manager {
 
         $widthlimit = self::normalise_percentage((float)($record->customwidthpercent ?? 100));
         $heightlimit = self::normalise_percentage((float)($record->customheightpercent ?? 100));
-        if (empty($record->customsizekeepaspect)) {
-            return ['width' => $widthlimit, 'height' => $heightlimit];
-        }
-
-        $imageaspect = $layerwidth / $layerheight;
-        $banneraspect = self::DEFAULT_CANVAS_WIDTH / self::DEFAULT_CANVAS_HEIGHT;
-        $heightfromwidth = $widthlimit * ($banneraspect / $imageaspect);
-
-        return ['width' => $widthlimit, 'height' => $heightfromwidth];
+        return ['width' => $widthlimit, 'height' => $heightlimit];
     }
 
     /**
@@ -9481,9 +9718,26 @@ class manager {
             self::draw_square_border_corner($canvas, $outerright - $cutoutsize + 1, $outertop, $cutoutsize, $color, 'top-right', $fade);
         }
         if ($rounded && $hasbottomrightcorner) {
-            self::draw_inner_rounded_border_corner($canvas, $outerright - $cutoutsize + 1, $outerbottom - $cutoutsize + 1, $cutoutsize, $innerradius, $color, 'bottom-right', $fade);
+            self::draw_inner_rounded_border_corner(
+                $canvas,
+                $outerright - $cutoutsize + 1,
+                $outerbottom - $cutoutsize + 1,
+                $cutoutsize,
+                $innerradius,
+                $color,
+                'bottom-right',
+                $fade
+            );
         } else if ($separatesquarecorners && $hasbottomrightcorner) {
-            self::draw_square_border_corner($canvas, $outerright - $cutoutsize + 1, $outerbottom - $cutoutsize + 1, $cutoutsize, $color, 'bottom-right', $fade);
+            self::draw_square_border_corner(
+                $canvas,
+                $outerright - $cutoutsize + 1,
+                $outerbottom - $cutoutsize + 1,
+                $cutoutsize,
+                $color,
+                'bottom-right',
+                $fade
+            );
         }
         if ($rounded && $hasbottomleftcorner) {
             self::draw_inner_rounded_border_corner($canvas, $outerleft, $outerbottom - $cutoutsize + 1, $cutoutsize, $innerradius, $color, 'bottom-left', $fade);

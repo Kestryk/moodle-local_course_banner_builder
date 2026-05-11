@@ -249,7 +249,12 @@ class hook_callbacks {
             '    position: absolute;',
             '    inset: 0;',
             '    z-index: -1;',
-            '    background: linear-gradient(90deg, rgba(var(--local-course-banner-builder-slideshow-overlay-rgb, 0, 0, 0), var(--local-course-banner-builder-slideshow-overlay-opacity, 0.38)), rgba(var(--local-course-banner-builder-slideshow-overlay-rgb, 0, 0, 0), 0.12), rgba(var(--local-course-banner-builder-slideshow-overlay-rgb, 0, 0, 0), var(--local-course-banner-builder-slideshow-overlay-opacity, 0.38)));',
+            '    background: linear-gradient(90deg, ' .
+                'rgba(var(--local-course-banner-builder-slideshow-overlay-rgb, 0, 0, 0), ' .
+                    'var(--local-course-banner-builder-slideshow-overlay-opacity, 0.38)), ' .
+                'rgba(var(--local-course-banner-builder-slideshow-overlay-rgb, 0, 0, 0), 0.12), ' .
+                'rgba(var(--local-course-banner-builder-slideshow-overlay-rgb, 0, 0, 0), ' .
+                    'var(--local-course-banner-builder-slideshow-overlay-opacity, 0.38)));',
             '    opacity: 1;',
             '    transition: opacity 360ms ease;',
             '    content: "";',
@@ -313,15 +318,32 @@ class hook_callbacks {
             '    text-transform: uppercase;',
             '    white-space: nowrap;',
             '}',
-            '.local-course-banner-builder-slideshow-label .fa, .local-course-banner-builder-slideshow-label .icon, .local-course-banner-builder-slideshow-label-icon { margin: 0; font-size: 1.05em; line-height: 1; }',
-            '.local-course-banner-builder-slideshow-label-icon { width: 1.08em; height: 1.08em; object-fit: contain; flex: 0 0 auto; }',
-            '.local-course-banner-builder-slideshow-label--course-shortname { background: rgba(255, 255, 255, 0.88); color: #111827; min-height: calc(1.1em + clamp(0.45rem, min(2.2cqh, 0.28cqw), 0.74rem)); }',
-            '.local-course-banner-builder-slideshow-label--forums { background: var(--local-course-banner-builder-slideshow-label-forums-bg, #0DCAF0); color: var(--local-course-banner-builder-slideshow-label-forums-color, #07212A); }',
-            '.local-course-banner-builder-slideshow-label--siteannouncements { background: var(--local-course-banner-builder-slideshow-label-siteannouncements-bg, #20C997); color: var(--local-course-banner-builder-slideshow-label-siteannouncements-color, #06281F); }',
-            '.local-course-banner-builder-slideshow-label--assignment { background: var(--local-course-banner-builder-slideshow-label-assignments-bg, #FFC107); color: var(--local-course-banner-builder-slideshow-label-assignments-color, #2B2100); }',
-            '.local-course-banner-builder-slideshow-label--assignments { background: var(--local-course-banner-builder-slideshow-label-assignments-bg, #FFC107); color: var(--local-course-banner-builder-slideshow-label-assignments-color, #2B2100); }',
-            '.local-course-banner-builder-slideshow-label--quiz { background: var(--local-course-banner-builder-slideshow-label-quizzes-bg, #DC3545); color: var(--local-course-banner-builder-slideshow-label-quizzes-color, #FFFFFF); }',
-            '.local-course-banner-builder-slideshow-label--quizzes { background: var(--local-course-banner-builder-slideshow-label-quizzes-bg, #DC3545); color: var(--local-course-banner-builder-slideshow-label-quizzes-color, #FFFFFF); }',
+            '.local-course-banner-builder-slideshow-label .fa, ' .
+                '.local-course-banner-builder-slideshow-label .icon, ' .
+                '.local-course-banner-builder-slideshow-label-icon { margin: 0; font-size: 1.05em; line-height: 1; }',
+            '.local-course-banner-builder-slideshow-label-icon { width: 1.08em; height: 1.08em; ' .
+                'object-fit: contain; flex: 0 0 auto; }',
+            '.local-course-banner-builder-slideshow-label--course-shortname { ' .
+                'background: rgba(255, 255, 255, 0.88); color: #111827; ' .
+                'min-height: calc(1.1em + clamp(0.45rem, min(2.2cqh, 0.28cqw), 0.74rem)); }',
+            '.local-course-banner-builder-slideshow-label--forums { ' .
+                'background: var(--local-course-banner-builder-slideshow-label-forums-bg, #0DCAF0); ' .
+                'color: var(--local-course-banner-builder-slideshow-label-forums-color, #07212A); }',
+            '.local-course-banner-builder-slideshow-label--siteannouncements { ' .
+                'background: var(--local-course-banner-builder-slideshow-label-siteannouncements-bg, #20C997); ' .
+                'color: var(--local-course-banner-builder-slideshow-label-siteannouncements-color, #06281F); }',
+            '.local-course-banner-builder-slideshow-label--assignment { ' .
+                'background: var(--local-course-banner-builder-slideshow-label-assignments-bg, #FFC107); ' .
+                'color: var(--local-course-banner-builder-slideshow-label-assignments-color, #2B2100); }',
+            '.local-course-banner-builder-slideshow-label--assignments { ' .
+                'background: var(--local-course-banner-builder-slideshow-label-assignments-bg, #FFC107); ' .
+                'color: var(--local-course-banner-builder-slideshow-label-assignments-color, #2B2100); }',
+            '.local-course-banner-builder-slideshow-label--quiz { ' .
+                'background: var(--local-course-banner-builder-slideshow-label-quizzes-bg, #DC3545); ' .
+                'color: var(--local-course-banner-builder-slideshow-label-quizzes-color, #FFFFFF); }',
+            '.local-course-banner-builder-slideshow-label--quizzes { ' .
+                'background: var(--local-course-banner-builder-slideshow-label-quizzes-bg, #DC3545); ' .
+                'color: var(--local-course-banner-builder-slideshow-label-quizzes-color, #FFFFFF); }',
             '.local-course-banner-builder-slideshow-content {',
             '    pointer-events: none;',
             '}',
@@ -358,9 +380,11 @@ class hook_callbacks {
             '    max-width: min(96%, 42rem);',
             '}',
             '.local-course-banner-builder-native-course-banner--format-standard .local-course-banner-builder-slideshow,',
-            '.local-course-banner-builder-site-banner.local-course-banner-builder-native-course-banner--format-standard .local-course-banner-builder-slideshow { --local-course-banner-builder-slideshow-action-y-adjust: 3%; }',
+            '.local-course-banner-builder-site-banner.local-course-banner-builder-native-course-banner--format-standard ' .
+                '.local-course-banner-builder-slideshow { --local-course-banner-builder-slideshow-action-y-adjust: 3%; }',
             '.local-course-banner-builder-native-course-banner--format-fullwidthtopcompact .local-course-banner-builder-slideshow,',
-            '.local-course-banner-builder-site-banner.local-course-banner-builder-native-course-banner--format-fullwidthtopcompact .local-course-banner-builder-slideshow { --local-course-banner-builder-slideshow-action-y-adjust: 4%; }',
+            '.local-course-banner-builder-site-banner.local-course-banner-builder-native-course-banner--format-fullwidthtopcompact ' .
+                '.local-course-banner-builder-slideshow { --local-course-banner-builder-slideshow-action-y-adjust: 4%; }',
             '.local-course-banner-builder-slideshow-title {',
             '    margin: 0 auto;',
             '    max-width: min(100%, 72rem);',
@@ -634,14 +658,30 @@ class hook_callbacks {
             '    left: 0;',
             '    width: var(--local-course-banner-builder-preview-top-left-corner-size, var(--local-course-banner-builder-preview-left-width, 0));',
             '    height: var(--local-course-banner-builder-preview-top-left-corner-size, var(--local-course-banner-builder-preview-top-width, 0));',
-            '    background-image: radial-gradient(circle at 100% 100%, rgba(0, 0, 0, 0) var(--local-course-banner-builder-preview-top-left-radius, 0), var(--local-course-banner-builder-preview-color-transparent, transparent) var(--local-course-banner-builder-preview-top-left-radius, 0), var(--local-course-banner-builder-preview-color-solid, transparent) var(--local-course-banner-builder-preview-top-left-fade-start, var(--local-course-banner-builder-preview-top-left-corner-size, 100%)), var(--local-course-banner-builder-preview-color-solid, transparent) var(--local-course-banner-builder-preview-top-left-corner-size, 100%));',
+            '    background-image: radial-gradient(circle at 100% 100%, ' .
+                'rgba(0, 0, 0, 0) var(--local-course-banner-builder-preview-top-left-radius, 0), ' .
+                'var(--local-course-banner-builder-preview-color-transparent, transparent) ' .
+                    'var(--local-course-banner-builder-preview-top-left-radius, 0), ' .
+                'var(--local-course-banner-builder-preview-color-solid, transparent) ' .
+                    'var(--local-course-banner-builder-preview-top-left-fade-start, ' .
+                    'var(--local-course-banner-builder-preview-top-left-corner-size, 100%)), ' .
+                'var(--local-course-banner-builder-preview-color-solid, transparent) ' .
+                    'var(--local-course-banner-builder-preview-top-left-corner-size, 100%));',
             '}',
             '.local-course-banner-builder-fixed-border-corner-top-right {',
             '    right: 0;',
             '    left: auto;',
             '    width: var(--local-course-banner-builder-preview-top-right-corner-size, var(--local-course-banner-builder-preview-right-width, 0));',
             '    height: var(--local-course-banner-builder-preview-top-right-corner-size, var(--local-course-banner-builder-preview-top-width, 0));',
-            '    background-image: radial-gradient(circle at 0 100%, rgba(0, 0, 0, 0) var(--local-course-banner-builder-preview-top-right-radius, 0), var(--local-course-banner-builder-preview-color-transparent, transparent) var(--local-course-banner-builder-preview-top-right-radius, 0), var(--local-course-banner-builder-preview-color-solid, transparent) var(--local-course-banner-builder-preview-top-right-fade-start, var(--local-course-banner-builder-preview-top-right-corner-size, 100%)), var(--local-course-banner-builder-preview-color-solid, transparent) var(--local-course-banner-builder-preview-top-right-corner-size, 100%));',
+            '    background-image: radial-gradient(circle at 0 100%, ' .
+                'rgba(0, 0, 0, 0) var(--local-course-banner-builder-preview-top-right-radius, 0), ' .
+                'var(--local-course-banner-builder-preview-color-transparent, transparent) ' .
+                    'var(--local-course-banner-builder-preview-top-right-radius, 0), ' .
+                'var(--local-course-banner-builder-preview-color-solid, transparent) ' .
+                    'var(--local-course-banner-builder-preview-top-right-fade-start, ' .
+                    'var(--local-course-banner-builder-preview-top-right-corner-size, 100%)), ' .
+                'var(--local-course-banner-builder-preview-color-solid, transparent) ' .
+                    'var(--local-course-banner-builder-preview-top-right-corner-size, 100%));',
             '}',
             '.local-course-banner-builder-fixed-border-corner-bottom-right {',
             '    top: auto;',
@@ -650,14 +690,30 @@ class hook_callbacks {
             '    left: auto;',
             '    width: var(--local-course-banner-builder-preview-bottom-right-corner-size, var(--local-course-banner-builder-preview-right-width, 0));',
             '    height: var(--local-course-banner-builder-preview-bottom-right-corner-size, var(--local-course-banner-builder-preview-bottom-width, 0));',
-            '    background-image: radial-gradient(circle at 0 0, rgba(0, 0, 0, 0) var(--local-course-banner-builder-preview-bottom-right-radius, 0), var(--local-course-banner-builder-preview-color-transparent, transparent) var(--local-course-banner-builder-preview-bottom-right-radius, 0), var(--local-course-banner-builder-preview-color-solid, transparent) var(--local-course-banner-builder-preview-bottom-right-fade-start, var(--local-course-banner-builder-preview-bottom-right-corner-size, 100%)), var(--local-course-banner-builder-preview-color-solid, transparent) var(--local-course-banner-builder-preview-bottom-right-corner-size, 100%));',
+            '    background-image: radial-gradient(circle at 0 0, ' .
+                'rgba(0, 0, 0, 0) var(--local-course-banner-builder-preview-bottom-right-radius, 0), ' .
+                'var(--local-course-banner-builder-preview-color-transparent, transparent) ' .
+                    'var(--local-course-banner-builder-preview-bottom-right-radius, 0), ' .
+                'var(--local-course-banner-builder-preview-color-solid, transparent) ' .
+                    'var(--local-course-banner-builder-preview-bottom-right-fade-start, ' .
+                    'var(--local-course-banner-builder-preview-bottom-right-corner-size, 100%)), ' .
+                'var(--local-course-banner-builder-preview-color-solid, transparent) ' .
+                    'var(--local-course-banner-builder-preview-bottom-right-corner-size, 100%));',
             '}',
             '.local-course-banner-builder-fixed-border-corner-bottom-left {',
             '    top: auto;',
             '    bottom: 0;',
             '    width: var(--local-course-banner-builder-preview-bottom-left-corner-size, var(--local-course-banner-builder-preview-left-width, 0));',
             '    height: var(--local-course-banner-builder-preview-bottom-left-corner-size, var(--local-course-banner-builder-preview-bottom-width, 0));',
-            '    background-image: radial-gradient(circle at 100% 0, rgba(0, 0, 0, 0) var(--local-course-banner-builder-preview-bottom-left-radius, 0), var(--local-course-banner-builder-preview-color-transparent, transparent) var(--local-course-banner-builder-preview-bottom-left-radius, 0), var(--local-course-banner-builder-preview-color-solid, transparent) var(--local-course-banner-builder-preview-bottom-left-fade-start, var(--local-course-banner-builder-preview-bottom-left-corner-size, 100%)), var(--local-course-banner-builder-preview-color-solid, transparent) var(--local-course-banner-builder-preview-bottom-left-corner-size, 100%));',
+            '    background-image: radial-gradient(circle at 100% 0, ' .
+                'rgba(0, 0, 0, 0) var(--local-course-banner-builder-preview-bottom-left-radius, 0), ' .
+                'var(--local-course-banner-builder-preview-color-transparent, transparent) ' .
+                    'var(--local-course-banner-builder-preview-bottom-left-radius, 0), ' .
+                'var(--local-course-banner-builder-preview-color-solid, transparent) ' .
+                    'var(--local-course-banner-builder-preview-bottom-left-fade-start, ' .
+                    'var(--local-course-banner-builder-preview-bottom-left-corner-size, 100%)), ' .
+                'var(--local-course-banner-builder-preview-color-solid, transparent) ' .
+                    'var(--local-course-banner-builder-preview-bottom-left-corner-size, 100%));',
             '}',
         ]);
     }

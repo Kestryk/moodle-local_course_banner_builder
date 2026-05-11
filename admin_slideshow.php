@@ -1196,7 +1196,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!panel) {
                 return;
             }
-            ['local-course-banner-builder-reset-slideshow-overlay', 'local-course-banner-builder-reset-slideshow-text', 'local-course-banner-builder-reset-slideshow-labels'].forEach(function(action) {
+            [
+                'local-course-banner-builder-reset-slideshow-overlay',
+                'local-course-banner-builder-reset-slideshow-text',
+                'local-course-banner-builder-reset-slideshow-labels'
+            ].forEach(function(action) {
                 var target = panel.querySelector('[data-action=\"' + action + '\"]');
                 if (target && target !== button) {
                     target.click();
@@ -1651,17 +1655,17 @@ function local_course_banner_builder_render_slideshow_banner_format_modal(
             html_writer::div(
                 html_writer::div(
                     html_writer::tag('h5', $title, [
-                        'class' => 'modal-title',
+                        'class' => 'modal-title flex-grow-1',
                         'id' => $modalid . '-title',
                     ]) .
                     html_writer::tag('button', html_writer::span('&times;', '', ['aria-hidden' => 'true']), [
                         'type' => 'button',
-                        'class' => 'close',
+                        'class' => 'close ml-auto ms-auto',
                         'data-dismiss' => 'modal',
                         'data-bs-dismiss' => 'modal',
                         'aria-label' => get_string('closebuttontitle'),
                     ]),
-                    'modal-header'
+                    'modal-header d-flex align-items-center'
                 ) .
                 $form,
                 'modal-content'
@@ -2106,14 +2110,14 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
     ]);
     $modal .= html_writer::start_div('modal-dialog modal-xl', ['role' => 'document']);
     $modal .= html_writer::start_div('modal-content');
-    $modal .= html_writer::start_div('modal-header');
+    $modal .= html_writer::start_div('modal-header d-flex align-items-center');
     $modal .= html_writer::tag('h5',
         get_string('slideshowlargepreview', 'local_course_banner_builder') . ' - ' . $contextlabel,
-        ['class' => 'modal-title']
+        ['class' => 'modal-title flex-grow-1']
     );
     $modal .= html_writer::tag('button', html_writer::span('&times;', '', ['aria-hidden' => 'true']), [
         'type' => 'button',
-        'class' => 'close',
+        'class' => 'close ml-auto ms-auto',
         'data-dismiss' => 'modal',
         'data-bs-dismiss' => 'modal',
         'aria-label' => get_string('closebuttontitle'),
@@ -2130,15 +2134,59 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
         ]
     );
     $modalpreview .= html_writer::div(
-        $previewtoolbarbutton('fa-undo', get_string('undopreviewchange', 'local_course_banner_builder'), 'local-course-banner-builder-slideshow-preview-undo', ['disabled' => 'disabled']) .
-        $previewtoolbarbutton('fa-magnet', get_string('togglepreviewsnap', 'local_course_banner_builder'), 'local-course-banner-builder-toggle-slideshow-preview-snap', ['aria-pressed' => 'true']) .
-        $previewtoolbarbutton('fa-crosshairs', get_string('recenterpreviewelement', 'local_course_banner_builder'), 'local-course-banner-builder-slideshow-preview-recenter-element', ['disabled' => 'disabled']) .
-        $previewtoolbarbutton('fa-bullseye', get_string('recenterallpreviewelements', 'local_course_banner_builder'), 'local-course-banner-builder-slideshow-preview-recenter-all') .
-        $previewtoolbarbutton('fa-bold', get_string('slideshowtextbold', 'local_course_banner_builder'), 'local-course-banner-builder-toggle-selected-slideshow-text-style', ['data-slideshow-text-style' => 'bold']) .
-        $previewtoolbarbutton('fa-italic', get_string('slideshowtextitalic', 'local_course_banner_builder'), 'local-course-banner-builder-toggle-selected-slideshow-text-style', ['data-slideshow-text-style' => 'italic']) .
-        $previewtoolbarbutton('fa-underline', get_string('slideshowtextunderline', 'local_course_banner_builder'), 'local-course-banner-builder-toggle-selected-slideshow-text-style', ['data-slideshow-text-style' => 'underline']) .
-        $previewtoolbarbutton('fa-strikethrough', get_string('slideshowtextstrike', 'local_course_banner_builder'), 'local-course-banner-builder-toggle-selected-slideshow-text-style', ['data-slideshow-text-style' => 'strike']) .
-        $previewtoolbarbutton('fa-redo', get_string('redopreviewchange', 'local_course_banner_builder'), 'local-course-banner-builder-slideshow-preview-redo', ['disabled' => 'disabled']),
+        $previewtoolbarbutton(
+            'fa-undo',
+            get_string('undopreviewchange', 'local_course_banner_builder'),
+            'local-course-banner-builder-slideshow-preview-undo',
+            ['disabled' => 'disabled']
+        ) .
+        $previewtoolbarbutton(
+            'fa-magnet',
+            get_string('togglepreviewsnap', 'local_course_banner_builder'),
+            'local-course-banner-builder-toggle-slideshow-preview-snap',
+            ['aria-pressed' => 'true']
+        ) .
+        $previewtoolbarbutton(
+            'fa-crosshairs',
+            get_string('recenterpreviewelement', 'local_course_banner_builder'),
+            'local-course-banner-builder-slideshow-preview-recenter-element',
+            ['disabled' => 'disabled']
+        ) .
+        $previewtoolbarbutton(
+            'fa-bullseye',
+            get_string('recenterallpreviewelements', 'local_course_banner_builder'),
+            'local-course-banner-builder-slideshow-preview-recenter-all'
+        ) .
+        $previewtoolbarbutton(
+            'fa-bold',
+            get_string('slideshowtextbold', 'local_course_banner_builder'),
+            'local-course-banner-builder-toggle-selected-slideshow-text-style',
+            ['data-slideshow-text-style' => 'bold']
+        ) .
+        $previewtoolbarbutton(
+            'fa-italic',
+            get_string('slideshowtextitalic', 'local_course_banner_builder'),
+            'local-course-banner-builder-toggle-selected-slideshow-text-style',
+            ['data-slideshow-text-style' => 'italic']
+        ) .
+        $previewtoolbarbutton(
+            'fa-underline',
+            get_string('slideshowtextunderline', 'local_course_banner_builder'),
+            'local-course-banner-builder-toggle-selected-slideshow-text-style',
+            ['data-slideshow-text-style' => 'underline']
+        ) .
+        $previewtoolbarbutton(
+            'fa-strikethrough',
+            get_string('slideshowtextstrike', 'local_course_banner_builder'),
+            'local-course-banner-builder-toggle-selected-slideshow-text-style',
+            ['data-slideshow-text-style' => 'strike']
+        ) .
+        $previewtoolbarbutton(
+            'fa-redo',
+            get_string('redopreviewchange', 'local_course_banner_builder'),
+            'local-course-banner-builder-slideshow-preview-redo',
+            ['disabled' => 'disabled']
+        ),
         'local-course-banner-builder-source-preview-visibility-toggle-row local-course-banner-builder-slideshow-preview-toolbar'
     );
     $modalbody = html_writer::div(
@@ -2149,14 +2197,25 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
     );
 
     $controls = html_writer::start_div('local-course-banner-builder-slideshow-overlay-controls');
-    $controls .= html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'titlex', 'value' => number_format($titlex, 3, '.', ''), 'data-slideshow-position-input' => 'title-x', 'data-default-value' => number_format(manager::SLIDESHOW_DEFAULT_TITLE_X, 3, '.', '')]);
-    $controls .= html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'titley', 'value' => number_format($titley, 3, '.', ''), 'data-slideshow-position-input' => 'title-y', 'data-default-value' => number_format(manager::SLIDESHOW_DEFAULT_TITLE_Y, 3, '.', '')]);
-    $controls .= html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'bodyx', 'value' => number_format($bodyx, 3, '.', ''), 'data-slideshow-position-input' => 'body-x', 'data-default-value' => number_format(manager::SLIDESHOW_DEFAULT_BODY_X, 3, '.', '')]);
-    $controls .= html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'bodyy', 'value' => number_format($bodyy, 3, '.', ''), 'data-slideshow-position-input' => 'body-y', 'data-default-value' => number_format(manager::SLIDESHOW_DEFAULT_BODY_Y, 3, '.', '')]);
-    $controls .= html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'actionx', 'value' => number_format($actionx, 3, '.', ''), 'data-slideshow-position-input' => 'action-x', 'data-default-value' => number_format(manager::SLIDESHOW_DEFAULT_ACTION_X, 3, '.', '')]);
-    $controls .= html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'actiony', 'value' => number_format($actiony, 3, '.', ''), 'data-slideshow-position-input' => 'action-y', 'data-default-value' => number_format(manager::SLIDESHOW_DEFAULT_ACTION_Y, 3, '.', '')]);
-    $controls .= html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'labelx', 'value' => number_format($labelx, 3, '.', ''), 'data-slideshow-position-input' => 'label-x', 'data-default-value' => number_format(manager::SLIDESHOW_DEFAULT_LABEL_X, 3, '.', '')]);
-    $controls .= html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'labely', 'value' => number_format($labely, 3, '.', ''), 'data-slideshow-position-input' => 'label-y', 'data-default-value' => number_format(manager::SLIDESHOW_DEFAULT_LABEL_Y, 3, '.', '')]);
+    $positioninputs = [
+        ['titlex', $titlex, 'title-x', manager::SLIDESHOW_DEFAULT_TITLE_X],
+        ['titley', $titley, 'title-y', manager::SLIDESHOW_DEFAULT_TITLE_Y],
+        ['bodyx', $bodyx, 'body-x', manager::SLIDESHOW_DEFAULT_BODY_X],
+        ['bodyy', $bodyy, 'body-y', manager::SLIDESHOW_DEFAULT_BODY_Y],
+        ['actionx', $actionx, 'action-x', manager::SLIDESHOW_DEFAULT_ACTION_X],
+        ['actiony', $actiony, 'action-y', manager::SLIDESHOW_DEFAULT_ACTION_Y],
+        ['labelx', $labelx, 'label-x', manager::SLIDESHOW_DEFAULT_LABEL_X],
+        ['labely', $labely, 'label-y', manager::SLIDESHOW_DEFAULT_LABEL_Y],
+    ];
+    foreach ($positioninputs as [$name, $value, $inputkey, $default]) {
+        $controls .= html_writer::empty_tag('input', [
+            'type' => 'hidden',
+            'name' => $name,
+            'value' => number_format($value, 3, '.', ''),
+            'data-slideshow-position-input' => $inputkey,
+            'data-default-value' => number_format($default, 3, '.', ''),
+        ]);
+    }
     $controls .= html_writer::tag('label', get_string('slideshowoverlaycolor', 'local_course_banner_builder'), [
         'for' => $colorid,
         'class' => 'local-course-banner-builder-slideshow-overlay-color-label',

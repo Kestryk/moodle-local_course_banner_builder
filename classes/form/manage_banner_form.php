@@ -186,14 +186,14 @@ class manage_banner_form extends \moodleform {
         }
 
         if ($showadvanced) {
-        $mform->addElement('select', 'fitmodeoverride', get_string('fitoverride', 'local_course_banner_builder'), $fitoptions);
-        $mform->setType('fitmodeoverride', PARAM_ALPHA);
-        $mform->addElement('static', 'fitoverridehelp', '', \html_writer::div(
+            $mform->addElement('select', 'fitmodeoverride', get_string('fitoverride', 'local_course_banner_builder'), $fitoptions);
+            $mform->setType('fitmodeoverride', PARAM_ALPHA);
+            $mform->addElement('static', 'fitoverridehelp', '', \html_writer::div(
             get_string('fitoverridehelp', 'local_course_banner_builder'),
             'form-text text-muted'
-        ));
+            ));
 
-        $customsizeattrs = [
+            $customsizeattrs = [
             'size' => 6,
             'data-upgrade-number' => '1',
             'data-number-min' => '0',
@@ -201,48 +201,48 @@ class manage_banner_form extends \moodleform {
             'data-number-step' => '0.1',
             'data-field-suffix' => '%',
             'data-layer-custom-size' => '1',
-        ];
-        $mform->addElement('text', 'customwidthpercent', get_string('customwidthpercent', 'local_course_banner_builder'), $customsizeattrs + [
+            ];
+            $mform->addElement('text', 'customwidthpercent', get_string('customwidthpercent', 'local_course_banner_builder'), $customsizeattrs + [
             'data-custom-size-dimension' => 'width',
             'data-percent-slider-input' => '1',
-        ]);
-        $mform->setType('customwidthpercent', PARAM_FLOAT);
-        $mform->setDefault('customwidthpercent', 100);
-        $this->add_percent_slider_static($mform, 'customwidthpercent', 0, 300, 0.1);
+            ]);
+            $mform->setType('customwidthpercent', PARAM_FLOAT);
+            $mform->setDefault('customwidthpercent', 100);
+            $this->add_percent_slider_static($mform, 'customwidthpercent', 0, 300, 0.1);
 
-        $mform->addElement('text', 'customheightpercent', get_string('customheightpercent', 'local_course_banner_builder'), $customsizeattrs + [
+            $mform->addElement('text', 'customheightpercent', get_string('customheightpercent', 'local_course_banner_builder'), $customsizeattrs + [
             'data-custom-size-dimension' => 'height',
             'data-percent-slider-input' => '1',
-        ]);
-        $mform->setType('customheightpercent', PARAM_FLOAT);
-        $mform->setDefault('customheightpercent', 100);
-        $this->add_percent_slider_static($mform, 'customheightpercent', 0, 300, 0.1);
+            ]);
+            $mform->setType('customheightpercent', PARAM_FLOAT);
+            $mform->setDefault('customheightpercent', 100);
+            $this->add_percent_slider_static($mform, 'customheightpercent', 0, 300, 0.1);
 
-        $mform->addElement('advcheckbox', 'customsizekeepaspect', get_string('customsizekeepaspect', 'local_course_banner_builder'), '', [
+            $mform->addElement('advcheckbox', 'customsizekeepaspect', get_string('customsizekeepaspect', 'local_course_banner_builder'), '', [
             'data-custom-size-keep-aspect' => '1',
-        ]);
-        $mform->setDefault('customsizekeepaspect', 1);
+            ]);
+            $mform->setDefault('customsizekeepaspect', 1);
 
-        $mform->addElement(
+            $mform->addElement(
             'advcheckbox',
             'dynamicimagesizeenabled',
             get_string('dynamicimagesizeenabled', 'local_course_banner_builder')
-        );
-        $mform->setDefault('dynamicimagesizeenabled', 0);
-        $mform->addHelpButton('dynamicimagesizeenabled', 'dynamicimagesizeenabled', 'local_course_banner_builder');
+            );
+            $mform->setDefault('dynamicimagesizeenabled', 0);
+            $mform->addHelpButton('dynamicimagesizeenabled', 'dynamicimagesizeenabled', 'local_course_banner_builder');
 
-        $mform->addElement(
+            $mform->addElement(
             'select',
             'positionanchor',
             get_string('positionanchor', 'local_course_banner_builder'),
             \local_course_banner_builder\manager::get_position_anchor_options(),
             ['data-layer-position-anchor' => '1']
-        );
-        $mform->setType('positionanchor', PARAM_ALPHAEXT);
-        $mform->setDefault('positionanchor', \local_course_banner_builder\manager::POSITION_CENTER);
-        $mform->addHelpButton('positionanchor', 'positionanchor', 'local_course_banner_builder');
+            );
+            $mform->setType('positionanchor', PARAM_ALPHAEXT);
+            $mform->setDefault('positionanchor', \local_course_banner_builder\manager::POSITION_CENTER);
+            $mform->addHelpButton('positionanchor', 'positionanchor', 'local_course_banner_builder');
 
-        $offsetattrs = [
+            $offsetattrs = [
             'size' => 6,
             'data-layer-offset-input' => '1',
             'data-upgrade-number' => '1',
@@ -251,15 +251,15 @@ class manage_banner_form extends \moodleform {
             'data-number-step' => '0.1',
             'data-field-suffix' => '%',
             'data-percent-slider-input' => '1',
-        ];
-        $this->add_offset_field($mform, 'offsettoppercent', get_string('layeroffsettoppercent', 'local_course_banner_builder'), 'top', $offsetattrs);
-        $this->add_offset_field($mform, 'offsetrightpercent', get_string('layeroffsetrightpercent', 'local_course_banner_builder'), 'right', $offsetattrs);
-        $this->add_offset_field($mform, 'offsetbottompercent', get_string('layeroffsetbottompercent', 'local_course_banner_builder'), 'bottom', $offsetattrs);
-        $this->add_offset_field($mform, 'offsetleftpercent', get_string('layeroffsetleftpercent', 'local_course_banner_builder'), 'left', $offsetattrs);
-        $mform->addElement('static', 'layeroffsethelp', '', \html_writer::div(
+            ];
+            $this->add_offset_field($mform, 'offsettoppercent', get_string('layeroffsettoppercent', 'local_course_banner_builder'), 'top', $offsetattrs);
+            $this->add_offset_field($mform, 'offsetrightpercent', get_string('layeroffsetrightpercent', 'local_course_banner_builder'), 'right', $offsetattrs);
+            $this->add_offset_field($mform, 'offsetbottompercent', get_string('layeroffsetbottompercent', 'local_course_banner_builder'), 'bottom', $offsetattrs);
+            $this->add_offset_field($mform, 'offsetleftpercent', get_string('layeroffsetleftpercent', 'local_course_banner_builder'), 'left', $offsetattrs);
+            $mform->addElement('static', 'layeroffsethelp', '', \html_writer::div(
             get_string('layeroffsethelp', 'local_course_banner_builder'),
             'form-text text-muted'
-        ));
+            ));
 
         }
         if ($showadvanced && !$usesharedcreatepreview) {
@@ -367,53 +367,60 @@ class manage_banner_form extends \moodleform {
         $mform->setDefault('borderstyle', \local_course_banner_builder\manager::BORDER_STYLE_SOLID);
 
         $mform->addElement('text', 'borderwidth', get_string('borderwidth', 'local_course_banner_builder'), [
-            'class' => 'local-course-banner-builder-range theme-easyedu-range',
-            'data-range-upgrade' => '1',
-            'data-range-min' => '0',
-            'data-range-max' => '100',
-            'data-range-step' => '0.1',
-            'data-range-output' => '1',
-            'data-range-suffix' => '%',
+            'size' => 6,
+            'data-upgrade-number' => '1',
+            'data-number-min' => '0',
+            'data-number-max' => '100',
+            'data-number-step' => '0.1',
+            'data-field-suffix' => '%',
+            'data-percent-slider-input' => '1',
         ]);
         $mform->setType('borderwidth', PARAM_FLOAT);
         $mform->setDefault('borderwidth', 2.5);
+        $this->add_percent_slider_static($mform, 'borderwidth', 0, 100, 0.1);
 
         $mform->addElement('text', 'borderopacity', get_string('borderopacity', 'local_course_banner_builder'), [
-            'class' => 'local-course-banner-builder-range theme-easyedu-range',
-            'data-range-upgrade' => '1',
-            'data-range-min' => '0',
-            'data-range-max' => '100',
-            'data-range-step' => '1',
-            'data-range-output' => '1',
-            'data-range-suffix' => '%',
+            'size' => 6,
+            'data-upgrade-number' => '1',
+            'data-number-min' => '0',
+            'data-number-max' => '100',
+            'data-number-step' => '1',
+            'data-field-suffix' => '%',
+            'data-percent-slider-input' => '1',
         ]);
         $mform->setType('borderopacity', PARAM_FLOAT);
         $mform->setDefault('borderopacity', 0);
+        $this->add_percent_slider_static($mform, 'borderopacity', 0, 100, 1);
 
         $mform->addElement('text', 'borderfade', get_string('borderfade', 'local_course_banner_builder'), [
-            'class' => 'local-course-banner-builder-range theme-easyedu-range',
-            'data-range-upgrade' => '1',
-            'data-range-min' => '0',
-            'data-range-max' => '100',
-            'data-range-step' => '1',
-            'data-range-output' => '1',
-            'data-range-suffix' => '%',
+            'size' => 6,
+            'data-upgrade-number' => '1',
+            'data-number-min' => '0',
+            'data-number-max' => '100',
+            'data-number-step' => '1',
+            'data-field-suffix' => '%',
+            'data-percent-slider-input' => '1',
         ]);
         $mform->setType('borderfade', PARAM_FLOAT);
         $mform->setDefault('borderfade', 0);
+        $this->add_percent_slider_static($mform, 'borderfade', 0, 100, 1);
 
         $mform->addElement('text', 'borderdashlength', get_string('borderdashlength', 'local_course_banner_builder'), [
-            'class' => 'local-course-banner-builder-range theme-easyedu-range',
-            'data-range-upgrade' => '1',
-            'data-range-min' => '4',
-            'data-range-max' => '80',
-            'data-range-step' => '1',
-            'data-range-output' => '1',
-            'data-range-suffix' => 'px',
+            'size' => 6,
+            'data-upgrade-number' => '1',
+            'data-number-min' => '4',
+            'data-number-max' => '80',
+            'data-number-step' => '1',
+            'data-field-suffix' => 'px',
+            'data-percent-slider-input' => '1',
             'data-border-dash-length' => '1',
         ]);
         $mform->setType('borderdashlength', PARAM_FLOAT);
         $mform->setDefault('borderdashlength', 24);
+        $this->add_percent_slider_static($mform, 'borderdashlength', 4, 80, 1, [
+            'data-range-suffix' => 'px',
+            'data-border-dash-length' => '1',
+        ]);
 
         $sidegroup = [];
         $sidegroup[] = $mform->createElement(
@@ -544,7 +551,7 @@ class manage_banner_form extends \moodleform {
                 'max' => (string)$max,
                 'step' => (string)$step,
                 'data-percent-slider-for' => $targetid,
-                'data-range-suffix' => '%',
+                'data-range-suffix' => (string)($attributes['data-range-suffix'] ?? '%'),
             ] + $attributes) .
             \html_writer::tag('span', '', [
                 'class' => 'local-course-banner-builder-range-output theme-easyedu-range-output',

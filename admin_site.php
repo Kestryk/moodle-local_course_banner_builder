@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+require_once(__DIR__ . '/../../config.php');
+
 define('LOCAL_COURSE_BANNER_BUILDER_SITE_ADMIN', true);
 
 require(__DIR__ . '/admin_manage.php');
