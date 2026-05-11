@@ -22,7 +22,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+// phpcs:disable moodle.Files.MoodleInternal.MoodleInternalNotNeeded
 defined('MOODLE_INTERNAL') || die();
+// phpcs:enable moodle.Files.MoodleInternal.MoodleInternalNotNeeded
+// phpcs:disable moodle.Files.LineLength.TooLong -- XMLDB field definitions are kept readable on one line.
 
 /**
  * Upgrade the plugin.

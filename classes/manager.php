@@ -16,7 +16,10 @@
 
 namespace local_course_banner_builder;
 
+// phpcs:disable moodle.Files.MoodleInternal.MoodleInternalNotNeeded
 defined('MOODLE_INTERNAL') || die();
+// phpcs:enable moodle.Files.MoodleInternal.MoodleInternalNotNeeded
+// phpcs:disable moodle.Files.LineLength.TooLong -- Rendering and export helpers use long Moodle identifiers and CSS variables.
 
 /**
  * Banner manager helpers.

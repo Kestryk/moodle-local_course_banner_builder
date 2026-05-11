@@ -16,7 +16,10 @@
 
 namespace local_course_banner_builder;
 
+// phpcs:disable moodle.Files.MoodleInternal.MoodleInternalNotNeeded
 defined('MOODLE_INTERNAL') || die();
+// phpcs:enable moodle.Files.MoodleInternal.MoodleInternalNotNeeded
+// phpcs:disable moodle.Files.LineLength.TooLong -- Hook output includes long generated CSS and JS selectors.
 
 /**
  * Output hook callbacks.

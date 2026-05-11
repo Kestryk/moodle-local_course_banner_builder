@@ -25,6 +25,8 @@
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
+// phpcs:disable moodle.Files.LineLength.TooLong -- Form element attributes are clearer kept together.
+
 $action = optional_param('action', '', PARAM_ALPHA);
 $replaceall = optional_param('replaceall', 0, PARAM_BOOL);
 $exportsections = optional_param_array('exportsections', [], PARAM_ALPHAEXT);

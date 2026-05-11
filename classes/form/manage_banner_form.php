@@ -18,6 +18,8 @@ namespace local_course_banner_builder\form;
 
 defined('MOODLE_INTERNAL') || die();
 
+// phpcs:disable moodle.Files.LineLength.TooLong -- Form definitions keep related element attributes together.
+
 require_once($CFG->libdir . '/formslib.php');
 
 /**

@@ -22,6 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+// phpcs:ignore moodle.Files.RequireLogin.Missing -- The included admin page performs the admin setup.
 require_once(__DIR__ . '/../../config.php');
 
 define('LOCAL_COURSE_BANNER_BUILDER_SITE_ADMIN', true);

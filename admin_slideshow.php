@@ -25,6 +25,8 @@
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
+// phpcs:disable moodle.Files.LineLength.TooLong -- This admin page contains large inline JS preview editor templates.
+
 use local_course_banner_builder\manager;
 
 require_login();
