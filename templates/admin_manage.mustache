@@ -36,7 +36,7 @@
                     <th scope="col">{{#str}}sourcename, local_course_banner_builder{{/str}}</th>
                     <th scope="col">{{#str}}sourcetype, local_course_banner_builder{{/str}}</th>
                     <th scope="col">{{#str}}layers, local_course_banner_builder{{/str}}</th>
-                    <th scope="col">Composition</th>
+                    <th scope="col">{{#str}}compositionmode, local_course_banner_builder{{/str}}</th>
                     <th scope="col">{{#str}}fitmode, local_course_banner_builder{{/str}}</th>
                     <th scope="col">{{#str}}bannerimage, local_course_banner_builder{{/str}}</th>
                     <th scope="col">{{#str}}actions, local_course_banner_builder{{/str}}</th>
@@ -187,7 +187,9 @@
                                                 data-trigger="hover"
                                                 tabindex="0"
                                                 aria-label="{{dynamiclabel}}"
-                                                title="{{dynamiclabel}}">T</span>
+                                                title="{{dynamiclabel}}">
+                                                <i class="fa fa-level-up" aria-hidden="true"></i>
+                                            </span>
                                         {{/isdynamic}}
                                     </div>
                                 {{/thumbnails}}

@@ -4360,7 +4360,7 @@ function localCourseBannerBuilderSyncSourcePreviewThumbnails(root) {
     previousButton.className = 'btn btn-link local-course-banner-builder-source-preview-filmstrip-nav local-course-banner-builder-source-preview-filmstrip-nav--previous';
     previousButton.setAttribute('data-action', 'local-course-banner-builder-scroll-source-preview-filmstrip');
     previousButton.setAttribute('data-source-preview-filmstrip-direction', '-1');
-    previousButton.setAttribute('aria-label', 'Previous images');
+    previousButton.setAttribute('aria-label', localCourseBannerBuilderGetJsString('previousimages', ''));
     previousButton.innerHTML = '<i class=\"icon fa fa-chevron-left fa-fw\" aria-hidden=\"true\"></i>';
     var track = document.createElement('div');
     track.className = 'local-course-banner-builder-source-preview-filmstrip-track';
@@ -4370,7 +4370,7 @@ function localCourseBannerBuilderSyncSourcePreviewThumbnails(root) {
     nextButton.className = 'btn btn-link local-course-banner-builder-source-preview-filmstrip-nav local-course-banner-builder-source-preview-filmstrip-nav--next';
     nextButton.setAttribute('data-action', 'local-course-banner-builder-scroll-source-preview-filmstrip');
     nextButton.setAttribute('data-source-preview-filmstrip-direction', '1');
-    nextButton.setAttribute('aria-label', 'Next images');
+    nextButton.setAttribute('aria-label', localCourseBannerBuilderGetJsString('nextimages', ''));
     nextButton.innerHTML = '<i class=\"icon fa fa-chevron-right fa-fw\" aria-hidden=\"true\"></i>';
     filmstrip.appendChild(previousButton);
     filmstrip.appendChild(track);
@@ -4379,13 +4379,16 @@ function localCourseBannerBuilderSyncSourcePreviewThumbnails(root) {
         var image = layer.querySelector('[data-preview-image-tag=\"1\"]');
         var layerId = layer.getAttribute('data-source-preview-layer-id') || '';
         var isDisabled = !localCourseBannerBuilderIsSourcePreviewLayerEnabled(layer);
-        var disabledLabel = localCourseBannerBuilderGetJsString('disabledlayerthumbnail', 'Disabled layer');
+        var disabledLabel = localCourseBannerBuilderGetJsString('disabledlayerthumbnail', '');
         var button = document.createElement('button');
         button.type = 'button';
         button.className = 'local-course-banner-builder-source-preview-thumbnail';
         button.setAttribute('data-action', 'local-course-banner-builder-select-source-preview-thumbnail');
         button.setAttribute('data-source-preview-thumbnail-id', layerId);
-        button.setAttribute('aria-label', 'Select layer ' + (index + 1));
+        button.setAttribute(
+            'aria-label',
+            localCourseBannerBuilderGetJsString('selectlayer', '') + ' ' + (index + 1)
+        );
         button.classList.toggle('is-active', layer === selected && !isDisabled);
         button.classList.toggle('is-disabled', isDisabled);
         button.classList.toggle('is-hidden-in-preview', localCourseBannerBuilderIsSourcePreviewLayerHiddenInPreview(layer));
@@ -8168,7 +8171,7 @@ function localCourseBannerBuilderEnhanceBorderSidePicker(form) {
         allButton.type = 'button';
         allButton.className = 'btn btn-outline-secondary local-course-banner-builder-border-side-button local-course-banner-builder-border-side-picker-all';
         allButton.setAttribute('data-border-side-all-button', '1');
-        allButton.textContent = 'All';
+        allButton.textContent = localCourseBannerBuilderGetJsString('bordersides:all', '');
         allButton.addEventListener('click', function() {
             var allInput = form.querySelector('[data-border-side-all=\"1\"][type=\"checkbox\"]');
             localCourseBannerBuilderToggleCheckboxInput(allInput);
@@ -8948,7 +8951,7 @@ function localCourseBannerBuilderLoadLayerModal(url) {
         headers: {'X-Requested-With': 'XMLHttpRequest'}
     }).then(function(response) {
         if (!response.ok) {
-            throw new Error(localCourseBannerBuilderGetJsString('unabletoloadlayerform', 'Unable to load layer form'));
+            throw new Error(localCourseBannerBuilderGetJsString('unabletoloadlayerform', ''));
         }
         return response.text();
     }).then(function(response) {
@@ -8957,17 +8960,17 @@ function localCourseBannerBuilderLoadLayerModal(url) {
         var doc = parser.parseFromString(html, 'text/html');
         var fetchedmodal = localCourseBannerBuilderFindFetchedLayerModal(doc);
         if (!fetchedmodal) {
-            throw new Error('Fetched modal not found');
+            throw new Error(localCourseBannerBuilderGetJsString('fetchedmodalnotfound', ''));
         }
 
         if (fetchedmodal.id === 'local-course-banner-builder-add-layer-modal') {
-            throw new Error('Unexpected create modal returned for layer edit');
+            throw new Error(localCourseBannerBuilderGetJsString('unexpectedcreatemodalreturned', ''));
             return;
         }
 
         var targetmodal = document.getElementById(fetchedmodal.id);
         if (!targetmodal) {
-            throw new Error('Target modal not found');
+            throw new Error(localCourseBannerBuilderGetJsString('targetmodalnotfound', ''));
         }
 
         var fetchedtitle = fetchedmodal.querySelector('.modal-title');
@@ -8975,7 +8978,7 @@ function localCourseBannerBuilderLoadLayerModal(url) {
         var targettitle = targetmodal.querySelector('.modal-title');
         var targetbody = targetmodal.querySelector('.modal-body');
         if (!fetchedbody || !targetbody) {
-            throw new Error('Modal body not found');
+            throw new Error(localCourseBannerBuilderGetJsString('modalbodynotfound', ''));
         }
 
         if (fetchedtitle && targettitle) {
