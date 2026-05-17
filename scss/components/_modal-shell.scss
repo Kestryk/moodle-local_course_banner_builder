@@ -1,0 +1,75 @@
+﻿// Responsive preview action layout and layer modal shell.
+
+
+@media (max-width: 991.98px) {
+    .local-course-banner-builder-source-preview-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .local-course-banner-builder-source-preview-controls {
+        grid-template-columns: 1fr;
+    }
+
+    .local-course-banner-builder-source-preview-button {
+        width: 100%;
+    }
+
+    .modal[id^="local-course-banner-builder-"] .local-course-banner-builder-banner-preview-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .modal[id^="local-course-banner-builder-"] .local-course-banner-builder-banner-preview-panel > .local-course-banner-builder-modal-preview-action-list {
+        grid-column: 1;
+    }
+
+    .local-course-banner-builder-modal-preview-action-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+.local-course-banner-builder-layer-modal-dialog {
+    display: flex;
+    height: calc(100vh - 1rem);
+    max-height: calc(100vh - 1rem);
+    width: min(1680px, calc(100vw - 3rem));
+    max-width: min(1680px, calc(100vw - 3rem));
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.local-course-banner-builder-layer-modal-content {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
+}
+
+.local-course-banner-builder-layer-modal-body {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    padding-top: 0.2rem;
+    padding-right: 1.65rem;
+    padding-left: 1.65rem;
+    padding-bottom: 0;
+}
+
+.local-course-banner-builder-layer-modal-body::after {
+    content: "";
+    display: block;
+    height: 1rem;
+}
+
+.modal[id^="local-course-banner-builder-"] .modal-footer,
+.local-course-banner-builder-slideshow-modal-footer,
+.local-course-banner-builder-layer-modal-footer,
+.local-course-banner-builder-format-modal-footer {
+    border-top: 1px solid var(--bs-border-color, #dee2e6);
+    background: var(--bs-body-bg, #fff);
+    box-shadow: 0 -0.6rem 0.9rem var(--bs-body-bg, #fff);
+}

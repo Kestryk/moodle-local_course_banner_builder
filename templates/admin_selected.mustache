@@ -255,7 +255,7 @@
                                 {{/showfitoverrideselect}}
                                 {{#hasfitoverride}}
                                     <details class="local-course-banner-builder-help-bubble local-course-banner-builder-override-help">
-                                        <summary title="{{fitoverridehelp}}">?</summary>
+                                        <summary aria-label="{{fitoverridehelp}}">?</summary>
                                         <div>{{fitoverridehelp}}</div>
                                     </details>
                                 {{/hasfitoverride}}
@@ -384,11 +384,10 @@
                     <i class="fa fa-trash-can me-2" aria-hidden="true"></i>
                     {{#str}}deletealllayers, local_course_banner_builder{{/str}}
                 </button>
-                <button type="submit" class="btn btn-danger local-course-banner-builder-bulk-delete-button" form="local-course-banner-builder-bulk-delete"
-                    data-modal="confirmation"
+                <button type="button" class="btn btn-danger local-course-banner-builder-bulk-delete-button"
+                    data-action="local-course-banner-builder-delete-selected-layers"
                     data-modal-title="{{#str}}confirm{{/str}}"
-                    data-modal-content="{{#str}}deleteselectedlayersconfirm, local_course_banner_builder{{/str}}"
-                    data-modal-yes-button="{{#str}}delete{{/str}}">
+                    data-confirm-message="{{#str}}deleteselectedlayersconfirm, local_course_banner_builder{{/str}}">
                     <i class="fa fa-trash-can me-2" aria-hidden="true"></i>
                     {{#str}}deleteselectedlayers, local_course_banner_builder{{/str}}
                 </button>

@@ -18,11 +18,14 @@
  * Upgrade steps.
  *
  * @package    local_course_banner_builder
- * @copyright  2026
+ * @copyright  2026 Kevin Jarniac
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+// phpcs:disable moodle.Files.MoodleInternal.MoodleInternalNotNeeded
 defined('MOODLE_INTERNAL') || die();
+// phpcs:enable moodle.Files.MoodleInternal.MoodleInternalNotNeeded
+// phpcs:disable moodle.Files.LineLength.TooLong -- XMLDB field definitions are kept readable on one line.
 
 /**
  * Upgrade the plugin.
@@ -332,6 +335,248 @@ function xmldb_local_course_banner_builder_upgrade(int $oldversion): bool {
         require_once($CFG->dirroot . '/local/course_banner_builder/lib.php');
         \local_course_banner_builder\manager::sync_all_courses_from_category_banners();
         upgrade_plugin_savepoint(true, 2026042400, 'local', 'course_banner_builder');
+    }
+
+    if ($oldversion < 2026042401) {
+        \local_course_banner_builder\local\usertours::install_or_update();
+        upgrade_plugin_savepoint(true, 2026042401, 'local', 'course_banner_builder');
+    }
+
+    if ($oldversion < 2026042402) {
+        \local_course_banner_builder\local\usertours::install_or_update();
+        upgrade_plugin_savepoint(true, 2026042402, 'local', 'course_banner_builder');
+    }
+
+    if ($oldversion < 2026042403) {
+        upgrade_plugin_savepoint(true, 2026042403, 'local', 'course_banner_builder');
+    }
+
+    if ($oldversion < 2026042404) {
+        upgrade_plugin_savepoint(true, 2026042404, 'local', 'course_banner_builder');
+    }
+
+    if ($oldversion < 2026042405) {
+        \local_course_banner_builder\local\usertours::install_or_update();
+        upgrade_plugin_savepoint(true, 2026042405, 'local', 'course_banner_builder');
+    }
+
+    if ($oldversion < 2026042406) {
+        $table = new xmldb_table('local_course_banner_elements');
+        $field = new xmldb_field(
+            'imageopacity',
+            XMLDB_TYPE_NUMBER,
+            '10, 2',
+            null,
+            XMLDB_NOTNULL,
+            null,
+            '1',
+            'dynamicimagesizeenabled'
+        );
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        require_once($CFG->dirroot . '/local/course_banner_builder/lib.php');
+        \local_course_banner_builder\manager::sync_all_courses_from_category_banners();
+        upgrade_plugin_savepoint(true, 2026042406, 'local', 'course_banner_builder');
+    }
+
+    if ($oldversion < 2026042407) {
+        $table = new xmldb_table('local_course_banner_elements');
+        $fields = [
+            new xmldb_field(
+                'imagecropenabled',
+                XMLDB_TYPE_INTEGER,
+                '1',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '0',
+                'imageopacity'
+            ),
+            new xmldb_field(
+                'imagecropleftpercent',
+                XMLDB_TYPE_NUMBER,
+                '10, 2',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '0',
+                'imagecropenabled'
+            ),
+            new xmldb_field(
+                'imagecroptoppercent',
+                XMLDB_TYPE_NUMBER,
+                '10, 2',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '0',
+                'imagecropleftpercent'
+            ),
+            new xmldb_field(
+                'imagecropwidthpercent',
+                XMLDB_TYPE_NUMBER,
+                '10, 2',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '100',
+                'imagecroptoppercent'
+            ),
+            new xmldb_field(
+                'imagecropheightpercent',
+                XMLDB_TYPE_NUMBER,
+                '10, 2',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '100',
+                'imagecropwidthpercent'
+            ),
+        ];
+
+        foreach ($fields as $field) {
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+
+        require_once($CFG->dirroot . '/local/course_banner_builder/lib.php');
+        \local_course_banner_builder\manager::sync_all_courses_from_category_banners();
+        upgrade_plugin_savepoint(true, 2026042407, 'local', 'course_banner_builder');
+    }
+
+    if ($oldversion < 2026042408) {
+        $table = new xmldb_table('local_course_banner_elements');
+        $fields = [
+            new xmldb_field(
+                'imagecropenabled',
+                XMLDB_TYPE_INTEGER,
+                '1',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '0',
+                'imageopacity'
+            ),
+            new xmldb_field(
+                'imagecropleftpercent',
+                XMLDB_TYPE_NUMBER,
+                '10, 2',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '0',
+                'imagecropenabled'
+            ),
+            new xmldb_field(
+                'imagecroptoppercent',
+                XMLDB_TYPE_NUMBER,
+                '10, 2',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '0',
+                'imagecropleftpercent'
+            ),
+            new xmldb_field(
+                'imagecropwidthpercent',
+                XMLDB_TYPE_NUMBER,
+                '10, 2',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '100',
+                'imagecroptoppercent'
+            ),
+            new xmldb_field(
+                'imagecropheightpercent',
+                XMLDB_TYPE_NUMBER,
+                '10, 2',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '100',
+                'imagecropwidthpercent'
+            ),
+        ];
+
+        foreach ($fields as $field) {
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+
+        require_once($CFG->dirroot . '/local/course_banner_builder/lib.php');
+        \local_course_banner_builder\manager::sync_all_courses_from_category_banners();
+        upgrade_plugin_savepoint(true, 2026042408, 'local', 'course_banner_builder');
+    }
+
+    if ($oldversion < 2026042409) {
+        $table = new xmldb_table('local_course_banner_elements');
+        $fields = [
+            new xmldb_field(
+                'imagecropenabled',
+                XMLDB_TYPE_INTEGER,
+                '1',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '0',
+                'imageopacity'
+            ),
+            new xmldb_field(
+                'imagecropleftpercent',
+                XMLDB_TYPE_NUMBER,
+                '10, 2',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '0',
+                'imagecropenabled'
+            ),
+            new xmldb_field(
+                'imagecroptoppercent',
+                XMLDB_TYPE_NUMBER,
+                '10, 2',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '0',
+                'imagecropleftpercent'
+            ),
+            new xmldb_field(
+                'imagecropwidthpercent',
+                XMLDB_TYPE_NUMBER,
+                '10, 2',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '100',
+                'imagecroptoppercent'
+            ),
+            new xmldb_field(
+                'imagecropheightpercent',
+                XMLDB_TYPE_NUMBER,
+                '10, 2',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '100',
+                'imagecropwidthpercent'
+            ),
+        ];
+
+        foreach ($fields as $field) {
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+
+        require_once($CFG->dirroot . '/local/course_banner_builder/lib.php');
+        \local_course_banner_builder\manager::sync_all_courses_from_category_banners();
+        upgrade_plugin_savepoint(true, 2026042409, 'local', 'course_banner_builder');
     }
 
     return true;

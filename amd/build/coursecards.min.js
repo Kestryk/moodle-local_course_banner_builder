@@ -24,6 +24,7 @@ define(['core/config'], function(Config) {
     const GENERATED_BANNER_MARKER = 'course_banner_builder_auto_';
     const COURSE_FILEAREA_MARKER = '/course/overviewfiles/';
     const PROCESSED_ATTRIBUTE = 'data-course-banner-builder-card-processed';
+    const PENDING_ATTRIBUTE = 'data-course-banner-builder-card-pending';
     const OVERLAY_PROCESSED_ATTRIBUTE = 'data-course-banner-builder-overlays-processed';
     const NATIVE_BANNER_PROCESSED_ATTRIBUTE = 'data-course-banner-builder-native-banner-processed';
     const OVERLAY_CONTAINER_CLASS = 'local-course-banner-builder-fixed-overlays';
@@ -91,6 +92,8 @@ define(['core/config'], function(Config) {
     ].join(';');
 
     let observer = null;
+    let cardObserver = null;
+    let cardVisibilityCallbacks = typeof WeakMap !== 'undefined' ? new WeakMap() : null;
     let scheduled = false;
     let currentCourseOptions = {};
     let currentCourseId = 0;
@@ -153,7 +156,28 @@ define(['core/config'], function(Config) {
      * @returns {Boolean}
      */
     const isSquareCourseBoxTarget = function(target) {
-        return !!target.closest('.coursebox');
+        if (target.closest('.coursebox')) {
+            return true;
+        }
+
+        const rect = target.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+            const ratio = rect.width / rect.height;
+            return ratio >= 0.85 && ratio <= 1.15;
+        }
+
+        const root = target.closest(ROOT_SELECTORS);
+        if (!root) {
+            return false;
+        }
+
+        const rootRect = root.getBoundingClientRect();
+        if (rootRect.width <= 0 || rootRect.height <= 0) {
+            return false;
+        }
+
+        const rootRatio = rootRect.width / rootRect.height;
+        return rootRatio >= 0.85 && rootRatio <= 1.15;
     };
 
     /**
@@ -201,10 +225,58 @@ define(['core/config'], function(Config) {
      */
     const applyWhenLoadable = function(url, callback) {
         const image = new Image();
+        image.decoding = 'async';
+        image.loading = 'lazy';
         image.onload = function() {
             callback(url);
         };
         image.src = url;
+    };
+
+    /**
+     * Run a thumbnail replacement only when the card is close to the viewport.
+     *
+     * @param {Element} target
+     * @param {Function} callback
+     */
+    const runWhenCardIsNearViewport = function(target, callback) {
+        const rect = target.getBoundingClientRect();
+        const margin = 700;
+        if (!rect.width || !rect.height || (rect.bottom >= -margin && rect.top <= window.innerHeight + margin)) {
+            callback();
+            return;
+        }
+
+        if (!('IntersectionObserver' in window) || !cardVisibilityCallbacks) {
+            callback();
+            return;
+        }
+
+        if (!cardObserver) {
+            cardObserver = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (!entry.isIntersecting && entry.intersectionRatio <= 0) {
+                        return;
+                    }
+                    const observed = entry.target;
+                    const observedCallback = cardVisibilityCallbacks.get(observed);
+                    cardObserver.unobserve(observed);
+                    cardVisibilityCallbacks.delete(observed);
+                    observed.removeAttribute(PENDING_ATTRIBUTE);
+                    if (observedCallback) {
+                        observedCallback();
+                    }
+                });
+            }, {rootMargin: margin + 'px 0px'});
+        }
+
+        if (target.getAttribute(PENDING_ATTRIBUTE) === '1') {
+            return;
+        }
+
+        target.setAttribute(PENDING_ATTRIBUTE, '1');
+        cardVisibilityCallbacks.set(target, callback);
+        cardObserver.observe(target);
     };
 
     /**
@@ -239,12 +311,14 @@ define(['core/config'], function(Config) {
 
         const cardUrl = getCardUrl(courseId, isSquareCourseBoxTarget(target));
         target.setAttribute(PROCESSED_ATTRIBUTE, courseId);
-        applyWhenLoadable(cardUrl, function(loadableUrl) {
-            markCardThumbnail(target, target.closest(ROOT_SELECTORS));
-            target.style.backgroundImage = 'url("' + loadableUrl + '")';
-            target.style.backgroundPosition = 'center center';
-            target.style.backgroundSize = 'cover';
-            target.style.backgroundRepeat = 'no-repeat';
+        runWhenCardIsNearViewport(target, function() {
+            applyWhenLoadable(cardUrl, function(loadableUrl) {
+                markCardThumbnail(target, target.closest(ROOT_SELECTORS));
+                target.style.backgroundImage = 'url("' + loadableUrl + '")';
+                target.style.backgroundPosition = 'center center';
+                target.style.backgroundSize = 'cover';
+                target.style.backgroundRepeat = 'no-repeat';
+            });
         });
     };
 
@@ -261,11 +335,15 @@ define(['core/config'], function(Config) {
 
         const cardUrl = getCardUrl(courseId, isSquareCourseBoxTarget(target));
         target.setAttribute(PROCESSED_ATTRIBUTE, courseId);
-        applyWhenLoadable(cardUrl, function(loadableUrl) {
-            markCardThumbnail(target, target.closest(ROOT_SELECTORS));
-            target.src = loadableUrl;
-            target.style.objectFit = 'cover';
-            target.style.objectPosition = 'center center';
+        runWhenCardIsNearViewport(target, function() {
+            applyWhenLoadable(cardUrl, function(loadableUrl) {
+                markCardThumbnail(target, target.closest(ROOT_SELECTORS));
+                target.loading = 'lazy';
+                target.decoding = 'async';
+                target.src = loadableUrl;
+                target.style.objectFit = 'cover';
+                target.style.objectPosition = 'center center';
+            });
         });
     };
 

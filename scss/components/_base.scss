@@ -1,0 +1,17 @@
+﻿// Base plugin wrapper defaults. 
+/*
+ * Functional styles only.
+ *
+ * The plugin markup deliberately leans on Moodle/Bootstrap classes
+ * (generaltable, btn, form-control, text-muted, table-responsive, etc.).
+ * Theme-specific colours, borders, shadows and typography belong in the
+ * active theme.
+ */
+
+.local-course-banner-builder {
+    position: relative;
+    width: 100%;
+    min-height: 180px;
+    overflow: hidden;
+}
+

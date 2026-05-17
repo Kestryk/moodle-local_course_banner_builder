@@ -36,7 +36,7 @@
                     <th scope="col">{{#str}}sourcename, local_course_banner_builder{{/str}}</th>
                     <th scope="col">{{#str}}sourcetype, local_course_banner_builder{{/str}}</th>
                     <th scope="col">{{#str}}layers, local_course_banner_builder{{/str}}</th>
-                    <th scope="col">Composition</th>
+                    <th scope="col">{{#str}}compositionmode, local_course_banner_builder{{/str}}</th>
                     <th scope="col">{{#str}}fitmode, local_course_banner_builder{{/str}}</th>
                     <th scope="col">{{#str}}bannerimage, local_course_banner_builder{{/str}}</th>
                     <th scope="col">{{#str}}actions, local_course_banner_builder{{/str}}</th>
@@ -49,6 +49,7 @@
                         data-source-chain-key="{{sourcekeyhash}}"
                         data-source-chain-parent="{{parentkeyhash}}"
                         data-source-chain-level="{{hierarchylevel}}"
+                        {{#isselectedsource}} aria-current="true"{{/isselectedsource}}
                         {{#rowstyle}} style="{{rowstyle}}"{{/rowstyle}}>
                         <td class="local-course-banner-builder-hierarchy-cell">
                             {{#hierarchylevelmarkers}}
@@ -128,6 +129,7 @@
                                             <button type="button"
                                                 class="btn btn-outline-primary btn-sm dropdown-toggle local-course-banner-builder-source-dropdown-toggle"
                                                 data-toggle="dropdown"
+                                                data-bs-toggle="dropdown"
                                                 aria-haspopup="true"
                                                 aria-expanded="false"
                                                 data-source-dropdown-label="1">
@@ -165,7 +167,15 @@
                                 </form>
                             </div>
                         </td>
-                        <td><a href="{{categoryadminurl}}">{{categoryname}}</a></td>
+                        <td>
+                            <a href="{{categoryadminurl}}">{{categoryname}}</a>
+                            {{#isselectedsource}}
+                                <span class="local-course-banner-builder-current-source-badge">
+                                    <i class="fa fa-pen-to-square" aria-hidden="true"></i>
+                                    <span>{{currentlyeditinglabel}}</span>
+                                </span>
+                            {{/isselectedsource}}
+                        </td>
                         <td>{{sourcetypelabel}}</td>
                         <td>{{layercountdisplay}}</td>
                         <td>{{compositionmodelabel}}</td>
@@ -186,7 +196,9 @@
                                                 data-trigger="hover"
                                                 tabindex="0"
                                                 aria-label="{{dynamiclabel}}"
-                                                title="{{dynamiclabel}}">T</span>
+                                                title="{{dynamiclabel}}">
+                                                <i class="fa fa-level-up" aria-hidden="true"></i>
+                                            </span>
                                         {{/isdynamic}}
                                     </div>
                                 {{/thumbnails}}

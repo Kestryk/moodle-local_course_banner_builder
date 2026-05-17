@@ -1,0 +1,94 @@
+﻿{
+  "name": "tour:layermodals_site:name,local_course_banner_builder",
+  "description": "tour:layermodals_site:description,local_course_banner_builder",
+  "pathmatch": "/local/course_banner_builder/admin_site.php%",
+  "enabled": "1",
+  "sortorder": "0",
+  "endtourlabel": "",
+  "configdata": "{\"placement\":\"bottom\",\"orphan\":\"1\",\"backdrop\":\"1\",\"reflex\":\"0\",\"showtourwhen\":\"1\"}",
+  "displaystepnumbers": true,
+  "version": "2026042405",
+  "steps": [
+    {
+      "title": "tour:layermodals:intro:title,local_course_banner_builder",
+      "content": "tour:layermodals:intro:content,local_course_banner_builder",
+      "contentformat": "1",
+      "targettype": "2",
+      "targetvalue": "",
+      "sortorder": "0",
+      "configdata": "{\"placement\":\"bottom\"}"
+    },
+    {
+      "title": "tour:layermodals:add:title,local_course_banner_builder",
+      "content": "tour:layermodals:add:content,local_course_banner_builder",
+      "contentformat": "1",
+      "targettype": "0",
+      "targetvalue": ".local-course-banner-builder-add-layer-primary",
+      "sortorder": "1",
+      "configdata": "{\"placement\":\"bottom\"}"
+    },
+    {
+      "title": "tour:layermodals:identity:title,local_course_banner_builder",
+      "content": "tour:layermodals:identity:content,local_course_banner_builder",
+      "contentformat": "1",
+      "targettype": "2",
+      "targetvalue": "",
+      "sortorder": "2",
+      "configdata": "{\"placement\":\"bottom\"}"
+    },
+    {
+      "title": "tour:layermodals:file:title,local_course_banner_builder",
+      "content": "tour:layermodals:file:content,local_course_banner_builder",
+      "contentformat": "1",
+      "targettype": "2",
+      "targetvalue": "",
+      "sortorder": "3",
+      "configdata": "{\"placement\":\"bottom\"}"
+    },
+    {
+      "title": "tour:layermodals:size:title,local_course_banner_builder",
+      "content": "tour:layermodals:size:content,local_course_banner_builder",
+      "contentformat": "1",
+      "targettype": "2",
+      "targetvalue": "",
+      "sortorder": "4",
+      "configdata": "{\"placement\":\"bottom\"}"
+    },
+    {
+      "title": "tour:layermodals:border:title,local_course_banner_builder",
+      "content": "tour:layermodals:border:content,local_course_banner_builder",
+      "contentformat": "1",
+      "targettype": "2",
+      "targetvalue": "",
+      "sortorder": "5",
+      "configdata": "{\"placement\":\"bottom\"}"
+    },
+    {
+      "title": "tour:layermodals:preview:title,local_course_banner_builder",
+      "content": "tour:layermodals:preview:content,local_course_banner_builder",
+      "contentformat": "1",
+      "targettype": "2",
+      "targetvalue": "",
+      "sortorder": "6",
+      "configdata": "{\"placement\":\"bottom\"}"
+    },
+    {
+      "title": "tour:layermodals:multi:title,local_course_banner_builder",
+      "content": "tour:layermodals:multi:content,local_course_banner_builder",
+      "contentformat": "1",
+      "targettype": "2",
+      "targetvalue": "",
+      "sortorder": "7",
+      "configdata": "{\"placement\":\"bottom\"}"
+    },
+    {
+      "title": "tour:layermodals:save:title,local_course_banner_builder",
+      "content": "tour:layermodals:save:content,local_course_banner_builder",
+      "contentformat": "1",
+      "targettype": "2",
+      "targetvalue": "",
+      "sortorder": "8",
+      "configdata": "{\"placement\":\"bottom\"}"
+    }
+  ]
+}

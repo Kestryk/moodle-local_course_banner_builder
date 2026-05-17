@@ -1,0 +1,69 @@
+// Source hierarchy chain controls.
+
+.local-course-banner-builder-chain-row-toggle {
+    position: absolute;
+    top: 50%;
+    left: -1rem;
+    transform: translate(-50%, -50%);
+    width: 1.45rem;
+    height: 1.45rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 !important;
+    line-height: 1;
+    border-radius: 999px;
+    border: 1px solid color-mix(
+        in srgb,
+        var(--local-course-banner-chain-border, var(--bs-primary, #0f6cbf)) 28%,
+        #ffffff
+    );
+    background: color-mix(
+        in srgb,
+        var(--local-course-banner-chain-border, var(--bs-primary, #0f6cbf)) 14%,
+        #ffffff
+    );
+    color: var(--local-course-banner-chain-border, var(--bs-primary, #0f6cbf));
+    box-shadow: 0 0.12rem 0.35rem rgba(31, 42, 55, 0.08);
+    opacity: 1;
+    margin-right: 0;
+    z-index: 15;
+
+    .icon,
+    .fa {
+        margin: 0;
+        line-height: 1;
+        font-size: 0.78rem;
+    }
+
+    &:hover,
+    &:focus,
+    &:active {
+        background: color-mix(
+            in srgb,
+            var(--local-course-banner-chain-border, var(--bs-primary, #0f6cbf)) 22%,
+            #ffffff
+        ) !important;
+        opacity: 1 !important;
+        text-decoration: none !important;
+
+        .icon,
+        .fa {
+            opacity: 1 !important;
+        }
+    }
+}
+
+.local-course-banner-builder-chain-split-help {
+    &:hover,
+    &:focus,
+    &:active {
+        background: color-mix(
+            in srgb,
+            var(--local-course-banner-chain-border, var(--bs-primary, #0f6cbf)) 22%,
+            #ffffff
+        ) !important;
+        opacity: 1 !important;
+        text-decoration: none !important;
+    }
+}

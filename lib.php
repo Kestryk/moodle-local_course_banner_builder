@@ -18,11 +18,13 @@
  * Library callbacks.
  *
  * @package    local_course_banner_builder
- * @copyright  2026
+ * @copyright  2026 Kevin Jarniac
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+// phpcs:disable moodle.Files.MoodleInternal.MoodleInternalNotNeeded
 defined('MOODLE_INTERNAL') || die();
+// phpcs:enable moodle.Files.MoodleInternal.MoodleInternalNotNeeded
 
 /**
  * Whether a generated plugin file URL is being opened as the main browser document.

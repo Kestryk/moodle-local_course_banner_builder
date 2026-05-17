@@ -18,14 +18,14 @@
  * Version information.
  *
  * @package    local_course_banner_builder
- * @copyright  2026
+ * @copyright  2026 Kevin Jarniac
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_course_banner_builder';
-$plugin->release = '0.6.6';
-$plugin->version = 2026042400;
+$plugin->release = '0.6.15';
+$plugin->version = 2026042409;
 $plugin->requires = 2024100700;
-$plugin->maturity = MATURITY_ALPHA;
+$plugin->maturity = MATURITY_BETA;
