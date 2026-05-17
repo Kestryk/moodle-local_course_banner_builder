@@ -1,0 +1,26 @@
+// Source SCSS for Local Course Banner Builder.
+//
+// Moodle loads styles.css for local plugins; keep that file as the compiled
+// browser-facing stylesheet and use this folder as the organised component
+// source when changing styles.
+
+@import "components/base";
+@import "components/preview-opacity";
+@import "components/admin-status";
+@import "components/slideshow-runtime";
+@import "components/native-banner-core";
+@import "components/native-banner";
+@import "components/admin-switcher";
+@import "components/banner-format-modal";
+@import "components/admin-layout";
+@import "components/source-chain";
+@import "components/help-bubble";
+@import "components/layer-table";
+@import "components/modal-preview-actions";
+@import "components/admin-controls";
+@import "components/modal-shell";
+@import "components/border-preview";
+@import "components/preview-editor";
+@import "components/slideshow-admin";
+@import "components/tours";
+@import "components/responsive";

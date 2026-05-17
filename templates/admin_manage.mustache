@@ -49,6 +49,7 @@
                         data-source-chain-key="{{sourcekeyhash}}"
                         data-source-chain-parent="{{parentkeyhash}}"
                         data-source-chain-level="{{hierarchylevel}}"
+                        {{#isselectedsource}} aria-current="true"{{/isselectedsource}}
                         {{#rowstyle}} style="{{rowstyle}}"{{/rowstyle}}>
                         <td class="local-course-banner-builder-hierarchy-cell">
                             {{#hierarchylevelmarkers}}
@@ -166,7 +167,15 @@
                                 </form>
                             </div>
                         </td>
-                        <td><a href="{{categoryadminurl}}">{{categoryname}}</a></td>
+                        <td>
+                            <a href="{{categoryadminurl}}">{{categoryname}}</a>
+                            {{#isselectedsource}}
+                                <span class="local-course-banner-builder-current-source-badge">
+                                    <i class="fa fa-pen-to-square" aria-hidden="true"></i>
+                                    <span>{{currentlyeditinglabel}}</span>
+                                </span>
+                            {{/isselectedsource}}
+                        </td>
                         <td>{{sourcetypelabel}}</td>
                         <td>{{layercountdisplay}}</td>
                         <td>{{compositionmodelabel}}</td>

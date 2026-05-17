@@ -1,0 +1,67 @@
+﻿{
+  "name": "tour:sitebanner:name,local_course_banner_builder",
+  "description": "tour:sitebanner:description,local_course_banner_builder",
+  "pathmatch": "/local/course_banner_builder/admin_site.php%",
+  "enabled": "1",
+  "sortorder": "0",
+  "endtourlabel": "",
+  "configdata": "{\"placement\":\"bottom\",\"orphan\":\"1\",\"backdrop\":\"1\",\"reflex\":\"0\",\"showtourwhen\":\"1\"}",
+  "displaystepnumbers": true,
+  "version": "2026042405",
+  "steps": [
+    {
+      "title": "tour:sitebanner:intro:title,local_course_banner_builder",
+      "content": "tour:sitebanner:intro:content,local_course_banner_builder",
+      "contentformat": "1",
+      "targettype": "2",
+      "targetvalue": "",
+      "sortorder": "0",
+      "configdata": "{\"placement\":\"bottom\"}"
+    },
+    {
+      "title": "tour:sitebanner:enable:title,local_course_banner_builder",
+      "content": "tour:sitebanner:enable:content,local_course_banner_builder",
+      "contentformat": "1",
+      "targettype": "0",
+      "targetvalue": ".local-course-banner-builder-site-enable-button",
+      "sortorder": "1",
+      "configdata": "{\"placement\":\"bottom\"}"
+    },
+    {
+      "title": "tour:sitebanner:format:title,local_course_banner_builder",
+      "content": "tour:sitebanner:format:content,local_course_banner_builder",
+      "contentformat": "1",
+      "targettype": "0",
+      "targetvalue": ".local-course-banner-builder-admin-format-button",
+      "sortorder": "2",
+      "configdata": "{\"placement\":\"bottom\"}"
+    },
+    {
+      "title": "tour:sitebanner:settings:title,local_course_banner_builder",
+      "content": "tour:sitebanner:settings:content,local_course_banner_builder",
+      "contentformat": "1",
+      "targettype": "0",
+      "targetvalue": ".local-course-banner-builder-settings-action",
+      "sortorder": "3",
+      "configdata": "{\"placement\":\"bottom\"}"
+    },
+    {
+      "title": "tour:sitebanner:preview:title,local_course_banner_builder",
+      "content": "tour:sitebanner:preview:content,local_course_banner_builder",
+      "contentformat": "1",
+      "targettype": "0",
+      "targetvalue": ".local-course-banner-builder-source-preview-panel",
+      "sortorder": "4",
+      "configdata": "{\"placement\":\"top\"}"
+    },
+    {
+      "title": "tour:sitebanner:layers:title,local_course_banner_builder",
+      "content": "tour:sitebanner:layers:content,local_course_banner_builder",
+      "contentformat": "1",
+      "targettype": "0",
+      "targetvalue": ".local-course-banner-builder-layer-table",
+      "sortorder": "5",
+      "configdata": "{\"placement\":\"top\"}"
+    }
+  ]
+}

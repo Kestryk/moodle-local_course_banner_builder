@@ -18,7 +18,7 @@
  * Privacy API implementation.
  *
  * @package    local_course_banner_builder
- * @copyright  2026
+ * @copyright  2026 Kevin Jarniac
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -30,7 +30,7 @@ namespace local_course_banner_builder\privacy;
  * The plugin stores banner and slideshow configuration, but no personal user data.
  *
  * @package    local_course_banner_builder
- * @copyright  2026
+ * @copyright  2026 Kevin Jarniac
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class provider implements \core_privacy\local\metadata\null_provider {

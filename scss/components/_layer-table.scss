@@ -1,0 +1,93 @@
+// Source layer table and compact layer-detail summaries.
+
+.local-course-banner-builder-layer-table {
+    font-size: 0.8rem;
+
+    thead th {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    th,
+    td {
+        line-height: 1.25;
+    }
+
+    [data-chain-border-row],
+    [data-chain-border-row] strong,
+    [data-chain-border-row] .text-muted {
+        font-size: inherit;
+        font-weight: 400;
+    }
+
+    .local-course-banner-builder-border-summary {
+        font-size: 0.72rem;
+        padding: 0.38rem 0.48rem;
+    }
+
+    .local-course-banner-builder-border-summary-list {
+        > div {
+            gap: 0.05rem;
+            padding: 0.18rem 0;
+        }
+
+        dt {
+            font-size: 0.64rem;
+        }
+
+        dd {
+            font-size: 0.7rem;
+        }
+    }
+}
+
+.local-course-banner-builder-layer-sortable {
+    font-size: 0.8rem;
+
+    td:nth-child(2),
+    td:nth-child(4),
+    td:nth-child(5) {
+        text-align: center;
+        vertical-align: middle;
+    }
+}
+
+.local-course-banner-builder-layer-select-cell {
+    text-align: center;
+    vertical-align: middle;
+
+    input[type="checkbox"] {
+        display: block;
+        margin: 0 auto;
+    }
+}
+
+.local-course-banner-builder-layer-heading-with-help {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+}
+
+.local-course-banner-builder-table-help-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.95rem;
+    height: 0.95rem;
+    border-radius: 999px;
+    background: var(--bs-info, #008196);
+    color: #fff;
+    font-size: 0.62rem;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none !important;
+
+    &:hover,
+    &:focus {
+        border-color: #0f6cbf !important;
+        background: #0f6cbf !important;
+        color: #fff !important;
+        text-decoration: none !important;
+    }
+}

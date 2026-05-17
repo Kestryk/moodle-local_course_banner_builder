@@ -25,7 +25,7 @@ defined('MOODLE_INTERNAL') || die();
  * Output hook callbacks.
  *
  * @package    local_course_banner_builder
- * @copyright  2026
+ * @copyright  2026 Kevin Jarniac
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class hook_callbacks {
@@ -52,33 +52,63 @@ class hook_callbacks {
         $courseid = (int)($page->course->id ?? 0);
         $iscoursebannerpage = self::is_course_banner_page($page);
         $hascourselayers = $iscoursebannerpage && manager::course_has_applicable_banner_layers($page->course);
+        $coursecontext = $courseid > SITEID ? \context_course::instance($courseid, IGNORE_MISSING) : null;
+        $hascustomcourseimage = $coursecontext && manager::course_has_custom_overview_image($coursecontext->id);
+        $usedefaultimage = $iscoursebannerpage &&
+            !$hascourselayers &&
+            !$hascustomcourseimage &&
+            manager::course_default_image_banners_enabled();
         $themehasbanner = manager::theme_seems_to_provide_course_banner();
         $themeblocksnativebanner = $themehasbanner && self::is_course_view_page($page);
         $allownativebanner = $iscoursebannerpage &&
-            manager::is_display_enabled() &&
+            manager::is_course_banner_enabled() &&
             !$themeblocksnativebanner &&
-            $hascourselayers;
+            ($hascourselayers || $usedefaultimage);
 
         if (!$allownativebanner) {
             return null;
         }
 
-        $hasbackground = manager::course_has_native_banner_background($page->course);
+        $hasbackground = $usedefaultimage || manager::course_has_native_banner_background($page->course);
         $overlays = manager::get_course_header_image_overlays($page->course);
         $border = manager::get_course_header_border_overlay($courseid);
         if (!$hasbackground && empty($overlays) && empty($border)) {
             return null;
         }
 
-        $bannerurl = $hasbackground ? manager::get_course_banner_image_url($courseid) : null;
+        $bannerurl = $usedefaultimage ?
+            manager::get_generated_course_image_url($courseid) :
+            ($hasbackground ? manager::get_course_banner_image_url($courseid) : null);
+        $titlecontext = self::is_course_view_page($page) ? 'course' : 'activity';
+        $coursetitle = (string)($page->course->fullname ?? '');
+        $activitytitle = (string)($page->cm->name ?? $page->heading ?? '');
+        $titletext = $coursetitle;
+        if ($titlecontext === 'activity') {
+            $activitytitlemode = (string)get_config('local_course_banner_builder', 'bannertitle_activity_activitytitlemode');
+            $activitytitlemode = in_array($activitytitlemode, ['course', 'both', 'none'], true)
+                ? $activitytitlemode
+                : 'activity';
+            if ($activitytitlemode === 'course') {
+                $titletext = $coursetitle;
+            } else if ($activitytitlemode === 'both') {
+                $titletext = trim($coursetitle . "\n" . $activitytitle);
+            } else if ($activitytitlemode === 'none') {
+                $titletext = '';
+            } else {
+                $titletext = $activitytitle;
+            }
+        }
+
         return [
             'courseid' => $courseid,
             'bannerurl' => $bannerurl ? $bannerurl->out(false) : '',
             'overlays' => $overlays,
             'border' => $border,
+            'title' => self::get_banner_title_overlay($titlecontext, $titletext),
             'themehasbanner' => $themehasbanner,
             'allownativebanner' => $allownativebanner,
             'hascourselayers' => $hascourselayers,
+            'usesdefaultimage' => $usedefaultimage,
             'bannerformat' => manager::get_course_banner_format(),
         ];
     }
@@ -221,6 +251,24 @@ class hook_callbacks {
             '    min-height: 180px;',
             '    overflow: hidden;',
             '}',
+            '.local-course-banner-builder-banner-overlay-layer {',
+            '    position: absolute;',
+            '    inset: 0;',
+            '    z-index: 70;',
+            '    pointer-events: none;',
+            '}',
+            '.local-course-banner-builder-banner-title-overlay {',
+            '    position: absolute;',
+            '    z-index: 80;',
+            '    max-width: min(86%, 54rem);',
+            '    transform: translate(-50%, -50%);',
+            '    font-weight: 800;',
+            '    line-height: 1.05;',
+            '    letter-spacing: 0;',
+            '    white-space: pre-line;',
+            '    text-shadow: 0 0.15rem 0.7rem rgba(0, 0, 0, 0.45);',
+            '    pointer-events: none;',
+            '}',
             '.local-course-banner-builder-slideshow-host {',
             '    position: relative !important;',
             '    overflow: hidden !important;',
@@ -294,7 +342,7 @@ class hook_callbacks {
             '    position: absolute;',
             '    top: var(--local-course-banner-builder-slideshow-label-y, 10%);',
             '    left: var(--local-course-banner-builder-slideshow-label-x, 14%);',
-            '    transform: translate(-50%, -50%);',
+            '    transform: translate(var(--local-course-banner-builder-slideshow-label-translate-x, -50%), -50%);',
             '    display: flex;',
             '    align-items: center;',
             '    flex-direction: var(--local-course-banner-builder-slideshow-label-orientation, row);',
@@ -307,45 +355,75 @@ class hook_callbacks {
             '.local-course-banner-builder-slideshow-label {',
             '    display: inline-flex;',
             '    align-items: center;',
+            '    justify-content: center;',
             '    flex: 0 0 auto;',
             '    gap: 0.24em;',
             '    align-self: auto;',
-            '    padding: clamp(0.1rem, 0.58cqh, 0.2rem) clamp(0.32rem, 1.1cqh, 0.54rem);',
+            '    padding: clamp(0.14rem, 0.72cqh, 0.28rem) clamp(0.42rem, 1.35cqh, 0.72rem);',
             '    border: 1px solid rgba(255, 255, 255, 0.42);',
             '    border-radius: var(--local-course-banner-builder-slideshow-label-radius, 999px);',
             '    background: rgba(255, 255, 255, 0.2);',
             '    color: #fff;',
-            '    font-size: var(--local-course-banner-builder-slideshow-label-font-size, clamp(5.8cqh, min(12.5cqh, 1.55cqw), 17cqh));',
+            '    font-size: var(--local-course-banner-builder-slideshow-label-font-size, clamp(3.5cqh, min(6.4cqh, 0.82cqw), 8.4cqh));',
             '    font-weight: 600;',
             '    letter-spacing: 0;',
+            '    line-height: 1;',
+            '    min-height: calc(1em + clamp(0.28rem, 1.42cqh, 0.56rem));',
             '    text-transform: uppercase;',
             '    white-space: nowrap;',
             '}',
+            '.local-course-banner-builder-slideshow-label > span { display: inline-flex; ' .
+                'align-items: center; line-height: 1; ' .
+                'transform: scale(var(--local-course-banner-builder-slideshow-label-text-scale, 1)); ' .
+                'transform-origin: center; }',
             '.local-course-banner-builder-slideshow-label .fa, ' .
                 '.local-course-banner-builder-slideshow-label .icon, ' .
-                '.local-course-banner-builder-slideshow-label-icon { margin: 0; font-size: 1.05em; line-height: 1; }',
-            '.local-course-banner-builder-slideshow-label-icon { width: 1.08em; height: 1.08em; ' .
+                '.local-course-banner-builder-slideshow-label-icon { margin: 0; ' .
+                'font-size: 1.08em; line-height: 1; }',
+            '.local-course-banner-builder-slideshow-label-icon { width: 1.16em; height: 1.16em; ' .
                 'object-fit: contain; flex: 0 0 auto; }',
             '.local-course-banner-builder-slideshow-label--course-shortname { ' .
-                'background: rgba(255, 255, 255, 0.88); color: #111827; ' .
+                '--local-course-banner-builder-slideshow-label-shadow-rgb: ' .
+                'var(--local-course-banner-builder-slideshow-label-courseorigin-shadow-rgb, 0, 0, 0); ' .
+                'background: var(--local-course-banner-builder-slideshow-label-courseorigin-bg, rgba(255, 255, 255, 0.88)); ' .
+                'border-color: var(--local-course-banner-builder-slideshow-label-courseorigin-border, #E5E7EB); ' .
+                'color: var(--local-course-banner-builder-slideshow-label-courseorigin-color, #111827); ' .
                 'min-height: calc(1.1em + clamp(0.45rem, min(2.2cqh, 0.28cqw), 0.74rem)); }',
             '.local-course-banner-builder-slideshow-label--forums { ' .
+                '--local-course-banner-builder-slideshow-label-shadow-rgb: ' .
+                'var(--local-course-banner-builder-slideshow-label-forums-shadow-rgb, 0, 0, 0); ' .
                 'background: var(--local-course-banner-builder-slideshow-label-forums-bg, #0DCAF0); ' .
+                'border-color: var(--local-course-banner-builder-slideshow-label-forums-border, #B6F0FF); ' .
                 'color: var(--local-course-banner-builder-slideshow-label-forums-color, #07212A); }',
             '.local-course-banner-builder-slideshow-label--siteannouncements { ' .
+                '--local-course-banner-builder-slideshow-label-shadow-rgb: ' .
+                'var(--local-course-banner-builder-slideshow-label-siteannouncements-shadow-rgb, 0, 0, 0); ' .
                 'background: var(--local-course-banner-builder-slideshow-label-siteannouncements-bg, #20C997); ' .
+                'border-color: var(--local-course-banner-builder-slideshow-label-siteannouncements-border, #B5F4DF); ' .
                 'color: var(--local-course-banner-builder-slideshow-label-siteannouncements-color, #06281F); }',
             '.local-course-banner-builder-slideshow-label--assignment { ' .
+                '--local-course-banner-builder-slideshow-label-shadow-rgb: ' .
+                'var(--local-course-banner-builder-slideshow-label-assignments-shadow-rgb, 0, 0, 0); ' .
                 'background: var(--local-course-banner-builder-slideshow-label-assignments-bg, #FFC107); ' .
+                'border-color: var(--local-course-banner-builder-slideshow-label-assignments-border, #FFE69C); ' .
                 'color: var(--local-course-banner-builder-slideshow-label-assignments-color, #2B2100); }',
             '.local-course-banner-builder-slideshow-label--assignments { ' .
+                '--local-course-banner-builder-slideshow-label-shadow-rgb: ' .
+                'var(--local-course-banner-builder-slideshow-label-assignments-shadow-rgb, 0, 0, 0); ' .
                 'background: var(--local-course-banner-builder-slideshow-label-assignments-bg, #FFC107); ' .
+                'border-color: var(--local-course-banner-builder-slideshow-label-assignments-border, #FFE69C); ' .
                 'color: var(--local-course-banner-builder-slideshow-label-assignments-color, #2B2100); }',
             '.local-course-banner-builder-slideshow-label--quiz { ' .
+                '--local-course-banner-builder-slideshow-label-shadow-rgb: ' .
+                'var(--local-course-banner-builder-slideshow-label-quizzes-shadow-rgb, 0, 0, 0); ' .
                 'background: var(--local-course-banner-builder-slideshow-label-quizzes-bg, #DC3545); ' .
+                'border-color: var(--local-course-banner-builder-slideshow-label-quizzes-border, #F1AEB5); ' .
                 'color: var(--local-course-banner-builder-slideshow-label-quizzes-color, #FFFFFF); }',
             '.local-course-banner-builder-slideshow-label--quizzes { ' .
+                '--local-course-banner-builder-slideshow-label-shadow-rgb: ' .
+                'var(--local-course-banner-builder-slideshow-label-quizzes-shadow-rgb, 0, 0, 0); ' .
                 'background: var(--local-course-banner-builder-slideshow-label-quizzes-bg, #DC3545); ' .
+                'border-color: var(--local-course-banner-builder-slideshow-label-quizzes-border, #F1AEB5); ' .
                 'color: var(--local-course-banner-builder-slideshow-label-quizzes-color, #FFFFFF); }',
             '.local-course-banner-builder-slideshow-content {',
             '    pointer-events: none;',
@@ -367,6 +445,7 @@ class hook_callbacks {
             '    left: var(--local-course-banner-builder-slideshow-title-x, 50%);',
             '    top: var(--local-course-banner-builder-slideshow-title-y, 32%);',
             '    max-width: min(84%, 72rem);',
+            '    text-align: var(--local-course-banner-builder-slideshow-title-text-align, center);',
             '}',
             '.local-course-banner-builder-slideshow-body-block {',
             '    left: var(--local-course-banner-builder-slideshow-body-x, 50%);',
@@ -376,10 +455,11 @@ class hook_callbacks {
             '    max-height: max(2rem, calc(100% - var(--local-course-banner-builder-slideshow-body-y, 43%) - 18%));',
             '    transform: translate(-50%, 0);',
             '    overflow: hidden;',
+            '    text-align: var(--local-course-banner-builder-slideshow-body-text-align, center);',
             '}',
             '.local-course-banner-builder-slideshow-action-wrap {',
             '    left: var(--local-course-banner-builder-slideshow-action-x, 50%);',
-            '    top: calc(var(--local-course-banner-builder-slideshow-action-y, 74%) - var(--local-course-banner-builder-slideshow-action-y-adjust, 0%));',
+            '    top: calc(var(--local-course-banner-builder-slideshow-action-y, 80%) - var(--local-course-banner-builder-slideshow-action-y-adjust, 0%));',
             '    max-width: min(96%, 42rem);',
             '}',
             '.local-course-banner-builder-native-course-banner--format-standard .local-course-banner-builder-slideshow,',
@@ -424,6 +504,7 @@ class hook_callbacks {
             '    align-items: center;',
             '    justify-content: center;',
             '    min-width: var(--local-course-banner-builder-slideshow-action-width, clamp(10cqw, 18cqw, 34cqw));',
+            '    height: var(--local-course-banner-builder-slideshow-action-height, clamp(10cqh, min(22cqh, 2.7cqw), 34cqh));',
             '    min-height: var(--local-course-banner-builder-slideshow-action-height, clamp(10cqh, min(22cqh, 2.7cqw), 34cqh));',
             '    padding: clamp(0.28rem, 1.15cqh, 0.55rem) clamp(0.8rem, 2.4cqh, 1.2rem);',
             '    font-size: var(--local-course-banner-builder-slideshow-action-font-size, clamp(6cqh, min(13cqh, 1.6cqw), 18cqh));',
@@ -438,6 +519,7 @@ class hook_callbacks {
             '    color: #111827;',
             '    font-size: var(--local-course-banner-builder-slideshow-action-font-size, clamp(6cqh, min(13cqh, 1.6cqw), 18cqh)) !important;',
             '    min-width: var(--local-course-banner-builder-slideshow-action-width, clamp(10cqw, 18cqw, 34cqw)) !important;',
+            '    height: var(--local-course-banner-builder-slideshow-action-height, clamp(10cqh, min(22cqh, 2.7cqw), 34cqh)) !important;',
             '    min-height: var(--local-course-banner-builder-slideshow-action-height, clamp(10cqh, min(22cqh, 2.7cqw), 34cqh)) !important;',
             '    font-weight: 700;',
             '    border-radius: var(--local-course-banner-builder-slideshow-action-radius, var(--bs-border-radius, 0.375rem));',
@@ -539,6 +621,11 @@ class hook_callbacks {
             '}',
             '.local-course-banner-builder .banner-layer-1 {',
             '    z-index: 1;',
+            '}',
+            '.local-course-banner-builder-native-course-banner--moodle-generated {',
+            '    background-repeat: no-repeat;',
+            '    background-position: center center;',
+            '    background-size: cover;',
             '}',
             '.local-course-banner-builder-native-course-banner {',
             '    width: min(100%, 1320px);',
@@ -763,6 +850,169 @@ class hook_callbacks {
     }
 
     /**
+     * Build one optional title overlay for native banners.
+     *
+     * @param string $context
+     * @param string $text
+     * @return array|null
+     */
+    protected static function get_banner_title_overlay(string $context, string $text): ?array {
+        $context = in_array($context, ['course', 'activity', 'site'], true) ? $context : 'course';
+        $prefix = 'bannertitle_' . $context . '_';
+        $text = trim($text);
+        $titleenabled = (bool)get_config('local_course_banner_builder', $prefix . 'enabled') && $text !== '';
+        $overlayenabled = (bool)get_config('local_course_banner_builder', $prefix . 'overlayenabled');
+
+        $fontfamily = (string)get_config('local_course_banner_builder', $prefix . 'fontfamily');
+        if ($fontfamily !== '' && !array_key_exists($fontfamily, manager::get_slideshow_font_family_options())) {
+            $fontfamily = '';
+        }
+        $color = (string)get_config('local_course_banner_builder', $prefix . 'color');
+        $color = preg_match('/^#[0-9a-f]{6}$/i', $color) ? $color : '#FFFFFF';
+        $fontsize = (int)get_config('local_course_banner_builder', $prefix . 'fontsize');
+        $fontsize = max(25, min(160, $fontsize ?: 100));
+        $x = max(0.0, min(100.0, (float)(get_config('local_course_banner_builder', $prefix . 'x') ?: 50)));
+        $y = max(0.0, min(100.0, (float)(get_config('local_course_banner_builder', $prefix . 'y') ?: 50)));
+        $align = (string)get_config('local_course_banner_builder', $prefix . 'align');
+        $align = in_array($align, ['left', 'center', 'right'], true) ? $align : 'center';
+        $style = [];
+        if ($titleenabled) {
+            $bold = (bool)get_config('local_course_banner_builder', $prefix . 'bold');
+            $italic = (bool)get_config('local_course_banner_builder', $prefix . 'italic');
+            $underline = (bool)get_config('local_course_banner_builder', $prefix . 'underline');
+            $allcaps = (bool)get_config('local_course_banner_builder', $prefix . 'allcaps');
+            $style = [
+                'left: ' . $x . '%;',
+                'top: ' . $y . '%;',
+                'color: ' . $color . ';',
+                'font-size: clamp(' . round(8 * $fontsize / 100, 3) . 'cqh, ' .
+                    round(4 * $fontsize / 100, 3) . 'cqw, ' . round(28 * $fontsize / 100, 3) . 'cqh);',
+                'font-family: ' . ($fontfamily !== '' ? s($fontfamily) : 'inherit') . ';',
+                'font-weight: ' . ($bold ? '800' : '500') . ';',
+                'font-style: ' . ($italic ? 'italic' : 'normal') . ';',
+                'text-decoration: ' . ($underline ? 'underline' : 'none') . ';',
+                'text-transform: ' . ($allcaps ? 'uppercase' : 'none') . ';',
+                'text-align: ' . $align . ';',
+            ];
+            if ((bool)get_config('local_course_banner_builder', $prefix . 'frameenabled')) {
+                $framecolor = self::banner_title_rgba(
+                    (string)get_config('local_course_banner_builder', $prefix . 'framecolor'),
+                    (float)(get_config('local_course_banner_builder', $prefix . 'frameopacity') ?: 35)
+                );
+                $style[] = 'background: ' . $framecolor . ';';
+                $style[] = 'border: ' . max(0, min(10, (float)get_config('local_course_banner_builder', $prefix . 'frameborderwidth'))) .
+                    'px solid ' . self::normalise_banner_title_hex(
+                        (string)get_config('local_course_banner_builder', $prefix . 'framebordercolor'),
+                        '#FFFFFF'
+                    ) . ';';
+                $style[] = 'border-radius: ' . max(0, min(80, (float)get_config('local_course_banner_builder', $prefix . 'frameradius'))) . 'px;';
+                $padding = max(0, min(80, (float)get_config('local_course_banner_builder', $prefix . 'framepadding')));
+                $style[] = 'padding: ' . round($padding / 2, 2) . 'px ' . $padding . 'px;';
+                if ((bool)get_config('local_course_banner_builder', $prefix . 'frameshadowenabled')) {
+                    $distance = max(0, min(50, (float)get_config('local_course_banner_builder', $prefix . 'frameshadowdistance')));
+                    $angle = deg2rad(max(0, min(360, (float)get_config('local_course_banner_builder', $prefix . 'frameshadowdirection'))));
+                    $xoffset = round(cos($angle) * $distance, 2);
+                    $yoffset = round(sin($angle) * $distance, 2);
+                    $blur = max(0, min(80, (float)get_config('local_course_banner_builder', $prefix . 'frameshadowblur')));
+                    $shadowcolor = self::banner_title_rgba(
+                        (string)get_config('local_course_banner_builder', $prefix . 'frameshadowcolor'),
+                        (float)(get_config('local_course_banner_builder', $prefix . 'frameshadowopacity') ?: 25)
+                    );
+                    $style[] = 'box-shadow: ' . $xoffset . 'px ' . $yoffset . 'px ' . $blur . 'px ' . $shadowcolor . ';';
+                }
+            }
+            if ((bool)get_config('local_course_banner_builder', $prefix . 'shadowenabled')) {
+                $distance = max(0, min(40, (float)get_config('local_course_banner_builder', $prefix . 'shadowdistance')));
+                $angle = deg2rad(max(0, min(360, (float)get_config('local_course_banner_builder', $prefix . 'shadowdirection'))));
+                $xoffset = round(cos($angle) * $distance, 2);
+                $yoffset = round(sin($angle) * $distance, 2);
+                $blur = max(0, min(60, (float)get_config('local_course_banner_builder', $prefix . 'shadowblur')));
+                $shadowcolor = self::banner_title_rgba(
+                    (string)get_config('local_course_banner_builder', $prefix . 'shadowcolor'),
+                    (float)(get_config('local_course_banner_builder', $prefix . 'shadowopacity') ?: 55)
+                );
+                $style[] = 'text-shadow: ' . $xoffset . 'px ' . $yoffset . 'px ' . $blur . 'px ' . $shadowcolor . ';';
+            } else {
+                $style[] = 'text-shadow: none;';
+            }
+        }
+
+        $overlaystyle = '';
+        if ($overlayenabled) {
+            $overlaystyle = 'background: ' . self::banner_title_rgba(
+                (string)get_config('local_course_banner_builder', $prefix . 'overlaycolor'),
+                (float)(get_config('local_course_banner_builder', $prefix . 'overlayopacity') ?: 25)
+            ) . ';';
+        }
+        if (!$titleenabled && $overlaystyle === '') {
+            return null;
+        }
+
+        return [
+            'text' => $titleenabled ? $text : '',
+            'style' => $titleenabled ? implode(' ', $style) : '',
+            'overlaystyle' => $overlaystyle,
+        ];
+    }
+
+    /**
+     * Normalise a title hex colour.
+     *
+     * @param string $color
+     * @param string $default
+     * @return string
+     */
+    protected static function normalise_banner_title_hex(string $color, string $default): string {
+        return preg_match('/^#[0-9a-f]{6}$/i', $color) ? strtoupper($color) : $default;
+    }
+
+    /**
+     * Convert title colour settings to an rgba() CSS value.
+     *
+     * @param string $color
+     * @param float $opacity
+     * @return string
+     */
+    protected static function banner_title_rgba(string $color, float $opacity): string {
+        $color = ltrim(self::normalise_banner_title_hex($color, '#000000'), '#');
+        return 'rgba(' . hexdec(substr($color, 0, 2)) . ', ' .
+            hexdec(substr($color, 2, 2)) . ', ' .
+            hexdec(substr($color, 4, 2)) . ', ' .
+            round(max(0, min(100, $opacity)) / 100, 3) . ')';
+    }
+
+    /**
+     * Render one optional title overlay.
+     *
+     * @param array|null $title
+     * @return string
+     */
+    protected static function render_banner_title_overlay(?array $title): string {
+        if (empty($title)) {
+            return '';
+        }
+
+        $out = '';
+        if (!empty($title['overlaystyle'])) {
+            $out .= \html_writer::div('', 'local-course-banner-builder-banner-overlay-layer', [
+                'aria-hidden' => 'true',
+                'style' => (string)$title['overlaystyle'],
+            ]);
+        }
+        if (!empty($title['text']) && !empty($title['style'])) {
+            $out .= \html_writer::div(
+                format_string((string)$title['text']),
+                'local-course-banner-builder-banner-title-overlay',
+                [
+                    'aria-hidden' => 'true',
+                    'style' => (string)$title['style'],
+                ]
+            );
+        }
+        return $out;
+    }
+
+    /**
      * Render the full native course banner HTML directly from PHP.
      *
      * @param array $payload
@@ -772,7 +1022,10 @@ class hook_callbacks {
         $format = manager::normalise_banner_format((string)($payload['bannerformat'] ?? manager::BANNER_FORMAT_STANDARD));
         $content = '';
         $contentstyle = '';
-        if (!empty($payload['bannerurl'])) {
+        $usesdefaultimage = !empty($payload['usesdefaultimage']);
+        if ($usesdefaultimage && !empty($payload['bannerurl'])) {
+            $contentstyle = 'background-image: url("' . s((string)$payload['bannerurl']) . '");';
+        } else if (!empty($payload['bannerurl'])) {
             $content .= \html_writer::empty_tag('img', [
                 'class' => 'banner-layer banner-layer-1',
                 'src' => (string)$payload['bannerurl'],
@@ -809,11 +1062,13 @@ class hook_callbacks {
         if ($overlayhtml !== '') {
             $content .= \html_writer::div($overlayhtml, 'local-course-banner-builder-fixed-overlays', ['aria-hidden' => 'true']);
         }
+        $content .= self::render_banner_title_overlay($payload['title'] ?? null);
 
         $banner = \html_writer::div(
             $content,
             'local-course-banner-builder local-course-banner-builder-native-course-banner ' .
-                'local-course-banner-builder-native-course-banner--format-' . $format,
+                'local-course-banner-builder-native-course-banner--format-' . $format .
+                ($usesdefaultimage ? ' local-course-banner-builder-native-course-banner--moodle-generated' : ''),
             [
                 'data-course-banner-builder-native' => '1',
                 'aria-hidden' => 'true',
@@ -848,7 +1103,10 @@ class hook_callbacks {
             return null;
         }
 
+        global $SITE;
+
         $definition['bannerformat'] = manager::get_site_banner_format();
+        $definition['title'] = self::get_banner_title_overlay('site', (string)($SITE->fullname ?? ''));
         return $definition;
     }
 
@@ -891,9 +1149,7 @@ class hook_callbacks {
                 'alt' => '',
                 'loading' => 'lazy',
                 'aria-hidden' => 'true',
-                'style' => ($layer['fitmode'] ?? '') === manager::FIT_MODE_BANNER
-                    ? str_replace('object-fit: fill;', 'object-fit: cover;', (string)($layer['imagestyle'] ?? ''))
-                    : (string)($layer['imagestyle'] ?? ''),
+                'style' => (string)($layer['imagestyle'] ?? ''),
             ]);
             $content .= \html_writer::end_div();
         }
@@ -902,8 +1158,11 @@ class hook_callbacks {
             return '';
         }
 
+        $content = \html_writer::div($content, 'local-course-banner-builder-fixed-overlays', ['aria-hidden' => 'true']) .
+            self::render_banner_title_overlay($payload['title'] ?? null);
+
         $banner = \html_writer::div(
-            \html_writer::div($content, 'local-course-banner-builder-fixed-overlays', ['aria-hidden' => 'true']),
+            $content,
             'local-course-banner-builder local-course-banner-builder-native-course-banner local-course-banner-builder-site-banner ' .
                 'local-course-banner-builder-native-course-banner--format-' . $format,
             [
@@ -1034,6 +1293,11 @@ class hook_callbacks {
             shell.classList.add('local-course-banner-builder-native-shell--mounted');
             if (isFullWidthTop) {
                 alignFullWidthBanner(shell);
+                [80, 320, 900, 1800].forEach(function(delay) {
+                    window.setTimeout(function() {
+                        alignFullWidthBanner(shell);
+                    }, delay);
+                });
             }
         }
     };
@@ -1163,6 +1427,11 @@ JS;
             shell.classList.add('local-course-banner-builder-native-shell--mounted');
             if (isFullWidthTop) {
                 alignFullWidthBanner(shell);
+                [80, 320, 900, 1800].forEach(function(delay) {
+                    window.setTimeout(function() {
+                        alignFullWidthBanner(shell);
+                    }, delay);
+                });
             }
             return;
         }
@@ -1411,10 +1680,10 @@ JS;
         const buildLabelSize = function(percent) {
             const value = Math.max(25, Math.min(100, parseInt(percent || 100, 10)));
             const scale = value / 100 * formatSizeScale;
-            return 'clamp(' + (5.8 * scale).toFixed(3) + 'cqh, ' +
-                'min(' + (12.5 * scale).toFixed(3) + 'cqh, ' +
-                (1.55 * scale).toFixed(3) + 'cqw), ' +
-                (17 * scale).toFixed(3) + 'cqh)';
+            return 'clamp(' + (3.5 * scale).toFixed(3) + 'cqh, ' +
+                'min(' + (6.4 * scale).toFixed(3) + 'cqh, ' +
+                (0.82 * scale).toFixed(3) + 'cqw), ' +
+                (8.4 * scale).toFixed(3) + 'cqh)';
         };
         const buildActionSize = function(percent) {
             const value = Math.max(25, Math.min(100, parseInt(percent || 100, 10)));
@@ -1464,6 +1733,10 @@ JS;
             buildLabelSize(payload.labelSizePercent)
         );
         root.style.setProperty(
+            '--local-course-banner-builder-slideshow-label-text-scale',
+            (Math.max(25, Math.min(160, parseInt(payload.labelTextSizePercent || 100, 10))) / 100).toFixed(2)
+        );
+        root.style.setProperty(
             '--local-course-banner-builder-slideshow-label-orientation',
             payload.labelOrientation === 'column' ? 'column' : 'row'
         );
@@ -1475,6 +1748,43 @@ JS;
             '--local-course-banner-builder-slideshow-action-radius',
             payload.actionCorners === 'square' ? '0.28rem' : '999px'
         );
+        const colourToRgb = function(value) {
+            const raw = String(value || '#000000').replace('#', '');
+            if (!/^[0-9a-f]{6}$/i.test(raw)) {
+                return '0, 0, 0';
+            }
+            return [
+                parseInt(raw.substring(0, 2), 16) || 0,
+                parseInt(raw.substring(2, 4), 16) || 0,
+                parseInt(raw.substring(4, 6), 16) || 0
+            ].join(', ');
+        };
+        const setDesignVariable = function(target, key, value, suffix) {
+            root.style.setProperty(
+                '--local-course-banner-builder-slideshow-' + target + '-' + key,
+                String(value) + (suffix || '')
+            );
+        };
+        const setShadowVector = function(target, distance, direction) {
+            const radians = ((parseFloat(direction || 90) || 0) * Math.PI) / 180;
+            const offset = parseFloat(distance || 0) || 0;
+            setDesignVariable(target, 'shadow-x', (Math.cos(radians) * offset).toFixed(2), 'px');
+            setDesignVariable(target, 'shadow-y', (Math.sin(radians) * offset).toFixed(2), 'px');
+        };
+        ['action', 'label'].forEach(function(target) {
+            setDesignVariable(target, 'opacity', Math.max(0, Math.min(100, payload[target + 'Opacity'] || 100)) / 100);
+            setDesignVariable(target, 'border-width', payload[target + 'BorderWidth'] || 0, 'px');
+            setDesignVariable(target, 'radius', payload[target + 'Radius'] || 0, 'px');
+            setDesignVariable(target, 'padding', payload[target + 'Padding'] || 0, 'px');
+            setDesignVariable(target, 'shadow-opacity', Math.max(0, Math.min(100, payload[target + 'ShadowOpacity'] || 0)) / 100);
+            setDesignVariable(target, 'shadow-blur', payload[target + 'ShadowBlur'] || 0, 'px');
+            setShadowVector(target, payload[target + 'ShadowDistance'], payload[target + 'ShadowDirection']);
+            setDesignVariable(target, 'background', payload[target + 'BackgroundColor'] || '#FFFFFF');
+            setDesignVariable(target, 'border-color', payload[target + 'BorderColor'] || '#FFFFFF');
+            setDesignVariable(target, 'shadow-rgb', colourToRgb(payload[target + 'ShadowColor'] || '#000000'));
+            setDesignVariable(target, 'font-family', payload[target + 'FontFamily'] || 'inherit');
+            setDesignVariable(target, 'text-color', payload[target + 'TextColor'] || '#111827');
+        });
         root.style.setProperty(
             '--local-course-banner-builder-slideshow-title-color',
             String(payload.titleColor || '#FFFFFF')
@@ -1490,6 +1800,18 @@ JS;
         root.style.setProperty(
             '--local-course-banner-builder-slideshow-body-font-family',
             String(payload.bodyFontFamily || 'inherit')
+        );
+        root.style.setProperty(
+            '--local-course-banner-builder-slideshow-title-text-align',
+            ['left', 'center', 'right'].indexOf(payload.titleAlign) !== -1 ? payload.titleAlign : 'center'
+        );
+        root.style.setProperty(
+            '--local-course-banner-builder-slideshow-body-text-align',
+            ['left', 'center', 'right'].indexOf(payload.bodyAlign) !== -1 ? payload.bodyAlign : 'center'
+        );
+        root.style.setProperty(
+            '--local-course-banner-builder-slideshow-label-translate-x',
+            payload.labelAlign === 'left' ? '0%' : (payload.labelAlign === 'right' ? '-100%' : '-50%')
         );
         const titleDecoration = [];
         if (payload.titleUnderline) {
@@ -1529,6 +1851,27 @@ JS;
             '--local-course-banner-builder-slideshow-body-text-decoration',
             bodyDecoration.length ? bodyDecoration.join(' ') : 'none'
         );
+        ['action', 'label'].forEach(function(target) {
+            const decoration = [];
+            if (payload[target + 'Underline']) {
+                decoration.push('underline');
+            }
+            if (payload[target + 'Strike']) {
+                decoration.push('line-through');
+            }
+            root.style.setProperty(
+                '--local-course-banner-builder-slideshow-' + target + '-font-weight',
+                payload[target + 'Bold'] ? '700' : '400'
+            );
+            root.style.setProperty(
+                '--local-course-banner-builder-slideshow-' + target + '-font-style',
+                payload[target + 'Italic'] ? 'italic' : 'normal'
+            );
+            root.style.setProperty(
+                '--local-course-banner-builder-slideshow-' + target + '-text-decoration',
+                decoration.length ? decoration.join(' ') : 'none'
+            );
+        });
         root.style.setProperty(
             '--local-course-banner-builder-slideshow-title-x',
             String(payload.titleX || 50) + '%'
@@ -1575,6 +1918,22 @@ JS;
                     root.style.setProperty(
                         '--local-course-banner-builder-slideshow-label-' + safeType + '-color',
                         String(colours.text)
+                    );
+                }
+                if (safeType && colours.border) {
+                    root.style.setProperty(
+                        '--local-course-banner-builder-slideshow-label-' + safeType + '-border',
+                        String(colours.border)
+                    );
+                }
+                if (safeType && colours.shadow) {
+                    root.style.setProperty(
+                        '--local-course-banner-builder-slideshow-label-' + safeType + '-shadow',
+                        String(colours.shadow)
+                    );
+                    root.style.setProperty(
+                        '--local-course-banner-builder-slideshow-label-' + safeType + '-shadow-rgb',
+                        colourToRgb(String(colours.shadow))
                     );
                 }
             });
@@ -1817,6 +2176,9 @@ JS;
         if (payload.bannerurl) {
             banner.style.backgroundImage = 'url("' + payload.bannerurl + '")';
         }
+        if (payload.usesdefaultimage) {
+            banner.classList.add('local-course-banner-builder-native-course-banner--moodle-generated');
+        }
 
         if (anchor.mode === 'append') {
             anchor.element.replaceChildren(banner);
@@ -1868,12 +2230,18 @@ JS;
         $iscourseview = self::is_course_view_page($PAGE);
         $iscoursebannerpage = self::is_course_banner_page($PAGE);
         $hascourselayers = $iscoursebannerpage && manager::course_has_applicable_banner_layers($PAGE->course);
+        $coursecontext = $courseid > SITEID ? \context_course::instance($courseid, IGNORE_MISSING) : null;
+        $hascustomcourseimage = $coursecontext && manager::course_has_custom_overview_image($coursecontext->id);
+        $usedefaultimage = $iscoursebannerpage &&
+            !$hascourselayers &&
+            !$hascustomcourseimage &&
+            manager::course_default_image_banners_enabled();
         $themehasbanner = manager::theme_seems_to_provide_course_banner();
         $serverpayload = self::get_native_course_banner_payload($PAGE);
         $allownativebanner = $iscoursebannerpage &&
-            manager::is_display_enabled() &&
+            manager::is_course_banner_enabled() &&
             !$themehasbanner &&
-            $hascourselayers &&
+            ($hascourselayers || $usedefaultimage) &&
             $serverpayload === null;
 
         $PAGE->requires->js_call_amd('local_course_banner_builder/coursecards', 'init', [
@@ -1881,7 +2249,8 @@ JS;
             [
                 'enabled' => manager::is_display_enabled(),
                 'themeHasBanner' => $themehasbanner,
-                'allowCourseHeaderOverlays' => $iscoursebannerpage && $hascourselayers && $serverpayload === null,
+                'allowCourseHeaderOverlays' => manager::is_course_banner_enabled() &&
+                    $iscoursebannerpage && $hascourselayers && $serverpayload === null,
                 'allowNativeBanner' => $allownativebanner,
                 'hasNativeBackground' => $allownativebanner ? manager::course_has_native_banner_background($PAGE->course) : false,
                 'bannerFormat' => manager::get_course_banner_format(),
@@ -1890,7 +2259,7 @@ JS;
         ]);
 
         $slideshowpayload = null;
-        if ($iscoursebannerpage && manager::is_display_enabled()) {
+        if ($iscoursebannerpage && manager::is_course_banner_enabled()) {
             $candidate = manager::get_course_slideshow_payload($PAGE->course);
             if (!empty($candidate['enabled']) && !empty($candidate['hasSlides']) &&
                 ($hascourselayers || $themehasbanner || $serverpayload !== null)) {

@@ -1,0 +1,14 @@
+// Course and site banner status controls.
+
+.local-course-banner-builder-course-banner-status-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+}

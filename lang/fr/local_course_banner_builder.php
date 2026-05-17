@@ -18,7 +18,7 @@
  * Chaînes françaises.
  *
  * @package    local_course_banner_builder
- * @copyright  2026
+ * @copyright  2026 Kevin Jarniac
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -45,6 +45,49 @@ $string['bannerimagedisabledforborder'] = 'Le dÃ©pÃ´t de fichier est dÃ©sa
 $string['bannerpreviewthemeused'] = 'Thème utilisé : {$a}';
 $string['bannerpreviewtitle'] = 'Aperçu final de la bannière';
 $string['bannerpreviewtogglecontext'] = 'Afficher les autres calques existants et hérités';
+$string['bannertextalign:center'] = 'Centré';
+$string['bannertextalign:left'] = 'Gauche';
+$string['bannertextalign:right'] = 'Droite';
+$string['bannertitlealign'] = 'Alignement du texte';
+$string['bannertitleactivitymode'] = 'Contenu du titre sur les pages d’activité';
+$string['bannertitleactivitymode:activity'] = 'Afficher le titre de l’activité';
+$string['bannertitleactivitymode:both'] = 'Afficher les titres du cours et de l’activité';
+$string['bannertitleactivitymode:course'] = 'Afficher le titre du cours';
+$string['bannertitleactivitymode:none'] = 'Ne rien afficher';
+$string['bannertitlebold'] = 'Gras';
+$string['bannertitlecolor'] = 'Couleur du titre';
+$string['bannertitleenabled'] = 'Afficher ce titre dans la bannière';
+$string['bannertitlefontfamily'] = 'Police';
+$string['bannertitleframe'] = 'Cadre du titre';
+$string['bannertitleframebordercolor'] = 'Couleur de bordure du cadre';
+$string['bannertitleframeborderwidth'] = 'Épaisseur de bordure du cadre';
+$string['bannertitleframecolor'] = 'Couleur de fond du cadre';
+$string['bannertitleframecolors'] = 'Couleurs du cadre';
+$string['bannertitleframeopacity'] = 'Opacité du cadre';
+$string['bannertitleframepadding'] = 'Espacement interne du cadre';
+$string['bannertitleframeradius'] = 'Arrondi du cadre';
+$string['bannertitleframeshape'] = 'Forme du cadre';
+$string['bannertitleframeshadow'] = 'Ombre du cadre';
+$string['bannertitleframeshadowrequiresframe'] = 'Activez le cadre du titre avant d’utiliser son ombre.';
+$string['bannertitleframeshadowblur'] = 'Flou de l’ombre du cadre';
+$string['bannertitleframeshadowcolor'] = 'Couleur de l’ombre du cadre';
+$string['bannertitleframeshadowdirection'] = 'Direction de l’ombre du cadre';
+$string['bannertitleframeshadowdistance'] = 'Distance de l’ombre du cadre';
+$string['bannertitleframeshadowopacity'] = 'Opacité de l’ombre du cadre';
+$string['bannertitleitalic'] = 'Italique';
+$string['bannertitleoverlay'] = 'Overlay de bannière';
+$string['bannertitleoverlaycolor'] = 'Couleur de l’overlay';
+$string['bannertitleoverlayopacity'] = 'Opacité de l’overlay';
+$string['bannertitleshadow'] = 'Ombre du texte';
+$string['bannertitleshadowblur'] = 'Flou de l’ombre';
+$string['bannertitleshadowcolor'] = 'Couleur de l’ombre';
+$string['bannertitleshadowdirection'] = 'Direction de l’ombre';
+$string['bannertitleshadowdistance'] = 'Distance de l’ombre';
+$string['bannertitleshadowopacity'] = 'Opacité de l’ombre';
+$string['bannertitlesize'] = 'Taille du titre (%)';
+$string['bannertitleunderline'] = 'Souligné';
+$string['bannertitlex'] = 'Position horizontale (%)';
+$string['bannertitley'] = 'Position verticale (%)';
 $string['bannerslideshow'] = 'Diaporama de bannières';
 $string['borderaddedplural'] = 'bordures ajoutées';
 $string['borderaddedsingular'] = 'bordure ajoutée';
@@ -91,11 +134,21 @@ $string['compositionmode:random'] = 'Aléatoire';
 $string['compositionmode_help'] = 'Choisissez la manière dont cette source contribue à l’image finale du cours. Cumulatif empile toutes les images actives selon l’ordre de tri. Aléatoire choisit une image active au hasard dans cette source.';
 $string['configuredcategories'] = 'Sources configurées';
 $string['course_banner_builder:manage'] = 'Gérer les calques de bannière des cours';
+$string['coursebannersenabledoff'] = 'Les bannieres de cours sont desactivees sur les pages de cours. Les bannieres sur les activites sont aussi desactivees automatiquement.';
+$string['coursebannersenabledon'] = 'Les bannieres de cours sont affichees sur les pages principales des cours.';
+$string['coursebannerstatus'] = 'Etat des bannieres de cours';
+$string['coursebannerstoggleoff'] = 'Desactiver les bannieres de cours';
+$string['coursebannerstoggleon'] = 'Activer les bannieres de cours';
+$string['coursebannerdefaultimageenabledoff'] = 'Les cours sans regle de banniere applicable conservent la page standard, sans banniere Moodle generee.';
+$string['coursebannerdefaultimageenabledon'] = 'Les cours sans regle de banniere applicable affichent l image de cours generee par Moodle comme banniere.';
+$string['coursebannerdefaultimagetoggleoff'] = 'Desactiver les images Moodle par defaut';
+$string['coursebannerdefaultimagetoggleon'] = 'Utiliser les images Moodle par defaut';
 $string['courseactivitybannersenabledoff'] = 'Les bannieres de cours sont affichees uniquement sur la page principale du cours.';
 $string['courseactivitybannersenabledon'] = 'Les bannieres de cours sont aussi affichees sur les pages d activite du cours.';
 $string['courseactivitybannerstatus'] = 'Bannieres sur les activites du cours';
 $string['courseactivitybannerstoggleoff'] = 'Desactiver sur les activites';
 $string['courseactivitybannerstoggleon'] = 'Activer sur les activites';
+$string['currentlyediting'] = 'En cours d edition';
 $string['coursebannerformatbutton'] = 'Format des bannières de cours';
 $string['coursecustomfields'] = 'Champs personnalisés de cours';
 $string['currentbanner'] = 'Bannière actuelle';
@@ -111,6 +164,8 @@ $string['customheightpercent'] = 'Hauteur personnalisée (%)';
 $string['customsizekeepaspect'] = 'Conserver les dimensions d\'origine';
 $string['customsizerequiredheight'] = 'Saisissez une hauteur personnalisee superieure a 0%.';
 $string['customsizerequiredwidth'] = 'Saisissez une largeur personnalisee superieure a 0%.';
+$string['cropimage'] = 'Rogner l\'image';
+$string['applycropimage'] = 'Appliquer le rognage';
 $string['customsizesummary'] = 'Taille personnalisée';
 $string['customwidthpercent'] = 'Largeur personnalisée (%)';
 $string['deletealllayers'] = 'Supprimer tous les calques';
@@ -132,12 +187,20 @@ $string['disabledlayerthumbnail'] = 'Calque désactivé';
 $string['dragreorderlayer'] = 'Glisser-déposer pour réordonner le calque';
 $string['dynamicimagesizeenabled'] = 'Image au-dessus de la bordure';
 $string['dynamicimagesizeenabled_help'] = 'Si cette option est activée, l’image est poussée au-dessus de la bordure dans les aperçus et dans le rendu de la bannière.';
+$string['imageopacity'] = 'Opacité de l’image';
+$string['imageopacity_help'] = 'Ajuste l’opacité du calque image sélectionné sans modifier le fichier original.';
+$string['toggleimageopacity'] = 'Ajuster l’opacité de l’image';
 $string['dynamiclayerlockedorderhelp'] = 'Ce calque d’image dynamique reste toujours juste sous la bordure et au-dessus des autres calques. Son ordre de tri est donc verrouillé.';
 $string['dynamiclayerlockedorderlabel'] = 'Ordre verrouillé du calque dynamique';
 $string['editborder'] = 'Modifier une bordure';
 $string['editborderlayer'] = 'Modifier la bordure';
+$string['editactivitybannertitle'] = 'Modifier le titre des activités';
+$string['editcoursebannertitle'] = 'Modifier le titre des cours';
 $string['editimage'] = 'Modifier le calque';
+$string['editsitebannertitle'] = 'Modifier le titre du site';
 $string['editsourcebutton'] = 'Edit source';
+$string['enablelayer'] = 'Activer le calque';
+$string['enablelayer_help'] = 'Lorsqu il est active, ce calque est inclus dans les apercus et les bannieres generees.';
 $string['editsourceoflayer'] = 'Modifier la source de ce calque';
 $string['enabled'] = 'Activé';
 $string['enabledcustomfields'] = 'Champs personnalisés utilisables comme sources';
@@ -146,7 +209,7 @@ $string['enabledplugin'] = 'Activer Course banner Builder';
 $string['enabledplugin_desc'] = 'Lorsque cette option est active, le plugin améliore les cartes de cours et ajoute une bannière native Moodle uniquement si le thème actif n’en fournit pas déjà une.';
 $string['expandallsourcechains'] = 'Tout déployer';
 $string['exportconfig'] = 'Exporter la configuration';
-$string['exportconfigdesc'] = 'Télécharge la configuration actuelle des règles et des calques de source au format JSON. L’export inclut déjà les données d’image et des chemins d’archive pour évoluer ensuite vers un transfert ZIP.';
+$string['exportconfigdesc'] = 'Telecharge les regles de sources, calques, reglages de diaporama et ressources liees dans un package ZIP.';
 $string['exportimport'] = 'Export / import de configuration';
 $string['exportoptions'] = 'Options d\'export';
 $string['exportsectioncoursebanners'] = 'Tous les parametrages banniere cours';
@@ -162,13 +225,14 @@ $string['fitmode'] = 'Mode de taille des images';
 $string['fitmode:bannerfit'] = 'Remplir la bannière';
 $string['fitmode:cover'] = 'Conserver les proportions';
 $string['fitmode:custom'] = 'Taille personnalisée';
-$string['fitmode:original'] = 'Ne pas modifier la taille / proportion du calque';
+$string['fitmode:original'] = 'Conserver la taille originale de l’image';
 $string['fitmode_help'] = 'Choisissez si les images de cette source sont étirées au format de la bannière, recadrées en mode cover sans déformation, ou si elles conservent leur taille d’origine lors de l’assemblage final.';
 $string['fitoverride'] = 'Surcharge de taille du calque';
 $string['fitoverride:categorydefault'] = 'Utiliser le réglage de la source';
 $string['fitoverridehelp'] = 'Ce calque surcharge uniquement pour cette image la règle de taille définie sur la source.';
 $string['fittopreview'] = 'Adapter à l’aperçu';
 $string['hideimageinpreview'] = 'Masquer l image dans l apercu';
+$string['hideinheritedlayers'] = 'Masquer les calques herites';
 $string['hideotherlayers'] = 'Masquer les autres calques';
 $string['hidepreviewborder'] = 'Masquer la bordure';
 $string['hierarchy'] = 'Hiérarchie';
@@ -181,10 +245,9 @@ $string['imagebelowborder'] = 'Image sous la bordure';
 $string['imagepreviewhelp'] = 'Aperçu en direct du rendu final de la bannière pour le calque image en cours.';
 $string['importarchive'] = 'Importer une archive ZIP';
 $string['importconfig'] = 'Importer une configuration';
-$string['importconfigdesc'] = 'Collez un JSON exporté précédemment. La correspondance des catégories utilise d’abord l’idnumber, puis le chemin de catégories. Les catégories manquantes sont créées automatiquement.';
+$string['importconfigdesc'] = 'Importez un package ZIP exporte precedemment. La correspondance des categories utilise d abord l idnumber, puis le chemin de categories. Les categories manquantes sont creees automatiquement.';
 $string['importconfigreplaceall'] = 'Supprimer la configuration actuelle du plugin avant l’import';
 $string['importedconfig'] = 'Configuration importée.';
-$string['importjsonfallback'] = 'Ou coller un ancien export JSON';
 $string['inheritance'] = 'Héritage';
 $string['inheritance_help'] = 'Si une source de cours n’a pas d’image de bannière active, le plugin recherche dans les sources parentes jusqu’à en trouver une.';
 $string['inherited'] = 'Hérité';
@@ -205,6 +268,10 @@ $string['layeroffsetleftpercent'] = 'Espacement gauche (%)';
 $string['layeroffsetrightpercent'] = 'Espacement droit (%)';
 $string['layeroffsetsummary'] = 'Espacements';
 $string['layeroffsettoppercent'] = 'Espacement haut (%)';
+$string['layertypechoice'] = 'Type de calque';
+$string['layertype:image'] = 'Image';
+$string['layertype:border'] = 'Bordure';
+$string['imagelayeroptions'] = 'Options du calque image';
 $string['layers'] = 'Calques';
 $string['managebanners'] = 'Gérer les bannières de cours';
 $string['managecategorieslink'] = 'Gérer les catégories Moodle';
@@ -240,6 +307,8 @@ $string['positionanchor:top-left'] = 'Haut gauche';
 $string['positionanchor:top-right'] = 'Haut droite';
 $string['positionanchor_help'] = 'Choisissez où placer l’image. Les positions différentes de Centre peuvent utiliser un espacement en pourcentage depuis les bords concernés.';
 $string['previewunavailable'] = 'Apercu indisponible.';
+$string['previewactivitytitle'] = 'Titre de l’activité';
+$string['previewcoursetitle'] = 'Titre du cours';
 $string['previousimages'] = 'Images precedentes';
 $string['privacy:metadata'] = 'Le plugin Course banner builder stocke uniquement la configuration des sources de bannière. Il ne stocke pas de données personnelles.';
 $string['pullforwardpreviewlayer'] = 'Avancer';
@@ -279,6 +348,7 @@ $string['settings'] = 'Constructeur de bannières de cours';
 $string['sharpinnercorners'] = 'Coins internes droits';
 $string['showhideallimages'] = 'Afficher / cacher toutes les images';
 $string['showhideallpreviewimages'] = 'Afficher / cacher toutes les images';
+$string['showinheritedlayers'] = 'Afficher les calques herites';
 $string['showimageinpreview'] = 'Afficher l image dans l apercu';
 $string['showotherlayers'] = 'Afficher les autres calques';
 $string['showpreviewborder'] = 'Afficher la bordure';
@@ -291,10 +361,14 @@ $string['sitebannerformatbutton'] = 'Format de la bannière du site';
 $string['sitebannerstatus'] = 'Affichage de la bannière du site';
 $string['slideshow:type:assignment'] = 'Devoir';
 $string['slideshow:type:courseforum'] = 'Forum du cours';
+$string['slideshow:type:courseorigin'] = 'Cours d origine';
 $string['slideshow:type:quiz'] = 'Quiz';
 $string['slideshow:type:siteannouncements'] = 'Annonces site';
 $string['slideshow:type:siteforum'] = 'Forum du site';
 $string['slideshowarrows'] = 'Afficher les fleches laterales';
+$string['slideshowaligncenter'] = 'Aligner au centre';
+$string['slideshowalignleft'] = 'Aligner a gauche';
+$string['slideshowalignright'] = 'Aligner a droite';
 $string['slideshowassignmentbody'] = 'Un devoir avec une date definie est en attente de rendu.';
 $string['slideshowassignmentscourse'] = 'Devoirs du cours a rendre';
 $string['slideshowassignmentssite'] = 'Recap devoirs etudiant';
@@ -302,11 +376,29 @@ $string['slideshowautoplay'] = 'Changement automatique';
 $string['slideshowbodycolor'] = 'Couleur du paragraphe';
 $string['slideshowbodyfontfamily'] = 'Police du paragraphe';
 $string['slideshowbodytext'] = 'Texte du paragraphe';
+$string['slideshowbuttonbackgroundcolor'] = 'Fond du bouton';
+$string['slideshowbuttonbordercolor'] = 'Couleur de bordure du bouton';
+$string['slideshowbuttonborderwidth'] = 'Largeur de bordure du bouton';
+$string['slideshowbuttoncornerradius'] = 'Arrondi du bouton';
+$string['slideshowbuttonfontfamily'] = 'Police du bouton';
+$string['slideshowbuttonopacity'] = 'Opacite du bouton';
+$string['slideshowbuttonpadding'] = 'Espacement du bouton';
+$string['slideshowbuttonshadow'] = 'Ombre du bouton';
+$string['slideshowbuttonshadowblur'] = 'Flou de l ombre du bouton';
+$string['slideshowbuttonshadowcolor'] = 'Couleur de l ombre du bouton';
+$string['slideshowbuttonshadowdirection'] = 'Direction de l ombre du bouton';
+$string['slideshowbuttonshadowdistance'] = 'Distance de l ombre du bouton';
+$string['slideshowbuttonshadowopacity'] = 'Opacite de l ombre du bouton';
+$string['slideshowbuttonshape'] = 'Forme du bouton';
+$string['slideshowbuttontext'] = 'Texte du bouton';
+$string['slideshowbuttontextsize'] = 'Taille du texte du bouton';
+$string['slideshowbuttontextcolor'] = 'Couleur du texte du bouton';
 $string['slideshowcontrols'] = 'Controles';
 $string['slideshowcornersrounded'] = 'Arrondis';
 $string['slideshowcornerssquare'] = 'Carres';
 $string['slideshowcoursebanner'] = 'Bannieres de cours';
 $string['slideshowcoursebanner_desc'] = 'Les slides peuvent afficher les derniers posts des forums du cours et, pour les etudiants, les devoirs et quiz a rendre.';
+$string['slideshowcoursebannerdisabledwarning'] = 'Le diaporama de cours est active, mais les bannieres de cours sont desactivees.';
 $string['slideshowdefaultallsettings'] = 'Tout par defaut';
 $string['slideshowdefaultlabelsettings'] = 'Etiquettes par defaut';
 $string['slideshowdefaultoverlaysettings'] = 'Overlay par defaut';
@@ -323,13 +415,31 @@ $string['slideshowenabled_help'] = 'Lorsque cette option est activee, les slides
 $string['slideshowforumscourse'] = 'Posts des forums du cours';
 $string['slideshowforumssite'] = 'Posts des forums du site';
 $string['slideshowlabelbackground'] = 'Fond de l etiquette';
+$string['slideshowlabelalignment'] = 'Alignement des etiquettes';
 $string['slideshowlabelcolors'] = 'Couleurs des etiquettes';
 $string['slideshowlabelcorners'] = 'Coins des etiquettes';
 $string['slideshowlabelorientation'] = 'Disposition des etiquettes';
 $string['slideshowlabelorientationcolumn'] = 'Colonne';
 $string['slideshowlabelorientationrow'] = 'Ligne';
 $string['slideshowlabelsize'] = 'Taille des etiquettes';
+$string['slideshowlabeltextsize'] = 'Taille du texte des etiquettes';
 $string['slideshowlabeltext'] = 'Texte de l etiquette';
+$string['slideshowlabelsbackgroundcolor'] = 'Fond des etiquettes';
+$string['slideshowlabelsbordercolor'] = 'Couleur de bordure des etiquettes';
+$string['slideshowlabelsborderwidth'] = 'Largeur de bordure des etiquettes';
+$string['slideshowlabelscornerradius'] = 'Arrondi des etiquettes';
+$string['slideshowlabelsfontfamily'] = 'Police des etiquettes';
+$string['slideshowlabelsopacity'] = 'Opacite des etiquettes';
+$string['slideshowlabelspadding'] = 'Espacement des etiquettes';
+$string['slideshowlabelsshadow'] = 'Ombre des etiquettes';
+$string['slideshowlabelsshadowblur'] = 'Flou de l ombre des etiquettes';
+$string['slideshowlabelsshadowcolor'] = 'Couleur de l ombre des etiquettes';
+$string['slideshowlabelsshadowdirection'] = 'Direction de l ombre des etiquettes';
+$string['slideshowlabelsshadowdistance'] = 'Distance de l ombre des etiquettes';
+$string['slideshowlabelsshadowopacity'] = 'Opacite de l ombre des etiquettes';
+$string['slideshowlabelsshape'] = 'Forme des etiquettes';
+$string['slideshowlabelstext'] = 'Texte des etiquettes';
+$string['slideshowlabelstextcolor'] = 'Couleur du texte des etiquettes';
 $string['slideshowlargepreview'] = 'Apercu du diaporama';
 $string['slideshownext'] = 'Slide suivante';
 $string['slideshowopenlargepreview'] = 'Ouvrir le grand apercu';
@@ -349,6 +459,7 @@ $string['slideshowsiteannouncementscourse'] = 'Annonces site';
 $string['slideshowsiteannouncementscourse_help'] = 'Affiche aussi les annonces du site dans le diaporama des bannieres de cours.';
 $string['slideshowsitebanner'] = 'Banniere du site';
 $string['slideshowsitebanner_desc'] = 'Les slides peuvent afficher les forums du site ainsi qu un recap etudiant des devoirs et quiz a rendre dans ses cours.';
+$string['slideshowsitebannerdisabledwarning'] = 'Le diaporama du site est active, mais la banniere site est desactivee.';
 $string['slideshowslide'] = 'Slide';
 $string['slideshowstudentonly_help'] = 'Seuls les utilisateurs avec des permissions de type etudiant voient les slides devoirs et quiz. Les administrateurs du site les voient aussi s ils sont inscrits avec un role etudiant.';
 $string['slideshowtextappearance'] = 'Apparence du texte';
@@ -427,3 +538,183 @@ $string['usedsourceprefix'] = '✓';
 $string['viewconfigured'] = 'Calques de bannière configurés';
 $string['webimages'] = 'Images web';
 $string['yes'] = 'Oui';
+
+$string['tour:coursebanners:name'] = 'Course banner builder - sources de cours';
+$string['tour:coursebanners:description'] = 'Visite detaillee de l edition des sources de bannieres de cours.';
+$string['tour:coursebanners:intro:title'] = 'Role de cette page';
+$string['tour:coursebanners:intro:content'] = '<p>Cette page est l atelier des bannieres de cours.</p>' .
+    '<div class="local-course-banner-builder-tour-card">' .
+    '<span class="local-course-banner-builder-tour-kicker">Chaine de sources</span>' .
+    '<p>Choisissez une source, ajustez ses regles, puis laissez les calques actifs composer l image finale.</p>' .
+    '<div class="local-course-banner-builder-tour-chip-row">' .
+    '<span class="local-course-banner-builder-tour-chip">Categorie</span>' .
+    '<span class="local-course-banner-builder-tour-chip">Champ personnalise</span>' .
+    '<span class="local-course-banner-builder-tour-chip">Parent herite</span>' .
+    '</div></div>';
+$string['tour:coursebanners:format:title'] = 'Format de banniere';
+$string['tour:coursebanners:format:content'] = 'Le format controle le ratio utilise par la vraie banniere de cours et par tous les apercus. Les formats compacts servent aux bannieres au-dessus du titre. Les positions et tailles restent calculees en pourcentage.';
+$string['tour:coursebanners:nav:title'] = 'Navigation admin';
+$string['tour:coursebanners:nav:content'] = 'Ces raccourcis ouvrent les vues bannieres de cours, banniere site et diaporama. Ils ne modifient pas les donnees de la source actuelle.';
+$string['tour:coursebanners:selected:title'] = 'Source selectionnee';
+$string['tour:coursebanners:selected:content'] = 'La source selectionnee est la zone de travail. Elle indique si la source est racine, herite d une autre source, transmet ses calques aux enfants ou coupe la chaine.';
+$string['tour:coursebanners:settings:title'] = 'Reglages de source';
+$string['tour:coursebanners:settings:content'] = '<p>Les reglages de source sont les regles derriere le canvas.</p>' .
+    '<ul class="local-course-banner-builder-tour-list">' .
+    '<li><strong>Composition</strong> decide si les calques s empilent ou tournent aleatoirement.</li>' .
+    '<li><strong>Taille</strong> donne le comportement par defaut des nouveaux calques image.</li>' .
+    '<li><strong>Source parente</strong> et heritage definissent la chaine de sources.</li>' .
+    '</ul><p>Enregistrez-les une fois avant d ajouter des calques.</p>';
+$string['tour:coursebanners:composition:title'] = 'Aleatoire ou cumulatif ?';
+$string['tour:coursebanners:composition:content'] = '<p>Ce choix change la vraie banniere generee, pas seulement l editeur.</p>' .
+    '<div class="local-course-banner-builder-tour-mode-grid">' .
+    '<div class="local-course-banner-builder-tour-mode"><strong>Cumulatif</strong>' .
+    '<span>Tous les calques actifs sont rendus ensemble, du plus bas au plus haut.</span></div>' .
+    '<div class="local-course-banner-builder-tour-mode"><strong>Aleatoire</strong>' .
+    '<span>Une seule image active de cette source est choisie quand la banniere est generee.</span></div>' .
+    '</div><p>Utilisez aleatoire pour donner a un cours une variation visuelle parmi plusieurs images, par exemple une mascotte, une saison ou une campagne, sans empiler toutes les images.</p>';
+$string['tour:coursebanners:preview:title'] = 'Editeur visuel';
+$string['tour:coursebanners:preview:content'] = '<p>L editeur visuel est le reflet le plus proche de la banniere generee.</p>' .
+    '<div class="local-course-banner-builder-tour-preview">' .
+    '<span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--one"></span>' .
+    '<span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--two"></span>' .
+    '<span class="local-course-banner-builder-tour-preview-border"></span>' .
+    '</div><p>Deplacez, redimensionnez, aimantez, changez l ordre, puis sauvegardez quand la composition est juste.</p>';
+$string['tour:coursebanners:add:title'] = 'Ajouter des calques';
+$string['tour:coursebanners:add:content'] = 'Ajouter un calque permet d envoyer une image, plusieurs images ou une bordure seule. Le multi-upload garde chaque brouillon dans l apercu de la modale avant sauvegarde.';
+$string['tour:coursebanners:toolbar:title'] = 'Barre d outils';
+$string['tour:coursebanners:toolbar:content'] = '<p>La barre d outils apparait autour de l editeur quand une action est disponible.</p>' .
+    '<div class="local-course-banner-builder-tour-toolbar">' .
+    '<span class="local-course-banner-builder-tour-tool"><i class="fa fa-undo" aria-hidden="true"></i></span>' .
+    '<span class="local-course-banner-builder-tour-tool"><i class="fa fa-magnet" aria-hidden="true"></i></span>' .
+    '<span class="local-course-banner-builder-tour-tool"><i class="fa fa-compress" aria-hidden="true"></i></span>' .
+    '<span class="local-course-banner-builder-tour-tool"><i class="fa fa-arrows-alt" aria-hidden="true"></i></span>' .
+    '<span class="local-course-banner-builder-tour-tool"><i class="fa fa-eye-slash" aria-hidden="true"></i></span>' .
+    '</div><p>Elle sert a annuler, aimanter, ajuster, ordonner et afficher ou masquer le contexte.</p>';
+$string['tour:coursebanners:filmstrip:title'] = 'Vignettes';
+$string['tour:coursebanners:filmstrip:content'] = 'La bande de vignettes selectionne rapidement les calques image. Elle suit la selection de l apercu et reste pratique meme avec beaucoup de calques.';
+$string['tour:coursebanners:layers:title'] = 'Table des calques';
+$string['tour:coursebanners:layers:content'] = '<p>La table est le cote pose et structure de l editeur.</p>' .
+    '<ul class="local-course-banner-builder-tour-list">' .
+    '<li>Renommer les calques et choisir s ils sont actifs.</li>' .
+    '<li>Ajuster les surcharges ou ouvrir la modale complete.</li>' .
+    '<li>Supprimer proprement ce qui ne sert plus.</li>' .
+    '</ul>';
+$string['tour:coursebanners:sources:title'] = 'Sources configurees';
+$string['tour:coursebanners:sources:content'] = 'La liste montre hierarchie, parent, type, nombre de calques, mode de composition, mode de taille, vignettes et actions. Sur petit ecran, utilisez le scroll horizontal.';
+$string['tour:coursebanners:save:title'] = 'Actions groupees';
+$string['tour:coursebanners:save:content'] = 'Les actions groupees enregistrent les editions de table, suppriment les calques selectionnes ou suppriment tous les calques de la source.';
+$string['tour:coursebanners:performance:title'] = 'Performance';
+$string['tour:coursebanners:performance:content'] = 'Les vignettes de cours generees sont stockees comme fichiers Moodle et reutilisees. Le remplacement des cartes se charge pres de la zone visible pour limiter les images chargees.';
+
+$string['tour:sitebanner:name'] = 'Course banner builder - banniere site';
+$string['tour:sitebanner:description'] = 'Visite detaillee de l editeur de banniere site.';
+$string['tour:sitebanner:intro:title'] = 'Portee de la banniere site';
+$string['tour:sitebanner:intro:content'] = 'La banniere site utilise le meme moteur de calques que les cours, mais cible les pages hors cours. Elle possede sa source, son format et son activation.';
+$string['tour:sitebanner:enable:title'] = 'Activer ou desactiver';
+$string['tour:sitebanner:enable:content'] = 'Ce bouton active ou desactive la banniere site sans supprimer les calques. Desactivez-la si le theme gere deja cette zone.';
+$string['tour:sitebanner:format:title'] = 'Format site';
+$string['tour:sitebanner:format:content'] = 'Le format site modifie le ratio d apercu et la position reelle. Les grands formats restent representes a l echelle dans l editeur.';
+$string['tour:sitebanner:settings:title'] = 'Reglages de source site';
+$string['tour:sitebanner:settings:content'] = 'La source site a moins d heritage que les cours, mais ses choix de taille et de composition s appliquent a tous ses calques.';
+$string['tour:sitebanner:preview:title'] = 'Apercu visuel site';
+$string['tour:sitebanner:preview:content'] = 'Composez les calques site dans cet apercu. Les positions et tailles en pourcentage restent coherentes entre apercu, source enregistree et rendu reel.';
+$string['tour:sitebanner:layers:title'] = 'Calques site';
+$string['tour:sitebanner:layers:content'] = 'La table affiche seulement les calques de la source site. Elle permet de gerer images, bordures, ordre, activation et actions groupees.';
+
+$string['tour:layermodals:name'] = 'Course banner builder - modales de calques';
+$string['tour:layermodals:description'] = 'Visite detaillee du flux d ajout et d edition de calques.';
+$string['tour:layermodals_site:name'] = 'Course banner builder - modales des calques site';
+$string['tour:layermodals_site:description'] = 'Visite detaillee du flux d ajout et d edition de calques site.';
+$string['tour:layermodals:intro:title'] = 'Fonctionnement des modales';
+$string['tour:layermodals:intro:content'] = '<p>Les modales sont de petites salles d edition, avec un objectif clair.</p>' .
+    '<div class="local-course-banner-builder-tour-card">' .
+    '<span class="local-course-banner-builder-tour-kicker">Portee de la modale</span>' .
+    '<p>Ajouter des images, modifier un calque image ou regler la bordure dediee en gardant le ratio de la source.</p>' .
+    '</div>';
+$string['tour:layermodals:add:title'] = 'Ouvrir la modale';
+$string['tour:layermodals:add:content'] = 'Ouvrez la modale avec Ajouter un calque. Le formulaire peut enregistrer une image, plusieurs brouillons image ou une bordure seule.';
+$string['tour:layermodals:identity:title'] = 'Nom, ordre et activation';
+$string['tour:layermodals:identity:content'] = 'Le nom facilite la maintenance, l ordre controle le rendu et l activation decide si le calque contribue aux apercus et images generees.';
+$string['tour:layermodals:file:title'] = 'Gestionnaire de fichiers';
+$string['tour:layermodals:file:content'] = 'Envoyez des images web via le gestionnaire Moodle. Plusieurs fichiers creent plusieurs calques brouillon dans le meme apercu.';
+$string['tour:layermodals:size:title'] = 'Taille et position';
+$string['tour:layermodals:size:content'] = '<p>Choisissez le comportement avant de regler les pourcentages.</p>' .
+    '<ul class="local-course-banner-builder-tour-list">' .
+    '<li><strong>Fit to preview</strong> garde toute l image visible.</li>' .
+    '<li><strong>Fill banner</strong> couvre tout le cadre.</li>' .
+    '<li><strong>Custom</strong> ouvre largeur, hauteur, espacements et conservation des proportions.</li>' .
+    '</ul>';
+$string['tour:layermodals:border:title'] = 'Calque bordure';
+$string['tour:layermodals:border:content'] = '<p>Un calque bordure encadre toute la banniere ou seulement certains cotes.</p>' .
+    '<div class="local-course-banner-builder-tour-preview">' .
+    '<span class="local-course-banner-builder-tour-preview-border"></span>' .
+    '</div><p>Reglez couleur, style, largeur, opacite, fondu, pointilles, cotes et coins internes.</p>';
+$string['tour:layermodals:preview:title'] = 'Apercu de modale';
+$string['tour:layermodals:preview:content'] = '<p>L apercu de modale reprend le ratio de la source.</p>' .
+    '<div class="local-course-banner-builder-tour-preview">' .
+    '<span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--one"></span>' .
+    '<span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--two"></span>' .
+    '</div><p>Utilisez Afficher les autres calques pour comparer avec l existant et l herite.</p>';
+$string['tour:layermodals:multi:title'] = 'Plusieurs brouillons';
+$string['tour:layermodals:multi:content'] = 'Avec plusieurs fichiers, selectionnez chaque vignette, controlez sa position et supprimez les brouillons inutiles avant sauvegarde.';
+$string['tour:layermodals:save:title'] = 'Sauvegarder';
+$string['tour:layermodals:save:content'] = 'La sauvegarde cree ou met a jour les enregistrements Moodle. Si l alerte indique qu aucune image ou bordure n est active, ajoutez un contenu avant de soumettre.';
+
+$string['tour:slideshow:name'] = 'Course banner builder - diaporama';
+$string['tour:slideshow:description'] = 'Visite detaillee des reglages de diaporama.';
+$string['tour:slideshow:intro:title'] = 'Role du diaporama';
+$string['tour:slideshow:intro:content'] = 'Le diaporama affiche du contenu Moodle dynamique sur les bannieres : forums, devoirs, tests et annonces selon le contexte choisi.';
+$string['tour:slideshow:cards:title'] = 'Cartes de contexte';
+$string['tour:slideshow:cards:content'] = 'Chaque carte configure un contexte. Les reglages cours et site sont separes pour ajuster delai, types de contenu, labels, texte et formats.';
+$string['tour:slideshow:enable:title'] = 'Activation';
+$string['tour:slideshow:enable:content'] = 'Les boutons d activation gardent les reglages mais empechent le rendu quand un contexte ou un type de contenu est desactive.';
+$string['tour:slideshow:preview:title'] = 'Apercu interactif';
+$string['tour:slideshow:preview:content'] = '<p>L apercu montre un exemple dans le format choisi.</p>' .
+    '<div class="local-course-banner-builder-tour-preview">' .
+    '<span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--two"></span>' .
+    '<span class="local-course-banner-builder-tour-chip" style="position:absolute;left:10%;top:18%;">COURSE101</span>' .
+    '<span style="position:absolute;left:10%;top:50%;font-weight:700;">Activite a venir</span>' .
+    '</div><p>Deplacez titre, corps, label et bouton pour enregistrer leurs positions en pourcentage.</p>';
+$string['tour:slideshow:toolbar:title'] = 'Barre d outils d apercu';
+$string['tour:slideshow:toolbar:content'] = 'Utilisez annuler, refaire, aimantation, recentrage et styles de texte pour ajuster l overlay sans deviner les pourcentages.';
+$string['tour:slideshow:overlay:title'] = 'Fond de lisibilite';
+$string['tour:slideshow:overlay:content'] = 'La couleur et l opacite d overlay ameliorent la lisibilite sur les images chargees. L apercu se met a jour immediatement.';
+$string['tour:slideshow:text:title'] = 'Texte';
+$string['tour:slideshow:text:content'] = 'Les options de titre, corps, police, taille, gras, italique, souligne et barre sont separees. Pensez aux longs contenus Moodle reels.';
+$string['tour:slideshow:labels:title'] = 'Labels et bouton';
+$string['tour:slideshow:labels:content'] = 'Les labels identifient le type de slide ou le nom court du cours. Les controles du bouton gerent taille, largeur, hauteur, coins et position.';
+$string['tour:slideshow:defaults:title'] = 'Valeurs par defaut';
+$string['tour:slideshow:defaults:content'] = 'Les boutons de defaut remettent l overlay, le texte, les labels ou toute la carte dans un etat stable.';
+$string['tour:slideshow:formats:title'] = 'Format du diaporama';
+$string['tour:slideshow:formats:content'] = 'Le format du diaporama suit les memes ratios que les bannieres. Les formats compacts reduisent le texte pour rester lisibles.';
+$string['tour:slideshow:save:title'] = 'Enregistrer le diaporama';
+$string['tour:slideshow:save:content'] = 'Enregistrez tous les reglages apres modification. Le plugin stocke la configuration et lit les contenus depuis les activites Moodle existantes.';
+
+$string['tour:transfer:name'] = 'Course banner builder - transfert';
+$string['tour:transfer:description'] = 'Visite detaillee des outils d export et d import.';
+$string['tour:transfer:intro:title'] = 'Deplacer une configuration';
+$string['tour:transfer:intro:content'] = 'Cette page exporte ou importe la configuration du plugin. Elle sert a sauvegarder, tester ou transferer des bannieres entre environnements.';
+$string['tour:transfer:export:title'] = 'Sections a exporter';
+$string['tour:transfer:export:content'] = 'Choisissez les sections a exporter : bannieres de cours, banniere site, diaporama et ressources liees. Le ZIP est le format recommande.';
+$string['tour:transfer:archive:title'] = 'Importer une archive';
+$string['tour:transfer:archive:content'] = 'Importez un ZIP recent quand possible. L import restaure la configuration structuree et les fichiers via les API Moodle.';
+$string['tour:transfer:replace:title'] = 'Remplacer tout';
+$string['tour:transfer:replace:content'] = 'Remplacer tout est destructif : la configuration existante est supprimee avant import. Laissez decoche pour fusionner.';
+$string['tour:transfer:strategy:title'] = 'Methode conseillee';
+$string['tour:transfer:strategy:content'] = 'Avant une importation en production, exportez l etat actuel, testez sur une copie puis regenerez les images de cours si necessaire.';
+
+$string['tour:settings:name'] = 'Course banner builder - reglages plugin';
+$string['tour:settings:description'] = 'Visite detaillee des reglages globaux.';
+$string['tour:settings:intro:title'] = 'Reglages globaux';
+$string['tour:settings:intro:content'] = 'Ces reglages controlent l enrichissement des cartes de cours et les champs personnalises disponibles comme sources.';
+$string['tour:settings:enabled:title'] = 'Plugin active';
+$string['tour:settings:enabled:content'] = 'Desactive, le plugin cesse d enrichir cartes et bannieres natives. La configuration reste stockee pour une reactivation.';
+$string['tour:settings:customfields:title'] = 'Champs personnalises';
+$string['tour:settings:customfields:content'] = 'Selectionnez les champs de cours qui peuvent devenir sources. Seuls les champs actifs apparaissent dans l editeur.';
+$string['tour:settings:theme:title'] = 'Compatibilite theme';
+$string['tour:settings:theme:content'] = 'Si le theme fournit deja ses propres bannieres, verifiez soigneusement les apercus. Les themes peuvent differer fortement.';
+$string['tour:settings:next:title'] = 'Etapes suivantes';
+$string['tour:settings:next:content'] = 'Apres sauvegarde, configurez les sources de cours, la banniere site, les overlays de diaporama puis exportez un package stable.';
+
+$string['bannertitleallcaps'] = 'Tout en majuscules';
+$string['enabletitle'] = 'Activer le titre';

@@ -18,7 +18,7 @@
  * Export/import admin page.
  *
  * @package    local_course_banner_builder
- * @copyright  2026
+ * @copyright  2026 Kevin Jarniac
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -60,14 +60,10 @@ if (optional_param('importconfig', 0, PARAM_BOOL) && confirm_sesskey()) {
             if (strtolower(pathinfo($filename, PATHINFO_EXTENSION)) === 'zip') {
                 \local_course_banner_builder\manager::import_configuration_archive($uploaded['tmp_name'], (bool)$replaceall);
             } else {
-                \local_course_banner_builder\manager::import_configuration(
-                    (string)file_get_contents($uploaded['tmp_name']),
-                    (bool)$replaceall
-                );
+                throw new coding_exception('Invalid course banner builder archive.');
             }
         } else {
-            $configjson = required_param('configjson', PARAM_RAW);
-            \local_course_banner_builder\manager::import_configuration($configjson, (bool)$replaceall);
+            throw new coding_exception('Missing course banner builder archive.');
         }
         redirect($url, get_string('importedconfig', 'local_course_banner_builder'));
     } catch (Throwable $e) {
@@ -102,8 +98,6 @@ echo $OUTPUT->heading(get_string('importconfig', 'local_course_banner_builder'),
 echo html_writer::tag('p', get_string('importconfigdesc', 'local_course_banner_builder'));
 $archiveuploadlabel = get_string_manager()->string_exists('importarchive', 'local_course_banner_builder') ?
     get_string('importarchive', 'local_course_banner_builder') : 'Import ZIP archive';
-$jsonfallbacklabel = get_string_manager()->string_exists('importjsonfallback', 'local_course_banner_builder') ?
-    get_string('importjsonfallback', 'local_course_banner_builder') : 'Or paste a legacy JSON export';
 echo html_writer::start_tag('form', [
     'method' => 'post',
     'action' => $url->out(false),
@@ -117,14 +111,7 @@ echo html_writer::empty_tag('input', [
     'name' => 'configarchive',
     'id' => 'local-course-banner-builder-import-archive',
     'class' => 'form-control mb-3',
-    'accept' => '.zip,.json,application/zip,application/json',
-]);
-echo html_writer::tag('label', $jsonfallbacklabel, ['class' => 'form-label', 'for' => 'local-course-banner-builder-import-json']);
-echo html_writer::tag('textarea', '', [
-    'id' => 'local-course-banner-builder-import-json',
-    'name' => 'configjson',
-    'rows' => 18,
-    'class' => 'form-control mb-3',
+    'accept' => '.zip,application/zip',
 ]);
 echo html_writer::checkbox('replaceall', 1, (bool)$replaceall, get_string('importconfigreplaceall', 'local_course_banner_builder'));
 echo html_writer::empty_tag('br');

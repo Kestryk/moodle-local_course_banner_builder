@@ -1,0 +1,58 @@
+﻿{
+  "name": "tour:transfer:name,local_course_banner_builder",
+  "description": "tour:transfer:description,local_course_banner_builder",
+  "pathmatch": "/local/course_banner_builder/admin_transfer.php%",
+  "enabled": "1",
+  "sortorder": "0",
+  "endtourlabel": "",
+  "configdata": "{\"placement\":\"bottom\",\"orphan\":\"1\",\"backdrop\":\"1\",\"reflex\":\"0\",\"showtourwhen\":\"1\"}",
+  "displaystepnumbers": true,
+  "version": "2026042405",
+  "steps": [
+    {
+      "title": "tour:transfer:intro:title,local_course_banner_builder",
+      "content": "tour:transfer:intro:content,local_course_banner_builder",
+      "contentformat": "1",
+      "targettype": "2",
+      "targetvalue": "",
+      "sortorder": "0",
+      "configdata": "{\"placement\":\"bottom\"}"
+    },
+    {
+      "title": "tour:transfer:export:title,local_course_banner_builder",
+      "content": "tour:transfer:export:content,local_course_banner_builder",
+      "contentformat": "1",
+      "targettype": "0",
+      "targetvalue": "form[action*=\"admin_transfer.php\"]",
+      "sortorder": "1",
+      "configdata": "{\"placement\":\"bottom\"}"
+    },
+    {
+      "title": "tour:transfer:archive:title,local_course_banner_builder",
+      "content": "tour:transfer:archive:content,local_course_banner_builder",
+      "contentformat": "1",
+      "targettype": "0",
+      "targetvalue": "#local-course-banner-builder-import-archive",
+      "sortorder": "2",
+      "configdata": "{\"placement\":\"top\"}"
+    },
+    {
+      "title": "tour:transfer:replace:title,local_course_banner_builder",
+      "content": "tour:transfer:replace:content,local_course_banner_builder",
+      "contentformat": "1",
+      "targettype": "0",
+      "targetvalue": "input[name=\"replaceall\"]",
+      "sortorder": "3",
+      "configdata": "{\"placement\":\"top\"}"
+    },
+    {
+      "title": "tour:transfer:strategy:title,local_course_banner_builder",
+      "content": "tour:transfer:strategy:content,local_course_banner_builder",
+      "contentformat": "1",
+      "targettype": "2",
+      "targetvalue": "",
+      "sortorder": "4",
+      "configdata": "{\"placement\":\"bottom\"}"
+    }
+  ]
+}

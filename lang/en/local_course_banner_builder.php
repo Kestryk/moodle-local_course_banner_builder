@@ -18,7 +18,7 @@
  * English strings.
  *
  * @package    local_course_banner_builder
- * @copyright  2026
+ * @copyright  2026 Kevin Jarniac
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -45,6 +45,49 @@ $string['bannerimagedisabledforborder'] = 'File upload is disabled for a border-
 $string['bannerpreviewthemeused'] = 'Theme used: {$a}';
 $string['bannerpreviewtitle'] = 'Final banner preview';
 $string['bannerpreviewtogglecontext'] = 'Show other existing and inherited layers';
+$string['bannertextalign:center'] = 'Centered';
+$string['bannertextalign:left'] = 'Left';
+$string['bannertextalign:right'] = 'Right';
+$string['bannertitlealign'] = 'Text alignment';
+$string['bannertitleactivitymode'] = 'Title content on activity pages';
+$string['bannertitleactivitymode:activity'] = 'Display activity title';
+$string['bannertitleactivitymode:both'] = 'Display course and activity titles';
+$string['bannertitleactivitymode:course'] = 'Display course title';
+$string['bannertitleactivitymode:none'] = 'Display no title';
+$string['bannertitlebold'] = 'Bold';
+$string['bannertitlecolor'] = 'Title color';
+$string['bannertitleenabled'] = 'Display this title in the banner';
+$string['bannertitlefontfamily'] = 'Font';
+$string['bannertitleframe'] = 'Title frame';
+$string['bannertitleframebordercolor'] = 'Frame border color';
+$string['bannertitleframeborderwidth'] = 'Frame border width';
+$string['bannertitleframecolor'] = 'Frame background color';
+$string['bannertitleframecolors'] = 'Frame colors';
+$string['bannertitleframeopacity'] = 'Frame opacity';
+$string['bannertitleframepadding'] = 'Frame padding';
+$string['bannertitleframeradius'] = 'Frame corner radius';
+$string['bannertitleframeshape'] = 'Frame shape';
+$string['bannertitleframeshadow'] = 'Frame shadow';
+$string['bannertitleframeshadowrequiresframe'] = 'Enable the title frame before using its shadow.';
+$string['bannertitleframeshadowblur'] = 'Frame shadow blur';
+$string['bannertitleframeshadowcolor'] = 'Frame shadow color';
+$string['bannertitleframeshadowdirection'] = 'Frame shadow direction';
+$string['bannertitleframeshadowdistance'] = 'Frame shadow distance';
+$string['bannertitleframeshadowopacity'] = 'Frame shadow opacity';
+$string['bannertitleitalic'] = 'Italic';
+$string['bannertitleoverlay'] = 'Banner overlay';
+$string['bannertitleoverlaycolor'] = 'Overlay color';
+$string['bannertitleoverlayopacity'] = 'Overlay opacity';
+$string['bannertitleshadow'] = 'Text shadow';
+$string['bannertitleshadowblur'] = 'Shadow blur';
+$string['bannertitleshadowcolor'] = 'Shadow color';
+$string['bannertitleshadowdirection'] = 'Shadow direction';
+$string['bannertitleshadowdistance'] = 'Shadow distance';
+$string['bannertitleshadowopacity'] = 'Shadow opacity';
+$string['bannertitlesize'] = 'Title size (%)';
+$string['bannertitleunderline'] = 'Underline';
+$string['bannertitlex'] = 'Horizontal position (%)';
+$string['bannertitley'] = 'Vertical position (%)';
 $string['bannerslideshow'] = 'Banner slideshow';
 $string['borderaddedplural'] = 'borders added';
 $string['borderaddedsingular'] = 'border added';
@@ -91,11 +134,21 @@ $string['compositionmode:random'] = 'Random';
 $string['compositionmode_help'] = 'Choose how this source contributes to the final course image. Cumulative stacks all enabled images in sort order. Random picks one enabled image at random from this source.';
 $string['configuredcategories'] = 'Configured sources';
 $string['course_banner_builder:manage'] = 'Manage course banner layers';
+$string['coursebannersenabledoff'] = 'Course banners are disabled on course pages. Activity banners are disabled automatically too.';
+$string['coursebannersenabledon'] = 'Course banners are displayed on course main pages.';
+$string['coursebannerstatus'] = 'Course banner status';
+$string['coursebannerstoggleoff'] = 'Disable course banners';
+$string['coursebannerstoggleon'] = 'Enable course banners';
+$string['coursebannerdefaultimageenabledoff'] = 'Courses without an applicable banner rule keep the standard page without a generated Moodle banner.';
+$string['coursebannerdefaultimageenabledon'] = 'Courses without an applicable banner rule display Moodle\'s generated course image as their banner.';
+$string['coursebannerdefaultimagetoggleoff'] = 'Disable Moodle default images';
+$string['coursebannerdefaultimagetoggleon'] = 'Use Moodle default images';
 $string['courseactivitybannersenabledoff'] = 'Course banners are currently displayed only on course main pages.';
 $string['courseactivitybannersenabledon'] = 'Course banners are displayed on course activity pages too.';
 $string['courseactivitybannerstatus'] = 'Course activity banners';
 $string['courseactivitybannerstoggleoff'] = 'Disable banners on activities';
 $string['courseactivitybannerstoggleon'] = 'Enable banners on activities';
+$string['currentlyediting'] = 'Currently editing';
 $string['coursebannerformatbutton'] = 'Course banner format';
 $string['coursecustomfields'] = 'Course custom fields';
 $string['currentbanner'] = 'Current banner';
@@ -111,6 +164,8 @@ $string['customheightpercent'] = 'Custom height (%)';
 $string['customsizekeepaspect'] = 'Keep original dimensions';
 $string['customsizerequiredheight'] = 'Enter a custom height greater than 0%.';
 $string['customsizerequiredwidth'] = 'Enter a custom width greater than 0%.';
+$string['cropimage'] = 'Crop image';
+$string['applycropimage'] = 'Apply crop';
 $string['customsizesummary'] = 'Custom size';
 $string['customwidthpercent'] = 'Custom width (%)';
 $string['deletealllayers'] = 'Delete all layers';
@@ -132,12 +187,20 @@ $string['disabledlayerthumbnail'] = 'Disabled layer';
 $string['dragreorderlayer'] = 'Drag and drop to reorder the layer';
 $string['dynamicimagesizeenabled'] = 'Image above border';
 $string['dynamicimagesizeenabled_help'] = 'When enabled, this image is pushed above the border in previews and banner rendering.';
+$string['imageopacity'] = 'Image opacity';
+$string['imageopacity_help'] = 'Adjust the opacity of the selected image layer without changing the original file.';
+$string['toggleimageopacity'] = 'Adjust image opacity';
 $string['dynamiclayerlockedorderhelp'] = 'This dynamic image layer always stays just below the border and above the other layers. Its sort order is therefore locked.';
 $string['dynamiclayerlockedorderlabel'] = 'Locked dynamic layer order';
 $string['editborder'] = 'Edit a border';
 $string['editborderlayer'] = 'Edit border layer';
+$string['editactivitybannertitle'] = 'Edit activity title';
+$string['editcoursebannertitle'] = 'Edit course title';
 $string['editimage'] = 'Edit layer';
+$string['editsitebannertitle'] = 'Edit site title';
 $string['editsourcebutton'] = 'Edit source';
+$string['enablelayer'] = 'Enable layer';
+$string['enablelayer_help'] = 'When enabled, this layer is included in previews and generated banners.';
 $string['editsourceoflayer'] = 'Edit the source of this layer';
 $string['enabled'] = 'Enabled';
 $string['enabledcustomfields'] = 'Custom fields available as sources';
@@ -146,7 +209,7 @@ $string['enabledplugin'] = 'Enable Course banner Builder';
 $string['enabledplugin_desc'] = 'When enabled, the plugin enhances course cards and adds a native Moodle course banner only when the active theme does not already provide one.';
 $string['expandallsourcechains'] = 'Expand all';
 $string['exportconfig'] = 'Export configuration';
-$string['exportconfigdesc'] = 'Download the current source rules and layers as JSON. The export already includes image data and archive paths so it can evolve into a ZIP transfer later.';
+$string['exportconfigdesc'] = 'Download the current source rules, layers, slideshow settings and related assets as a ZIP package.';
 $string['exportimport'] = 'Export / import configuration';
 $string['exportoptions'] = 'Export options';
 $string['exportsectioncoursebanners'] = 'All course banner settings';
@@ -162,13 +225,14 @@ $string['fitmode'] = 'Image sizing mode';
 $string['fitmode:bannerfit'] = 'Fill banner';
 $string['fitmode:cover'] = 'Keep proportions';
 $string['fitmode:custom'] = 'Custom size';
-$string['fitmode:original'] = 'Do not modify layer size / ratio';
+$string['fitmode:original'] = 'Keep original image size';
 $string['fitmode_help'] = 'Choose whether images from this source are stretched to the banner canvas, cropped in cover mode without distortion, or keep their original dimensions when the final image is assembled.';
 $string['fitoverride'] = 'Layer size override';
 $string['fitoverride:categorydefault'] = 'Use source default';
 $string['fitoverridehelp'] = 'This layer overrides the source sizing rule for this image only.';
 $string['fittopreview'] = 'Fit to preview';
 $string['hideimageinpreview'] = 'Hide image in preview';
+$string['hideinheritedlayers'] = 'Hide inherited source layers';
 $string['hideotherlayers'] = 'Hide other layers';
 $string['hidepreviewborder'] = 'Hide border';
 $string['hierarchy'] = 'Hierarchy';
@@ -181,10 +245,9 @@ $string['imagebelowborder'] = 'Image below border';
 $string['imagepreviewhelp'] = 'Live preview of the final banner render for the current image layer.';
 $string['importarchive'] = 'Import ZIP archive';
 $string['importconfig'] = 'Import configuration';
-$string['importconfigdesc'] = 'Paste a previously exported JSON configuration. Category matching uses idnumber first, then the category path. Missing categories are created automatically.';
+$string['importconfigdesc'] = 'Upload a previously exported ZIP package. Category matching uses idnumber first, then the category path. Missing categories are created automatically.';
 $string['importconfigreplaceall'] = 'Delete existing plugin configuration before import';
 $string['importedconfig'] = 'Configuration imported.';
-$string['importjsonfallback'] = 'Or paste a legacy JSON export';
 $string['inheritance'] = 'Inheritance';
 $string['inheritance_help'] = 'If a course source has no enabled banner image, the plugin searches its parent sources until it finds one.';
 $string['inherited'] = 'Inherited';
@@ -205,6 +268,10 @@ $string['layeroffsetleftpercent'] = 'Left spacing (%)';
 $string['layeroffsetrightpercent'] = 'Right spacing (%)';
 $string['layeroffsetsummary'] = 'Spacing';
 $string['layeroffsettoppercent'] = 'Top spacing (%)';
+$string['layertypechoice'] = 'Layer type';
+$string['layertype:image'] = 'Image';
+$string['layertype:border'] = 'Border';
+$string['imagelayeroptions'] = 'Image layer options';
 $string['layers'] = 'Layers';
 $string['managebanners'] = 'Manage course banners';
 $string['managecategorieslink'] = 'Manage Moodle categories';
@@ -240,6 +307,8 @@ $string['positionanchor:top-left'] = 'Top left';
 $string['positionanchor:top-right'] = 'Top right';
 $string['positionanchor_help'] = 'Choose where the image is placed. Positions other than Center can use percentage spacing from the relevant banner edges.';
 $string['previewunavailable'] = 'Preview unavailable.';
+$string['previewactivitytitle'] = 'Activity title';
+$string['previewcoursetitle'] = 'Course title';
 $string['previousimages'] = 'Previous images';
 $string['privacy:metadata'] = 'The Course banner builder plugin stores banner source configuration only. It does not store personal data.';
 $string['pullforwardpreviewlayer'] = 'Bring forward';
@@ -279,6 +348,7 @@ $string['settings'] = 'Course banner builder';
 $string['sharpinnercorners'] = 'Sharp inner corners';
 $string['showhideallimages'] = 'Show / hide all images';
 $string['showhideallpreviewimages'] = 'Show / hide all images';
+$string['showinheritedlayers'] = 'Show inherited source layers';
 $string['showimageinpreview'] = 'Show image in preview';
 $string['showotherlayers'] = 'Show other layers';
 $string['showpreviewborder'] = 'Show border';
@@ -291,10 +361,14 @@ $string['sitebannerformatbutton'] = 'Site banner format';
 $string['sitebannerstatus'] = 'Site banner display';
 $string['slideshow:type:assignment'] = 'Assignment';
 $string['slideshow:type:courseforum'] = 'Course forum';
+$string['slideshow:type:courseorigin'] = 'Origin course';
 $string['slideshow:type:quiz'] = 'Quiz';
 $string['slideshow:type:siteannouncements'] = 'Site announcements';
 $string['slideshow:type:siteforum'] = 'Site forum';
 $string['slideshowarrows'] = 'Show side arrows';
+$string['slideshowaligncenter'] = 'Align center';
+$string['slideshowalignleft'] = 'Align left';
+$string['slideshowalignright'] = 'Align right';
 $string['slideshowassignmentbody'] = 'An assignment with a due date is waiting for submission.';
 $string['slideshowassignmentscourse'] = 'Course assignments to submit';
 $string['slideshowassignmentssite'] = 'Student assignment recap';
@@ -302,11 +376,29 @@ $string['slideshowautoplay'] = 'Automatic slide change';
 $string['slideshowbodycolor'] = 'Paragraph colour';
 $string['slideshowbodyfontfamily'] = 'Paragraph font';
 $string['slideshowbodytext'] = 'Paragraph text';
+$string['slideshowbuttonbackgroundcolor'] = 'Button background';
+$string['slideshowbuttonbordercolor'] = 'Button border color';
+$string['slideshowbuttonborderwidth'] = 'Button border width';
+$string['slideshowbuttoncornerradius'] = 'Button corner radius';
+$string['slideshowbuttonfontfamily'] = 'Button font';
+$string['slideshowbuttonopacity'] = 'Button opacity';
+$string['slideshowbuttonpadding'] = 'Button padding';
+$string['slideshowbuttonshadow'] = 'Button shadow';
+$string['slideshowbuttonshadowblur'] = 'Button shadow blur';
+$string['slideshowbuttonshadowcolor'] = 'Button shadow color';
+$string['slideshowbuttonshadowdirection'] = 'Button shadow direction';
+$string['slideshowbuttonshadowdistance'] = 'Button shadow distance';
+$string['slideshowbuttonshadowopacity'] = 'Button shadow opacity';
+$string['slideshowbuttonshape'] = 'Button shape';
+$string['slideshowbuttontext'] = 'Button text';
+$string['slideshowbuttontextsize'] = 'Button text size';
+$string['slideshowbuttontextcolor'] = 'Button text color';
 $string['slideshowcontrols'] = 'Controls';
 $string['slideshowcornersrounded'] = 'Rounded';
 $string['slideshowcornerssquare'] = 'Square';
 $string['slideshowcoursebanner'] = 'Course banners';
 $string['slideshowcoursebanner_desc'] = 'Slides can show recent forum posts from the current course and student-only due activities for assignments and quizzes.';
+$string['slideshowcoursebannerdisabledwarning'] = 'The course slideshow is enabled, but course banners are currently disabled.';
 $string['slideshowdefaultallsettings'] = 'Default all';
 $string['slideshowdefaultlabelsettings'] = 'Default labels';
 $string['slideshowdefaultoverlaysettings'] = 'Default overlay';
@@ -323,13 +415,31 @@ $string['slideshowenabled_help'] = 'When enabled, slides are rendered above the 
 $string['slideshowforumscourse'] = 'Course forum posts';
 $string['slideshowforumssite'] = 'Site forum posts';
 $string['slideshowlabelbackground'] = 'Label background';
+$string['slideshowlabelalignment'] = 'Label alignment';
 $string['slideshowlabelcolors'] = 'Label colours';
 $string['slideshowlabelcorners'] = 'Label corners';
 $string['slideshowlabelorientation'] = 'Label layout';
 $string['slideshowlabelorientationcolumn'] = 'Column';
 $string['slideshowlabelorientationrow'] = 'Row';
 $string['slideshowlabelsize'] = 'Label size';
+$string['slideshowlabeltextsize'] = 'Label text size';
 $string['slideshowlabeltext'] = 'Label text';
+$string['slideshowlabelsbackgroundcolor'] = 'Labels background';
+$string['slideshowlabelsbordercolor'] = 'Labels border color';
+$string['slideshowlabelsborderwidth'] = 'Labels border width';
+$string['slideshowlabelscornerradius'] = 'Labels corner radius';
+$string['slideshowlabelsfontfamily'] = 'Labels font';
+$string['slideshowlabelsopacity'] = 'Labels opacity';
+$string['slideshowlabelspadding'] = 'Labels padding';
+$string['slideshowlabelsshadow'] = 'Labels shadow';
+$string['slideshowlabelsshadowblur'] = 'Labels shadow blur';
+$string['slideshowlabelsshadowcolor'] = 'Labels shadow color';
+$string['slideshowlabelsshadowdirection'] = 'Labels shadow direction';
+$string['slideshowlabelsshadowdistance'] = 'Labels shadow distance';
+$string['slideshowlabelsshadowopacity'] = 'Labels shadow opacity';
+$string['slideshowlabelsshape'] = 'Labels shape';
+$string['slideshowlabelstext'] = 'Labels text';
+$string['slideshowlabelstextcolor'] = 'Labels text color';
 $string['slideshowlargepreview'] = 'Slideshow preview';
 $string['slideshownext'] = 'Next slide';
 $string['slideshowopenlargepreview'] = 'Open large preview';
@@ -349,6 +459,7 @@ $string['slideshowsiteannouncementscourse'] = 'Site announcements';
 $string['slideshowsiteannouncementscourse_help'] = 'Also show site-level announcements inside course banner slideshows.';
 $string['slideshowsitebanner'] = 'Site banner';
 $string['slideshowsitebanner_desc'] = 'Slides can show site-level forum posts plus a student recap of due assignments and quizzes across enrolled courses.';
+$string['slideshowsitebannerdisabledwarning'] = 'The site slideshow is enabled, but the site banner is currently disabled.';
 $string['slideshowslide'] = 'Slide';
 $string['slideshowstudentonly_help'] = 'Only users with student-like activity permissions see assignment and quiz slides. Site administrators also see them when they are enrolled with a student role.';
 $string['slideshowtextappearance'] = 'Text appearance';
@@ -427,3 +538,183 @@ $string['usedsourceprefix'] = '✓';
 $string['viewconfigured'] = 'Configured banner layers';
 $string['webimages'] = 'Web images';
 $string['yes'] = 'Yes';
+
+$string['tour:coursebanners:name'] = 'Course banner builder - course sources';
+$string['tour:coursebanners:description'] = 'Detailed tour of the course banner source editor.';
+$string['tour:coursebanners:intro:title'] = 'What this page controls';
+$string['tour:coursebanners:intro:content'] = '<p>This page is the workshop for course banners.</p>' .
+    '<div class="local-course-banner-builder-tour-card">' .
+    '<span class="local-course-banner-builder-tour-kicker">Source chain</span>' .
+    '<p>Pick a source, adjust its rules, then let enabled layers compose the final course image.</p>' .
+    '<div class="local-course-banner-builder-tour-chip-row">' .
+    '<span class="local-course-banner-builder-tour-chip">Category</span>' .
+    '<span class="local-course-banner-builder-tour-chip">Custom field</span>' .
+    '<span class="local-course-banner-builder-tour-chip">Inherited parent</span>' .
+    '</div></div>';
+$string['tour:coursebanners:format:title'] = 'Banner format';
+$string['tour:coursebanners:format:content'] = 'The format controls the visual ratio used by the real course banner and by every preview. Use the compact formats when the banner sits above a title, and keep the editor preview as the reference for percentages.';
+$string['tour:coursebanners:nav:title'] = 'Switching admin views';
+$string['tour:coursebanners:nav:content'] = 'These shortcuts move between course banners, the site banner, and slideshow settings. They do not change the current source data; they only open the related administration view.';
+$string['tour:coursebanners:selected:title'] = 'Selected source';
+$string['tour:coursebanners:selected:content'] = 'The selected source is the working area. It shows whether the source is a root, inherits another source, contributes layers to children, or short-circuits the chain. Always check this area before editing layers.';
+$string['tour:coursebanners:settings:title'] = 'Source settings';
+$string['tour:coursebanners:settings:content'] = '<p>Source settings are the rules behind the canvas.</p>' .
+    '<ul class="local-course-banner-builder-tour-list">' .
+    '<li><strong>Composition</strong> decides whether layers stack or rotate randomly.</li>' .
+    '<li><strong>Sizing</strong> sets the default behavior for new image layers.</li>' .
+    '<li><strong>Parent source</strong> and inheritance define the source chain.</li>' .
+    '</ul><p>Save them once before adding layers, so modals have a stable context.</p>';
+$string['tour:coursebanners:composition:title'] = 'Random or cumulative?';
+$string['tour:coursebanners:composition:content'] = '<p>This choice changes the real generated banner, not only the editor.</p>' .
+    '<div class="local-course-banner-builder-tour-mode-grid">' .
+    '<div class="local-course-banner-builder-tour-mode"><strong>Cumulative</strong>' .
+    '<span>Every enabled layer is rendered together, from the lowest order to the top layer.</span></div>' .
+    '<div class="local-course-banner-builder-tour-mode"><strong>Random</strong>' .
+    '<span>One enabled image layer from this source is picked when the banner is generated.</span></div>' .
+    '</div><p>Use random when a course should receive one visual variation from a set, for example one mascot, one season image, or one campaign graphic, without stacking all images at once.</p>';
+$string['tour:coursebanners:preview:title'] = 'Visual editor';
+$string['tour:coursebanners:preview:content'] = '<p>The visual editor is the closest match to the generated banner.</p>' .
+    '<div class="local-course-banner-builder-tour-preview">' .
+    '<span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--one"></span>' .
+    '<span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--two"></span>' .
+    '<span class="local-course-banner-builder-tour-preview-border"></span>' .
+    '</div><p>Drag layers, resize handles, use snap guides, reorder, then save when the composition feels right.</p>';
+$string['tour:coursebanners:add:title'] = 'Add layers';
+$string['tour:coursebanners:add:content'] = 'Use Add layer for one image, several images at once, or a border-only layer. Multi-upload keeps every draft image in the modal preview so you can review order, size, and position before saving.';
+$string['tour:coursebanners:toolbar:title'] = 'Preview toolbar';
+$string['tour:coursebanners:toolbar:content'] = '<p>The toolbar appears around the visual editor when an action is available.</p>' .
+    '<div class="local-course-banner-builder-tour-toolbar">' .
+    '<span class="local-course-banner-builder-tour-tool"><i class="fa fa-undo" aria-hidden="true"></i></span>' .
+    '<span class="local-course-banner-builder-tour-tool"><i class="fa fa-magnet" aria-hidden="true"></i></span>' .
+    '<span class="local-course-banner-builder-tour-tool"><i class="fa fa-compress" aria-hidden="true"></i></span>' .
+    '<span class="local-course-banner-builder-tour-tool"><i class="fa fa-arrows-alt" aria-hidden="true"></i></span>' .
+    '<span class="local-course-banner-builder-tour-tool"><i class="fa fa-eye-slash" aria-hidden="true"></i></span>' .
+    '</div><p>It handles undo, snap, fit, layer order, visibility, and other context-sensitive actions.</p>';
+$string['tour:coursebanners:filmstrip:title'] = 'Filmstrip';
+$string['tour:coursebanners:filmstrip:content'] = 'The filmstrip is a fast selector for image layers. It mirrors the current preview selection, shows disabled or hidden layers, and keeps large layer lists usable without losing the visual context.';
+$string['tour:coursebanners:layers:title'] = 'Layer table';
+$string['tour:coursebanners:layers:content'] = '<p>The layer table is the calm, structured side of the editor.</p>' .
+    '<ul class="local-course-banner-builder-tour-list">' .
+    '<li>Rename layers and toggle whether they render.</li>' .
+    '<li>Edit sizing overrides or open the full modal.</li>' .
+    '<li>Delete safely when a layer is no longer needed.</li>' .
+    '</ul>';
+$string['tour:coursebanners:sources:title'] = 'Configured sources';
+$string['tour:coursebanners:sources:content'] = 'The source list shows the hierarchy, parent source, source type, layer count, composition mode, sizing mode, thumbnails, and actions. Scroll horizontally on small screens and expand chains when needed.';
+$string['tour:coursebanners:save:title'] = 'Bulk actions';
+$string['tour:coursebanners:save:content'] = 'Bulk actions save table edits, delete selected layers, or delete all layers from the current source. Deleting all layers keeps the source settings but removes its visual contribution.';
+$string['tour:coursebanners:performance:title'] = 'Performance notes';
+$string['tour:coursebanners:performance:content'] = 'Generated course thumbnails are stored as Moodle files and reused. Course card replacement runs lazily near the viewport, so many visible courses should not force every generated image to load immediately.';
+
+$string['tour:sitebanner:name'] = 'Course banner builder - site banner';
+$string['tour:sitebanner:description'] = 'Detailed tour of the site banner editor.';
+$string['tour:sitebanner:intro:title'] = 'Site banner scope';
+$string['tour:sitebanner:intro:content'] = 'The site banner uses the same layer engine as course banners, but it targets non-course site pages. It has its own source, own format, and own enabled state.';
+$string['tour:sitebanner:enable:title'] = 'Enable or disable';
+$string['tour:sitebanner:enable:content'] = 'This control switches the site banner on or off without deleting layers. Disable it when the active theme already owns the top site area or during design work.';
+$string['tour:sitebanner:format:title'] = 'Site banner format';
+$string['tour:sitebanner:format:content'] = 'The site format changes the preview ratio and the real site placement. Compact and full-width formats stay represented as scaled previews so the editor remains usable.';
+$string['tour:sitebanner:settings:title'] = 'Site source settings';
+$string['tour:sitebanner:settings:content'] = 'The site source has fewer inheritance concerns than course sources, but the sizing and composition choices still affect every layer and every modal preview.';
+$string['tour:sitebanner:preview:title'] = 'Site visual preview';
+$string['tour:sitebanner:preview:content'] = 'Use this preview to compose site layers exactly as visitors will see them. Percent-based position and size values are preserved across the preview, the saved source, and the real banner.';
+$string['tour:sitebanner:layers:title'] = 'Site layers';
+$string['tour:sitebanner:layers:content'] = 'The table lists only layers attached to the site source. Edit image layers, border layers, order, enabled state, and bulk operations from here.';
+
+$string['tour:layermodals:name'] = 'Course banner builder - layer and border modals';
+$string['tour:layermodals:description'] = 'Detailed tour of the add/edit layer modal workflow.';
+$string['tour:layermodals_site:name'] = 'Course banner builder - site layer and border modals';
+$string['tour:layermodals_site:description'] = 'Detailed tour of the site add/edit layer modal workflow.';
+$string['tour:layermodals:intro:title'] = 'How layer modals work';
+$string['tour:layermodals:intro:content'] = '<p>Layer modals are small editing rooms for one job at a time.</p>' .
+    '<div class="local-course-banner-builder-tour-card">' .
+    '<span class="local-course-banner-builder-tour-kicker">Modal scope</span>' .
+    '<p>Add images, edit an image layer, or tune the dedicated border while keeping the source ratio.</p>' .
+    '</div>';
+$string['tour:layermodals:add:title'] = 'Opening the add modal';
+$string['tour:layermodals:add:content'] = 'Open the modal from Add layer. The form can save one image, multiple image drafts, or a border-only layer depending on the file manager and border controls.';
+$string['tour:layermodals:identity:title'] = 'Name, order, and enabled state';
+$string['tour:layermodals:identity:content'] = 'Layer name helps future maintenance, sort order controls render order, and enabled controls whether the layer contributes to previews and generated images.';
+$string['tour:layermodals:file:title'] = 'File manager';
+$string['tour:layermodals:file:content'] = 'Upload web images through the Moodle file manager. When several files are uploaded together, each draft receives its own preview layer so you can adjust it before saving.';
+$string['tour:layermodals:size:title'] = 'Sizing and position';
+$string['tour:layermodals:size:content'] = '<p>Pick the behavior before fine tuning percentages.</p>' .
+    '<ul class="local-course-banner-builder-tour-list">' .
+    '<li><strong>Fit to preview</strong> keeps the whole image visible.</li>' .
+    '<li><strong>Fill banner</strong> covers the full frame.</li>' .
+    '<li><strong>Custom</strong> unlocks width, height, offsets, and aspect preservation.</li>' .
+    '</ul>';
+$string['tour:layermodals:border:title'] = 'Border-only layers';
+$string['tour:layermodals:border:content'] = '<p>A border layer frames the whole banner or selected sides.</p>' .
+    '<div class="local-course-banner-builder-tour-preview">' .
+    '<span class="local-course-banner-builder-tour-preview-border"></span>' .
+    '</div><p>Adjust color, style, width, opacity, fade, dashed length, sides, and inner rounding.</p>';
+$string['tour:layermodals:preview:title'] = 'Modal preview';
+$string['tour:layermodals:preview:content'] = '<p>The modal preview uses the same banner ratio as the source.</p>' .
+    '<div class="local-course-banner-builder-tour-preview">' .
+    '<span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--one"></span>' .
+    '<span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--two"></span>' .
+    '</div><p>Use Show other layers to compare the current edit with existing and inherited layers.</p>';
+$string['tour:layermodals:multi:title'] = 'Multiple drafts';
+$string['tour:layermodals:multi:content'] = 'When several files are present, select each thumbnail, check its position, and delete unwanted drafts before saving. Draft edits are stored in hidden JSON until submit.';
+$string['tour:layermodals:save:title'] = 'Saving safely';
+$string['tour:layermodals:save:content'] = 'Saving creates or updates Moodle records and generated files. If validation warns that neither an image nor a border is active, add content before submitting.';
+
+$string['tour:slideshow:name'] = 'Course banner builder - slideshow';
+$string['tour:slideshow:description'] = 'Detailed tour of slideshow settings and preview controls.';
+$string['tour:slideshow:intro:title'] = 'Slideshow purpose';
+$string['tour:slideshow:intro:content'] = 'The slideshow overlays dynamic Moodle content on banners. It can show forum items, assignments, quizzes, and site announcements according to the chosen context.';
+$string['tour:slideshow:cards:title'] = 'Context cards';
+$string['tour:slideshow:cards:content'] = 'Each card configures one slideshow context. Course and site settings are separate so you can tune delay, data types, labels, text, and formats independently.';
+$string['tour:slideshow:enable:title'] = 'Enable controls';
+$string['tour:slideshow:enable:content'] = 'Toggle controls change whether a context or content type is active. Disabled contexts keep their settings but do not render slides.';
+$string['tour:slideshow:preview:title'] = 'Interactive preview';
+$string['tour:slideshow:preview:content'] = '<p>The preview shows sample content in the selected banner format.</p>' .
+    '<div class="local-course-banner-builder-tour-preview">' .
+    '<span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--two"></span>' .
+    '<span class="local-course-banner-builder-tour-chip" style="position:absolute;left:10%;top:18%;">COURSE101</span>' .
+    '<span style="position:absolute;left:10%;top:50%;font-weight:700;">Upcoming activity</span>' .
+    '</div><p>Drag title, body, label, and action positions to store percentage values.</p>';
+$string['tour:slideshow:toolbar:title'] = 'Preview toolbar';
+$string['tour:slideshow:toolbar:content'] = 'Use undo, redo, snap, recenter selected element, recenter all, and text-style toggles to refine the overlay without guessing exact percentages.';
+$string['tour:slideshow:overlay:title'] = 'Overlay background';
+$string['tour:slideshow:overlay:content'] = 'Overlay color and opacity improve readability on busy images. The preview updates immediately so you can keep text readable without hiding the banner.';
+$string['tour:slideshow:text:title'] = 'Text controls';
+$string['tour:slideshow:text:content'] = 'Title, body, font family, size, bold, italic, underline, and strike controls are separated. Keep long content in mind because real Moodle records vary.';
+$string['tour:slideshow:labels:title'] = 'Labels and action button';
+$string['tour:slideshow:labels:content'] = 'Labels identify the slide type or course shortname. Button controls decide size, width, height, corner shape, and placement of the view action.';
+$string['tour:slideshow:defaults:title'] = 'Defaults and reset';
+$string['tour:slideshow:defaults:content'] = 'Default buttons reset overlay, text, labels, or the whole card to plugin defaults. Use them when an experiment becomes hard to recover manually.';
+$string['tour:slideshow:formats:title'] = 'Slideshow format';
+$string['tour:slideshow:formats:content'] = 'Slideshow format follows the same banner ratio system as normal banners. Compact formats reduce text scale to stay readable in shallow areas.';
+$string['tour:slideshow:save:title'] = 'Save slideshow settings';
+$string['tour:slideshow:save:content'] = 'Save all slideshow settings after editing. The plugin stores configuration, not personal data, and real slide content is fetched from existing Moodle activities.';
+
+$string['tour:transfer:name'] = 'Course banner builder - transfer';
+$string['tour:transfer:description'] = 'Detailed tour of export and import tools.';
+$string['tour:transfer:intro:title'] = 'Move configuration safely';
+$string['tour:transfer:intro:content'] = 'The transfer page exports or imports plugin configuration. It is useful for moving banners between environments or backing up before risky changes.';
+$string['tour:transfer:export:title'] = 'Export sections';
+$string['tour:transfer:export:content'] = 'Choose which sections to export: course banners, site banners, slideshow settings, and related assets. The ZIP package keeps files and metadata together.';
+$string['tour:transfer:archive:title'] = 'Import archive';
+$string['tour:transfer:archive:content'] = 'Upload a ZIP export when available. The importer restores structured configuration and attached assets while keeping Moodle file APIs in control.';
+$string['tour:transfer:replace:title'] = 'Replace all option';
+$string['tour:transfer:replace:content'] = 'Replace all is destructive: it removes existing plugin configuration before importing. Leave it off when merging a package into an existing site.';
+$string['tour:transfer:strategy:title'] = 'Recommended workflow';
+$string['tour:transfer:strategy:content'] = 'Before importing to production, export the current configuration, test the import on a copy, then regenerate or sync course images if needed.';
+
+$string['tour:settings:name'] = 'Course banner builder - plugin settings';
+$string['tour:settings:description'] = 'Detailed tour of global plugin settings.';
+$string['tour:settings:intro:title'] = 'Global settings';
+$string['tour:settings:intro:content'] = 'These settings control whether the plugin enhances course cards and which custom fields can become banner sources. They affect the whole site.';
+$string['tour:settings:enabled:title'] = 'Plugin enabled';
+$string['tour:settings:enabled:content'] = 'When disabled, the plugin stops enhancing course cards and native banners. Stored configuration remains in place so it can be re-enabled later.';
+$string['tour:settings:customfields:title'] = 'Custom field sources';
+$string['tour:settings:customfields:content'] = 'Select the course custom fields that can create source chains. Only enabled fields appear in the course banner source editor.';
+$string['tour:settings:theme:title'] = 'Theme compatibility';
+$string['tour:settings:theme:content'] = 'If the active theme already has its own banner system, review previews carefully. The plugin tries to avoid duplicate native banners but theme layouts vary.';
+$string['tour:settings:next:title'] = 'Next steps';
+$string['tour:settings:next:content'] = 'After saving global settings, configure course sources, site banner layers, slideshow overlays, and export a package once the setup is stable.';
+
+$string['bannertitleallcaps'] = 'All caps';
+$string['enabletitle'] = 'Enable title';

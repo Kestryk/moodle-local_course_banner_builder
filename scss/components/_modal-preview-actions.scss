@@ -1,0 +1,87 @@
+// Action list beside the preview in image/border layer modals.
+
+.local-course-banner-builder-modal-preview-action-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-content: start;
+    align-items: stretch;
+    gap: 0.18rem;
+    margin-top: 0;
+    width: min(100%, 23.5rem);
+    justify-self: center;
+
+    .local-course-banner-builder-source-preview-button {
+        min-width: 0;
+        width: 100%;
+        min-height: 2.15rem;
+    }
+
+    > [hidden] {
+        display: none !important;
+    }
+
+    > .local-course-banner-builder-modal-context-button
+        ~ .local-course-banner-builder-modal-image-options-button {
+        margin-top: 0 !important;
+    }
+
+    > .local-course-banner-builder-modal-context-button {
+        margin-bottom: 0 !important;
+    }
+}
+
+.modal[id^="local-course-banner-builder-"] .local-course-banner-builder-layer-modal-body {
+    padding-right: calc(18rem + 1.75rem);
+}
+
+.modal[id^="local-course-banner-builder-"] form.local-course-banner-builder-has-preview-proxy {
+    position: static;
+}
+
+.modal[id^="local-course-banner-builder-"]
+    .local-course-banner-builder-layer-modal-body
+    form.local-course-banner-builder-has-preview-proxy
+    > .local-course-banner-builder-modal-preview-action-list {
+    position: absolute;
+    top: 2.7rem;
+    right: 1rem;
+    bottom: 0;
+    z-index: 13;
+    align-content: start;
+    width: 18rem;
+    min-width: 0;
+    max-height: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-right: 0.15rem;
+    scrollbar-width: thin;
+}
+
+.modal[id^="local-course-banner-builder-"] {
+    .local-course-banner-builder-banner-preview-panel {
+        > .local-course-banner-builder-modal-preview-icon-row {
+            grid-column: 1;
+            grid-row: 2;
+            align-self: start;
+            justify-self: center;
+            width: min(100%, 840px);
+            margin-top: 0.18rem;
+        }
+    }
+}
+
+@media (max-width: 991.98px) {
+    .modal[id^="local-course-banner-builder-"] .local-course-banner-builder-layer-modal-body {
+        padding-right: 1rem;
+    }
+
+    .modal[id^="local-course-banner-builder-"]
+        .local-course-banner-builder-layer-modal-body
+        form.local-course-banner-builder-has-preview-proxy
+        > .local-course-banner-builder-modal-preview-action-list {
+        position: static;
+        width: 100%;
+        max-height: none;
+        margin-top: 0.75rem;
+    }
+}

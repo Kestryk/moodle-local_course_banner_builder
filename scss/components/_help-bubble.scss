@@ -1,0 +1,55 @@
+// Lightweight help bubble used in compact admin tables.
+
+.local-course-banner-builder-admin--native {
+    .local-course-banner-builder-help-bubble {
+        position: relative;
+        display: inline-block;
+        margin-top: 0.5rem;
+
+        > summary {
+            position: relative;
+            list-style: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.35rem;
+            height: 1.35rem;
+            border: 1px solid var(--local-course-banner-builder-admin-border);
+            border-radius: 999px;
+            background: var(--local-course-banner-builder-admin-bg);
+            color: var(--local-course-banner-builder-admin-accent);
+            font-weight: 700;
+            cursor: pointer;
+
+            &:hover,
+            &:focus {
+                border-color: var(--local-course-banner-builder-admin-accent);
+                color: var(--local-course-banner-builder-admin-accent);
+                text-decoration: none;
+            }
+
+            &::-webkit-details-marker {
+                display: none;
+            }
+        }
+
+        > div {
+            position: absolute;
+            top: calc(100% + 0.45rem);
+            left: 0;
+            z-index: 20;
+            display: none;
+            width: min(20rem, 70vw);
+            padding: 0.6rem 0.75rem;
+            border: 1px solid var(--local-course-banner-builder-admin-border);
+            border-radius: 0.5rem;
+            background: #fff;
+            color: var(--local-course-banner-builder-admin-text);
+            box-shadow: 0 0.75rem 1.5rem rgba(31, 42, 55, 0.14);
+        }
+
+        &:hover > div {
+            display: block;
+        }
+    }
+}

@@ -1,0 +1,138 @@
+﻿// Plugin user tour rich-content styles. 
+.local-course-banner-builder-tour-card {
+    border: 1px solid #d8e4f0;
+    border-radius: 8px;
+    background: #f8fbff;
+    padding: .65rem .75rem;
+    margin: .65rem 0;
+}
+
+.local-course-banner-builder-tour-list {
+    margin: .45rem 0 0;
+    padding-left: 1.1rem;
+}
+
+.local-course-banner-builder-tour-list li {
+    margin: .2rem 0;
+}
+
+.local-course-banner-builder-tour-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    border-radius: 999px;
+    background: #eef6ff;
+    color: #155b8d;
+    font-size: .78rem;
+    font-weight: 700;
+    padding: .15rem .5rem;
+    margin-bottom: .45rem;
+}
+
+.local-course-banner-builder-tour-preview {
+    position: relative;
+    min-height: 4.1rem;
+    border: 1px solid #bad4ed;
+    border-radius: 6px;
+    background-color: #fff;
+    background-image:
+        linear-gradient(45deg, #eef6ff 25%, transparent 25%),
+        linear-gradient(-45deg, #eef6ff 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #eef6ff 75%),
+        linear-gradient(-45deg, transparent 75%, #eef6ff 75%);
+    background-position: 0 0, 0 .5rem, .5rem -.5rem, -.5rem 0;
+    background-size: 1rem 1rem;
+    overflow: hidden;
+}
+
+.local-course-banner-builder-tour-preview-layer {
+    position: absolute;
+    border-radius: 4px;
+    background: rgba(13, 110, 253, .2);
+    border: 1px solid rgba(13, 110, 253, .65);
+}
+
+.local-course-banner-builder-tour-preview-layer--one {
+    left: 11%;
+    top: 21%;
+    width: 28%;
+    height: 48%;
+    background: rgba(255, 193, 7, .78);
+    border-color: rgba(255, 193, 7, .95);
+}
+
+.local-course-banner-builder-tour-preview-layer--two {
+    right: 14%;
+    top: 28%;
+    width: 38%;
+    height: 34%;
+    background: rgba(86, 185, 192, .35);
+    border-color: rgba(86, 185, 192, .9);
+}
+
+.local-course-banner-builder-tour-preview-border {
+    position: absolute;
+    inset: .45rem;
+    border: 3px solid rgba(86, 185, 192, .95);
+    border-radius: 7px;
+}
+
+.local-course-banner-builder-tour-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .3rem;
+    margin-top: .55rem;
+}
+
+.local-course-banner-builder-tour-tool {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.9rem;
+    height: 1.9rem;
+    border: 1px solid #b8c7d6;
+    border-radius: 6px;
+    background: #fff;
+    color: #0f6cbf;
+    font-weight: 700;
+}
+
+.local-course-banner-builder-tour-tool .fa {
+    margin: 0;
+}
+
+.local-course-banner-builder-tour-mode-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .55rem;
+    margin-top: .6rem;
+}
+
+.local-course-banner-builder-tour-mode {
+    border: 1px solid #d8e4f0;
+    border-radius: 8px;
+    background: #fff;
+    padding: .55rem;
+}
+
+.local-course-banner-builder-tour-mode strong {
+    display: block;
+    margin-bottom: .25rem;
+}
+
+.local-course-banner-builder-tour-chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+    margin-top: .5rem;
+}
+
+.local-course-banner-builder-tour-chip {
+    border-radius: 999px;
+    background: #eef2f7;
+    color: #344054;
+    font-size: .78rem;
+    font-weight: 700;
+    padding: .18rem .48rem;
+}
+
