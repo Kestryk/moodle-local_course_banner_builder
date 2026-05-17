@@ -7898,40 +7898,42 @@ class manager {
      * @return array
      */
     protected static function export_banner_title_configuration(array $contexts): array {
-        $fields = [
-            'enabled',
-            'x',
-            'y',
-            'fontsize',
-            'fontfamily',
-            'color',
-            'bold',
-            'italic',
-            'underline',
-            'allcaps',
-            'frameenabled',
-            'framecolor',
-            'frameopacity',
-            'framebordercolor',
-            'frameborderwidth',
-            'frameradius',
-            'framepadding',
-            'frameshadowenabled',
-            'frameshadowcolor',
-            'frameshadowopacity',
-            'frameshadowblur',
-            'frameshadowdistance',
-            'frameshadowdirection',
-            'shadowenabled',
-            'shadowcolor',
-            'shadowopacity',
-            'shadowblur',
-            'shadowdistance',
-            'shadowdirection',
-            'overlayenabled',
-            'overlaycolor',
-            'overlayopacity',
-            'activitytitlemode',
+        $boolfields = [
+            'enabled' => 0,
+            'bold' => 1,
+            'italic' => 0,
+            'underline' => 0,
+            'allcaps' => 0,
+            'frameenabled' => 0,
+            'frameshadowenabled' => 0,
+            'shadowenabled' => 1,
+            'overlayenabled' => 0,
+        ];
+        $numericlimits = [
+            'x' => [50, 0, 100],
+            'y' => [50, 0, 100],
+            'fontsize' => [100, 25, 160],
+            'frameopacity' => [35, 0, 100],
+            'frameborderwidth' => [0, 0, 10],
+            'frameradius' => [12, 0, 80],
+            'framepadding' => [18, 0, 80],
+            'frameshadowopacity' => [25, 0, 100],
+            'frameshadowblur' => [14, 0, 80],
+            'frameshadowdistance' => [6, 0, 50],
+            'frameshadowdirection' => [135, 0, 360],
+            'shadowopacity' => [55, 0, 100],
+            'shadowblur' => [10, 0, 60],
+            'shadowdistance' => [4, 0, 40],
+            'shadowdirection' => [135, 0, 360],
+            'overlayopacity' => [25, 0, 100],
+        ];
+        $hexfields = [
+            'color' => '#FFFFFF',
+            'framecolor' => '#000000',
+            'framebordercolor' => '#FFFFFF',
+            'frameshadowcolor' => '#000000',
+            'shadowcolor' => '#000000',
+            'overlaycolor' => '#000000',
         ];
         $out = [];
         foreach ($contexts as $context) {
@@ -7940,12 +7942,39 @@ class manager {
                 continue;
             }
             $prefix = 'bannertitle_' . $context . '_';
-            $out[$context] = [];
-            foreach ($fields as $field) {
-                if ($field === 'activitytitlemode' && $context !== 'activity') {
-                    continue;
-                }
-                $out[$context][$field] = get_config('local_course_banner_builder', $prefix . $field);
+            $getconfig = static function(string $field, $default) use ($prefix) {
+                $value = get_config('local_course_banner_builder', $prefix . $field);
+                return $value === false || $value === null || $value === '' ? $default : $value;
+            };
+
+            $out[$context] = [
+                'fontfamily' => '',
+                'align' => self::normalise_slideshow_alignment(
+                    (string)$getconfig('align', self::SLIDESHOW_ALIGN_CENTER)
+                ),
+            ];
+
+            foreach ($boolfields as $field => $default) {
+                $out[$context][$field] = empty($getconfig($field, $default)) ? 0 : 1;
+            }
+            foreach ($numericlimits as $field => $limits) {
+                $value = (float)$getconfig($field, $limits[0]);
+                $out[$context][$field] = max($limits[1], min($limits[2], $value));
+            }
+            foreach ($hexfields as $field => $default) {
+                $value = (string)$getconfig($field, $default);
+                $out[$context][$field] = preg_match('/^#[0-9a-f]{6}$/i', $value) ? strtoupper($value) : $default;
+            }
+
+            $fontfamily = (string)$getconfig('fontfamily', '');
+            if (array_key_exists($fontfamily, self::get_slideshow_font_family_options())) {
+                $out[$context]['fontfamily'] = $fontfamily;
+            }
+            if ($context === 'activity') {
+                $mode = (string)$getconfig('activitytitlemode', 'activity');
+                $out[$context]['activitytitlemode'] = in_array($mode, ['activity', 'course', 'both', 'none'], true)
+                    ? $mode
+                    : 'activity';
             }
         }
         return $out;
@@ -8008,16 +8037,19 @@ class manager {
             }
             foreach ($numericlimits as $field => $limits) {
                 if (array_key_exists($field, $configs[$context])) {
+                    $value = $configs[$context][$field];
+                    $value = $value === false || $value === null || $value === '' ? $limits[0] : $value;
                     set_config(
                         $prefix . $field,
-                        max($limits[1], min($limits[2], (float)$configs[$context][$field])),
+                        max($limits[1], min($limits[2], (float)$value)),
                         'local_course_banner_builder'
                     );
                 }
             }
             foreach ($hexfields as $field => $default) {
                 if (array_key_exists($field, $configs[$context])) {
-                    $value = (string)$configs[$context][$field];
+                    $value = $configs[$context][$field];
+                    $value = $value === false || $value === null || $value === '' ? $default : (string)$value;
                     set_config(
                         $prefix . $field,
                         preg_match('/^#[0-9a-f]{6}$/i', $value) ? strtoupper($value) : $default,
@@ -8026,22 +8058,32 @@ class manager {
                 }
             }
             if (array_key_exists('fontfamily', $configs[$context])) {
-                $fontfamily = (string)$configs[$context]['fontfamily'];
+                $fontfamily = $configs[$context]['fontfamily'];
+                $fontfamily = $fontfamily === false || $fontfamily === null ? '' : (string)$fontfamily;
                 set_config(
                     $prefix . 'fontfamily',
                     array_key_exists($fontfamily, self::get_slideshow_font_family_options()) ? $fontfamily : '',
                     'local_course_banner_builder'
                 );
             }
+            if (array_key_exists('align', $configs[$context])) {
+                set_config(
+                    $prefix . 'align',
+                    self::normalise_slideshow_alignment((string)$configs[$context]['align']),
+                    'local_course_banner_builder'
+                );
+            } else {
+                set_config($prefix . 'align', self::SLIDESHOW_ALIGN_CENTER, 'local_course_banner_builder');
+            }
             if ($context === 'activity' && array_key_exists('activitytitlemode', $configs[$context])) {
-                $mode = (string)$configs[$context]['activitytitlemode'];
+                $mode = $configs[$context]['activitytitlemode'];
+                $mode = $mode === false || $mode === null || $mode === '' ? 'activity' : (string)$mode;
                 set_config(
                     $prefix . 'activitytitlemode',
                     in_array($mode, ['activity', 'course', 'both', 'none'], true) ? $mode : 'activity',
                     'local_course_banner_builder'
                 );
             }
-            set_config($prefix . 'align', 'center', 'local_course_banner_builder');
         }
     }
 
