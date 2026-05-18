@@ -1268,6 +1268,7 @@ class manager {
             'titlestrike' => get_config('local_course_banner_builder', $prefix . 'titlestrike') === false
                 ? self::SLIDESHOW_DEFAULT_TITLE_STRIKE
                 : (bool)get_config('local_course_banner_builder', $prefix . 'titlestrike'),
+            'titleallcaps' => (bool)get_config('local_course_banner_builder', $prefix . 'titleallcaps'),
             'bodybold' => get_config('local_course_banner_builder', $prefix . 'bodybold') === false
                 ? self::SLIDESHOW_DEFAULT_BODY_BOLD
                 : (bool)get_config('local_course_banner_builder', $prefix . 'bodybold'),
@@ -1280,18 +1281,23 @@ class manager {
             'bodystrike' => get_config('local_course_banner_builder', $prefix . 'bodystrike') === false
                 ? self::SLIDESHOW_DEFAULT_BODY_STRIKE
                 : (bool)get_config('local_course_banner_builder', $prefix . 'bodystrike'),
+            'bodyallcaps' => (bool)get_config('local_course_banner_builder', $prefix . 'bodyallcaps'),
             'actionbold' => get_config('local_course_banner_builder', $prefix . 'actionbold') === false
                 ? true
                 : (bool)get_config('local_course_banner_builder', $prefix . 'actionbold'),
             'actionitalic' => (bool)get_config('local_course_banner_builder', $prefix . 'actionitalic'),
             'actionunderline' => (bool)get_config('local_course_banner_builder', $prefix . 'actionunderline'),
             'actionstrike' => (bool)get_config('local_course_banner_builder', $prefix . 'actionstrike'),
+            'actionallcaps' => (bool)get_config('local_course_banner_builder', $prefix . 'actionallcaps'),
             'labelbold' => get_config('local_course_banner_builder', $prefix . 'labelbold') === false
                 ? true
                 : (bool)get_config('local_course_banner_builder', $prefix . 'labelbold'),
             'labelitalic' => (bool)get_config('local_course_banner_builder', $prefix . 'labelitalic'),
             'labelunderline' => (bool)get_config('local_course_banner_builder', $prefix . 'labelunderline'),
             'labelstrike' => (bool)get_config('local_course_banner_builder', $prefix . 'labelstrike'),
+            'labelallcaps' => get_config('local_course_banner_builder', $prefix . 'labelallcaps') === false
+                ? true
+                : (bool)get_config('local_course_banner_builder', $prefix . 'labelallcaps'),
             'titlex' => self::normalise_slideshow_position_percent(
                 get_config('local_course_banner_builder', $prefix . 'titlex'),
                 self::SLIDESHOW_DEFAULT_TITLE_X
@@ -1480,9 +1486,10 @@ class manager {
             'local_course_banner_builder'
         );
         foreach (['titlebold', 'titleitalic', 'titleunderline', 'titlestrike',
-            'bodybold', 'bodyitalic', 'bodyunderline', 'bodystrike',
-            'actionbold', 'actionitalic', 'actionunderline', 'actionstrike',
-            'labelbold', 'labelitalic', 'labelunderline', 'labelstrike'] as $field) {
+            'titleallcaps', 'bodybold', 'bodyitalic', 'bodyunderline', 'bodystrike',
+            'bodyallcaps', 'actionbold', 'actionitalic', 'actionunderline', 'actionstrike',
+            'actionallcaps', 'labelbold', 'labelitalic', 'labelunderline', 'labelstrike',
+            'labelallcaps'] as $field) {
             set_config($prefix . $field, empty($values[$field]) ? 0 : 1, 'local_course_banner_builder');
         }
         set_config(
@@ -1575,18 +1582,22 @@ class manager {
             'titleitalic' => self::SLIDESHOW_DEFAULT_TITLE_ITALIC,
             'titleunderline' => self::SLIDESHOW_DEFAULT_TITLE_UNDERLINE,
             'titlestrike' => self::SLIDESHOW_DEFAULT_TITLE_STRIKE,
+            'titleallcaps' => false,
             'bodybold' => self::SLIDESHOW_DEFAULT_BODY_BOLD,
             'bodyitalic' => self::SLIDESHOW_DEFAULT_BODY_ITALIC,
             'bodyunderline' => self::SLIDESHOW_DEFAULT_BODY_UNDERLINE,
             'bodystrike' => self::SLIDESHOW_DEFAULT_BODY_STRIKE,
+            'bodyallcaps' => false,
             'actionbold' => true,
             'actionitalic' => false,
             'actionunderline' => false,
             'actionstrike' => false,
+            'actionallcaps' => false,
             'labelbold' => true,
             'labelitalic' => false,
             'labelunderline' => false,
             'labelstrike' => false,
+            'labelallcaps' => true,
             'titlex' => self::SLIDESHOW_DEFAULT_TITLE_X,
             'titley' => self::SLIDESHOW_DEFAULT_TITLE_Y,
             'bodyx' => self::SLIDESHOW_DEFAULT_BODY_X,
@@ -1758,18 +1769,22 @@ class manager {
             'titleItalic' => !empty($config['titleitalic']),
             'titleUnderline' => !empty($config['titleunderline']),
             'titleStrike' => !empty($config['titlestrike']),
+            'titleAllCaps' => !empty($config['titleallcaps']),
             'bodyBold' => !empty($config['bodybold']),
             'bodyItalic' => !empty($config['bodyitalic']),
             'bodyUnderline' => !empty($config['bodyunderline']),
             'bodyStrike' => !empty($config['bodystrike']),
+            'bodyAllCaps' => !empty($config['bodyallcaps']),
             'actionBold' => !empty($config['actionbold']),
             'actionItalic' => !empty($config['actionitalic']),
             'actionUnderline' => !empty($config['actionunderline']),
             'actionStrike' => !empty($config['actionstrike']),
+            'actionAllCaps' => !empty($config['actionallcaps']),
             'labelBold' => !empty($config['labelbold']),
             'labelItalic' => !empty($config['labelitalic']),
             'labelUnderline' => !empty($config['labelunderline']),
             'labelStrike' => !empty($config['labelstrike']),
+            'labelAllCaps' => array_key_exists('labelallcaps', $config) ? !empty($config['labelallcaps']) : true,
             'titleX' => self::normalise_slideshow_position_percent($config['titlex'] ?? null, self::SLIDESHOW_DEFAULT_TITLE_X),
             'titleY' => self::normalise_slideshow_position_percent($config['titley'] ?? null, self::SLIDESHOW_DEFAULT_TITLE_Y),
             'bodyX' => self::normalise_slideshow_position_percent($config['bodyx'] ?? null, self::SLIDESHOW_DEFAULT_BODY_X),
@@ -3363,9 +3378,16 @@ class manager {
      * @param int $excludeid
      * @return \stdClass|null
      */
-    protected static function get_source_border_layer_record(\stdClass $source, int $excludeid = 0): ?\stdClass {
+    protected static function get_source_border_layer_record(
+        \stdClass $source,
+        int $excludeid = 0,
+        bool $enabledonly = false
+    ): ?\stdClass {
         foreach (self::get_source_elements($source) as $element) {
             if ($excludeid > 0 && (int)$element->id === $excludeid) {
+                continue;
+            }
+            if ($enabledonly && empty($element->isenabled)) {
                 continue;
             }
             if (!empty($element->borderenabled)) {
@@ -3490,7 +3512,7 @@ class manager {
             if (!$chainsource) {
                 continue;
             }
-            $borderrecord = self::get_source_border_layer_record($chainsource, $excludeid);
+            $borderrecord = self::get_source_border_layer_record($chainsource, $excludeid, true);
             if ($borderrecord) {
                 return [
                     'source' => $chainsource,
@@ -3591,6 +3613,95 @@ class manager {
             'messagekey' => $inchain ? 'sourcechainalreadyhasborder' : 'sourcealreadyhasborder',
             'inlinekey' => $inchain ? 'sourcechainalreadyhasborderinline' : 'sourcealreadyhasborderinline',
         ];
+    }
+
+    /**
+     * Return descendants that explicitly inherit from a source.
+     *
+     * @param \stdClass $source
+     * @return \stdClass[]
+     */
+    protected static function get_explicit_source_descendants(\stdClass $source): array {
+        global $DB;
+
+        if (empty($source->sourcekey) || !self::table_field_exists('local_course_banner_order', 'sourceparentkey') ||
+                !self::table_field_exists('local_course_banner_order', 'sourcekey')) {
+            return [];
+        }
+
+        $descendants = [];
+        $queue = [(string)$source->sourcekey];
+        $visited = [(string)$source->sourcekey => true];
+
+        while (!empty($queue)) {
+            $parentkey = array_shift($queue);
+            $records = $DB->get_records(
+                'local_course_banner_order',
+                ['sourceparentkey' => $parentkey],
+                '',
+                'id,sourcekey,sourceparentkey'
+            );
+
+            foreach ($records as $record) {
+                $childkey = trim((string)($record->sourcekey ?? ''));
+                if ($childkey === '' || !empty($visited[$childkey])) {
+                    continue;
+                }
+
+                $visited[$childkey] = true;
+                $queue[] = $childkey;
+                $childsource = self::resolve_source($childkey);
+                if ($childsource) {
+                    $descendants[] = $childsource;
+                }
+            }
+        }
+
+        return $descendants;
+    }
+
+    /**
+     * Disable active child-source borders once a parent source owns the chain border.
+     *
+     * @param \stdClass $source
+     * @return int
+     */
+    protected static function disable_child_source_border_layers(\stdClass $source): int {
+        global $DB;
+
+        $disabledcount = 0;
+        foreach (self::get_explicit_source_descendants($source) as $childsource) {
+            foreach (self::get_source_elements($childsource) as $element) {
+                if (empty($element->borderenabled) || empty($element->isenabled)) {
+                    continue;
+                }
+                $element->isenabled = 0;
+                $element->timemodified = time();
+                $DB->update_record('local_course_banner_elements', $element);
+                $disabledcount++;
+            }
+        }
+
+        return $disabledcount;
+    }
+
+    /**
+     * Count active child-source borders that would be disabled by a parent border.
+     *
+     * @param \stdClass $source
+     * @return int
+     */
+    public static function count_active_child_source_border_layers(\stdClass $source): int {
+        $count = 0;
+        foreach (self::get_explicit_source_descendants($source) as $childsource) {
+            foreach (self::get_source_elements($childsource) as $element) {
+                if (!empty($element->borderenabled) && !empty($element->isenabled)) {
+                    $count++;
+                }
+            }
+        }
+
+        return $count;
     }
 
     /**
@@ -3701,6 +3812,7 @@ class manager {
     public static function save_source_banner(\stdClass $source, \stdClass $data): int {
         global $DB;
 
+        self::apply_request_crop_state($data);
         $elementid = (int)($data->elementid ?? 0);
         $rawdraftfiles = array_values(self::get_draft_files((int)($data->bannerimage_filemanager ?? 0)));
         $multidraftsettings = self::extract_multi_draft_settings($data->multilayerdraftsettings ?? '');
@@ -3719,7 +3831,7 @@ class manager {
         if ($elementid && !empty($data->currentisborderlayer)) {
             $data->borderenabled = 1;
         }
-        $hasborder = !empty($data->borderenabled);
+        $hasborder = !empty($data->borderenabled) && !empty($data->isenabled);
         self::debug_log('save_source_banner_input', [
             'sourcekey' => $source->sourcekey ?? '',
             'elementid' => $elementid,
@@ -3790,11 +3902,21 @@ class manager {
         $displaydata = $data;
         if (!$elementid && !$hasborder && count($draftfiles) === 1) {
             $onlydraftindex = array_key_first($draftfiles);
-            $displaydata = self::apply_multi_draft_layer_settings($data, $multidraftsettings[$onlydraftindex] ?? []);
+            $draftsettings = $multidraftsettings[$onlydraftindex] ?? [];
+            foreach (['enabled', 'leftpercent', 'toppercent', 'widthpercent', 'heightpercent'] as $cropfield) {
+                $property = 'imagecrop' . $cropfield;
+                if (property_exists($data, $property)) {
+                    $draftsettings[$property] = $data->{$property};
+                }
+            }
+            $displaydata = self::apply_multi_draft_layer_settings($data, $draftsettings);
         }
         self::apply_element_display_settings($record, $displaydata, $source);
         $record->timemodified = time();
         $DB->update_record('local_course_banner_elements', $record);
+        if ($hasborder && !empty($record->isenabled)) {
+            $data->disabledchildborderlayers = self::disable_child_source_border_layers($source);
+        }
 
         if (isset($data->bannerimage_filemanager)) {
             if (!$elementid && !$hasborder && count($draftfiles) === 1) {
@@ -3814,6 +3936,38 @@ class manager {
         self::normalize_element_sortorders(self::get_source_elements($source));
         self::sync_courses_for_source($source);
         return (int)$record->id;
+    }
+
+    /**
+     * Merge the live preview crop state submitted by the modal into form data.
+     *
+     * @param \stdClass $data
+     * @return void
+     */
+    protected static function apply_request_crop_state(\stdClass $data): void {
+        $cropstate = [];
+        $rawstate = optional_param('previewcropstate', '', PARAM_RAW_TRIMMED);
+        if ($rawstate !== '') {
+            $decoded = json_decode($rawstate, true);
+            if (is_array($decoded)) {
+                $cropstate = $decoded;
+            }
+        }
+
+        foreach (['enabled', 'leftpercent', 'toppercent', 'widthpercent', 'heightpercent'] as $cropfield) {
+            $property = 'imagecrop' . $cropfield;
+            if (array_key_exists($property, $cropstate)) {
+                $data->{$property} = $cropfield === 'enabled' ? (empty($cropstate[$property]) ? 0 : 1) :
+                    (float)$cropstate[$property];
+                continue;
+            }
+            if (!array_key_exists($property, $_POST)) {
+                continue;
+            }
+            $default = $cropfield === 'widthpercent' || $cropfield === 'heightpercent' ? 100.0 : 0.0;
+            $data->{$property} = $cropfield === 'enabled' ? optional_param($property, 0, PARAM_BOOL) :
+                optional_param($property, $default, PARAM_FLOAT);
+        }
     }
 
     /**
@@ -6070,6 +6224,7 @@ class manager {
             $layersummary = self::export_layer_display_summary($record);
             $isborderlayer = self::is_border_only_layer($record);
             $isdynamiclayer = self::is_top_image_layer($record);
+            $iscroppedlayer = !empty(self::normalise_image_crop($record)['enabled']);
             $islockedlayer = self::is_locked_order_layer($record);
             $rowclass = 'local-course-banner-builder-layer-row';
             if ($isborderlayer) {
@@ -6101,6 +6256,11 @@ class manager {
                 'dynamiclabel' => get_string('topimageenabled', 'local_course_banner_builder'),
                 'dynamicpopovercontent' => '<div class="no-overflow"><p>' .
                     get_string('topimageenabled_help_short', 'local_course_banner_builder') .
+                    '</p></div>',
+                'iscroppedlayer' => $iscroppedlayer,
+                'croppedlabel' => get_string('croppedlayerthumbnail', 'local_course_banner_builder'),
+                'croppedpopovercontent' => '<div class="no-overflow"><p>' .
+                    get_string('croppedlayerthumbnail_help', 'local_course_banner_builder') .
                     '</p></div>',
                 'categoryid' => $categoryid,
                 'sourcekey' => $source->sourcekey,
@@ -6901,6 +7061,11 @@ class manager {
                 'dynamicpopovercontent' => '<div class="no-overflow"><p>' .
                     get_string('topimageenabled_help_short', 'local_course_banner_builder') .
                     '</p></div>',
+                'iscropped' => !empty(self::normalise_image_crop($element)['enabled']),
+                'croppedlabel' => get_string('croppedlayerthumbnail', 'local_course_banner_builder'),
+                'croppedpopovercontent' => '<div class="no-overflow"><p>' .
+                    get_string('croppedlayerthumbnail_help', 'local_course_banner_builder') .
+                    '</p></div>',
             ];
             $count++;
             if ($count >= self::ADMIN_THUMB_LIMIT) {
@@ -7538,7 +7703,7 @@ class manager {
     protected static function count_border_elements(array $elements): int {
         $count = 0;
         foreach ($elements as $element) {
-            if (!empty($element->borderenabled)) {
+            if (!empty($element->borderenabled) && !empty($element->isenabled)) {
                 $count++;
             }
         }

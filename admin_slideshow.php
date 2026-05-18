@@ -315,6 +315,7 @@ document.addEventListener('DOMContentLoaded', function() {
             window.clearTimeout(parseInt(panel.dataset.slideshowPanelTimer, 10));
             delete panel.dataset.slideshowPanelTimer;
         }
+        panel.dataset.slideshowPanelVisible = visible ? '1' : '0';
         if (visible) {
             panel.hidden = false;
             window.requestAnimationFrame(function() {
@@ -330,26 +331,25 @@ document.addEventListener('DOMContentLoaded', function() {
             delete panel.dataset.slideshowPanelTimer;
         }, 300));
     };
-    document.addEventListener('click', function(e) {
-        var sideButton = e.target.closest('[data-action=\"local-course-banner-builder-toggle-slideshow-side-panel\"]');
-        if (!sideButton) {
+    var slideshowGetSidePanelRoot = function(node) {
+        if (!node || !node.closest) {
+            return null;
+        }
+        return node.closest('[data-slideshow-overlay-settings=\"1\"]') ||
+            node.closest('.local-course-banner-builder-slideshow-preview-modal') ||
+            node.closest('.modal');
+    };
+    var slideshowSyncSidePanelButtons = function(root) {
+        if (!root) {
             return;
         }
-        e.preventDefault();
-        var root = sideButton.closest('[data-slideshow-overlay-settings=\"1\"]');
-        var target = sideButton.getAttribute('data-slideshow-side-panel-target');
-        if (!root || !target) {
-            return;
-        }
-        root.querySelectorAll('[data-slideshow-side-panel]').forEach(function(panel) {
-            var isTarget = panel.getAttribute('data-slideshow-side-panel') === target;
-            var isOpen = !panel.hidden && !panel.classList.contains('is-collapsed');
-            slideshowSetSidePanelVisible(panel, isTarget && !isOpen);
-        });
         root.querySelectorAll('[data-action=\"local-course-banner-builder-toggle-slideshow-side-panel\"]').forEach(function(button) {
-            var activePanel = root.querySelector('[data-slideshow-side-panel=\"' + target + '\"]');
-            var active = button.getAttribute('data-slideshow-side-panel-target') === target &&
-                activePanel && !activePanel.classList.contains('is-collapsed');
+            var target = button.getAttribute('data-slideshow-side-panel-target');
+            var panel = target ? root.querySelector('[data-slideshow-side-panel=\"' + target + '\"]') : null;
+            var active = !!(panel && (
+                panel.dataset.slideshowPanelVisible === '1' ||
+                (!panel.hidden && !panel.classList.contains('is-collapsed'))
+            ));
             button.classList.toggle('btn-primary', active);
             button.classList.toggle('btn-outline-secondary', !active);
             button.classList.toggle('active', active);
@@ -357,6 +357,25 @@ document.addEventListener('DOMContentLoaded', function() {
             button.setAttribute('aria-expanded', active ? 'true' : 'false');
             button.setAttribute('aria-pressed', active ? 'true' : 'false');
         });
+    };
+    document.addEventListener('click', function(e) {
+        var sideButton = e.target.closest('[data-action=\"local-course-banner-builder-toggle-slideshow-side-panel\"]');
+        if (!sideButton) {
+            return;
+        }
+        e.preventDefault();
+        var root = slideshowGetSidePanelRoot(sideButton);
+        var target = sideButton.getAttribute('data-slideshow-side-panel-target');
+        if (!root || !target) {
+            return;
+        }
+        root.querySelectorAll('[data-slideshow-side-panel]').forEach(function(panel) {
+            var isTarget = panel.getAttribute('data-slideshow-side-panel') === target;
+            var isOpen = panel.dataset.slideshowPanelVisible === '1' ||
+                (!panel.hidden && !panel.classList.contains('is-collapsed'));
+            slideshowSetSidePanelVisible(panel, isTarget && !isOpen);
+        });
+        slideshowSyncSidePanelButtons(root);
     });
     document.querySelectorAll('[data-slideshow-overlay-settings=\"1\"]').forEach(function(panel) {
         var color = panel.querySelector('[data-slideshow-overlay-color=\"1\"]');
@@ -988,6 +1007,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var italic = get('italic');
         var underline = get('underline');
         var strike = get('strike');
+        var allcaps = get('allcaps');
         panel.querySelectorAll('[data-slideshow-overlay-preview=\"1\"]').forEach(function(preview) {
             preview.style.setProperty('--local-course-banner-builder-slideshow-' + target + '-font-weight',
                 bold ? (target === 'title' ? '800' : '700') : '400');
@@ -995,8 +1015,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 italic ? 'italic' : 'normal');
             preview.style.setProperty('--local-course-banner-builder-slideshow-' + target + '-text-decoration',
                 slideshowGetTextDecoration(underline, strike));
+            preview.style.setProperty('--local-course-banner-builder-slideshow-' + target + '-text-transform',
+                allcaps ? 'uppercase' : 'none');
         });
-        ['bold', 'italic', 'underline', 'strike'].forEach(function(style) {
+        ['bold', 'italic', 'underline', 'strike', 'allcaps'].forEach(function(style) {
             var input = panel.querySelector('[data-slideshow-text-style-input=\"' + target + style + '\"]');
             var active = input && input.value === '1';
             panel.querySelectorAll('[data-slideshow-text-style-buttons=\"' + target + '\"] [data-slideshow-text-style=\"' + style + '\"]').forEach(function(button) {
@@ -1195,15 +1217,7 @@ document.addEventListener('DOMContentLoaded', function() {
             var active = panel.getAttribute('data-slideshow-side-panel') === target;
             slideshowSetSidePanelVisible(panel, active);
         });
-        root.querySelectorAll('[data-action=\"local-course-banner-builder-toggle-slideshow-side-panel\"]').forEach(function(button) {
-            var active = button.getAttribute('data-slideshow-side-panel-target') === target;
-            button.classList.toggle('btn-primary', active);
-            button.classList.toggle('btn-outline-secondary', !active);
-            button.classList.toggle('active', active);
-            button.classList.toggle('local-course-banner-builder-source-preview-button--active', active);
-            button.setAttribute('aria-expanded', active ? 'true' : 'false');
-            button.setAttribute('aria-pressed', active ? 'true' : 'false');
-        });
+        slideshowSyncSidePanelButtons(root);
     };
     var slideshowPreviewSelect = function(preview, key) {
         if (!preview) {
@@ -1837,10 +1851,10 @@ document.addEventListener('DOMContentLoaded', function() {
 function local_course_banner_builder_clean_slideshow_values(array $values): array {
     $clean = [];
     foreach (['enabled', 'forums', 'siteannouncements', 'assignments', 'quizzes', 'autoplay', 'arrows', 'dots',
-        'titlebold', 'titleitalic', 'titleunderline', 'titlestrike',
-        'bodybold', 'bodyitalic', 'bodyunderline', 'bodystrike',
-        'actionbold', 'actionitalic', 'actionunderline', 'actionstrike',
-        'labelbold', 'labelitalic', 'labelunderline', 'labelstrike'] as $field) {
+        'titlebold', 'titleitalic', 'titleunderline', 'titlestrike', 'titleallcaps',
+        'bodybold', 'bodyitalic', 'bodyunderline', 'bodystrike', 'bodyallcaps',
+        'actionbold', 'actionitalic', 'actionunderline', 'actionstrike', 'actionallcaps',
+        'labelbold', 'labelitalic', 'labelunderline', 'labelstrike', 'labelallcaps'] as $field) {
         $clean[$field] = empty($values[$field]) ? 0 : 1;
     }
     foreach (['delay', 'overlayopacity', 'titlefontsize', 'bodyfontsize', 'actionsize', 'actionwidth',
@@ -1972,18 +1986,22 @@ if (optional_param('updateslideshow', 0, PARAM_BOOL) && confirm_sesskey()) {
             'titleitalic' => $defaulttext || $defaultall ? manager::SLIDESHOW_DEFAULT_TITLE_ITALIC : optional_param('titleitalic', 0, PARAM_BOOL),
             'titleunderline' => $defaulttext || $defaultall ? manager::SLIDESHOW_DEFAULT_TITLE_UNDERLINE : optional_param('titleunderline', 0, PARAM_BOOL),
             'titlestrike' => $defaulttext || $defaultall ? manager::SLIDESHOW_DEFAULT_TITLE_STRIKE : optional_param('titlestrike', 0, PARAM_BOOL),
+            'titleallcaps' => $defaulttext || $defaultall ? false : optional_param('titleallcaps', 0, PARAM_BOOL),
             'bodybold' => $defaulttext || $defaultall ? manager::SLIDESHOW_DEFAULT_BODY_BOLD : optional_param('bodybold', 0, PARAM_BOOL),
             'bodyitalic' => $defaulttext || $defaultall ? manager::SLIDESHOW_DEFAULT_BODY_ITALIC : optional_param('bodyitalic', 0, PARAM_BOOL),
             'bodyunderline' => $defaulttext || $defaultall ? manager::SLIDESHOW_DEFAULT_BODY_UNDERLINE : optional_param('bodyunderline', 0, PARAM_BOOL),
             'bodystrike' => $defaulttext || $defaultall ? manager::SLIDESHOW_DEFAULT_BODY_STRIKE : optional_param('bodystrike', 0, PARAM_BOOL),
+            'bodyallcaps' => $defaulttext || $defaultall ? false : optional_param('bodyallcaps', 0, PARAM_BOOL),
             'actionbold' => $defaulttext || $defaultall ? true : optional_param('actionbold', 0, PARAM_BOOL),
             'actionitalic' => $defaulttext || $defaultall ? false : optional_param('actionitalic', 0, PARAM_BOOL),
             'actionunderline' => $defaulttext || $defaultall ? false : optional_param('actionunderline', 0, PARAM_BOOL),
             'actionstrike' => $defaulttext || $defaultall ? false : optional_param('actionstrike', 0, PARAM_BOOL),
+            'actionallcaps' => $defaulttext || $defaultall ? false : optional_param('actionallcaps', 0, PARAM_BOOL),
             'labelbold' => $defaultlabels || $defaultall ? true : optional_param('labelbold', 0, PARAM_BOOL),
             'labelitalic' => $defaultlabels || $defaultall ? false : optional_param('labelitalic', 0, PARAM_BOOL),
             'labelunderline' => $defaultlabels || $defaultall ? false : optional_param('labelunderline', 0, PARAM_BOOL),
             'labelstrike' => $defaultlabels || $defaultall ? false : optional_param('labelstrike', 0, PARAM_BOOL),
+            'labelallcaps' => $defaultlabels || $defaultall ? true : optional_param('labelallcaps', 1, PARAM_BOOL),
             'titlex' => $defaulttext || $defaultall
                 ? manager::SLIDESHOW_DEFAULT_TITLE_X
                 : optional_param('titlex', manager::SLIDESHOW_DEFAULT_TITLE_X, PARAM_FLOAT),
@@ -2437,24 +2455,28 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
         'italic' => !empty($config['titleitalic']),
         'underline' => !empty($config['titleunderline']),
         'strike' => !empty($config['titlestrike']),
+        'allcaps' => !empty($config['titleallcaps']),
     ];
     $bodystyles = [
         'bold' => !empty($config['bodybold']),
         'italic' => !empty($config['bodyitalic']),
         'underline' => !empty($config['bodyunderline']),
         'strike' => !empty($config['bodystrike']),
+        'allcaps' => !empty($config['bodyallcaps']),
     ];
     $actionstyles = [
         'bold' => !empty($config['actionbold']),
         'italic' => !empty($config['actionitalic']),
         'underline' => !empty($config['actionunderline']),
         'strike' => !empty($config['actionstrike']),
+        'allcaps' => !empty($config['actionallcaps']),
     ];
     $labelstyles = [
         'bold' => !empty($config['labelbold']),
         'italic' => !empty($config['labelitalic']),
         'underline' => !empty($config['labelunderline']),
         'strike' => !empty($config['labelstrike']),
+        'allcaps' => array_key_exists('labelallcaps', $config) ? !empty($config['labelallcaps']) : true,
     ];
     $titlex = (float)($config['titlex'] ?? manager::SLIDESHOW_DEFAULT_TITLE_X);
     $titley = (float)($config['titley'] ?? manager::SLIDESHOW_DEFAULT_TITLE_Y);
@@ -2535,6 +2557,8 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
     $previewstyle .= ' --local-course-banner-builder-slideshow-title-text-decoration: ' .
         (($titlestyles['underline'] || $titlestyles['strike']) ?
             trim(($titlestyles['underline'] ? 'underline ' : '') . ($titlestyles['strike'] ? 'line-through' : '')) : 'none') . ';';
+    $previewstyle .= ' --local-course-banner-builder-slideshow-title-text-transform: ' .
+        ($titlestyles['allcaps'] ? 'uppercase' : 'none') . ';';
     $previewstyle .= ' --local-course-banner-builder-slideshow-body-font-weight: ' .
         ($bodystyles['bold'] ? '700' : '400') . ';';
     $previewstyle .= ' --local-course-banner-builder-slideshow-body-font-style: ' .
@@ -2542,6 +2566,8 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
     $previewstyle .= ' --local-course-banner-builder-slideshow-body-text-decoration: ' .
         (($bodystyles['underline'] || $bodystyles['strike']) ?
             trim(($bodystyles['underline'] ? 'underline ' : '') . ($bodystyles['strike'] ? 'line-through' : '')) : 'none') . ';';
+    $previewstyle .= ' --local-course-banner-builder-slideshow-body-text-transform: ' .
+        ($bodystyles['allcaps'] ? 'uppercase' : 'none') . ';';
     foreach (['action' => $actionstyles, 'label' => $labelstyles] as $target => $styles) {
         $previewstyle .= ' --local-course-banner-builder-slideshow-' . $target . '-font-weight: ' .
             ($styles['bold'] ? '700' : '400') . ';';
@@ -2550,6 +2576,8 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
         $previewstyle .= ' --local-course-banner-builder-slideshow-' . $target . '-text-decoration: ' .
             (($styles['underline'] || $styles['strike']) ?
                 trim(($styles['underline'] ? 'underline ' : '') . ($styles['strike'] ? 'line-through' : '')) : 'none') . ';';
+        $previewstyle .= ' --local-course-banner-builder-slideshow-' . $target . '-text-transform: ' .
+            ($styles['allcaps'] ? 'uppercase' : 'none') . ';';
     }
     $previewstyle .= ' --local-course-banner-builder-slideshow-title-x: ' . number_format($titlex, 3, '.', '') . '%;';
     $previewstyle .= ' --local-course-banner-builder-slideshow-title-y: ' . number_format($titley, 3, '.', '') . '%;';
@@ -2616,6 +2644,7 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
                 'italic' => manager::SLIDESHOW_DEFAULT_TITLE_ITALIC,
                 'underline' => manager::SLIDESHOW_DEFAULT_TITLE_UNDERLINE,
                 'strike' => manager::SLIDESHOW_DEFAULT_TITLE_STRIKE,
+                'allcaps' => false,
             ];
         } else if ($target === 'body') {
             $defaults = [
@@ -2623,6 +2652,15 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
                 'italic' => manager::SLIDESHOW_DEFAULT_BODY_ITALIC,
                 'underline' => manager::SLIDESHOW_DEFAULT_BODY_UNDERLINE,
                 'strike' => manager::SLIDESHOW_DEFAULT_BODY_STRIKE,
+                'allcaps' => false,
+            ];
+        } else if ($target === 'label') {
+            $defaults = [
+                'bold' => true,
+                'italic' => false,
+                'underline' => false,
+                'strike' => false,
+                'allcaps' => true,
             ];
         } else {
             $defaults = [
@@ -2630,6 +2668,7 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
                 'italic' => false,
                 'underline' => false,
                 'strike' => false,
+                'allcaps' => false,
             ];
         }
         $icons = [
@@ -2637,12 +2676,14 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
             'italic' => 'fa-italic',
             'underline' => 'fa-underline',
             'strike' => 'fa-strikethrough',
+            'allcaps' => 'fa-font',
         ];
         $labels = [
             'bold' => get_string('slideshowtextbold', 'local_course_banner_builder'),
             'italic' => get_string('slideshowtextitalic', 'local_course_banner_builder'),
             'underline' => get_string('slideshowtextunderline', 'local_course_banner_builder'),
             'strike' => get_string('slideshowtextstrike', 'local_course_banner_builder'),
+            'allcaps' => get_string('slideshowtextallcaps', 'local_course_banner_builder'),
         ];
         $html = html_writer::start_div('btn-group local-course-banner-builder-slideshow-text-style-buttons', [
             'role' => 'group',
@@ -2683,12 +2724,14 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
             'italic' => 'fa-italic',
             'underline' => 'fa-underline',
             'strike' => 'fa-strikethrough',
+            'allcaps' => 'fa-font',
         ];
         $labels = [
             'bold' => get_string('slideshowtextbold', 'local_course_banner_builder'),
             'italic' => get_string('slideshowtextitalic', 'local_course_banner_builder'),
             'underline' => get_string('slideshowtextunderline', 'local_course_banner_builder'),
             'strike' => get_string('slideshowtextstrike', 'local_course_banner_builder'),
+            'allcaps' => get_string('slideshowtextallcaps', 'local_course_banner_builder'),
         ];
         $html = html_writer::start_div('btn-group local-course-banner-builder-slideshow-text-style-buttons', [
             'role' => 'group',
@@ -3075,6 +3118,12 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
             get_string('slideshowtextstrike', 'local_course_banner_builder'),
             'local-course-banner-builder-toggle-selected-slideshow-text-style',
             ['data-slideshow-text-style' => 'strike']
+        ) .
+        $previewtoolbarbutton(
+            'fa-font',
+            get_string('slideshowtextallcaps', 'local_course_banner_builder'),
+            'local-course-banner-builder-toggle-selected-slideshow-text-style',
+            ['data-slideshow-text-style' => 'allcaps']
         ) .
         $previewtoolbarbutton(
             'fa-align-left',

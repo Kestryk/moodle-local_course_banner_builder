@@ -46,6 +46,7 @@ class manage_banner_form extends \moodleform {
         $borderconflictmessageinline = (string)($this->_customdata['borderconflictmessageinline'] ?? get_string('sourcealreadyhasborderinline', 'local_course_banner_builder'));
         $sourcehasborderlayer = !empty($this->_customdata['sourcehasborderlayer']);
         $currentisborderlayer = !empty($this->_customdata['currentisborderlayer']);
+        $activechildborderlayers = (int)($this->_customdata['activechildborderlayers'] ?? 0);
         $formmode = (string)($this->_customdata['formmode'] ?? 'create');
         $showfilemanager = !in_array($formmode, ['editborder', 'editimage'], true);
         $showadvanced = $formmode !== 'editborder';
@@ -70,6 +71,11 @@ class manage_banner_form extends \moodleform {
 
         $mform->addElement('hidden', 'sourcehasborderlayer', $sourcehasborderlayer ? 1 : 0, ['id' => 'id_sourcehasborderlayer']);
         $mform->setType('sourcehasborderlayer', PARAM_INT);
+
+        $mform->addElement('hidden', 'activechildborderlayers', $activechildborderlayers, [
+            'id' => 'id_activechildborderlayers',
+        ]);
+        $mform->setType('activechildborderlayers', PARAM_INT);
 
         $mform->addElement('hidden', 'currentisborderlayer', 0, ['id' => 'id_currentisborderlayer']);
         $mform->setType('currentisborderlayer', PARAM_INT);

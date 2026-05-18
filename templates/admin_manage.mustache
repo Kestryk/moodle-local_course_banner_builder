@@ -200,6 +200,20 @@
                                                 <i class="fa fa-level-up" aria-hidden="true"></i>
                                             </span>
                                         {{/isdynamic}}
+                                        {{#iscropped}}
+                                            <span class="local-course-banner-builder-thumb-crop-badge"
+                                                role="button"
+                                                data-container="body"
+                                                data-toggle="popover"
+                                                data-placement="right"
+                                                data-content="{{croppedpopovercontent}}"
+                                                data-html="true"
+                                                data-trigger="hover"
+                                                tabindex="0"
+                                                aria-label="{{croppedlabel}}">
+                                                <i class="fa fa-crop" aria-hidden="true"></i>
+                                            </span>
+                                        {{/iscropped}}
                                     </div>
                                 {{/thumbnails}}
                                 {{#hasmorethumbnails}}

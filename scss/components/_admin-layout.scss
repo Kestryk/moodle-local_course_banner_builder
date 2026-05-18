@@ -73,6 +73,7 @@
 }
 
 .local-course-banner-builder-admin-preview {
+    position: relative;
     max-width: 160px;
     margin-left: auto;
     margin-right: auto;
@@ -124,6 +125,31 @@
     font-weight: 700;
     cursor: help;
     pointer-events: auto;
+}
+
+.local-course-banner-builder-thumb-crop-badge {
+    position: absolute;
+    top: 0.25rem;
+    right: 0.25rem;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    border: 1px solid rgba(203, 213, 225, 0.58);
+    border-radius: 999px;
+    background: rgba(248, 250, 252, 0.62);
+    color: #94a3b8;
+    box-shadow: 0 0.08rem 0.22rem rgba(15, 23, 42, 0.08);
+    cursor: help;
+    opacity: 0.72;
+    pointer-events: auto;
+}
+
+.local-course-banner-builder-thumb-crop-badge .fa {
+    margin: 0;
+    font-size: 0.78rem;
 }
 
 #fitem_id_borderenabled .felement,
@@ -928,6 +954,8 @@
     position: static;
     flex: 0 0 auto;
     z-index: 18;
+    display: flex;
+    justify-content: flex-end;
     margin: 0;
     padding: 0.75rem 1.65rem;
     background: rgba(255, 255, 255, 0.98);
@@ -1129,6 +1157,28 @@
 
 .modal #fitem_id_borderstyle .custom-select {
     margin-top: 0 !important;
+}
+
+.local-course-banner-builder-visually-hidden-select {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: -1px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+.local-course-banner-builder-border-style-choice {
+    display: inline-flex;
+    max-width: 100%;
+}
+
+.local-course-banner-builder-border-style-choice .btn {
+    min-width: 5.5rem;
+    font-weight: 600;
 }
 
 .local-course-banner-builder-banner-preview-panel::before {
