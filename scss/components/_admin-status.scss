@@ -6,6 +6,12 @@
     gap: 0.5rem;
     align-items: center;
 
+    form {
+        display: inline-flex;
+        align-items: center;
+        margin: 0;
+    }
+
     .btn {
         display: inline-flex;
         align-items: center;

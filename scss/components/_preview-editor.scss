@@ -602,40 +602,11 @@
 .local-course-banner-builder-admin--native tr.is-current-source > td {
     position: relative;
     background: var(--local-course-banner-chain-bg, rgba(15, 108, 191, 0.08));
-}
-
-.local-course-banner-builder-admin--native tr.is-current-source > td:nth-child(n+2):nth-last-child(n+2) {
-    background: var(--local-course-banner-chain-bg, rgba(15, 108, 191, 0.08));
-}
-
-.local-course-banner-builder-admin--native tr.is-current-source > td:nth-child(n+2):nth-last-child(n+2)::before,
-.local-course-banner-builder-admin--native tr.is-current-source > td:nth-child(n+2):nth-last-child(n+2)::after {
-    content: "";
-    position: absolute;
-    right: 0;
-    left: 0;
-    height: 2px;
-    background: var(--local-course-banner-chain-border, #0f6cbf);
-    pointer-events: none;
-    z-index: 1;
-}
-
-.local-course-banner-builder-admin--native tr.is-current-source > td:nth-child(n+2):nth-last-child(n+2)::before {
-    top: 0;
-}
-
-.local-course-banner-builder-admin--native tr.is-current-source > td:nth-child(n+2):nth-last-child(n+2)::after {
-    bottom: 0;
-}
-
-.local-course-banner-builder-admin--native tr.is-current-source > td:nth-child(2)::before,
-.local-course-banner-builder-admin--native tr.is-current-source > td:nth-child(2)::after {
-    left: -0.65rem;
-}
-
-.local-course-banner-builder-admin--native tr.is-current-source > td:nth-last-child(2)::before,
-.local-course-banner-builder-admin--native tr.is-current-source > td:nth-last-child(2)::after {
-    right: -0.65rem;
+    border-top: 0;
+    border-bottom: 0;
+    box-shadow:
+        inset 0 2px 0 var(--local-course-banner-chain-border, #0f6cbf),
+        inset 0 -2px 0 var(--local-course-banner-chain-border, #0f6cbf);
 }
 
 .local-course-banner-builder-current-source-badge {

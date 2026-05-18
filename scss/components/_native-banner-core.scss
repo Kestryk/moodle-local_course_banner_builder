@@ -63,6 +63,7 @@
     column-gap: 0.75rem;
     align-items: start;
     min-width: 0;
+    min-height: 100%;
 }
 
 .local-course-banner-builder-title-preview-panel {
@@ -199,19 +200,24 @@
     padding: 0.75rem 0 1rem;
 }
 
+.local-course-banner-builder-title-panel-section .form-label {
+    display: block;
+    margin-bottom: 0.35rem;
+}
+
 .local-course-banner-builder-title-side-actions.local-course-banner-builder-modal-preview-action-list {
     grid-column: 2;
-    grid-row: 1 / span 4;
+    grid-row: 1 / 4;
     align-self: flex-start;
     align-content: start;
     justify-self: auto;
     width: 100%;
-    max-height: calc(100vh - 9.5rem);
+    max-height: calc(100vh - 14.5rem);
     min-width: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: visible;
     padding-right: 0.15rem;
-    scrollbar-width: thin;
+    padding-bottom: 3.75rem;
+    z-index: 12;
 }
 
 .local-course-banner-builder-title-side-actions.local-course-banner-builder-modal-preview-action-list
@@ -222,9 +228,10 @@
 .local-course-banner-builder-title-side-panel {
     grid-template-columns: minmax(0, 1fr);
     gap: 0.6rem;
-    max-height: 34rem;
+    max-height: calc(100vh - 18rem);
     box-sizing: border-box;
     min-width: 0;
+    overflow-y: auto;
     overflow-x: hidden;
     border-left: 4px solid var(--bs-primary, #0f6cbf);
 }
@@ -249,19 +256,19 @@
 .local-course-banner-builder-title-submit-actions {
     grid-column: 1 / -1;
     position: sticky;
-    bottom: 0;
-    z-index: 30;
+    bottom: -1.2rem;
+    z-index: 80;
     display: flex;
     align-items: center;
     gap: 0.5rem;
     justify-content: flex-end;
-    min-height: 3.15rem;
+    min-height: 3rem;
     margin-top: 0.65rem;
-    margin-right: 0.85rem;
-    padding: 0.45rem 0.35rem;
+    margin-right: 0;
+    padding: 0.55rem 1.65rem 0.05rem;
     border-top: 1px solid var(--bs-border-color, #dee2e6);
     background: var(--bs-body-bg, #fff);
-    box-shadow: 0 -0.6rem 0.9rem var(--bs-body-bg, #fff);
+    box-shadow: none;
 }
 
 .local-course-banner-builder-title-footer-button {

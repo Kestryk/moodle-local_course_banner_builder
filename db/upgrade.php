@@ -579,5 +579,133 @@ function xmldb_local_course_banner_builder_upgrade(int $oldversion): bool {
         upgrade_plugin_savepoint(true, 2026042409, 'local', 'course_banner_builder');
     }
 
+    if ($oldversion < 2026042410) {
+        $table = new xmldb_table('local_course_banner_elements');
+        $fields = [
+            new xmldb_field(
+                'imagecropenabled',
+                XMLDB_TYPE_INTEGER,
+                '1',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '0',
+                'imageopacity'
+            ),
+            new xmldb_field(
+                'imagecropleftpercent',
+                XMLDB_TYPE_NUMBER,
+                '10, 2',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '0',
+                'imagecropenabled'
+            ),
+            new xmldb_field(
+                'imagecroptoppercent',
+                XMLDB_TYPE_NUMBER,
+                '10, 2',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '0',
+                'imagecropleftpercent'
+            ),
+            new xmldb_field(
+                'imagecropwidthpercent',
+                XMLDB_TYPE_NUMBER,
+                '10, 2',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '100',
+                'imagecroptoppercent'
+            ),
+            new xmldb_field(
+                'imagecropheightpercent',
+                XMLDB_TYPE_NUMBER,
+                '10, 2',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '100',
+                'imagecropwidthpercent'
+            ),
+        ];
+
+        foreach ($fields as $field) {
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+
+        upgrade_plugin_savepoint(true, 2026042410, 'local', 'course_banner_builder');
+    }
+
+    if ($oldversion < 2026042411) {
+        $table = new xmldb_table('local_course_banner_elements');
+        $fields = [
+            new xmldb_field(
+                'imagecropenabled',
+                XMLDB_TYPE_INTEGER,
+                '1',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '0',
+                'imageopacity'
+            ),
+            new xmldb_field(
+                'imagecropleftpercent',
+                XMLDB_TYPE_NUMBER,
+                '10, 2',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '0',
+                'imagecropenabled'
+            ),
+            new xmldb_field(
+                'imagecroptoppercent',
+                XMLDB_TYPE_NUMBER,
+                '10, 2',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '0',
+                'imagecropleftpercent'
+            ),
+            new xmldb_field(
+                'imagecropwidthpercent',
+                XMLDB_TYPE_NUMBER,
+                '10, 2',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '100',
+                'imagecroptoppercent'
+            ),
+            new xmldb_field(
+                'imagecropheightpercent',
+                XMLDB_TYPE_NUMBER,
+                '10, 2',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '100',
+                'imagecropwidthpercent'
+            ),
+        ];
+
+        foreach ($fields as $field) {
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+
+        upgrade_plugin_savepoint(true, 2026042411, 'local', 'course_banner_builder');
+    }
+
     return true;
 }

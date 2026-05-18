@@ -51,10 +51,8 @@
     width: 18rem;
     min-width: 0;
     max-height: none;
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: visible;
     padding-right: 0.15rem;
-    scrollbar-width: thin;
 }
 
 .modal[id^="local-course-banner-builder-"] {
