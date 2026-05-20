@@ -1226,6 +1226,14 @@ class hook_callbacks {
                 continue;
             }
 
+            if (($layer['type'] ?? '') === 'overlay') {
+                $content .= \html_writer::div('', 'local-course-banner-builder-banner-overlay-layer', [
+                    'aria-hidden' => 'true',
+                    'style' => trim((string)($layer['wrapperstyle'] ?? '') . ' z-index: ' . (int)($layer['zindex'] ?? 70) . ';'),
+                ]);
+                continue;
+            }
+
             if (($layer['type'] ?? '') !== 'image' || empty($layer['url'])) {
                 continue;
             }

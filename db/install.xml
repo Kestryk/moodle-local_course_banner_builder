@@ -40,6 +40,14 @@
         <FIELD NAME="borderdashlength" TYPE="number" LENGTH="10" DECIMALS="2" NOTNULL="true" SEQUENCE="false" DEFAULT="24"/>
         <FIELD NAME="bordersides" TYPE="char" LENGTH="32" NOTNULL="true" SEQUENCE="false" DEFAULT="top,right,bottom,left"/>
         <FIELD NAME="borderinnerrounded" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
+        <FIELD NAME="overlayenabled" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
+        <FIELD NAME="overlaytarget" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" DEFAULT="both"/>
+        <FIELD NAME="overlaybannercolor" TYPE="char" LENGTH="32" NOTNULL="true" SEQUENCE="false" DEFAULT="#000000"/>
+        <FIELD NAME="overlaybanneropacity" TYPE="number" LENGTH="10" DECIMALS="2" NOTNULL="true" SEQUENCE="false" DEFAULT="25"/>
+        <FIELD NAME="overlayslideshowcolor" TYPE="char" LENGTH="32" NOTNULL="true" SEQUENCE="false" DEFAULT="#000000"/>
+        <FIELD NAME="overlayslideshowopacity" TYPE="number" LENGTH="10" DECIMALS="2" NOTNULL="true" SEQUENCE="false" DEFAULT="38"/>
+        <FIELD NAME="overlaytitleabove" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="1"/>
+        <FIELD NAME="overlayborderabove" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="1"/>
         <FIELD NAME="fileitemid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" DEFAULT="0" COMMENT="File API item id"/>
         <FIELD NAME="isenabled" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="1"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>

@@ -953,6 +953,37 @@ function local_course_banner_builder_render_source_visual_editor_border_layer(ar
 }
 
 /**
+ * Render one source visual editor overlay layer.
+ *
+ * @param array $layer
+ * @return string
+ */
+function local_course_banner_builder_render_source_visual_editor_overlay_layer(array $layer): string {
+    $isinherited = !empty($layer['isinherited']);
+    $ishiddeninherited = !empty($layer['hiddeninherited']);
+    $classes = 'local-course-banner-builder-banner-overlay-layer local-course-banner-builder-source-preview-overlay' .
+        (!empty($layer['enabled']) ? '' : ' local-course-banner-builder-source-preview-border--disabled') .
+        ($isinherited ? ' local-course-banner-builder-source-preview-border--inherited' : '') .
+        ($ishiddeninherited ? ' local-course-banner-builder-source-preview-border--hidden-inherited' : '');
+    $attrs = [
+        'class' => $classes,
+        'style' => trim((string)($layer['wrapperstyle'] ?? '') . ' z-index: ' . (int)($layer['zindex'] ?? 1) . ';'),
+        'data-source-preview-overlay' => '1',
+        'data-source-preview-overlay-id' => (string)($layer['id'] ?? 0),
+        'data-source-preview-inherited' => $isinherited ? '1' : '0',
+        'data-preview-enabled' => !empty($layer['enabled']) ? '1' : '0',
+        'data-preview-sortorder' => (string)($layer['sortorder'] ?? 0),
+        'data-preview-zindex' => (string)($layer['zindex'] ?? 1),
+        'aria-hidden' => 'true',
+    ];
+    if ($ishiddeninherited) {
+        $attrs['hidden'] = 'hidden';
+    }
+
+    return html_writer::tag('div', '', $attrs);
+}
+
+/**
  * Render the selected source visual editor.
  *
  * @param stdClass $source
@@ -1051,6 +1082,10 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
         if (($layer['type'] ?? '') === 'border') {
             $haspreviewborder = true;
             $layershtml .= local_course_banner_builder_render_source_visual_editor_border_layer($layer);
+            continue;
+        }
+        if (($layer['type'] ?? '') === 'overlay') {
+            $layershtml .= local_course_banner_builder_render_source_visual_editor_overlay_layer($layer);
             continue;
         }
         $layershtml .= local_course_banner_builder_render_source_visual_editor_image_layer($layer);
@@ -1493,6 +1528,7 @@ $PAGE->requires->strings_for_js([
     'borderstyle',
     'bordersides:all',
     'childborderlayersdisableconfirm',
+    'childoverlaylayersdisableconfirm',
     'customsizekeepaspect',
     'cropimage',
     'deleteselectedlayer',
@@ -1515,6 +1551,8 @@ $PAGE->requires->strings_for_js([
     'keepaspectpreviewimage',
     'layertype:border',
     'layertype:image',
+    'layertype:overlay',
+    'layeroverlay',
     'modalbodynotfound',
     'no',
     'nextimages',
@@ -1894,13 +1932,17 @@ if ($elementid) {
 }
 
 $currentisborderlayer = false;
+$currentisoverlaylayer = false;
 if ($elementid) {
     $currentelement = \local_course_banner_builder\manager::get_banner_element($elementid);
     $currentisborderlayer = $currentelement &&
         !\local_course_banner_builder\manager::get_banner_image_file($currentelement) &&
         !empty($currentelement->borderenabled);
+    $currentisoverlaylayer = $currentelement &&
+        !\local_course_banner_builder\manager::get_banner_image_file($currentelement) &&
+        !empty($currentelement->overlayenabled);
 }
-$formmode = $elementid ? ($currentisborderlayer ? 'editborder' : 'editimage') : 'create';
+$formmode = $elementid ? ($currentisborderlayer ? 'editborder' : ($currentisoverlaylayer ? 'editoverlay' : 'editimage')) : 'create';
 $previewdefinition = $selectedsource
     ? \local_course_banner_builder\manager::export_modal_preview_definition($selectedsource, $elementid)
     : [];
@@ -1912,6 +1954,15 @@ $borderconflictstate = $selectedsource
     : ['blocked' => false, 'messagekey' => 'sourcealreadyhasborder', 'inlinekey' => 'sourcealreadyhasborderinline'];
 $activechildborderlayers = $selectedsource
     ? \local_course_banner_builder\manager::count_active_child_source_border_layers($selectedsource)
+    : 0;
+$overlayconflictstate = $selectedsource
+    ? \local_course_banner_builder\manager::get_source_overlay_conflict_state(
+        $selectedsource,
+        $formmode === 'create' ? 0 : $elementid
+    )
+    : ['blocked' => false, 'messagekey' => 'sourcealreadyhasoverlay', 'inlinekey' => 'sourcealreadyhasoverlayinline'];
+$activechildoverlaylayers = $selectedsource
+    ? \local_course_banner_builder\manager::count_active_child_source_overlay_layers($selectedsource)
     : 0;
 
 if ($updatelayerinline && confirm_sesskey()) {
@@ -2001,10 +2052,15 @@ $form = new \local_course_banner_builder\form\manage_banner_form(null, [
     'sourcekey' => $selectedsourcekey,
     'elementid' => $elementid,
     'sourcehasborderlayer' => !empty($borderconflictstate['blocked']) ? 1 : 0,
+    'sourcehasoverlaylayer' => !empty($overlayconflictstate['blocked']) ? 1 : 0,
     'borderconflictmessage' => get_string((string)($borderconflictstate['messagekey'] ?? 'sourcealreadyhasborder'), 'local_course_banner_builder'),
     'borderconflictmessageinline' => get_string((string)($borderconflictstate['inlinekey'] ?? 'sourcealreadyhasborderinline'), 'local_course_banner_builder'),
+    'overlayconflictmessage' => get_string((string)($overlayconflictstate['messagekey'] ?? 'sourcealreadyhasoverlay'), 'local_course_banner_builder'),
+    'overlayconflictmessageinline' => get_string((string)($overlayconflictstate['inlinekey'] ?? 'sourcealreadyhasoverlayinline'), 'local_course_banner_builder'),
     'activechildborderlayers' => $activechildborderlayers,
+    'activechildoverlaylayers' => $activechildoverlaylayers,
     'currentisborderlayer' => $currentisborderlayer,
+    'currentisoverlaylayer' => $currentisoverlaylayer,
     'formmode' => $formmode,
     'filemanageroptions' => \local_course_banner_builder\manager::get_filemanager_options(empty($elementid)),
     'uploadguidance' => \local_course_banner_builder\manager::get_upload_guidance(),
@@ -2087,14 +2143,21 @@ if ($data = $form->get_data()) {
     }
     \local_course_banner_builder\manager::save_category_banner($data);
     $disabledborderlayers = (int)($data->disabledchildborderlayers ?? 0);
-    $redirectmessage = $disabledborderlayers > 0
-        ? get_string('childborderlayersdisablednotice', 'local_course_banner_builder', $disabledborderlayers)
-        : get_string('changessaved');
+    $disabledoverlaylayers = (int)($data->disabledchildoverlaylayers ?? 0);
+    $redirectmessage = get_string('changessaved');
+    $redirecttype = \core\output\notification::NOTIFY_SUCCESS;
+    if ($disabledborderlayers > 0) {
+        $redirectmessage = get_string('childborderlayersdisablednotice', 'local_course_banner_builder', $disabledborderlayers);
+        $redirecttype = \core\output\notification::NOTIFY_WARNING;
+    } else if ($disabledoverlaylayers > 0) {
+        $redirectmessage = get_string('childoverlaylayersdisablednotice', 'local_course_banner_builder', $disabledoverlaylayers);
+        $redirecttype = \core\output\notification::NOTIFY_WARNING;
+    }
     redirect(
         new moodle_url($adminpagepath, $issitebanneradmin ? [] : ['sourcekey' => $data->sourcekey]),
         $redirectmessage,
         null,
-        $disabledborderlayers > 0 ? \core\output\notification::NOTIFY_WARNING : \core\output\notification::NOTIFY_SUCCESS
+        $redirecttype
     );
 }
 
@@ -3768,6 +3831,11 @@ function localCourseBannerBuilderCreateLayerTypeChoice(layerForm, borderToggle) 
         'fa-border-all',
         'border'
     );
+    var overlayButton = localCourseBannerBuilderCreateLayerTypeButton(
+        localCourseBannerBuilderGetJsString('layertype:overlay', 'Overlay'),
+        'fa-adjust',
+        'overlay'
+    );
     var warning = document.createElement('span');
     item.id = 'fitem_id_layertypechoice';
     item.className = 'mb-3 row fitem femptylabel local-course-banner-builder-layer-type-choice-fallback';
@@ -3782,12 +3850,39 @@ function localCourseBannerBuilderCreateLayerTypeChoice(layerForm, borderToggle) 
         button.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            var nextIsBorder = button.getAttribute('data-layer-type-option') === 'border';
+            var nextType = button.getAttribute('data-layer-type-option');
+            var overlayToggle = layerForm.querySelector('[data-overlay-toggle=\"1\"][type=\"checkbox\"]');
+            var nextIsBorder = nextType === 'border';
+            var nextIsOverlay = nextType === 'overlay';
             if (nextIsBorder && borderToggle.disabled) {
                 return;
             }
+            if (nextIsOverlay && overlayToggle && overlayToggle.disabled) {
+                return;
+            }
             borderToggle.checked = nextIsBorder;
+            if (overlayToggle) {
+                overlayToggle.checked = nextIsOverlay;
+                overlayToggle.dispatchEvent(new Event('change', {bubbles: true}));
+            }
             borderToggle.dispatchEvent(new Event('change', {bubbles: true}));
+            localCourseBannerBuilderSyncLayerTypeChoice(layerForm);
+        });
+        button.dataset.layerTypeBound = '1';
+        group.appendChild(button);
+    });
+    [overlayButton].forEach(function(button) {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var overlayToggle = layerForm.querySelector('[data-overlay-toggle=\"1\"][type=\"checkbox\"]');
+            if (!overlayToggle || overlayToggle.disabled) {
+                return;
+            }
+            borderToggle.checked = false;
+            overlayToggle.checked = true;
+            borderToggle.dispatchEvent(new Event('change', {bubbles: true}));
+            overlayToggle.dispatchEvent(new Event('change', {bubbles: true}));
             localCourseBannerBuilderSyncLayerTypeChoice(layerForm);
         });
         button.dataset.layerTypeBound = '1';
@@ -3812,9 +3907,16 @@ function localCourseBannerBuilderIsEditBorderForm(layerForm) {
         layerForm.getAttribute('data-edit-border-locked') === '1'));
 }
 
+function localCourseBannerBuilderIsEditOverlayForm(layerForm) {
+    var currentIsOverlayLayerInput = layerForm ? layerForm.querySelector('#id_currentisoverlaylayer') : null;
+    return !!(localCourseBannerBuilderIsEditLayerForm(layerForm) &&
+        currentIsOverlayLayerInput && parseInt(currentIsOverlayLayerInput.value || '0', 10) > 0);
+}
+
 function localCourseBannerBuilderIsEditImageForm(layerForm) {
     return !!(localCourseBannerBuilderIsEditLayerForm(layerForm) &&
-        !localCourseBannerBuilderIsEditBorderForm(layerForm));
+        !localCourseBannerBuilderIsEditBorderForm(layerForm) &&
+        !localCourseBannerBuilderIsEditOverlayForm(layerForm));
 }
 
 function localCourseBannerBuilderEnsureLayerTypeChoice(layerForm, previewItem) {
@@ -3973,6 +4075,7 @@ function localCourseBannerBuilderSyncLayerTypeChoice(layerForm) {
         return;
     }
     var borderToggle = layerForm.querySelector('[data-border-toggle=\"1\"][type=\"checkbox\"]');
+    var overlayToggle = layerForm.querySelector('[data-overlay-toggle=\"1\"][type=\"checkbox\"]');
     var layerTypeToggle = layerForm.querySelector('[data-layer-type-toggle=\"1\"]');
     if (!borderToggle || !layerTypeToggle) {
         return;
@@ -3982,7 +4085,9 @@ function localCourseBannerBuilderSyncLayerTypeChoice(layerForm) {
         borderToggleItem.hidden = true;
         borderToggleItem.setAttribute('aria-hidden', 'true');
     }
-    var selectedType = borderToggle.checked ? 'border' : 'image';
+    var overlayChecked = !!(overlayToggle &&
+        (overlayToggle.type === 'checkbox' ? overlayToggle.checked : overlayToggle.value === '1'));
+    var selectedType = overlayChecked ? 'overlay' : (borderToggle.checked ? 'border' : 'image');
     Array.prototype.slice.call(layerTypeToggle.querySelectorAll('[data-layer-type-option]')).forEach(function(button) {
         var type = button.getAttribute('data-layer-type-option');
         var active = type === selectedType;
@@ -3993,6 +4098,9 @@ function localCourseBannerBuilderSyncLayerTypeChoice(layerForm) {
         if (type === 'border') {
             button.disabled = !!borderToggle.disabled;
             button.setAttribute('aria-disabled', borderToggle.disabled ? 'true' : 'false');
+        } else if (type === 'overlay' && overlayToggle) {
+            button.disabled = !!overlayToggle.disabled;
+            button.setAttribute('aria-disabled', overlayToggle.disabled ? 'true' : 'false');
         }
     });
     var warning = layerForm.querySelector('[data-layer-type-border-warning=\"1\"]');
@@ -4015,20 +4123,21 @@ function localCourseBannerBuilderSyncLayerTypeChoice(layerForm) {
     var imageSection = layerForm.querySelector('[data-image-options-section=\"1\"]');
     if (imageSection) {
         var imageOptionsButton = layerForm.querySelector('[data-modal-preview-side-panel-target=\"imageoptions\"]');
+        var isImageType = selectedType === 'image';
         if (imageSection.getAttribute('data-modal-preview-side-panel') === '1') {
-            if (borderToggle.checked) {
+            if (!isImageType) {
                 imageSection.hidden = true;
                 imageSection.classList.add('is-collapsed');
             }
         } else {
-            imageSection.hidden = borderToggle.checked;
+            imageSection.hidden = !isImageType;
         }
         if (imageOptionsButton) {
-            imageOptionsButton.hidden = borderToggle.checked;
+            imageOptionsButton.hidden = !isImageType;
             imageOptionsButton.disabled = false;
             imageOptionsButton.classList.remove('disabled');
             imageOptionsButton.setAttribute('aria-disabled', 'false');
-            if (borderToggle.checked) {
+            if (!isImageType) {
                 imageOptionsButton.classList.remove('btn-primary', 'active');
                 imageOptionsButton.classList.add('btn-outline-secondary');
                 imageOptionsButton.setAttribute('aria-expanded', 'false');
@@ -4047,12 +4156,16 @@ function localCourseBannerBuilderSyncLayerInputModes(scope) {
     var existingBorderNoteItem = existingBorderNote ? existingBorderNote.closest('.fitem, .form-group, .mb-3') : null;
     var existingBorderInlineNote = layerForm ? layerForm.querySelector('[data-border-existing-note-inline=\"1\"]') : null;
     var borderToggle = layerForm ? layerForm.querySelector('[data-border-toggle=\"1\"][type=\"checkbox\"]') : null;
+    var overlayToggle = layerForm ? layerForm.querySelector('[data-overlay-toggle=\"1\"]') : null;
     var borderSection = layerForm ? layerForm.querySelector('[data-border-section=\"1\"]') : null;
+    var overlaySection = layerForm ? layerForm.querySelector('[data-overlay-section=\"1\"]') : null;
     var borderSummary = borderSection ? borderSection.querySelector('summary') : null;
     var advancedSection = layerForm ? layerForm.querySelector('[data-layer-advanced-section=\"1\"]') : null;
     var hasExistingImageInput = layerForm ? layerForm.querySelector('#id_hasexistingimage') : null;
     var currentIsBorderLayerInput = layerForm ? layerForm.querySelector('#id_currentisborderlayer') : null;
+    var currentIsOverlayLayerInput = layerForm ? layerForm.querySelector('#id_currentisoverlaylayer') : null;
     var sourceHasBorderLayerInput = layerForm ? layerForm.querySelector('#id_sourcehasborderlayer') : null;
+    var sourceHasOverlayLayerInput = layerForm ? layerForm.querySelector('#id_sourcehasoverlaylayer') : null;
     var elementIdInput = layerForm ? layerForm.querySelector('#id_elementid') : null;
     if (!filemanager || !borderToggle || !borderSection) {
         return;
@@ -4061,24 +4174,54 @@ function localCourseBannerBuilderSyncLayerInputModes(scope) {
     var hasFiles = localCourseBannerBuilderGetVisibleDraftFileItems(layerForm).length > 0;
     var hasExistingImage = !!(hasExistingImageInput && parseInt(hasExistingImageInput.value || '0', 10) > 0);
     var currentIsBorderLayer = !!(currentIsBorderLayerInput && parseInt(currentIsBorderLayerInput.value || '0', 10) > 0);
+    var currentIsOverlayLayer = !!(currentIsOverlayLayerInput && parseInt(currentIsOverlayLayerInput.value || '0', 10) > 0);
     var sourceHasBorderLayer = !!(sourceHasBorderLayerInput && parseInt(sourceHasBorderLayerInput.value || '0', 10) > 0);
+    var sourceHasOverlayLayer = !!(sourceHasOverlayLayerInput && parseInt(sourceHasOverlayLayerInput.value || '0', 10) > 0);
     var createBorderLocked = !!(borderSection && parseInt(borderSection.getAttribute('data-create-border-locked') || '0', 10) > 0);
+    var createOverlayLocked = !!(overlaySection && parseInt(overlaySection.getAttribute('data-create-overlay-locked') || '0', 10) > 0);
     var editBorderLocked = !!(layerForm && layerForm.getAttribute('data-edit-border-locked') === '1');
     var hasExistingElement = !!(elementIdInput && parseInt(elementIdInput.value || '0', 10) > 0);
     var hasImage = hasFiles || hasExistingImage;
-    var isBorderOnly = borderToggle.checked && !hasImage;
+    var overlayChecked = !!(overlayToggle &&
+        (overlayToggle.type === 'checkbox' ? overlayToggle.checked : overlayToggle.value === '1'));
+    var isOverlayOnly = !!(overlayChecked && !hasImage);
+    var isBorderOnly = borderToggle.checked && !hasImage && !isOverlayOnly;
     var isExistingBorderLayer = hasExistingElement && (currentIsBorderLayer || editBorderLocked);
+    var isExistingOverlayLayer = hasExistingElement && currentIsOverlayLayer;
     var sourceBlocksNewBorder = (sourceHasBorderLayer || createBorderLocked) && !isExistingBorderLayer;
+    var sourceBlocksNewOverlay = (sourceHasOverlayLayer || createOverlayLocked) && !isExistingOverlayLayer;
     localCourseBannerBuilderPlaceExistingBorderNote(layerForm, existingBorderNote, borderToggle);
 
-    localCourseBannerBuilderSetDisabledState(filemanager, isBorderOnly, '[data-banner-filemanager=\"1\"]');
-    localCourseBannerBuilderSetDisabledState(borderSection, hasImage, '[data-border-toggle=\"1\"]');
-    localCourseBannerBuilderSetDisabledState(advancedSection, borderToggle.checked, '');
+    localCourseBannerBuilderSetDisabledState(filemanager, isBorderOnly || isOverlayOnly, '[data-banner-filemanager=\"1\"]');
+    localCourseBannerBuilderSetDisabledState(borderSection, hasImage || isOverlayOnly, '[data-border-toggle=\"1\"]');
+    localCourseBannerBuilderSetDisabledState(overlaySection, hasImage || isBorderOnly, '[data-overlay-toggle=\"1\"]');
+    localCourseBannerBuilderSetDisabledState(advancedSection, borderToggle.checked || isOverlayOnly, '');
     if (sourceBlocksNewBorder && borderToggle.checked) {
         borderToggle.checked = false;
     }
+    if (overlayToggle && sourceBlocksNewOverlay && overlayChecked) {
+        overlayToggle.checked = false;
+        if (overlayToggle.type !== 'checkbox') {
+            overlayToggle.value = '0';
+        }
+        isOverlayOnly = false;
+    }
     borderToggle.disabled = hasImage || isExistingBorderLayer || sourceBlocksNewBorder;
     borderToggle.setAttribute('aria-disabled', (hasImage || isExistingBorderLayer || sourceBlocksNewBorder) ? 'true' : 'false');
+    if (overlayToggle && overlayToggle.type === 'checkbox') {
+        overlayToggle.disabled = hasImage || isExistingOverlayLayer || sourceBlocksNewOverlay;
+        overlayToggle.setAttribute(
+            'aria-disabled',
+            (hasImage || isExistingOverlayLayer || sourceBlocksNewOverlay) ? 'true' : 'false'
+        );
+    }
+    if (isExistingOverlayLayer && overlayToggle) {
+        if (overlayToggle.type === 'checkbox') {
+            overlayToggle.checked = true;
+        } else {
+            overlayToggle.value = '1';
+        }
+    }
     if (isExistingBorderLayer) {
         borderToggle.checked = true;
         var borderToggleWrapper = borderToggle.closest('.form-check, .fitem, .felement');
@@ -4087,7 +4230,7 @@ function localCourseBannerBuilderSyncLayerInputModes(scope) {
         }
     }
     if (filemanagerItem) {
-        filemanagerItem.hidden = isBorderOnly;
+        filemanagerItem.hidden = isBorderOnly || isOverlayOnly;
     }
     [
         layerForm.querySelector('#id_fitmodeoverride'),
@@ -4095,8 +4238,8 @@ function localCourseBannerBuilderSyncLayerInputModes(scope) {
     ].forEach(function(input) {
         var item = input ? input.closest('.fitem, .form-group, .mb-3, .row') : null;
         if (item) {
-            item.hidden = isBorderOnly;
-            item.setAttribute('aria-hidden', isBorderOnly ? 'true' : 'false');
+            item.hidden = isBorderOnly || isOverlayOnly;
+            item.setAttribute('aria-hidden', (isBorderOnly || isOverlayOnly) ? 'true' : 'false');
         }
     });
     if (filemanagerNoteItem) {
@@ -4112,9 +4255,19 @@ function localCourseBannerBuilderSyncLayerInputModes(scope) {
         existingBorderInlineNote.classList.toggle('d-none', !sourceBlocksNewBorder);
     }
     if (borderSection) {
+        borderSection.hidden = isOverlayOnly;
+        borderSection.setAttribute('aria-hidden', isOverlayOnly ? 'true' : 'false');
         borderSection.classList.toggle('local-course-banner-builder-disabled', !!sourceBlocksNewBorder);
         if (sourceBlocksNewBorder) {
             borderSection.open = false;
+        }
+    }
+    if (overlaySection) {
+        overlaySection.hidden = isBorderOnly || (!isOverlayOnly && !isExistingOverlayLayer);
+        overlaySection.setAttribute('aria-hidden', overlaySection.hidden ? 'true' : 'false');
+        overlaySection.classList.toggle('local-course-banner-builder-disabled', !!sourceBlocksNewOverlay);
+        if (sourceBlocksNewOverlay) {
+            overlaySection.open = false;
         }
     }
     if (borderSummary) {
@@ -4549,6 +4702,34 @@ function localCourseBannerBuilderGetChildBorderDisableConfirmMessage(form) {
         'Active border layer(s) in child sources will be disabled before this parent border is saved.'
     );
     return message.replace('{$a}', String(Math.max(0, childBorderCount)));
+}
+
+function localCourseBannerBuilderShouldConfirmChildOverlayDisable(form) {
+    if (!form) {
+        return false;
+    }
+    var childOverlayCountInput = form.querySelector('#id_activechildoverlaylayers');
+    var childOverlayCount = childOverlayCountInput ? parseInt(childOverlayCountInput.value || '0', 10) : 0;
+    if (childOverlayCount <= 0) {
+        return false;
+    }
+    var overlayInput = form.querySelector('#id_overlayenabled');
+    var enabledInput = form.querySelector('#id_isenabled');
+    var overlayEnabled = !!(overlayInput && (
+        overlayInput.type === 'checkbox' ? overlayInput.checked : overlayInput.value === '1'
+    ));
+    var layerEnabled = !enabledInput || enabledInput.checked || enabledInput.value === '1';
+    return overlayEnabled && layerEnabled;
+}
+
+function localCourseBannerBuilderGetChildOverlayDisableConfirmMessage(form) {
+    var childOverlayCountInput = form ? form.querySelector('#id_activechildoverlaylayers') : null;
+    var childOverlayCount = childOverlayCountInput ? parseInt(childOverlayCountInput.value || '0', 10) : 0;
+    var message = localCourseBannerBuilderGetJsString(
+        'childoverlaylayersdisableconfirm',
+        'Active overlay layer(s) in child sources will be disabled before this parent overlay is saved.'
+    );
+    return message.replace('{$a}', String(Math.max(0, childOverlayCount)));
 }
 
 function localCourseBannerBuilderGetPreviewCropState(layer) {
@@ -5169,33 +5350,67 @@ function localCourseBannerBuilderUpgradeColorPickers(scope) {
     Array.prototype.slice.call((scope || document).querySelectorAll('form.mform')).forEach(function(form) {
         var textInput = form.querySelector('#id_bordercolor');
         var pickerInput = form.querySelector('[data-border-color-picker=\"1\"]');
-        if (!textInput || !pickerInput) {
-            return;
-        }
-        var syncPickerFromText = function() {
-            pickerInput.value = localCourseBannerBuilderNormaliseHexColor(textInput.value, pickerInput.value || '#56B9C0');
-            pickerInput.disabled = !!textInput.disabled;
-            localCourseBannerBuilderSyncColourInput(pickerInput);
-        };
-        if (!textInput.dataset.colorPickerBound) {
-            textInput.addEventListener('input', syncPickerFromText);
-            textInput.addEventListener('change', syncPickerFromText);
-            textInput.dataset.colorPickerBound = '1';
-        }
-        if (!pickerInput.dataset.colorPickerBound) {
-            pickerInput.addEventListener('input', function() {
-                textInput.value = pickerInput.value.toUpperCase();
+        if (textInput && pickerInput) {
+            var syncPickerFromText = function() {
+                pickerInput.value = localCourseBannerBuilderNormaliseHexColor(textInput.value, pickerInput.value || '#56B9C0');
+                pickerInput.disabled = !!textInput.disabled;
                 localCourseBannerBuilderSyncColourInput(pickerInput);
-                textInput.dispatchEvent(new Event('input', {bubbles: true}));
-            });
-            pickerInput.addEventListener('change', function() {
-                textInput.value = pickerInput.value.toUpperCase();
-                localCourseBannerBuilderSyncColourInput(pickerInput);
-                textInput.dispatchEvent(new Event('change', {bubbles: true}));
-            });
-            pickerInput.dataset.colorPickerBound = '1';
+            };
+            if (!textInput.dataset.colorPickerBound) {
+                textInput.addEventListener('input', syncPickerFromText);
+                textInput.addEventListener('change', syncPickerFromText);
+                textInput.dataset.colorPickerBound = '1';
+            }
+            if (!pickerInput.dataset.colorPickerBound) {
+                pickerInput.addEventListener('input', function() {
+                    textInput.value = pickerInput.value.toUpperCase();
+                    localCourseBannerBuilderSyncColourInput(pickerInput);
+                    textInput.dispatchEvent(new Event('input', {bubbles: true}));
+                });
+                pickerInput.addEventListener('change', function() {
+                    textInput.value = pickerInput.value.toUpperCase();
+                    localCourseBannerBuilderSyncColourInput(pickerInput);
+                    textInput.dispatchEvent(new Event('change', {bubbles: true}));
+                });
+                pickerInput.dataset.colorPickerBound = '1';
+            }
+            syncPickerFromText();
         }
-        syncPickerFromText();
+
+        Array.prototype.slice.call(form.querySelectorAll('[data-overlay-color-text]')).forEach(function(overlayTextInput) {
+            var key = overlayTextInput.getAttribute('data-overlay-color-text');
+            var overlayPickerInput = key ? form.querySelector('[data-overlay-color-picker=\"' + key + '\"]') : null;
+            if (!overlayPickerInput) {
+                return;
+            }
+            var syncOverlayPickerFromText = function() {
+                overlayPickerInput.value = localCourseBannerBuilderNormaliseHexColor(
+                    overlayTextInput.value,
+                    overlayPickerInput.value || '#000000'
+                );
+                overlayPickerInput.disabled = !!overlayTextInput.disabled;
+                localCourseBannerBuilderSyncColourInput(overlayPickerInput);
+            };
+            if (!overlayTextInput.dataset.overlayColorPickerBound) {
+                overlayTextInput.addEventListener('input', syncOverlayPickerFromText);
+                overlayTextInput.addEventListener('change', syncOverlayPickerFromText);
+                overlayTextInput.dataset.overlayColorPickerBound = '1';
+            }
+            if (!overlayPickerInput.dataset.overlayColorPickerBound) {
+                overlayPickerInput.addEventListener('input', function() {
+                    overlayTextInput.value = overlayPickerInput.value.toUpperCase();
+                    localCourseBannerBuilderSyncColourInput(overlayPickerInput);
+                    overlayTextInput.dispatchEvent(new Event('input', {bubbles: true}));
+                });
+                overlayPickerInput.addEventListener('change', function() {
+                    overlayTextInput.value = overlayPickerInput.value.toUpperCase();
+                    localCourseBannerBuilderSyncColourInput(overlayPickerInput);
+                    overlayTextInput.dispatchEvent(new Event('change', {bubbles: true}));
+                });
+                overlayPickerInput.dataset.overlayColorPickerBound = '1';
+            }
+            syncOverlayPickerFromText();
+        });
     });
 }
 
@@ -11865,8 +12080,19 @@ function localCourseBannerBuilderBindLayerFormEvents(scope) {
             localCourseBannerBuilderSyncDashedControls(layerForm);
             localCourseBannerBuilderSyncBorderPreview(layerForm);
             localCourseBannerBuilderSyncBinaryOptionButton(borderToggle);
+            localCourseBannerBuilderSyncModalPreviewActionButtons(layerForm);
         });
         borderToggle.dataset.layerBound = '1';
+    }
+
+    var overlayToggle = layerForm.querySelector('[data-overlay-toggle=\"1\"][type=\"checkbox\"]');
+    if (overlayToggle && !overlayToggle.dataset.layerBound) {
+        overlayToggle.addEventListener('change', function() {
+            localCourseBannerBuilderSyncLayerInputModes(layerForm);
+            localCourseBannerBuilderSyncModalPreviewActionButtons(layerForm);
+            localCourseBannerBuilderSyncBinaryOptionButton(overlayToggle);
+        });
+        overlayToggle.dataset.layerBound = '1';
     }
 
     var enabledToggle = layerForm.querySelector('#id_isenabled[type=\"checkbox\"]');
@@ -11926,6 +12152,7 @@ function localCourseBannerBuilderBindLayerFormEvents(scope) {
             e.stopPropagation();
             var form = button.closest('form.mform');
             var borderToggle = form ? form.querySelector('[data-border-toggle=\"1\"][type=\"checkbox\"]') : null;
+            var overlayToggle = form ? form.querySelector('[data-overlay-toggle=\"1\"][type=\"checkbox\"]') : null;
             if (!borderToggle) {
                 return;
             }
@@ -11934,12 +12161,25 @@ function localCourseBannerBuilderBindLayerFormEvents(scope) {
                 localCourseBannerBuilderSyncLayerTypeChoice(form);
                 return;
             }
+            if (nextType === 'overlay' && (!overlayToggle || overlayToggle.disabled)) {
+                localCourseBannerBuilderSyncLayerTypeChoice(form);
+                return;
+            }
             borderToggle.checked = nextType === 'border';
+            if (overlayToggle) {
+                overlayToggle.checked = nextType === 'overlay';
+                overlayToggle.dispatchEvent(new Event('change', {bubbles: true}));
+            }
             borderToggle.dispatchEvent(new Event('change', {bubbles: true}));
             if (nextType === 'border') {
                 var accordion = form.querySelector('[data-border-accordion=\"1\"]');
                 if (accordion && !accordion.classList.contains('local-course-banner-builder-disabled')) {
                     accordion.open = true;
+                }
+            } else if (nextType === 'overlay') {
+                var overlayAccordion = form.querySelector('[data-overlay-accordion=\"1\"]');
+                if (overlayAccordion && !overlayAccordion.classList.contains('local-course-banner-builder-disabled')) {
+                    overlayAccordion.open = true;
                 }
             }
             localCourseBannerBuilderSyncLayerInputModes(form);
@@ -11966,6 +12206,28 @@ function localCourseBannerBuilderBindLayerFormEvents(scope) {
             localCourseBannerBuilderSyncDashedControls(layerForm);
             localCourseBannerBuilderSyncBorderStyleChoice(layerForm);
             localCourseBannerBuilderSyncBorderPreview(layerForm);
+        });
+        input.dataset.layerBound = '1';
+    });
+
+    Array.prototype.slice.call(layerForm.querySelectorAll([
+        '#id_overlaytarget',
+        '#id_overlaybannercolor',
+        '#id_overlaybanneropacity',
+        '#id_overlayslideshowcolor',
+        '#id_overlayslideshowopacity',
+        '#id_overlaytitleabove',
+        '#id_overlayborderabove',
+        '[data-overlay-color-picker]'
+    ].join(','))).forEach(function(input) {
+        if (!input || input.dataset.layerBound) {
+            return;
+        }
+        input.addEventListener('input', function() {
+            localCourseBannerBuilderSyncModalOverlayPreview(layerForm);
+        });
+        input.addEventListener('change', function() {
+            localCourseBannerBuilderSyncModalOverlayPreview(layerForm);
         });
         input.dataset.layerBound = '1';
     });
@@ -12109,6 +12371,9 @@ function localCourseBannerBuilderSyncModalPreviewActionButtons(form) {
     var borderToggle = form.querySelector(
         '[data-border-toggle=\"1\"][type=\"checkbox\"], [data-border-toggle=\"1\"][type=\"hidden\"]'
     );
+    var overlayToggle = form.querySelector(
+        '[data-overlay-toggle=\"1\"][type=\"checkbox\"], [data-overlay-toggle=\"1\"][type=\"hidden\"]'
+    );
     var currentPreviewLayer = localCourseBannerBuilderGetEditableCurrentPreviewImage(form);
     var currentPreviewImage = currentPreviewLayer ? currentPreviewLayer.querySelector('[data-preview-image-tag=\"1\"]') : null;
     var hasCurrentPreviewImage = !!(currentPreviewLayer && !currentPreviewLayer.hidden &&
@@ -12121,7 +12386,10 @@ function localCourseBannerBuilderSyncModalPreviewActionButtons(form) {
     var hasImage = hasFiles || hasExistingImage || isEditImageLayer || hasCurrentPreviewImage;
     var borderToggleChecked = !!(borderToggle &&
         (borderToggle.type === 'checkbox' ? borderToggle.checked : borderToggle.value === '1'));
+    var overlayToggleChecked = !!(overlayToggle &&
+        (overlayToggle.type === 'checkbox' ? overlayToggle.checked : overlayToggle.value === '1'));
     var isBorderOnly = !!(borderToggleChecked && !hasFiles && !hasExistingImage);
+    var isOverlayOnly = !!(overlayToggleChecked && !hasFiles && !hasExistingImage);
     var submitProxy = form.querySelector('[data-modal-preview-submit-proxy=\"1\"]');
     var deleteDraftButton = form.querySelector('[data-action=\"local-course-banner-builder-delete-selected-draft-preview-layer\"]');
     var activeDraftIndex = typeof form.dataset.activeDraftIndex !== 'undefined' ? String(form.dataset.activeDraftIndex) : '';
@@ -12132,6 +12400,8 @@ function localCourseBannerBuilderSyncModalPreviewActionButtons(form) {
     localCourseBannerBuilderEnsureModalImageControls(form);
     localCourseBannerBuilderEnsureModalOpacityControls(form);
     localCourseBannerBuilderEnsureModalBorderControls(form);
+    localCourseBannerBuilderEnsureModalOverlayControls(form);
+    localCourseBannerBuilderSyncModalOverlayPreview(form);
     localCourseBannerBuilderEnsureBorderStyleChoice(form);
 
     Array.prototype.slice.call(form.querySelectorAll('[data-preview-action-bound-input]')).forEach(function(button) {
@@ -12143,11 +12413,13 @@ function localCourseBannerBuilderSyncModalPreviewActionButtons(form) {
         var group = button.getAttribute('data-preview-action-group') || 'shared';
         var visible = false;
         if (group === 'image') {
-            visible = !isBorderOnly;
+            visible = !isBorderOnly && !isOverlayOnly;
         } else if (group === 'border') {
             visible = isBorderOnly || isExistingBorderLayer;
+        } else if (group === 'overlay') {
+            visible = isOverlayOnly;
         } else {
-            visible = hasImage || isBorderOnly || isExistingBorderLayer;
+            visible = hasImage || isBorderOnly || isExistingBorderLayer || isOverlayOnly;
         }
         if (input.matches && input.matches('[data-preview-context-toggle=\"1\"]')) {
             visible = true;
@@ -12183,16 +12455,18 @@ function localCourseBannerBuilderSyncModalPreviewActionButtons(form) {
         }
         var group = button.getAttribute('data-preview-action-group') || 'shared';
         if (group === 'image') {
-            button.hidden = isBorderOnly;
+            button.hidden = isBorderOnly || isOverlayOnly;
             button.disabled = !hasImage;
             button.classList.toggle('disabled', !hasImage);
             button.setAttribute('aria-disabled', hasImage ? 'false' : 'true');
         } else if (group === 'border') {
             button.hidden = !(isBorderOnly || isExistingBorderLayer);
+        } else if (group === 'overlay') {
+            button.hidden = !isOverlayOnly;
         } else {
-            button.hidden = !(hasImage || isBorderOnly || isExistingBorderLayer);
+            button.hidden = !(hasImage || isBorderOnly || isExistingBorderLayer || isOverlayOnly);
             if (button.getAttribute('data-action') === 'local-course-banner-builder-toggle-preview-snap' &&
-                    (isBorderOnly || isExistingBorderLayer)) {
+                    (isBorderOnly || isExistingBorderLayer || isOverlayOnly)) {
                 button.hidden = true;
             }
         }
@@ -12205,7 +12479,9 @@ function localCourseBannerBuilderSyncModalPreviewActionButtons(form) {
     });
     Array.prototype.slice.call(form.querySelectorAll('[data-modal-preview-side-panel=\"1\"]')).forEach(function(panel) {
         var group = panel.getAttribute('data-preview-action-group') || 'shared';
-        var visible = group === 'border' ? (isBorderOnly || isExistingBorderLayer) : !isBorderOnly;
+        var visible = group === 'border'
+            ? (isBorderOnly || isExistingBorderLayer)
+            : (group === 'overlay' ? isOverlayOnly : (!isBorderOnly && !isOverlayOnly));
         if (!visible) {
             panel.hidden = true;
             panel.classList.add('is-collapsed');
@@ -12219,7 +12495,7 @@ function localCourseBannerBuilderSyncModalPreviewActionButtons(form) {
         }
     });
     if (submitProxy) {
-        var canSave = hasExistingElement || hasImage || isBorderOnly;
+        var canSave = hasExistingElement || hasImage || isBorderOnly || isOverlayOnly;
         submitProxy.disabled = !canSave;
         submitProxy.classList.toggle('disabled', !canSave);
         submitProxy.setAttribute('aria-disabled', canSave ? 'false' : 'true');
@@ -12805,6 +13081,87 @@ function localCourseBannerBuilderEnsureModalImageControls(form) {
     host.appendChild(imageOptionsButton);
 }
 
+function localCourseBannerBuilderEnsureModalOverlayControls(form) {
+    if (!form) {
+        return;
+    }
+    var host = form.querySelector('[data-modal-preview-action-list=\"1\"]');
+    var overlayAccordion = form.querySelector('[data-overlay-accordion=\"1\"]');
+    if (!host || !overlayAccordion) {
+        return;
+    }
+    var existingButton = host.querySelector('[data-modal-preview-side-panel-target=\"overlaystyle\"]');
+    overlayAccordion.classList.add('local-course-banner-builder-modal-side-panel');
+    overlayAccordion.classList.add('local-course-banner-builder-overlay-style-side-panel');
+    overlayAccordion.setAttribute('data-modal-preview-side-panel', '1');
+    overlayAccordion.setAttribute('data-modal-preview-side-panel-key', 'overlaystyle');
+    overlayAccordion.setAttribute('data-preview-action-group', 'overlay');
+    if (!existingButton) {
+        overlayAccordion.hidden = true;
+        overlayAccordion.classList.add('is-collapsed');
+    }
+    if (existingButton) {
+        if (overlayAccordion.parentNode !== host) {
+            host.insertBefore(overlayAccordion, existingButton);
+        }
+        localCourseBannerBuilderEnhanceModalSidePanelLinkedRanges(overlayAccordion);
+        return;
+    }
+
+    host.appendChild(overlayAccordion);
+    localCourseBannerBuilderEnhanceModalSidePanelLinkedRanges(overlayAccordion);
+
+    var overlayButton = document.createElement('button');
+    overlayButton.type = 'button';
+    overlayButton.className = 'btn btn-outline-secondary local-course-banner-builder-source-preview-button';
+    overlayButton.setAttribute('data-modal-preview-side-panel-target', 'overlaystyle');
+    overlayButton.setAttribute('data-preview-action-group', 'overlay');
+    overlayButton.setAttribute('aria-expanded', 'false');
+    localCourseBannerBuilderSetActionButtonContent(
+        overlayButton,
+        'fa-adjust',
+        localCourseBannerBuilderGetJsString('layeroverlay', 'Overlay')
+    );
+    overlayButton.addEventListener('click', function() {
+        var shouldOpen = overlayAccordion.hidden || overlayAccordion.classList.contains('is-collapsed');
+        localCourseBannerBuilderCloseOtherModalSidePanels(host, overlayAccordion);
+        localCourseBannerBuilderToggleOpacityPanel(overlayAccordion, overlayButton, shouldOpen);
+    });
+    host.appendChild(overlayButton);
+}
+
+function localCourseBannerBuilderSyncModalOverlayPreview(form) {
+    if (!form) {
+        return;
+    }
+    var previewRoot = form.querySelector('[data-layer-banner-preview=\"1\"]');
+    if (!previewRoot) {
+        return;
+    }
+    var overlayToggle = form.querySelector('[data-overlay-toggle=\"1\"]');
+    var target = form.querySelector('#id_overlaytarget');
+    var colorInput = form.querySelector('#id_overlaybannercolor');
+    var opacityInput = form.querySelector('#id_overlaybanneropacity');
+    var overlayEnabled = !!(overlayToggle &&
+        (overlayToggle.type === 'checkbox' ? overlayToggle.checked : overlayToggle.value === '1'));
+    var targetValue = target ? target.value : 'both';
+    var show = overlayEnabled && targetValue !== 'slideshow';
+    var overlay = previewRoot.querySelector('[data-layer-overlay-preview=\"1\"]');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'local-course-banner-builder-banner-overlay-layer';
+        overlay.setAttribute('data-layer-overlay-preview', '1');
+        previewRoot.insertBefore(overlay, previewRoot.firstChild);
+    }
+    overlay.hidden = !show;
+    if (show) {
+        overlay.style.backgroundColor = localCourseBannerBuilderTitleHexToRgba(
+            colorInput ? colorInput.value : '#000000',
+            opacityInput ? opacityInput.value : '25'
+        );
+    }
+}
+
 function localCourseBannerBuilderEnsureModalBorderControls(form) {
     if (!form) {
         return;
@@ -12987,7 +13344,21 @@ function localCourseBannerBuilderEnsureLayerModalFooter(form, submitLabel) {
             });
             return;
         }
+        if (localCourseBannerBuilderShouldConfirmChildOverlayDisable(form) &&
+                form.dataset.childOverlayDisableConfirmed !== '1') {
+            localCourseBannerBuilderConfirmAction(
+                localCourseBannerBuilderGetChildOverlayDisableConfirmMessage(form)
+            ).then(function(confirmed) {
+                if (!confirmed) {
+                    return;
+                }
+                form.dataset.childOverlayDisableConfirmed = '1';
+                submitForm();
+            });
+            return;
+        }
         delete form.dataset.childBorderDisableConfirmed;
+        delete form.dataset.childOverlayDisableConfirmed;
         submitForm();
     });
     localCourseBannerBuilderSetActionButtonContent(
@@ -13970,6 +14341,10 @@ function localCourseBannerBuilderRestoreCreateLayerModal() {
     if (currentIsBorderLayerInput) {
         currentIsBorderLayerInput.value = '0';
     }
+    var currentIsOverlayLayerInput = form.querySelector('#id_currentisoverlaylayer');
+    if (currentIsOverlayLayerInput) {
+        currentIsOverlayLayerInput.value = '0';
+    }
     var borderSidesValueInput = form.querySelector('#id_bordersidesvalue');
     if (borderSidesValueInput) {
         borderSidesValueInput.value = 'top,right,bottom,left';
@@ -13989,6 +14364,16 @@ function localCourseBannerBuilderRestoreCreateLayerModal() {
         if (borderToggleWrapper) {
             borderToggleWrapper.classList.remove('local-course-banner-builder-option-disabled');
         }
+    }
+    var overlayToggle = form.querySelector('[data-overlay-toggle=\"1\"][type=\"checkbox\"]');
+    if (overlayToggle) {
+        overlayToggle.checked = false;
+        var sourceHasOverlayLayerInput = form.querySelector('#id_sourcehasoverlaylayer');
+        var sourceHasOverlayLayer = !!(
+            sourceHasOverlayLayerInput && parseInt(sourceHasOverlayLayerInput.value || '0', 10) > 0
+        );
+        overlayToggle.disabled = sourceHasOverlayLayer;
+        overlayToggle.setAttribute('aria-disabled', sourceHasOverlayLayer ? 'true' : 'false');
     }
     localCourseBannerBuilderSyncLayerTypeChoice(form);
     var filemanagerItem = form.querySelector('#fitem_id_bannerimage_filemanager');

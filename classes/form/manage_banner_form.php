@@ -44,14 +44,21 @@ class manage_banner_form extends \moodleform {
         $previewdefinition = $this->_customdata['previewdefinition'] ?? [];
         $borderconflictmessage = (string)($this->_customdata['borderconflictmessage'] ?? get_string('sourcealreadyhasborder', 'local_course_banner_builder'));
         $borderconflictmessageinline = (string)($this->_customdata['borderconflictmessageinline'] ?? get_string('sourcealreadyhasborderinline', 'local_course_banner_builder'));
+        $overlayconflictmessage = (string)($this->_customdata['overlayconflictmessage'] ?? get_string('sourcealreadyhasoverlay', 'local_course_banner_builder'));
+        $overlayconflictmessageinline = (string)($this->_customdata['overlayconflictmessageinline'] ?? get_string('sourcealreadyhasoverlayinline', 'local_course_banner_builder'));
         $sourcehasborderlayer = !empty($this->_customdata['sourcehasborderlayer']);
+        $sourcehasoverlaylayer = !empty($this->_customdata['sourcehasoverlaylayer']);
         $currentisborderlayer = !empty($this->_customdata['currentisborderlayer']);
+        $currentisoverlaylayer = !empty($this->_customdata['currentisoverlaylayer']);
         $activechildborderlayers = (int)($this->_customdata['activechildborderlayers'] ?? 0);
+        $activechildoverlaylayers = (int)($this->_customdata['activechildoverlaylayers'] ?? 0);
         $formmode = (string)($this->_customdata['formmode'] ?? 'create');
-        $showfilemanager = !in_array($formmode, ['editborder', 'editimage'], true);
-        $showadvanced = $formmode !== 'editborder';
-        $showborder = $formmode !== 'editimage';
+        $showfilemanager = !in_array($formmode, ['editborder', 'editimage', 'editoverlay'], true);
+        $showadvanced = !in_array($formmode, ['editborder', 'editoverlay'], true);
+        $showborder = !in_array($formmode, ['editimage', 'editoverlay'], true);
+        $showoverlay = !in_array($formmode, ['editimage', 'editborder'], true);
         $iscreatewithborderconflict = $sourcehasborderlayer && !$currentisborderlayer;
+        $iscreatewithoverlayconflict = $sourcehasoverlaylayer && !$currentisoverlaylayer;
 
         $mform->addElement('hidden', 'categoryid', $selectedcategoryid, ['id' => 'id_categoryid']);
         $mform->setType('categoryid', PARAM_INT);
@@ -71,14 +78,22 @@ class manage_banner_form extends \moodleform {
 
         $mform->addElement('hidden', 'sourcehasborderlayer', $sourcehasborderlayer ? 1 : 0, ['id' => 'id_sourcehasborderlayer']);
         $mform->setType('sourcehasborderlayer', PARAM_INT);
+        $mform->addElement('hidden', 'sourcehasoverlaylayer', $sourcehasoverlaylayer ? 1 : 0, ['id' => 'id_sourcehasoverlaylayer']);
+        $mform->setType('sourcehasoverlaylayer', PARAM_INT);
 
         $mform->addElement('hidden', 'activechildborderlayers', $activechildborderlayers, [
             'id' => 'id_activechildborderlayers',
         ]);
         $mform->setType('activechildborderlayers', PARAM_INT);
+        $mform->addElement('hidden', 'activechildoverlaylayers', $activechildoverlaylayers, [
+            'id' => 'id_activechildoverlaylayers',
+        ]);
+        $mform->setType('activechildoverlaylayers', PARAM_INT);
 
         $mform->addElement('hidden', 'currentisborderlayer', 0, ['id' => 'id_currentisborderlayer']);
         $mform->setType('currentisborderlayer', PARAM_INT);
+        $mform->addElement('hidden', 'currentisoverlaylayer', 0, ['id' => 'id_currentisoverlaylayer']);
+        $mform->setType('currentisoverlaylayer', PARAM_INT);
 
         $mform->addElement('hidden', 'bordersidesvalue', '', ['id' => 'id_bordersidesvalue']);
         $mform->setType('bordersidesvalue', PARAM_RAW_TRIMMED);
@@ -108,7 +123,12 @@ class manage_banner_form extends \moodleform {
                 'static',
                 'layertypechoice',
                 '',
-                self::render_layer_type_choice($iscreatewithborderconflict, $borderconflictmessageinline)
+                self::render_layer_type_choice(
+                    $iscreatewithborderconflict,
+                    $borderconflictmessageinline,
+                    $iscreatewithoverlayconflict,
+                    $overlayconflictmessageinline
+                )
             );
         }
 
@@ -137,11 +157,16 @@ class manage_banner_form extends \moodleform {
             $currentisborderlayer,
             $showadvanced,
             $showborder,
+            $showoverlay,
             $showmoodlepreview,
             is_array($previewdefinition) ? $previewdefinition : [],
             $formmode,
             $borderconflictmessage,
-            $borderconflictmessageinline
+            $borderconflictmessageinline,
+            $overlayconflictmessage,
+            $overlayconflictmessageinline,
+            $iscreatewithoverlayconflict,
+            $currentisoverlaylayer
         );
         $mform->addElement('static', 'layervalidationwarning', '', \html_writer::div(
             get_string('layercontentrequired', 'local_course_banner_builder'),
@@ -160,6 +185,7 @@ class manage_banner_form extends \moodleform {
      * @param bool $currentisborderlayer
      * @param bool $showadvanced
      * @param bool $showborder
+     * @param bool $showoverlay
      * @param bool $showmoodlepreview
      * @param array $previewdefinition
      * @param string $borderconflictmessage
@@ -172,11 +198,16 @@ class manage_banner_form extends \moodleform {
         bool $currentisborderlayer = false,
         bool $showadvanced = true,
         bool $showborder = true,
+        bool $showoverlay = true,
         bool $showmoodlepreview = false,
         array $previewdefinition = [],
         string $formmode = 'create',
         string $borderconflictmessage = '',
-        string $borderconflictmessageinline = ''
+        string $borderconflictmessageinline = '',
+        string $overlayconflictmessage = '',
+        string $overlayconflictmessageinline = '',
+        bool $iscreatewithoverlayconflict = false,
+        bool $currentisoverlaylayer = false
     ): void {
         $usesharedcreatepreview = $formmode === 'create' && $showadvanced && $showborder;
         $fitoptions = ['' => get_string('fitoverride:categorydefault', 'local_course_banner_builder')]
@@ -316,9 +347,112 @@ class manage_banner_form extends \moodleform {
                 get_string('imagepreviewhelp', 'local_course_banner_builder')
             ));
         }
+        if (!$showborder && !$showoverlay) {
+            return;
+        }
+
+        if ($showoverlay) {
+            $overlaydetailsattrs = [
+                'class' => 'local-course-banner-builder-advanced-accordion local-course-banner-builder-overlay-accordion',
+                'data-overlay-section' => '1',
+                'data-overlay-accordion' => '1',
+                'data-create-overlay-locked' => $iscreatewithoverlayconflict ? '1' : '0',
+            ];
+            if ($iscreatewithoverlayconflict) {
+                $overlaydetailsattrs['class'] .= ' local-course-banner-builder-disabled';
+            }
+            if ($currentisoverlaylayer) {
+                $overlaydetailsattrs['open'] = 'open';
+            }
+            $mform->addElement('html', \html_writer::start_tag('details', $overlaydetailsattrs));
+            $summarycontent = self::render_collapse_expand_icon(!$currentisoverlaylayer) .
+                \html_writer::span(
+                    get_string('layeroverlay', 'local_course_banner_builder'),
+                    'local-course-banner-builder-border-summary-title'
+                );
+            $summarycontent .= \html_writer::span(
+                $overlayconflictmessageinline,
+                'local-course-banner-builder-border-summary-note text-danger ms-2' .
+                    ($iscreatewithoverlayconflict ? '' : ' d-none'),
+                ['data-overlay-existing-note-inline' => '1']
+            );
+            $mform->addElement('html', \html_writer::tag('summary', $summarycontent));
+            if ($formmode === 'editoverlay') {
+                $mform->addElement('hidden', 'overlayenabled', 1, [
+                    'id' => 'id_overlayenabled',
+                    'data-overlay-toggle' => '1',
+                ]);
+                $mform->setType('overlayenabled', PARAM_BOOL);
+            } else {
+                $mform->addElement('advcheckbox', 'overlayenabled', get_string('overlayenabled', 'local_course_banner_builder'), '', [
+                    'data-overlay-toggle' => '1',
+                ]);
+                $mform->setDefault('overlayenabled', $currentisoverlaylayer ? 1 : 0);
+                if ($iscreatewithoverlayconflict || $currentisoverlaylayer) {
+                    $mform->updateElementAttr('overlayenabled', [
+                        'disabled' => 'disabled',
+                        'aria-disabled' => 'true',
+                    ]);
+                }
+            }
+            $mform->addElement('static', 'overlayenabled_existing_notice', '', \html_writer::div(
+                $overlayconflictmessage,
+                'local-course-banner-builder-border-existing-inline text-danger d-none',
+                ['data-overlay-existing-note' => '1']
+            ));
+            $mform->addElement(
+                'select',
+                'overlaytarget',
+                get_string('overlaytarget', 'local_course_banner_builder'),
+                \local_course_banner_builder\manager::get_overlay_target_options()
+            );
+            $mform->setType('overlaytarget', PARAM_ALPHA);
+            $mform->setDefault('overlaytarget', \local_course_banner_builder\manager::OVERLAY_TARGET_BOTH);
+
+            foreach ([
+                'overlaybanner' => get_string('overlaybannerappearance', 'local_course_banner_builder'),
+                'overlayslideshow' => get_string('overlayslideshowappearance', 'local_course_banner_builder'),
+            ] as $prefix => $label) {
+                $mform->addElement('header', $prefix . 'header', $label);
+                $colorgroup = [];
+                $colorgroup[] = $mform->createElement('text', $prefix . 'color', '', [
+                    'data-overlay-color-text' => $prefix,
+                ]);
+                $colorgroup[] = $mform->createElement('html', \html_writer::empty_tag('input', [
+                    'type' => 'color',
+                    'id' => 'id_' . $prefix . 'color_picker',
+                    'class' => 'form-control form-control-color local-course-banner-builder-color-picker',
+                    'value' => '#000000',
+                    'data-overlay-color-picker' => $prefix,
+                    'aria-label' => get_string('overlaycolor', 'local_course_banner_builder'),
+                ]));
+                $mform->addGroup($colorgroup, $prefix . 'colorgroup', get_string('overlaycolor', 'local_course_banner_builder'), '', false);
+                $mform->setType($prefix . 'color', PARAM_RAW_TRIMMED);
+                $mform->setDefault($prefix . 'color', '#000000');
+                $mform->addElement('text', $prefix . 'opacity', get_string('overlayopacity', 'local_course_banner_builder'), [
+                    'size' => 6,
+                    'data-upgrade-number' => '1',
+                    'data-number-min' => '0',
+                    'data-number-max' => '100',
+                    'data-number-step' => '1',
+                    'data-field-suffix' => '%',
+                    'data-percent-slider-input' => '1',
+                ]);
+                $mform->setType($prefix . 'opacity', PARAM_FLOAT);
+                $mform->setDefault($prefix . 'opacity', $prefix === 'overlaybanner' ? 25 : 38);
+                $this->add_percent_slider_static($mform, $prefix . 'opacity', 0, 100, 1);
+            }
+            $mform->addElement('advcheckbox', 'overlaytitleabove', get_string('overlaytitleabove', 'local_course_banner_builder'));
+            $mform->setDefault('overlaytitleabove', 1);
+            $mform->addElement('advcheckbox', 'overlayborderabove', get_string('overlayborderabove', 'local_course_banner_builder'));
+            $mform->setDefault('overlayborderabove', 1);
+            $mform->addElement('html', '</details>');
+        }
+
         if (!$showborder) {
             return;
         }
+
         $borderdetailsattrs = [
             'class' => 'local-course-banner-builder-advanced-accordion local-course-banner-builder-border-accordion',
             'data-border-section' => '1',
@@ -994,9 +1128,16 @@ class manage_banner_form extends \moodleform {
      *
      * @param bool $borderlocked
      * @param string $borderlockmessage
+     * @param bool $overlaylocked
+     * @param string $overlaylockmessage
      * @return string
      */
-    protected static function render_layer_type_choice(bool $borderlocked, string $borderlockmessage): string {
+    protected static function render_layer_type_choice(
+        bool $borderlocked,
+        string $borderlockmessage,
+        bool $overlaylocked = false,
+        string $overlaylockmessage = ''
+    ): string {
         $imagebutton = \html_writer::tag('button', \html_writer::tag('i', '', [
             'class' => 'fa fa-image me-2',
             'aria-hidden' => 'true',
@@ -1017,13 +1158,24 @@ class manage_banner_form extends \moodleform {
             'disabled' => $borderlocked ? 'disabled' : null,
             'aria-disabled' => $borderlocked ? 'true' : 'false',
         ]);
+        $overlaybutton = \html_writer::tag('button', \html_writer::tag('i', '', [
+            'class' => 'fa fa-adjust me-2',
+            'aria-hidden' => 'true',
+        ]) . \html_writer::span(get_string('layertype:overlay', 'local_course_banner_builder')), [
+            'type' => 'button',
+            'class' => 'btn btn-outline-secondary',
+            'data-layer-type-option' => 'overlay',
+            'aria-pressed' => 'false',
+            'disabled' => $overlaylocked ? 'disabled' : null,
+            'aria-disabled' => $overlaylocked ? 'true' : 'false',
+        ]);
 
         return \html_writer::div(
             \html_writer::div(
                 \html_writer::div(get_string('layertypechoice', 'local_course_banner_builder'),
                     'local-course-banner-builder-slideshow-side-title') .
                 \html_writer::div(
-                    $imagebutton . $borderbutton,
+                    $imagebutton . $borderbutton . $overlaybutton,
                     'btn-group local-course-banner-builder-layer-type-toggle',
                     ['role' => 'group', 'data-layer-type-toggle' => '1']
                 ) .
@@ -1031,6 +1183,11 @@ class manage_banner_form extends \moodleform {
                     $borderlockmessage,
                     'local-course-banner-builder-layer-type-warning text-danger' . ($borderlocked ? '' : ' d-none'),
                     ['data-layer-type-border-warning' => '1']
+                ) .
+                \html_writer::span(
+                    $overlaylockmessage,
+                    'local-course-banner-builder-layer-type-warning text-danger' . ($overlaylocked ? '' : ' d-none'),
+                    ['data-layer-type-overlay-warning' => '1']
                 ),
                 'local-course-banner-builder-layer-type-choice'
             ),
@@ -1050,18 +1207,25 @@ class manage_banner_form extends \moodleform {
         $draftfiles = \local_course_banner_builder\manager::get_draft_files((int)($data['bannerimage_filemanager'] ?? 0));
         $hasimage = !empty($draftfiles) || !empty($data['hasexistingimage']);
         $hasborder = !empty($data['borderenabled']) || (!empty($data['elementid']) && !empty($data['currentisborderlayer']));
+        $hasoverlay = !empty($data['overlayenabled']) ||
+            (!empty($data['elementid']) && !empty($data['currentisoverlaylayer']));
 
-        if (!$hasimage && !$hasborder) {
+        if (!$hasimage && !$hasborder && !$hasoverlay) {
             $errors['bannerimage_filemanager'] = get_string('layercontentrequired', 'local_course_banner_builder');
         }
 
-        if ($hasimage && $hasborder) {
+        if (($hasimage ? 1 : 0) + ($hasborder ? 1 : 0) + ($hasoverlay ? 1 : 0) > 1) {
             $errors['borderenabled'] = get_string('layercontentexclusive', 'local_course_banner_builder');
         }
 
         if ($hasborder && !empty($data['sourcehasborderlayer']) && empty($data['elementid'])) {
             $errors['borderenabled'] = (string)($this->_customdata['borderconflictmessage'] ??
                 get_string('sourcealreadyhasborder', 'local_course_banner_builder'));
+        }
+
+        if ($hasoverlay && !empty($data['sourcehasoverlaylayer']) && empty($data['elementid'])) {
+            $errors['overlayenabled'] = (string)($this->_customdata['overlayconflictmessage'] ??
+                get_string('sourcealreadyhasoverlay', 'local_course_banner_builder'));
         }
 
         if (($data['fitmodeoverride'] ?? '') === \local_course_banner_builder\manager::FIT_MODE_CUSTOM) {

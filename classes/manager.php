@@ -76,6 +76,12 @@ class manager {
     /** @var string */
     public const SITE_SOURCE_KEY = 'site:main';
     /** @var string */
+    public const OVERLAY_TARGET_BANNER = 'banner';
+    /** @var string */
+    public const OVERLAY_TARGET_SLIDESHOW = 'slideshow';
+    /** @var string */
+    public const OVERLAY_TARGET_BOTH = 'both';
+    /** @var string */
     public const SLIDESHOW_CONTEXT_COURSE = 'course';
     /** @var string */
     public const SLIDESHOW_CONTEXT_SITE = 'site';
@@ -1639,6 +1645,7 @@ class manager {
      */
     public static function get_course_slideshow_payload(\stdClass $course): array {
         $config = self::get_slideshow_config(self::SLIDESHOW_CONTEXT_COURSE);
+        $config = self::apply_course_source_overlay_to_slideshow_config($config, $course);
         if (empty($config['enabled']) || empty($course->id) || (int)$course->id <= SITEID || isguestuser()) {
             return self::build_slideshow_payload(self::SLIDESHOW_CONTEXT_COURSE, $config, []);
         }
@@ -1671,6 +1678,7 @@ class manager {
      */
     public static function get_site_slideshow_payload(): array {
         $config = self::get_slideshow_config(self::SLIDESHOW_CONTEXT_SITE);
+        $config = self::apply_site_source_overlay_to_slideshow_config($config);
         if (empty($config['enabled']) || isguestuser()) {
             return self::build_slideshow_payload(self::SLIDESHOW_CONTEXT_SITE, $config, []);
         }
@@ -1688,6 +1696,66 @@ class manager {
         }
 
         return self::build_slideshow_payload(self::SLIDESHOW_CONTEXT_SITE, $config, $slides);
+    }
+
+    /**
+     * Apply an overlay layer from the effective course source chain to slideshow config.
+     *
+     * @param array $config
+     * @param \stdClass $course
+     * @return array
+     */
+    protected static function apply_course_source_overlay_to_slideshow_config(array $config, \stdClass $course): array {
+        if (empty($course->id) || (int)$course->id <= SITEID) {
+            return $config;
+        }
+
+        foreach (self::sort_layer_specs(self::get_enabled_category_elements_for_course($course)) as $layerspec) {
+            $record = $layerspec['record'] ?? null;
+            if ($record && self::record_overlay_targets_slideshow($record)) {
+                return self::apply_overlay_record_to_slideshow_config($config, $record);
+            }
+        }
+
+        return $config;
+    }
+
+    /**
+     * Apply the site source overlay layer to slideshow config.
+     *
+     * @param array $config
+     * @return array
+     */
+    protected static function apply_site_source_overlay_to_slideshow_config(array $config): array {
+        $source = self::resolve_source(self::SITE_SOURCE_KEY);
+        if (!$source) {
+            return $config;
+        }
+
+        foreach (self::sort_layer_specs(self::get_layer_specs_for_source_chain($source, 0, 0)) as $layerspec) {
+            $record = $layerspec['record'] ?? null;
+            if ($record && self::record_overlay_targets_slideshow($record)) {
+                return self::apply_overlay_record_to_slideshow_config($config, $record);
+            }
+        }
+
+        return $config;
+    }
+
+    /**
+     * Apply one overlay layer's slideshow appearance to slideshow config.
+     *
+     * @param array $config
+     * @param \stdClass $record
+     * @return array
+     */
+    protected static function apply_overlay_record_to_slideshow_config(array $config, \stdClass $record): array {
+        $color = self::normalise_slideshow_overlay_color((string)($record->overlayslideshowcolor ?? '#000000'));
+        $opacity = self::normalise_percentage((float)($record->overlayslideshowopacity ?? 38), 0.0, 100.0) / 100;
+        $config['overlaycolor'] = $color;
+        $config['overlayrgb'] = self::slideshow_overlay_rgb($color);
+        $config['overlayopacity'] = max(0, min(0.85, $opacity));
+        return $config;
     }
 
     /**
@@ -2400,6 +2468,19 @@ class manager {
         return [
             self::BORDER_STYLE_SOLID => get_string('borderstyle:solid', 'local_course_banner_builder'),
             self::BORDER_STYLE_DASHED => get_string('borderstyle:dashed', 'local_course_banner_builder'),
+        ];
+    }
+
+    /**
+     * Overlay target options.
+     *
+     * @return array
+     */
+    public static function get_overlay_target_options(): array {
+        return [
+            self::OVERLAY_TARGET_BANNER => get_string('overlaytarget:banner', 'local_course_banner_builder'),
+            self::OVERLAY_TARGET_SLIDESHOW => get_string('overlaytarget:slideshow', 'local_course_banner_builder'),
+            self::OVERLAY_TARGET_BOTH => get_string('overlaytarget:both', 'local_course_banner_builder'),
         ];
     }
 
@@ -3182,6 +3263,16 @@ class manager {
         if (self::table_field_exists('local_course_banner_elements', 'borderinnerrounded')) {
             $record->borderinnerrounded = 0;
         }
+        if (self::table_field_exists('local_course_banner_elements', 'overlayenabled')) {
+            $record->overlayenabled = 0;
+            $record->overlaytarget = self::OVERLAY_TARGET_BOTH;
+            $record->overlaybannercolor = '#000000';
+            $record->overlaybanneropacity = 25;
+            $record->overlayslideshowcolor = '#000000';
+            $record->overlayslideshowopacity = 38;
+            $record->overlaytitleabove = 1;
+            $record->overlayborderabove = 1;
+        }
         if (self::table_field_exists('local_course_banner_elements', 'sourcetype')) {
             $record->sourcetype = $source->type;
         }
@@ -3387,6 +3478,27 @@ class manager {
     }
 
     /**
+     * Build an automatic overlay layer name for one source.
+     *
+     * @param \stdClass $source
+     * @param int $excludeid
+     * @return string
+     */
+    protected static function get_automatic_overlay_name(\stdClass $source, int $excludeid = 0): string {
+        $count = 0;
+        foreach (self::get_source_elements($source) as $element) {
+            if ($excludeid > 0 && (int)$element->id === $excludeid) {
+                continue;
+            }
+            if (!empty($element->overlayenabled)) {
+                $count++;
+            }
+        }
+        $sourcelabel = trim((string)($source->label ?? $source->sourcekey ?? 'Source'));
+        return $sourcelabel . ' Overlay ' . ($count + 1);
+    }
+
+    /**
      * Detect whether a source already contains another border layer.
      *
      * @param \stdClass $source
@@ -3395,6 +3507,17 @@ class manager {
      */
     public static function source_has_border_layer(\stdClass $source, int $excludeid = 0): bool {
         return self::get_source_border_layer_record($source, $excludeid) !== null;
+    }
+
+    /**
+     * Detect whether a source already contains another overlay layer.
+     *
+     * @param \stdClass $source
+     * @param int $excludeid
+     * @return bool
+     */
+    public static function source_has_overlay_layer(\stdClass $source, int $excludeid = 0): bool {
+        return self::get_source_overlay_layer_record($source, $excludeid) !== null;
     }
 
     /**
@@ -3417,6 +3540,33 @@ class manager {
                 continue;
             }
             if (!empty($element->borderenabled)) {
+                return $element;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get the first overlay layer stored directly in one source.
+     *
+     * @param \stdClass $source
+     * @param int $excludeid
+     * @param bool $enabledonly
+     * @return \stdClass|null
+     */
+    protected static function get_source_overlay_layer_record(
+        \stdClass $source,
+        int $excludeid = 0,
+        bool $enabledonly = false
+    ): ?\stdClass {
+        foreach (self::get_source_elements($source) as $element) {
+            if ($excludeid > 0 && (int)$element->id === $excludeid) {
+                continue;
+            }
+            if ($enabledonly && empty($element->isenabled)) {
+                continue;
+            }
+            if (!empty($element->overlayenabled)) {
                 return $element;
             }
         }
@@ -3612,6 +3762,27 @@ class manager {
     }
 
     /**
+     * Find an overlay layer in the inherited source chain.
+     *
+     * @param \stdClass $source
+     * @param int $excludeid
+     * @return array|null
+     */
+    public static function get_source_chain_overlay_layer(\stdClass $source, int $excludeid = 0): ?array {
+        foreach (self::get_explicit_source_parent_chain($source, false) as $chainsource) {
+            $overlayrecord = self::get_source_overlay_layer_record($chainsource, $excludeid);
+            if ($overlayrecord) {
+                return [
+                    'source' => $chainsource,
+                    'record' => $overlayrecord,
+                ];
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Detect whether a category source chain already contains a border layer.
      *
      * @param \stdClass $source
@@ -3620,6 +3791,17 @@ class manager {
      */
     public static function source_chain_has_border_layer(\stdClass $source, int $excludeid = 0): bool {
         return self::get_source_chain_border_layer($source, $excludeid) !== null;
+    }
+
+    /**
+     * Detect whether a source chain already contains an overlay layer.
+     *
+     * @param \stdClass $source
+     * @param int $excludeid
+     * @return bool
+     */
+    public static function source_chain_has_overlay_layer(\stdClass $source, int $excludeid = 0): bool {
+        return self::get_source_chain_overlay_layer($source, $excludeid) !== null;
     }
 
     /**
@@ -3638,6 +3820,25 @@ class manager {
             'isinchain' => $inchain,
             'messagekey' => $inchain ? 'sourcechainalreadyhasborder' : 'sourcealreadyhasborder',
             'inlinekey' => $inchain ? 'sourcechainalreadyhasborderinline' : 'sourcealreadyhasborderinline',
+        ];
+    }
+
+    /**
+     * Return overlay conflict state for one source.
+     *
+     * @param \stdClass $source
+     * @param int $excludeid
+     * @return array
+     */
+    public static function get_source_overlay_conflict_state(\stdClass $source, int $excludeid = 0): array {
+        $insource = self::source_has_overlay_layer($source, $excludeid);
+        $inchain = !$insource && self::source_chain_has_overlay_layer($source, $excludeid);
+
+        return [
+            'blocked' => $insource || $inchain,
+            'isinchain' => $inchain,
+            'messagekey' => $inchain ? 'sourcechainalreadyhasoverlay' : 'sourcealreadyhasoverlay',
+            'inlinekey' => $inchain ? 'sourcechainalreadyhasoverlayinline' : 'sourcealreadyhasoverlayinline',
         ];
     }
 
@@ -3712,6 +3913,31 @@ class manager {
     }
 
     /**
+     * Disable active child-source overlays once a parent source owns the chain overlay.
+     *
+     * @param \stdClass $source
+     * @return int
+     */
+    protected static function disable_child_source_overlay_layers(\stdClass $source): int {
+        global $DB;
+
+        $disabledcount = 0;
+        foreach (self::get_explicit_source_descendants($source) as $childsource) {
+            foreach (self::get_source_elements($childsource) as $element) {
+                if (empty($element->overlayenabled) || empty($element->isenabled)) {
+                    continue;
+                }
+                $element->isenabled = 0;
+                $element->timemodified = time();
+                $DB->update_record('local_course_banner_elements', $element);
+                $disabledcount++;
+            }
+        }
+
+        return $disabledcount;
+    }
+
+    /**
      * Count active child-source borders that would be disabled by a parent border.
      *
      * @param \stdClass $source
@@ -3731,6 +3957,25 @@ class manager {
     }
 
     /**
+     * Count active child-source overlays that would be disabled by a parent overlay.
+     *
+     * @param \stdClass $source
+     * @return int
+     */
+    public static function count_active_child_source_overlay_layers(\stdClass $source): int {
+        $count = 0;
+        foreach (self::get_explicit_source_descendants($source) as $childsource) {
+            foreach (self::get_source_elements($childsource) as $element) {
+                if (!empty($element->overlayenabled) && !empty($element->isenabled)) {
+                    $count++;
+                }
+            }
+        }
+
+        return $count;
+    }
+
+    /**
      * Whether one record is a border-only layer.
      *
      * @param \stdClass $record
@@ -3738,6 +3983,16 @@ class manager {
      */
     protected static function is_border_only_layer(\stdClass $record): bool {
         return !self::get_banner_image_file($record) && !empty($record->borderenabled);
+    }
+
+    /**
+     * Whether one record is an overlay-only layer.
+     *
+     * @param \stdClass $record
+     * @return bool
+     */
+    protected static function is_overlay_only_layer(\stdClass $record): bool {
+        return !self::get_banner_image_file($record) && !empty($record->overlayenabled);
     }
 
     /**
@@ -3751,7 +4006,9 @@ class manager {
      * @return bool
      */
     protected static function is_top_image_layer(\stdClass $record): bool {
-        return !self::is_border_only_layer($record) && !empty($record->dynamicimagesizeenabled);
+        return !self::is_border_only_layer($record) &&
+            !self::is_overlay_only_layer($record) &&
+            !empty($record->dynamicimagesizeenabled);
     }
 
     /**
@@ -3761,11 +4018,14 @@ class manager {
      * @return int
      */
     protected static function get_layer_priority(\stdClass $record): int {
-        if (self::is_border_only_layer($record)) {
+        if (self::is_overlay_only_layer($record)) {
             return 1;
         }
+        if (self::is_border_only_layer($record)) {
+            return empty($record->overlayborderabove) ? 0 : 2;
+        }
         if (self::is_top_image_layer($record)) {
-            return 2;
+            return 3;
         }
         return 0;
     }
@@ -3777,7 +4037,7 @@ class manager {
      * @return bool
      */
     protected static function is_locked_order_layer(\stdClass $record): bool {
-        return self::is_border_only_layer($record);
+        return self::is_border_only_layer($record) || self::is_overlay_only_layer($record);
     }
 
     /**
@@ -3857,11 +4117,16 @@ class manager {
         if ($elementid && !empty($data->currentisborderlayer)) {
             $data->borderenabled = 1;
         }
+        if ($elementid && !empty($data->currentisoverlaylayer)) {
+            $data->overlayenabled = 1;
+        }
         $hasborder = !empty($data->borderenabled) && !empty($data->isenabled);
+        $hasoverlay = !empty($data->overlayenabled) && !empty($data->isenabled);
         self::debug_log('save_source_banner_input', [
             'sourcekey' => $source->sourcekey ?? '',
             'elementid' => $elementid,
             'hasborder' => $hasborder ? 1 : 0,
+            'hasoverlay' => $hasoverlay ? 1 : 0,
             'bordersidesvalue_data' => $data->bordersidesvalue ?? null,
             'bordersidesgroup_data' => $data->bordersidesgroup ?? null,
             'post_bordersidesvalue' => $_POST['bordersidesvalue'] ?? null,
@@ -3871,11 +4136,15 @@ class manager {
         if ($hasborder && !empty($borderconflict['blocked'])) {
             throw new \moodle_exception((string)$borderconflict['messagekey'], 'local_course_banner_builder');
         }
-        if (!$elementid && !$hasborder && empty($draftfiles)) {
+        $overlayconflict = self::get_source_overlay_conflict_state($source, $elementid);
+        if ($hasoverlay && !empty($overlayconflict['blocked'])) {
+            throw new \moodle_exception((string)$overlayconflict['messagekey'], 'local_course_banner_builder');
+        }
+        if (!$elementid && !$hasborder && !$hasoverlay && empty($draftfiles)) {
             throw new \moodle_exception('layercontentrequired', 'local_course_banner_builder');
         }
 
-        if (!$elementid && count($draftfiles) > 1) {
+        if (!$elementid && !$hasoverlay && count($draftfiles) > 1) {
             $createdids = [];
             $nextsortorder = self::get_next_sortorder_for_source($source);
             foreach ($draftfiles as $draftindex => $draftfile) {
@@ -3917,11 +4186,13 @@ class manager {
             $record->name = self::get_automatic_layer_name(reset($draftfiles));
         } else if ($record->name === '' && $hasborder) {
             $record->name = self::get_automatic_border_name($source, $elementid);
+        } else if ($record->name === '' && $hasoverlay) {
+            $record->name = self::get_automatic_overlay_name($source, $elementid);
         }
-        $record->sortorder = $hasborder
+        $record->sortorder = ($hasborder || $hasoverlay)
             ? self::get_next_sortorder_for_source($source)
             : max(0, (int)($data->sortorder ?? 0));
-        if (!$elementid && !$hasborder) {
+        if (!$elementid && !$hasborder && !$hasoverlay) {
             self::make_source_sortorder_room($source, $record->sortorder);
         }
         $record->isenabled = empty($data->isenabled) ? 0 : 1;
@@ -3943,11 +4214,14 @@ class manager {
         if ($hasborder && !empty($record->isenabled)) {
             $data->disabledchildborderlayers = self::disable_child_source_border_layers($source);
         }
+        if ($hasoverlay && !empty($record->isenabled)) {
+            $data->disabledchildoverlaylayers = self::disable_child_source_overlay_layers($source);
+        }
 
         if (isset($data->bannerimage_filemanager)) {
-            if (!$elementid && !$hasborder && count($draftfiles) === 1) {
+            if (!$elementid && !$hasborder && !$hasoverlay && count($draftfiles) === 1) {
                 self::copy_draft_file_to_element($record, reset($draftfiles));
-            } else {
+            } else if (!$hasoverlay) {
                 file_save_draft_area_files(
                     $data->bannerimage_filemanager,
                     $context->id,
@@ -4186,6 +4460,41 @@ class manager {
                 property_exists($data, 'borderinnerrounded')) {
             $record->borderinnerrounded = empty($data->borderinnerrounded) ? 0 : 1;
         }
+        if (self::table_field_exists('local_course_banner_elements', 'overlayenabled') &&
+                property_exists($data, 'overlayenabled')) {
+            $record->overlayenabled = empty($data->overlayenabled) ? 0 : 1;
+        }
+        if (self::table_field_exists('local_course_banner_elements', 'overlaytarget') &&
+                property_exists($data, 'overlaytarget')) {
+            $record->overlaytarget = self::normalise_overlay_target((string)($data->overlaytarget ?? self::OVERLAY_TARGET_BOTH));
+        }
+        foreach (['overlaybannercolor', 'overlayslideshowcolor'] as $fieldname) {
+            if (self::table_field_exists('local_course_banner_elements', $fieldname) && property_exists($data, $fieldname)) {
+                $record->{$fieldname} = self::normalise_color_string((string)($data->{$fieldname} ?? '#000000'));
+            }
+        }
+        foreach (['overlaybanneropacity', 'overlayslideshowopacity'] as $fieldname) {
+            if (self::table_field_exists('local_course_banner_elements', $fieldname) && property_exists($data, $fieldname)) {
+                $record->{$fieldname} = self::normalise_percentage((float)($data->{$fieldname} ?? 0), 0.0, 100.0);
+            }
+        }
+        foreach (['overlaytitleabove', 'overlayborderabove'] as $fieldname) {
+            if (self::table_field_exists('local_course_banner_elements', $fieldname) && property_exists($data, $fieldname)) {
+                $record->{$fieldname} = empty($data->{$fieldname}) ? 0 : 1;
+            }
+        }
+    }
+
+    /**
+     * Normalise overlay target.
+     *
+     * @param string $target
+     * @return string
+     */
+    protected static function normalise_overlay_target(string $target): string {
+        return in_array($target, [self::OVERLAY_TARGET_BANNER, self::OVERLAY_TARGET_SLIDESHOW, self::OVERLAY_TARGET_BOTH], true)
+            ? $target
+            : self::OVERLAY_TARGET_BOTH;
     }
 
     /**
@@ -4207,7 +4516,7 @@ class manager {
 
         $source = self::resolve_source(self::get_record_source_key($record));
         $record->name = trim($name);
-        $record->sortorder = self::is_border_only_layer($record)
+        $record->sortorder = self::is_locked_order_layer($record)
             ? self::get_next_sortorder_for_source($source ?: self::resolve_source(self::get_record_source_key($record)))
             : max(0, $sortorder);
         $record->isenabled = $enabled ? 1 : 0;
@@ -4254,7 +4563,7 @@ class manager {
         }
 
         $record->name = trim($name);
-        $record->sortorder = self::is_border_only_layer($record)
+        $record->sortorder = self::is_locked_order_layer($record)
             ? self::get_next_sortorder_for_source($source ?: self::resolve_source(self::get_record_source_key($record)))
             : max(0, $sortorder);
         $record->isenabled = $enabled ? 1 : 0;
@@ -4334,7 +4643,7 @@ class manager {
             }
 
             $record->name = trim((string)($names[$elementid] ?? $record->name));
-            $record->sortorder = self::is_border_only_layer($record)
+            $record->sortorder = self::is_locked_order_layer($record)
                 ? self::get_next_sortorder_for_source($source)
                 : max(0, (int)($sortorders[$elementid] ?? $record->sortorder));
             $record->isenabled = !empty($enabled[$elementid]) ? 1 : 0;
@@ -4829,6 +5138,14 @@ class manager {
                 'borderdashlength' => 24,
                 'bordersides' => 'top,right,bottom,left',
                 'borderinnerrounded' => 0,
+                'overlayenabled' => 0,
+                'overlaytarget' => self::OVERLAY_TARGET_BOTH,
+                'overlaybannercolor' => '#000000',
+                'overlaybanneropacity' => 25,
+                'overlayslideshowcolor' => '#000000',
+                'overlayslideshowopacity' => 38,
+                'overlaytitleabove' => 1,
+                'overlayborderabove' => 1,
                 'fileitemid' => 0,
             ];
         }
@@ -4849,7 +5166,9 @@ class manager {
             'sourcekey' => $source->sourcekey,
             'hasexistingimage' => self::get_banner_image_file($record) ? 1 : 0,
             'currentisborderlayer' => (!self::get_banner_image_file($record) && !empty($record->borderenabled)) ? 1 : 0,
+            'currentisoverlaylayer' => (!self::get_banner_image_file($record) && !empty($record->overlayenabled)) ? 1 : 0,
             'sourcehasborderlayer' => !empty(self::get_source_border_conflict_state($source, (int)$record->id)['blocked']) ? 1 : 0,
+            'sourcehasoverlaylayer' => !empty(self::get_source_overlay_conflict_state($source, (int)$record->id)['blocked']) ? 1 : 0,
             'bordersidesvalue' => implode(',', array_values(array_filter($bordersides, static function(string $side): bool {
                 return $side !== 'all';
             }))),
@@ -4882,6 +5201,14 @@ class manager {
             'bordersides' => $bordersides,
             'bordersidesgroup' => self::get_border_sides_group_defaults($bordersides),
             'borderinnerrounded' => (int)($record->borderinnerrounded ?? 0),
+            'overlayenabled' => (int)($record->overlayenabled ?? 0),
+            'overlaytarget' => self::normalise_overlay_target((string)($record->overlaytarget ?? self::OVERLAY_TARGET_BOTH)),
+            'overlaybannercolor' => (string)($record->overlaybannercolor ?? '#000000'),
+            'overlaybanneropacity' => (float)($record->overlaybanneropacity ?? 25),
+            'overlayslideshowcolor' => (string)($record->overlayslideshowcolor ?? '#000000'),
+            'overlayslideshowopacity' => (float)($record->overlayslideshowopacity ?? 38),
+            'overlaytitleabove' => (int)($record->overlaytitleabove ?? 1),
+            'overlayborderabove' => (int)($record->overlayborderabove ?? 1),
         ];
 
         file_prepare_standard_filemanager(
@@ -5002,6 +5329,7 @@ class manager {
             $fitmode = $settings->fitmode ?? self::FIT_MODE_ORIGINAL;
             $thumbnails = self::export_element_thumbnails($elements);
             $bordercount = self::count_border_elements($elements);
+            $overlaycount = self::count_overlay_elements($elements);
             $parentkey = (string)($settings->sourceparentkey ?? '');
             $isroot = !empty($settings->sourceisroot) || $parentkey === '';
             $parentsource = (!$isroot && $parentkey !== '') ? self::resolve_source($parentkey) : null;
@@ -5040,12 +5368,12 @@ class manager {
                 'fitmodelabel' => self::get_fit_mode_options()[$fitmode] ?? $fitmode,
                 'thumbnails' => $thumbnails,
                 'hasthumbnails' => !empty($thumbnails),
-                'hasbordercaption' => !empty($thumbnails) && $bordercount > 0,
-                'bordercaption' => self::format_additional_border_label($bordercount),
+                'hasbordercaption' => !empty($thumbnails) && ($bordercount > 0 || $overlaycount > 0),
+                'bordercaption' => self::format_additional_layer_label($bordercount, $overlaycount),
                 'hasmorethumbnails' => count($elements) > self::ADMIN_THUMB_LIMIT,
                 'morethumbnailscount' => max(0, count($elements) - self::ADMIN_THUMB_LIMIT),
-                'nothumbnailslabel' => self::format_no_thumbnail_label($bordercount),
-                'nothumbnailsisborderlabel' => $bordercount > 0,
+                'nothumbnailslabel' => self::format_no_thumbnail_label($bordercount, $overlaycount),
+                'nothumbnailsisborderlabel' => $bordercount > 0 || $overlaycount > 0,
                 'sesskey' => sesskey(),
                 'editurl' => (new \moodle_url('/local/course_banner_builder/admin_manage.php', [
                     'categoryid' => $categoryid,
@@ -5108,6 +5436,7 @@ class manager {
                 $fitmode = $settings->fitmode ?? self::FIT_MODE_ORIGINAL;
                 $thumbnails = self::export_element_thumbnails($elements);
                 $bordercount = self::count_border_elements($elements);
+                $overlaycount = self::count_overlay_elements($elements);
                 $parentkey = (string)($settings->sourceparentkey ?? '');
                 $isroot = !empty($settings->sourceisroot) || $parentkey === '';
                 $parentsource = (!$isroot && $parentkey !== '') ? self::resolve_source($parentkey) : null;
@@ -5144,12 +5473,12 @@ class manager {
                     'fitmodelabel' => self::get_fit_mode_options()[$fitmode] ?? $fitmode,
                     'thumbnails' => $thumbnails,
                     'hasthumbnails' => !empty($thumbnails),
-                    'hasbordercaption' => !empty($thumbnails) && $bordercount > 0,
-                    'bordercaption' => self::format_additional_border_label($bordercount),
+                    'hasbordercaption' => !empty($thumbnails) && ($bordercount > 0 || $overlaycount > 0),
+                    'bordercaption' => self::format_additional_layer_label($bordercount, $overlaycount),
                     'hasmorethumbnails' => count($elements) > self::ADMIN_THUMB_LIMIT,
                     'morethumbnailscount' => max(0, count($elements) - self::ADMIN_THUMB_LIMIT),
-                    'nothumbnailslabel' => self::format_no_thumbnail_label($bordercount),
-                    'nothumbnailsisborderlabel' => $bordercount > 0,
+                    'nothumbnailslabel' => self::format_no_thumbnail_label($bordercount, $overlaycount),
+                    'nothumbnailsisborderlabel' => $bordercount > 0 || $overlaycount > 0,
                     'sesskey' => sesskey(),
                     'editurl' => (new \moodle_url('/local/course_banner_builder/admin_manage.php', [
                         'sourcekey' => $source->sourcekey,
@@ -5656,7 +5985,9 @@ class manager {
         }
 
         foreach (self::get_enabled_category_elements_for_course($course) as $layerspec) {
-            if (self::get_banner_image_file($layerspec['record'])) {
+            $record = $layerspec['record'];
+            if (self::get_banner_image_file($record) || !empty($record->borderenabled) ||
+                    self::record_overlay_targets_banner($record) || self::record_overlay_targets_slideshow($record)) {
                 return true;
             }
         }
@@ -6407,21 +6738,29 @@ class manager {
                 $fitoverride = '';
             }
             $bordersummary = self::export_border_summary($record);
+            $overlaysummary = self::export_overlay_summary($record);
             $layersummary = self::export_layer_display_summary($record);
             $isborderlayer = self::is_border_only_layer($record);
+            $isoverlaylayer = self::is_overlay_only_layer($record);
             $isdynamiclayer = self::is_top_image_layer($record);
             $iscroppedlayer = !empty(self::normalise_image_crop($record)['enabled']);
             $islockedlayer = self::is_locked_order_layer($record);
             $rowclass = 'local-course-banner-builder-layer-row';
             if ($isborderlayer) {
                 $rowclass .= ' local-course-banner-builder-layer-row--border';
+            } else if ($isoverlaylayer) {
+                $rowclass .= ' local-course-banner-builder-layer-row--border local-course-banner-builder-layer-row--overlay';
             }
             $orderlocklabel = $isborderlayer
                 ? get_string('borderlayerlockedorderlabel', 'local_course_banner_builder')
-                : get_string('dynamiclayerlockedorderlabel', 'local_course_banner_builder');
+                : ($isoverlaylayer
+                    ? get_string('overlaylayerlockedorderlabel', 'local_course_banner_builder')
+                    : get_string('dynamiclayerlockedorderlabel', 'local_course_banner_builder'));
             $orderlockhelp = $isborderlayer
                 ? get_string('borderlayerlockedorderhelp', 'local_course_banner_builder')
-                : get_string('dynamiclayerlockedorderhelp', 'local_course_banner_builder');
+                : ($isoverlaylayer
+                    ? get_string('overlaylayerlockedorderhelp', 'local_course_banner_builder')
+                    : get_string('dynamiclayerlockedorderhelp', 'local_course_banner_builder'));
             $elements[] = [
                 'id' => (int)$record->id,
                 'rowclass' => $rowclass,
@@ -6429,6 +6768,7 @@ class manager {
                 'name' => $record->name ?: get_string('bannerimage', 'local_course_banner_builder') . ' #' . $record->id,
                 'sortorder' => (int)$record->sortorder,
                 'isborderlayer' => $isborderlayer,
+                'isoverlaylayer' => $isoverlaylayer,
                 'isdynamiclayer' => $isdynamiclayer,
                 'isreorderable' => !$islockedlayer,
                 'hasorderlockhelp' => $islockedlayer,
@@ -6451,20 +6791,23 @@ class manager {
                 'categoryid' => $categoryid,
                 'sourcekey' => $source->sourcekey,
                 'sesskey' => sesskey(),
-                'showfitoverrideselect' => !$isborderlayer,
-                'fitoverrideoptions' => $isborderlayer ? [] : self::export_fit_override_options($fitoverride, $sourcefitmode),
-                'hasfitoverride' => !$isborderlayer && $fitoverride !== '',
+                'showfitoverrideselect' => !$isborderlayer && !$isoverlaylayer,
+                'fitoverrideoptions' => ($isborderlayer || $isoverlaylayer) ? [] : self::export_fit_override_options($fitoverride, $sourcefitmode),
+                'hasfitoverride' => !$isborderlayer && !$isoverlaylayer && $fitoverride !== '',
                 'fitoverridehelp' => get_string('fitoverridehelp', 'local_course_banner_builder'),
-                'fitoverridecellclass' => (!$isborderlayer && $fitoverride !== '') ? 'local-course-banner-builder-override-cell' : '',
+                'fitoverridecellclass' => (!$isborderlayer && !$isoverlaylayer && $fitoverride !== '') ? 'local-course-banner-builder-override-cell' : '',
                 'fitoverridecellstyle' => self::get_layer_override_cell_style($record, $fitoverride !== ''),
-                'fitoverridedisplay' => $isborderlayer
-                    ? get_string('nooverridepossibleonborders', 'local_course_banner_builder')
+                'fitoverridedisplay' => ($isborderlayer || $isoverlaylayer)
+                    ? get_string($isoverlaylayer ? 'nooverridepossibleonoverlays' : 'nooverridepossibleonborders', 'local_course_banner_builder')
                     : '',
                 'haslayersummary' => !empty($layersummary),
                 'layersummaryitems' => $layersummary,
                 'hasbordersummary' => !empty($bordersummary),
                 'bordersummarytitle' => get_string('bordertitle', 'local_course_banner_builder'),
                 'bordersummaryitems' => $bordersummary,
+                'hasoverlaysummary' => !empty($overlaysummary),
+                'overlaysummarytitle' => get_string('overlaytitle', 'local_course_banner_builder'),
+                'overlaysummaryitems' => $overlaysummary,
                 'editurl' => (new \moodle_url($adminpath, [
                     'sourcekey' => $source->sourcekey,
                     'elementid' => $record->id,
@@ -6477,6 +6820,7 @@ class manager {
             ];
         }
         $chainborderlayer = self::source_has_border_layer($source) ? [] : self::export_source_chain_border_row($source);
+        $chainoverlaylayer = self::source_has_overlay_layer($source) ? [] : self::export_source_chain_overlay_row($source);
         $hasconfiguration = $hasstoredsettings || !empty($elements);
 
         $summaryfields = [
@@ -6564,6 +6908,8 @@ class manager {
             'elements' => $elements,
             'haschainborderlayer' => !empty($chainborderlayer),
             'chainborderlayer' => $chainborderlayer,
+            'haschainoverlaylayer' => !empty($chainoverlaylayer),
+            'chainoverlaylayer' => $chainoverlaylayer,
             'summaryfields' => $summaryfields,
             'hassummaryfields' => !empty($summaryfields),
         ];
@@ -6596,6 +6942,39 @@ class manager {
             'bordersummaryitems' => $bordersummary,
             'sourceediturl' => (new \moodle_url('/local/course_banner_builder/admin_manage.php', [
                 'sourcekey' => $bordersource->sourcekey,
+            ]))->out(false),
+        ];
+    }
+
+    /**
+     * Export the inherited overlay row shown in the selected source layer table.
+     *
+     * @param \stdClass $source
+     * @return array
+     */
+    protected static function export_source_chain_overlay_row(\stdClass $source): array {
+        $chainoverlay = self::get_source_chain_overlay_layer($source);
+        if (!$chainoverlay) {
+            return [];
+        }
+
+        $overlaysource = $chainoverlay['source'];
+        $overlayrecord = $chainoverlay['record'];
+        $overlaysummary = self::export_overlay_summary($overlayrecord);
+
+        return [
+            'rowclass' => 'local-course-banner-builder-layer-row--border local-course-banner-builder-layer-row--overlay ' .
+                'local-course-banner-builder-layer-row--chain-border',
+            'actionlabel' => get_string('chainoverlayexistinglabel', 'local_course_banner_builder'),
+            'name' => $overlayrecord->name ?: get_string('layeroverlay', 'local_course_banner_builder') . ' #' .
+                $overlayrecord->id,
+            'sourcelabel' => $overlaysource->label ?? $overlaysource->sourcekey,
+            'enabledlabel' => $overlayrecord->isenabled ? get_string('yes') : get_string('no'),
+            'hasoverlaysummary' => !empty($overlaysummary),
+            'overlaysummarytitle' => get_string('overlaytitle', 'local_course_banner_builder'),
+            'overlaysummaryitems' => $overlaysummary,
+            'sourceediturl' => (new \moodle_url('/local/course_banner_builder/admin_manage.php', [
+                'sourcekey' => $overlaysource->sourcekey,
             ]))->out(false),
         ];
     }
@@ -7424,6 +7803,44 @@ class manager {
     }
 
     /**
+     * Export a readable overlay summary for one layer row.
+     *
+     * @param \stdClass $record
+     * @return array
+     */
+    protected static function export_overlay_summary(\stdClass $record): array {
+        if (empty($record->overlayenabled)) {
+            return [];
+        }
+
+        $target = self::normalise_overlay_target((string)($record->overlaytarget ?? self::OVERLAY_TARGET_BOTH));
+        return [
+            [
+                'label' => get_string('overlaytarget', 'local_course_banner_builder'),
+                'value' => self::get_overlay_target_options()[$target] ?? $target,
+            ],
+            [
+                'label' => get_string('overlaybannerappearance', 'local_course_banner_builder'),
+                'value' => self::normalise_color_string((string)($record->overlaybannercolor ?? '#000000')) . ' / ' .
+                    self::format_css_percentage((float)($record->overlaybanneropacity ?? 25)),
+            ],
+            [
+                'label' => get_string('overlayslideshowappearance', 'local_course_banner_builder'),
+                'value' => self::normalise_color_string((string)($record->overlayslideshowcolor ?? '#000000')) . ' / ' .
+                    self::format_css_percentage((float)($record->overlayslideshowopacity ?? 38)),
+            ],
+            [
+                'label' => get_string('overlaytitleabove', 'local_course_banner_builder'),
+                'value' => !empty($record->overlaytitleabove) ? get_string('yes') : get_string('no'),
+            ],
+            [
+                'label' => get_string('overlayborderabove', 'local_course_banner_builder'),
+                'value' => !empty($record->overlayborderabove) ? get_string('yes') : get_string('no'),
+            ],
+        ];
+    }
+
+    /**
      * Export select options for inline source setting editors.
      *
      * @param array $options
@@ -7503,6 +7920,10 @@ class manager {
 
         if (!empty($record->borderenabled)) {
             return self::export_modal_preview_border_layer($record, $iscontext, $isinherited);
+        }
+
+        if (self::record_overlay_targets_banner($record)) {
+            return self::export_modal_preview_overlay_layer($record, $iscontext, $isinherited);
         }
 
         return null;
@@ -7587,6 +8008,36 @@ class manager {
             'sidestyles' => self::build_preview_border_side_styles($record),
             'iscontext' => $iscontext,
             'isinherited' => $isinherited,
+        ];
+    }
+
+    /**
+     * Export one overlay preview layer.
+     *
+     * @param \stdClass $record
+     * @param bool $iscontext
+     * @param bool $isinherited
+     * @return array
+     */
+    protected static function export_modal_preview_overlay_layer(
+        \stdClass $record,
+        bool $iscontext,
+        bool $isinherited
+    ): array {
+        $color = self::normalise_color_string((string)($record->overlaybannercolor ?? '#000000'));
+        $opacity = self::normalise_percentage((float)($record->overlaybanneropacity ?? 25), 0.0, 100.0) / 100;
+
+        return [
+            'type' => 'overlay',
+            'id' => (int)($record->id ?? 0),
+            'name' => trim((string)($record->name ?? '')),
+            'sortorder' => (int)($record->sortorder ?? 0),
+            'zindex' => self::get_preview_layer_zindex($record),
+            'wrapperstyle' => 'background: ' . self::css_rgba_from_color($color, $opacity) . ';',
+            'target' => self::normalise_overlay_target((string)($record->overlaytarget ?? self::OVERLAY_TARGET_BOTH)),
+            'iscontext' => $iscontext,
+            'isinherited' => $isinherited,
+            'enabled' => !empty($record->isenabled),
         ];
     }
 
@@ -7917,6 +8368,22 @@ class manager {
     }
 
     /**
+     * Count overlay-enabled elements inside one source.
+     *
+     * @param array $elements
+     * @return int
+     */
+    protected static function count_overlay_elements(array $elements): int {
+        $count = 0;
+        foreach ($elements as $element) {
+            if (!empty($element->overlayenabled) && !empty($element->isenabled)) {
+                $count++;
+            }
+        }
+        return $count;
+    }
+
+    /**
      * Build the admin layer count label for configured sources.
      *
      * @param int $layercount
@@ -7933,7 +8400,19 @@ class manager {
      * @param int $bordercount
      * @return string
      */
-    protected static function format_no_thumbnail_label(int $bordercount): string {
+    protected static function format_no_thumbnail_label(int $bordercount, int $overlaycount = 0): string {
+        if ($bordercount > 0 && $overlaycount > 0) {
+            return get_string('borderandoverlaylayercount', 'local_course_banner_builder', (object)[
+                'borders' => $bordercount,
+                'overlays' => $overlaycount,
+            ]);
+        }
+        if ($overlaycount > 0) {
+            return $overlaycount . ' ' . get_string(
+                $overlaycount > 1 ? 'overlaylayerplural' : 'overlaylayersingular',
+                'local_course_banner_builder'
+            );
+        }
         if ($bordercount > 0) {
             return $bordercount . ' ' . get_string(
                 $bordercount > 1 ? 'borderlayerplural' : 'borderlayersingular',
@@ -7956,6 +8435,26 @@ class manager {
         }
 
         return get_string('additionalborderlayers', 'local_course_banner_builder', $bordercount);
+    }
+
+    /**
+     * Build the compact non-image layer caption shown below image thumbnails.
+     *
+     * @param int $bordercount
+     * @param int $overlaycount
+     * @return string
+     */
+    protected static function format_additional_layer_label(int $bordercount, int $overlaycount): string {
+        if ($bordercount > 0 && $overlaycount > 0) {
+            return get_string('additionalborderandoverlaylayers', 'local_course_banner_builder', (object)[
+                'borders' => $bordercount,
+                'overlays' => $overlaycount,
+            ]);
+        }
+        if ($overlaycount > 0) {
+            return get_string('additionaloverlaylayers', 'local_course_banner_builder', $overlaycount);
+        }
+        return self::format_additional_border_label($bordercount);
     }
 
     /**
@@ -8717,6 +9216,14 @@ class manager {
             'borderdashlength' => (int)($record->borderdashlength ?? 24),
             'bordersides' => $record->bordersides ?? 'top,right,bottom,left',
             'borderinnerrounded' => (int)($record->borderinnerrounded ?? 0),
+            'overlayenabled' => (int)($record->overlayenabled ?? 0),
+            'overlaytarget' => $record->overlaytarget ?? self::OVERLAY_TARGET_BOTH,
+            'overlaybannercolor' => $record->overlaybannercolor ?? '#000000',
+            'overlaybanneropacity' => (float)($record->overlaybanneropacity ?? 25),
+            'overlayslideshowcolor' => $record->overlayslideshowcolor ?? '#000000',
+            'overlayslideshowopacity' => (float)($record->overlayslideshowopacity ?? 38),
+            'overlaytitleabove' => (int)($record->overlaytitleabove ?? 1),
+            'overlayborderabove' => (int)($record->overlayborderabove ?? 1),
             'filename' => $file ? $file->get_filename() : null,
             'archivepath' => $file ? $archiveprefix . '/elements/' . (int)$record->id . '_' .
                 clean_filename($file->get_filename()) : null,
@@ -9539,6 +10046,7 @@ class manager {
         $record = self::create_source_element($source);
         foreach ([
             'elementtype', 'name', 'fitmodeoverride', 'positionanchor', 'bordercolor', 'borderstyle', 'bordersides',
+            'overlaytarget', 'overlaybannercolor', 'overlayslideshowcolor',
         ] as $field) {
             if (self::table_field_exists('local_course_banner_elements', $field) || property_exists($record, $field)) {
                 $record->{$field} = $elementdata[$field] ?? $record->{$field};
@@ -9546,7 +10054,7 @@ class manager {
         }
         foreach ([
             'sortorder', 'isenabled', 'customsizekeepaspect', 'dynamicimagesizeenabled', 'imagecropenabled', 'borderenabled',
-            'borderdashlength', 'borderinnerrounded',
+            'borderdashlength', 'borderinnerrounded', 'overlayenabled', 'overlaytitleabove', 'overlayborderabove',
         ] as $field) {
             if (self::table_field_exists('local_course_banner_elements', $field) || property_exists($record, $field)) {
                 $record->{$field} = (int)($elementdata[$field] ?? $record->{$field});
@@ -9556,7 +10064,7 @@ class manager {
             'offsettoppercent', 'offsetrightpercent', 'offsetbottompercent', 'offsetleftpercent',
             'customwidthpercent', 'customheightpercent', 'imageopacity', 'imagecropleftpercent',
             'imagecroptoppercent', 'imagecropwidthpercent', 'imagecropheightpercent', 'borderwidth',
-            'borderopacity', 'borderfade',
+            'borderopacity', 'borderfade', 'overlaybanneropacity', 'overlayslideshowopacity',
         ] as $field) {
             if (self::table_field_exists('local_course_banner_elements', $field) || property_exists($record, $field)) {
                 $record->{$field} = (float)($elementdata[$field] ?? $record->{$field});
@@ -9705,7 +10213,8 @@ class manager {
         $overviewlayers = [];
         foreach (self::sort_layer_specs($layerspecs) as $layerspec) {
             $record = $layerspec['record'];
-            if (self::get_banner_image_file($record) || !empty($record->borderenabled)) {
+            if (self::get_banner_image_file($record) || !empty($record->borderenabled) ||
+                    self::record_overlay_targets_banner($record)) {
                 $overviewlayers[] = $layerspec;
             }
         }
@@ -9789,9 +10298,13 @@ class manager {
         $layerspecs = self::sort_layer_specs($layerspecs);
         $imagelayers = [];
         $borderrecords = [];
+        $overlayrecords = [];
 
         foreach ($layerspecs as $layerspec) {
             $record = $layerspec['record'];
+            if (self::record_overlay_targets_banner($record)) {
+                $overlayrecords[] = $record;
+            }
             if (!empty($record->borderenabled)) {
                 $borderrecord = clone $record;
                 $borderrecord->borderinnerrounded = 0;
@@ -9806,7 +10319,7 @@ class manager {
             }
         }
 
-        if (empty($imagelayers) && empty($borderrecords)) {
+        if (empty($imagelayers) && empty($borderrecords) && empty($overlayrecords)) {
             return null;
         }
 
@@ -9844,6 +10357,10 @@ class manager {
                     imagedestroy($banner);
                 }
             }
+        }
+
+        foreach ($overlayrecords as $overlayrecord) {
+            self::draw_layer_overlay($canvas, $overlayrecord, $width, $height);
         }
 
         foreach ($borderrecords as $borderrecord) {
@@ -9920,7 +10437,8 @@ class manager {
             $record = $layerspec['record'];
             $fitmode = $layerspec['fitmode'] ?? self::FIT_MODE_BANNER;
             $file = self::get_banner_image_file($record);
-            if (!$file && empty($record->borderenabled)) {
+            $isoverlay = self::record_overlay_targets_banner($record);
+            if (!$file && empty($record->borderenabled) && !$isoverlay) {
                 continue;
             }
 
@@ -9937,6 +10455,9 @@ class manager {
             }
 
             if (!$file) {
+                if ($isoverlay) {
+                    self::draw_layer_overlay($canvas, $record, $width, $height);
+                }
                 if (!empty($record->borderenabled) && !$cardmode) {
                     self::draw_layer_border(
                         $canvas,
@@ -10828,6 +11349,85 @@ class manager {
             self::POSITION_BOTTOM_RIGHT => [$rightx, $bottomy],
             default => [$centerx, $centery],
         };
+    }
+
+    /**
+     * Whether an overlay layer should affect the generated banner/card image.
+     *
+     * @param \stdClass $record
+     * @return bool
+     */
+    protected static function record_overlay_targets_banner(\stdClass $record): bool {
+        if (empty($record->overlayenabled) || empty($record->isenabled)) {
+            return false;
+        }
+
+        $target = self::normalise_overlay_target((string)($record->overlaytarget ?? self::OVERLAY_TARGET_BOTH));
+        return in_array($target, [self::OVERLAY_TARGET_BANNER, self::OVERLAY_TARGET_BOTH], true);
+    }
+
+    /**
+     * Whether an overlay layer should override slideshow overlay settings.
+     *
+     * @param \stdClass $record
+     * @return bool
+     */
+    protected static function record_overlay_targets_slideshow(\stdClass $record): bool {
+        if (empty($record->overlayenabled) || empty($record->isenabled)) {
+            return false;
+        }
+
+        $target = self::normalise_overlay_target((string)($record->overlaytarget ?? self::OVERLAY_TARGET_BOTH));
+        return in_array($target, [self::OVERLAY_TARGET_SLIDESHOW, self::OVERLAY_TARGET_BOTH], true);
+    }
+
+    /**
+     * Draw a full-surface overlay on the banner canvas.
+     *
+     * @param resource|\GdImage $canvas
+     * @param \stdClass $record
+     * @param int $canvaswidth
+     * @param int $canvasheight
+     * @return void
+     */
+    protected static function draw_layer_overlay($canvas, \stdClass $record, int $canvaswidth, int $canvasheight): void {
+        if (!self::record_overlay_targets_banner($record)) {
+            return;
+        }
+
+        $rgba = self::parse_color_to_rgba(self::normalise_color_string((string)($record->overlaybannercolor ?? '#000000')));
+        if (!$rgba) {
+            $rgba = [0, 0, 0, 0];
+        }
+        $opacity = self::normalise_percentage((float)($record->overlaybanneropacity ?? 25), 0.0, 100.0) / 100;
+        $alpha = 127 - (int)round($opacity * 127);
+        if (isset($rgba[3]) && $rgba[3] > 0) {
+            $alpha = max($alpha, (int)$rgba[3]);
+        }
+
+        imagealphablending($canvas, true);
+        $color = imagecolorallocatealpha($canvas, (int)$rgba[0], (int)$rgba[1], (int)$rgba[2], $alpha);
+        if ($color !== false) {
+            imagefilledrectangle($canvas, 0, 0, max(0, $canvaswidth - 1), max(0, $canvasheight - 1), $color);
+        }
+    }
+
+    /**
+     * Convert a stored colour and opacity to a CSS rgba() value.
+     *
+     * @param string $color
+     * @param float $opacity
+     * @return string
+     */
+    protected static function css_rgba_from_color(string $color, float $opacity): string {
+        $rgba = self::parse_color_to_rgba($color);
+        if (!$rgba) {
+            $rgba = [0, 0, 0, 0];
+        }
+        $baseopacity = 1 - (((int)($rgba[3] ?? 0)) / 127);
+        $effectiveopacity = self::normalise_unit_float($opacity, 0.25) * $baseopacity;
+        return 'rgba(' . (int)$rgba[0] . ', ' . (int)$rgba[1] . ', ' . (int)$rgba[2] . ', ' .
+            round($effectiveopacity, 3) . ')';
     }
 
     /**
