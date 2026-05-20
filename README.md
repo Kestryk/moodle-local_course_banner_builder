@@ -1,5 +1,7 @@
 # Local Course Banner Builder (Moodle Plugin)
 
+This plugin is in a beta test and I am already working on some fixes for a soon to be released updated version. Don't hesitate to provide any feedback, sitbacks and bugs you may have encountered. 
+
 > Overview
 
 Course Banner Builder is a Moodle local plugin that helps administrators build,
