@@ -156,10 +156,6 @@ define(['core/config'], function(Config) {
      * @returns {Boolean}
      */
     const isSquareCourseBoxTarget = function(target) {
-        if (target.closest('.coursebox')) {
-            return true;
-        }
-
         const rect = target.getBoundingClientRect();
         if (rect.width > 0 && rect.height > 0) {
             const ratio = rect.width / rect.height;
@@ -173,7 +169,7 @@ define(['core/config'], function(Config) {
 
         const rootRect = root.getBoundingClientRect();
         if (rootRect.width <= 0 || rootRect.height <= 0) {
-            return false;
+            return !!target.closest('.coursebox');
         }
 
         const rootRatio = rootRect.width / rootRect.height;

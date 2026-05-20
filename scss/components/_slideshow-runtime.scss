@@ -84,6 +84,7 @@
     gap: clamp(0.35rem, 1.2cqh, 0.7rem);
     width: max-content;
     max-width: calc(100% - 1rem);
+    min-width: 0;
     white-space: nowrap;
 }
 
@@ -91,8 +92,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    flex: 0 0 auto;
-    gap: 0.24em;
+    flex: 0 1 auto;
+    gap: 0.28em;
     align-self: auto;
     padding: calc(var(--local-course-banner-builder-slideshow-label-padding, 12px) * 0.5)
         var(--local-course-banner-builder-slideshow-label-padding, 12px);
@@ -108,7 +109,9 @@
     font-style: var(--local-course-banner-builder-slideshow-label-font-style, normal);
     letter-spacing: 0;
     line-height: 1;
-    min-height: calc(1em + (var(--local-course-banner-builder-slideshow-label-padding, 12px) * 1.05));
+    min-width: 0;
+    max-width: 100%;
+    min-height: calc(1.16em + (var(--local-course-banner-builder-slideshow-label-padding, 12px) * 1.05));
     box-shadow: var(--local-course-banner-builder-slideshow-label-shadow-x, 0)
         var(--local-course-banner-builder-slideshow-label-shadow-y, 0)
         var(--local-course-banner-builder-slideshow-label-shadow-blur, 8px)
@@ -124,21 +127,34 @@
     align-items: center;
     justify-content: center;
     line-height: 1;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
     transform: scale(var(--local-course-banner-builder-slideshow-label-text-scale, 1));
     transform-origin: center;
+    white-space: nowrap;
 }
 
 .local-course-banner-builder-slideshow-label .fa,
 .local-course-banner-builder-slideshow-label .icon,
 .local-course-banner-builder-slideshow-label-icon {
-    margin: 0;
+    margin: 0 0.22em 0 0;
     font-size: 1.08em;
     line-height: 1;
 }
 
+.local-course-banner-builder-slideshow-label .fa:last-child,
+.local-course-banner-builder-slideshow-label .icon:last-child,
+.local-course-banner-builder-slideshow-label-icon:last-child {
+    margin-right: 0;
+}
+
 .local-course-banner-builder-slideshow-label-icon {
-    width: 1.16em;
-    height: 1.16em;
+    width: 1.16em !important;
+    height: 1.16em !important;
+    max-width: 1.16em;
+    max-height: 1.16em;
     object-fit: contain;
     flex: 0 0 auto;
 }
@@ -149,7 +165,7 @@
     background: var(--local-course-banner-builder-slideshow-label-courseorigin-bg, rgba(255, 255, 255, 0.88));
     border-color: var(--local-course-banner-builder-slideshow-label-courseorigin-border, #e5e7eb);
     color: var(--local-course-banner-builder-slideshow-label-courseorigin-color, #111827);
-    min-height: calc(1.1em + clamp(0.45rem, min(2.2cqh, 0.28cqw), 0.74rem));
+    min-height: calc(1.24em + (var(--local-course-banner-builder-slideshow-label-padding, 12px) * 1.05));
 }
 
 .local-course-banner-builder-slideshow-label--forums {
@@ -284,7 +300,7 @@
     font-style: var(--local-course-banner-builder-slideshow-body-font-style, normal);
     text-decoration: var(--local-course-banner-builder-slideshow-body-text-decoration, none);
     text-transform: var(--local-course-banner-builder-slideshow-body-text-transform, none);
-    line-height: 1.35;
+    line-height: var(--local-course-banner-builder-slideshow-body-line-height, 135%);
     text-align: inherit;
     overflow-wrap: anywhere;
 }
@@ -377,6 +393,7 @@
     border-radius: 999px;
     background: rgba(0, 0, 0, 0.28);
     color: #fff;
+    line-height: 1;
     transform: translateY(-50%);
     pointer-events: auto;
     transition: background-color 160ms ease, transform 160ms ease;
@@ -384,10 +401,14 @@
 
 .local-course-banner-builder-slideshow-nav .icon,
 .local-course-banner-builder-slideshow-nav .fa {
-    width: auto;
-    height: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1em;
+    height: 1em;
     margin: 0;
     line-height: 1;
+    text-align: center;
 }
 
 .local-course-banner-builder-slideshow-nav:hover,
@@ -401,8 +422,18 @@
     left: clamp(0.6rem, 1.8vw, 1.5rem);
 }
 
+.local-course-banner-builder-slideshow-nav--prev .icon,
+.local-course-banner-builder-slideshow-nav--prev .fa {
+    transform: translateX(-0.04em);
+}
+
 .local-course-banner-builder-slideshow-nav--next {
     right: clamp(0.6rem, 1.8vw, 1.5rem);
+}
+
+.local-course-banner-builder-slideshow-nav--next .icon,
+.local-course-banner-builder-slideshow-nav--next .fa {
+    transform: translateX(0.04em);
 }
 
 .local-course-banner-builder-slideshow-dots {

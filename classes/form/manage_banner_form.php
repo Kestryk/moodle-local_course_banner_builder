@@ -885,13 +885,11 @@ class manage_banner_form extends \moodleform {
                 'class' => 'btn btn-link p-0 icon-no-margin local-course-banner-builder-preview-aspect-lock',
                 'data-action' => 'local-course-banner-builder-toggle-preview-aspect-lock',
                 'data-preview-aspect-lock' => '1',
-                'data-toggle' => 'popover',
+                'data-local-course-banner-builder-hover-popover' => '1',
                 'data-placement' => 'top',
                 'data-content' => '<div class="no-overflow"><p>' . s($aspectlocklabel) . '</p></div>',
                 'data-html' => 'true',
-                'data-trigger' => 'hover',
                 'aria-label' => $aspectlocklabel,
-                'title' => $aspectlocklabel,
             ]);
             $attributes['data-preview-current-layer'] = '1';
             $content .= \html_writer::span('', 'local-course-banner-builder-preview-resize-handle', [

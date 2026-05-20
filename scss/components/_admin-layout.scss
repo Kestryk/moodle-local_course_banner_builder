@@ -996,6 +996,16 @@
     min-width: 100%;
 }
 
+.local-course-banner-builder-summary [data-source-dropdown="summary-sourceparent"] .local-course-banner-builder-source-dropdown-menu {
+    width: min(34rem, calc(100vw - 4rem));
+    min-width: min(34rem, calc(100vw - 4rem));
+    max-width: none;
+}
+
+.local-course-banner-builder-summary [data-source-dropdown="summary-sourceparent"] .local-course-banner-builder-source-dropdown-search {
+    min-width: min(30rem, calc(100vw - 6rem));
+}
+
 .modal .local-course-banner-builder-toggle-button-row {
     display: flex !important;
     justify-content: center !important;
@@ -1562,6 +1572,7 @@ button[data-toggler="drawers"][data-target="theme_boost-drawers-blocks"] {
     margin-right: 0.12rem !important;
     text-align: center;
     font-size: 0.82rem;
+    pointer-events: none;
 }
 
 .local-course-banner-builder-source-preview-button > span {
@@ -1570,4 +1581,5 @@ button[data-toggler="drawers"][data-target="theme_boost-drawers-blocks"] {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    pointer-events: none;
 }

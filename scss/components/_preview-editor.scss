@@ -712,6 +712,16 @@
     min-width: 100%;
 }
 
+.local-course-banner-builder-admin--native .local-course-banner-builder-summary [data-source-dropdown="summary-sourceparent"] .local-course-banner-builder-source-dropdown-menu {
+    width: min(34rem, calc(100vw - 4rem));
+    min-width: min(34rem, calc(100vw - 4rem));
+    max-width: none;
+}
+
+.local-course-banner-builder-admin--native .local-course-banner-builder-summary [data-source-dropdown="summary-sourceparent"] .local-course-banner-builder-source-dropdown-search {
+    min-width: min(30rem, calc(100vw - 6rem));
+}
+
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-preview {
     width: 148px;
     padding: 0.25rem;

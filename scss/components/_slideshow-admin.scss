@@ -473,6 +473,7 @@
 .local-course-banner-builder-slideshow-label-color-sample.local-course-banner-builder-slideshow-label {
     border-width: var(--local-course-banner-builder-slideshow-label-border-width, 1px);
     opacity: var(--local-course-banner-builder-slideshow-label-opacity, 1);
+    max-width: 100%;
     padding:
         calc(var(--local-course-banner-builder-slideshow-label-padding, 12px) * 0.32)
         calc(var(--local-course-banner-builder-slideshow-label-padding, 12px) * 0.72);
@@ -500,17 +501,23 @@
     margin-top: 1rem;
 }
 
-@media (max-width: 1280px) {
+@media (max-width: 1480px) {
     .local-course-banner-builder-slideshow-label-color-row {
         grid-template-columns:
             minmax(7rem, 9rem)
-            repeat(4, minmax(2rem, 2.25rem) minmax(4.2rem, 1fr))
-            minmax(6.5rem, 9rem);
+            repeat(4, minmax(2rem, 2.25rem) minmax(4.2rem, 1fr));
         column-gap: 0.35rem;
     }
 
+    .local-course-banner-builder-slideshow-label-color-heading--sample {
+        display: none;
+    }
+
     .local-course-banner-builder-slideshow-label-color-sample {
+        grid-column: 1 / -1;
+        justify-self: center;
         min-width: 0;
+        width: max-content;
         padding-right: 0.45rem;
         padding-left: 0.45rem;
         font-size: 0.72rem !important;
@@ -535,7 +542,7 @@
     .local-course-banner-builder-slideshow-label-color-heading--sample,
     .local-course-banner-builder-slideshow-label-color-sample {
         grid-column: 1 / -1;
-        justify-self: start;
+        justify-self: center;
         max-width: 100%;
     }
 }

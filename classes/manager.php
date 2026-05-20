@@ -918,6 +918,16 @@ class manager {
     }
 
     /**
+     * Whether teacher-managed course overview images should override generated course banners.
+     *
+     * @return bool
+     */
+    public static function course_custom_overview_images_enabled(): bool {
+        $enabled = get_config('local_course_banner_builder', 'coursecustomoverviewimagesenabled');
+        return $enabled === false ? true : (bool)$enabled;
+    }
+
+    /**
      * Whether the site-wide banner should be displayed.
      *
      * @return bool
@@ -1015,6 +1025,7 @@ class manager {
             'labelfontfamily' => '',
             'labeltextcolor' => '#111827',
             'labeltextsize' => 100,
+            'bodylineheight' => 135,
         ];
     }
 
@@ -1220,6 +1231,7 @@ class manager {
             'labelfontfamily' => $fontstyle('labelfontfamily'),
             'labeltextcolor' => $colourstyle('labeltextcolor'),
             'labeltextsize' => $rangestyle('labeltextsize', 160),
+            'bodylineheight' => $rangestyle('bodylineheight', 200),
             'titlefontsize' => max(25, min(100, (int)(get_config('local_course_banner_builder', $prefix . 'titlefontsize') ?: self::SLIDESHOW_DEFAULT_TITLE_FONT_PERCENT))),
             'bodyfontsize' => max(25, min(100, (int)(get_config('local_course_banner_builder', $prefix . 'bodyfontsize') ?: self::SLIDESHOW_DEFAULT_BODY_FONT_PERCENT))),
             'actionsize' => max(25, min(100, (int)(get_config('local_course_banner_builder', $prefix . 'actionsize') ?: self::SLIDESHOW_DEFAULT_ACTION_SIZE_PERCENT))),
@@ -1405,6 +1417,7 @@ class manager {
             'labelshadowblur' => [0, 80],
             'labelshadowdistance' => [0, 60],
             'labelshadowdirection' => [0, 360],
+            'bodylineheight' => [80, 200],
         ] as $field => $bounds) {
             set_config(
                 $prefix . $field,
@@ -1563,6 +1576,7 @@ class manager {
             'overlayopacity' => self::SLIDESHOW_DEFAULT_OVERLAY_OPACITY * 100,
             'titlefontsize' => self::SLIDESHOW_DEFAULT_TITLE_FONT_PERCENT,
             'bodyfontsize' => self::SLIDESHOW_DEFAULT_BODY_FONT_PERCENT,
+            'bodylineheight' => 135,
             'actionsize' => self::SLIDESHOW_DEFAULT_ACTION_SIZE_PERCENT,
             'actionwidth' => self::SLIDESHOW_DEFAULT_ACTION_WIDTH_PERCENT,
             'actionheight' => self::SLIDESHOW_DEFAULT_ACTION_HEIGHT_PERCENT,
@@ -1697,6 +1711,17 @@ class manager {
         ]);
         $slides = array_slice($slides, 0, 12);
         $styledefaults = self::get_default_slideshow_style_values();
+        $labely = self::normalise_slideshow_position_percent(
+            $config['labely'] ?? null,
+            self::SLIDESHOW_DEFAULT_LABEL_Y
+        );
+        $bannerformat = $context === self::SLIDESHOW_CONTEXT_SITE ?
+            self::get_site_banner_format() :
+            self::get_course_banner_format();
+        if ($bannerformat === self::BANNER_FORMAT_FULLWIDTH_TOP_COMPACT &&
+                abs($labely - self::SLIDESHOW_DEFAULT_LABEL_Y) < 0.001) {
+            $labely = 18.0;
+        }
 
         return [
             'context' => self::normalise_slideshow_context($context),
@@ -1739,6 +1764,7 @@ class manager {
             'labelTextSizePercent' => max(25, min(160, (int)($config['labeltextsize'] ?? $styledefaults['labeltextsize']))),
             'titleFontPercent' => max(25, min(100, (int)($config['titlefontsize'] ?? self::SLIDESHOW_DEFAULT_TITLE_FONT_PERCENT))),
             'bodyFontPercent' => max(25, min(100, (int)($config['bodyfontsize'] ?? self::SLIDESHOW_DEFAULT_BODY_FONT_PERCENT))),
+            'bodyLineHeightPercent' => max(80, min(200, (int)($config['bodylineheight'] ?? $styledefaults['bodylineheight']))),
             'actionSizePercent' => max(25, min(100, (int)($config['actionsize'] ?? self::SLIDESHOW_DEFAULT_ACTION_SIZE_PERCENT))),
             'actionWidthPercent' => max(25, min(100, (int)($config['actionwidth'] ?? self::SLIDESHOW_DEFAULT_ACTION_WIDTH_PERCENT))),
             'actionHeightPercent' => max(25, min(100, (int)($config['actionheight'] ?? self::SLIDESHOW_DEFAULT_ACTION_HEIGHT_PERCENT))),
@@ -1792,7 +1818,7 @@ class manager {
             'actionX' => self::normalise_slideshow_position_percent($config['actionx'] ?? null, self::SLIDESHOW_DEFAULT_ACTION_X),
             'actionY' => self::normalise_slideshow_position_percent($config['actiony'] ?? null, self::SLIDESHOW_DEFAULT_ACTION_Y),
             'labelX' => self::normalise_slideshow_position_percent($config['labelx'] ?? null, self::SLIDESHOW_DEFAULT_LABEL_X),
-            'labelY' => self::normalise_slideshow_position_percent($config['labely'] ?? null, self::SLIDESHOW_DEFAULT_LABEL_Y),
+            'labelY' => $labely,
             'slides' => array_values($slides),
             'strings' => [
                 'previous' => get_string('slideshowprevious', 'local_course_banner_builder'),
@@ -1883,12 +1909,12 @@ class manager {
             $title = trim((string)$record->subject) !== '' ? (string)$record->subject : (string)$record->discussionname;
             $body = self::normalise_slideshow_text((string)$record->message, 180);
             $slides[] = [
-                'type' => $assiteannouncements ? self::SLIDESHOW_TYPE_SITEANNOUNCEMENTS : self::SLIDESHOW_TYPE_FORUMS,
-                'label' => $assiteannouncements
+                'type' => ($assiteannouncements || $issite)
+                    ? self::SLIDESHOW_TYPE_SITEANNOUNCEMENTS
+                    : self::SLIDESHOW_TYPE_FORUMS,
+                'label' => ($assiteannouncements || $issite)
                     ? get_string('slideshow:type:siteannouncements', 'local_course_banner_builder')
-                    : ($issite
-                    ? get_string('slideshow:type:siteforum', 'local_course_banner_builder')
-                    : get_string('slideshow:type:courseforum', 'local_course_banner_builder')),
+                    : get_string('slideshow:type:courseforum', 'local_course_banner_builder'),
                 'title' => format_string($title, true, ['context' => $modulecontext ?: \context_system::instance()]),
                 'meta' => format_string((string)$record->forumname) . ' · ' . userdate((int)$record->created, get_string('strftimedatetimeshort', 'core_langconfig')),
                 'body' => $body,
@@ -2497,10 +2523,9 @@ class manager {
     /**
      * Convert a border width for generated course-card thumbnails.
      *
-     * Course cards are generated on a square canvas, but border thickness is
-     * authored against the 4:1 banner height. Use a virtual banner height so
-     * thick borders keep the intended proportion instead of becoming blocky
-     * when rendered inside a square thumbnail.
+     * Course-card borders are decorative thumbnails, so the authored percent is
+     * scaled down and capped against the thumbnail's shortest side. This keeps a
+     * visible frame without allowing an admin banner border to swallow the card.
      *
      * @param float $percent
      * @param int $width
@@ -2513,8 +2538,9 @@ class manager {
             return 0;
         }
 
-        $virtualbannerheight = max(1, (int)round(min($height, $width / 4)));
-        return max(1, (int)round($virtualbannerheight * $percent / 100));
+        $reference = max(1, min($width, $height));
+        $thumbnailpercent = min(8.0, $percent * 0.35);
+        return max(1, (int)round($reference * $thumbnailpercent / 100));
     }
 
     /**
@@ -5735,20 +5761,36 @@ class manager {
      * @return void
      */
     public static function sync_courses_for_category_tree(int $categoryid): void {
+        foreach (self::get_courses_in_category_tree($categoryid) as $course) {
+            try {
+                self::sync_course_overview_image($course);
+            } catch (\Throwable $e) {
+                debugging('Course banner sync failed for course ' . $course->id . ': ' . $e->getMessage(), DEBUG_DEVELOPER);
+            }
+        }
+    }
+
+    /**
+     * Get all courses in one category tree.
+     *
+     * @param int $categoryid
+     * @return \stdClass[]
+     */
+    protected static function get_courses_in_category_tree(int $categoryid): array {
         global $DB;
 
         if (!$categoryid) {
-            return;
+            return [];
         }
 
         $category = $DB->get_record('course_categories', ['id' => $categoryid], 'id,path', IGNORE_MISSING);
         if (!$category) {
-            return;
+            return [];
         }
 
         $categorypath = trim((string)$category->path, '/');
         if ($categorypath === '') {
-            return;
+            return [];
         }
 
         $likepath = $DB->sql_like('path', ':path', false, false);
@@ -5762,15 +5804,8 @@ class manager {
             ]
         );
         [$insql, $params] = $DB->get_in_or_equal($categoryids, SQL_PARAMS_NAMED);
-        $courses = $DB->get_records_select('course', 'category ' . $insql, $params, '', 'id, category');
 
-        foreach ($courses as $course) {
-            try {
-                self::sync_course_overview_image($course);
-            } catch (\Throwable $e) {
-                debugging('Course banner sync failed for course ' . $course->id . ': ' . $e->getMessage(), DEBUG_DEVELOPER);
-            }
-        }
+        return array_values($DB->get_records_select('course', 'category ' . $insql, $params, '', 'id, category'));
     }
 
     /**
@@ -5838,6 +5873,66 @@ class manager {
     }
 
     /**
+     * Replace custom course overview images by generated plugin images on affected courses.
+     *
+     * @return int Number of courses processed.
+     */
+    public static function force_course_overview_image_replacement(): int {
+        global $DB;
+
+        $courses = [];
+        $addcourse = static function(\stdClass $course) use (&$courses): void {
+            if (!empty($course->id)) {
+                $courses[(int)$course->id] = $course;
+            }
+        };
+
+        $categoryids = $DB->get_fieldset_select(
+            'local_course_banner_elements',
+            'DISTINCT categoryid',
+            'categoryid IS NOT NULL'
+        );
+        foreach ($categoryids as $categoryid) {
+            foreach (self::get_courses_in_category_tree((int)$categoryid) as $course) {
+                $addcourse($course);
+            }
+        }
+
+        foreach (self::get_courses_with_managed_overview_images() as $course) {
+            $addcourse($course);
+        }
+        foreach (self::get_courses_with_custom_overview_images() as $course) {
+            $addcourse($course);
+        }
+
+        if (self::table_field_exists('local_course_banner_elements', 'sourcetype')) {
+            $hascustomfieldsources = $DB->record_exists('local_course_banner_elements', [
+                'sourcetype' => self::SOURCE_TYPE_CUSTOMFIELD,
+            ]);
+            if ($hascustomfieldsources) {
+                foreach ($DB->get_records('course', null, '', 'id, category') as $course) {
+                    $addcourse($course);
+                }
+            }
+        }
+
+        $processed = 0;
+        foreach ($courses as $course) {
+            if (!self::course_has_applicable_banner_layers($course) && !self::course_default_image_banners_enabled()) {
+                continue;
+            }
+            try {
+                self::sync_course_overview_image($course, true);
+                $processed++;
+            } catch (\Throwable $e) {
+                debugging('Forced course banner sync failed for course ' . $course->id . ': ' . $e->getMessage(), DEBUG_DEVELOPER);
+            }
+        }
+
+        return $processed;
+    }
+
+    /**
      * Get courses that already use a plugin-managed overview image.
      *
      * @return \stdClass[]
@@ -5865,12 +5960,42 @@ class manager {
     }
 
     /**
+     * Get courses that use a teacher-managed overview image.
+     *
+     * @return \stdClass[]
+     */
+    protected static function get_courses_with_custom_overview_images(): array {
+        global $DB;
+
+        $filename = $DB->sql_like('f.filename', ':filename', false);
+        $params = [
+            'component' => 'course',
+            'filearea' => 'overviewfiles',
+            'contextlevel' => CONTEXT_COURSE,
+            'filename' => self::MANAGED_OVERVIEW_PREFIX . '%',
+            'directory' => '.',
+        ];
+        $sql = "SELECT DISTINCT c.id, c.category, c.fullname
+                  FROM {course} c
+                  JOIN {context} ctx ON ctx.instanceid = c.id AND ctx.contextlevel = :contextlevel
+                  JOIN {files} f ON f.contextid = ctx.id
+                 WHERE f.component = :component
+                   AND f.filearea = :filearea
+                   AND f.filename <> :directory
+                   AND NOT ({$filename})
+              ORDER BY c.id ASC";
+
+        return array_values($DB->get_records_sql($sql, $params));
+    }
+
+    /**
      * Synchronise the managed overview image for one course.
      *
      * @param \stdClass $course
+     * @param bool $forcecustomreplacement
      * @return void
      */
-    public static function sync_course_overview_image(\stdClass $course): void {
+    public static function sync_course_overview_image(\stdClass $course, bool $forcecustomreplacement = false): void {
         if (empty($course->id) || empty($course->category)) {
             return;
         }
@@ -5879,7 +6004,9 @@ class manager {
         self::delete_managed_course_overview_images($context->id);
         self::delete_managed_course_card_images($context->id);
 
-        if (self::course_has_custom_overview_image($context->id)) {
+        if ($forcecustomreplacement || !self::course_custom_overview_images_enabled()) {
+            self::delete_custom_course_overview_images($context->id);
+        } else if (self::course_has_custom_overview_image($context->id)) {
             self::purge_course_caches();
             return;
         }
@@ -5960,11 +6087,28 @@ class manager {
      */
     public static function delete_managed_course_overview_images(int $contextid): void {
         $fs = get_file_storage();
-        $files = $fs->get_area_files($contextid, 'course', 'overviewfiles', 0, 'filename', false);
+        $files = $fs->get_area_files($contextid, 'course', 'overviewfiles', false, 'filename', false);
         foreach ($files as $file) {
             if (str_starts_with($file->get_filename(), self::MANAGED_OVERVIEW_PREFIX)) {
                 $file->delete();
             }
+        }
+    }
+
+    /**
+     * Delete non-plugin course overview images from a course.
+     *
+     * @param int $contextid
+     * @return void
+     */
+    public static function delete_custom_course_overview_images(int $contextid): void {
+        $fs = get_file_storage();
+        $files = $fs->get_area_files($contextid, 'course', 'overviewfiles', false, 'filename', false);
+        foreach ($files as $file) {
+            if ($file->is_directory() || str_starts_with($file->get_filename(), self::MANAGED_OVERVIEW_PREFIX)) {
+                continue;
+            }
+            $file->delete();
         }
     }
 
@@ -5991,24 +6135,30 @@ class manager {
             return null;
         }
 
+        global $DB;
         $context = \context_course::instance($courseid, IGNORE_MISSING);
         if (!$context) {
             return null;
         }
+        if (self::course_custom_overview_images_enabled() && self::course_has_custom_overview_image($context->id)) {
+            return null;
+        }
+
+        $course = $DB->get_record('course', ['id' => $courseid], 'id,category', IGNORE_MISSING);
+        if (!$course) {
+            return null;
+        }
+        $records = self::get_enabled_category_elements_for_course($course);
+        if (empty($records)) {
+            return null;
+        }
 
         $fs = get_file_storage();
-        $files = $fs->get_area_files(
-            $context->id,
-            'local_course_banner_builder',
-            self::CARD_FILEAREA,
-            0,
-            'filename DESC',
-            false
-        );
-
         $prefix = $square ? self::MANAGED_CARD_SQUARE_PREFIX : self::MANAGED_CARD_PREFIX;
-        foreach ($files as $file) {
-            if ($file->is_valid_image() && str_starts_with($file->get_filename(), $prefix)) {
+        $expected = $prefix . '_' . self::get_layers_revision($records) . '.png';
+        for ($attempt = 0; $attempt < 2; $attempt++) {
+            $file = $fs->get_file($context->id, 'local_course_banner_builder', self::CARD_FILEAREA, 0, '/', $expected);
+            if ($file && $file->is_valid_image()) {
                 return \moodle_url::make_pluginfile_url(
                     $context->id,
                     'local_course_banner_builder',
@@ -6018,6 +6168,7 @@ class manager {
                     $file->get_filename()
                 );
             }
+            self::sync_course_overview_image($course);
         }
 
         return null;
@@ -6046,7 +6197,7 @@ class manager {
         }
 
         $fs = get_file_storage();
-        $files = $fs->get_area_files($context->id, 'course', 'overviewfiles', 0, 'filename DESC', false);
+        $files = $fs->get_area_files($context->id, 'course', 'overviewfiles', false, 'filename DESC', false);
         foreach ($files as $file) {
             if ($file->is_valid_image() && str_starts_with($file->get_filename(), self::MANAGED_OVERVIEW_PREFIX)) {
                 return \moodle_url::make_pluginfile_url(
@@ -6058,6 +6209,41 @@ class manager {
                     $file->get_filename()
                 );
             }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the first custom Moodle course overview image URL when it should override generated banners.
+     *
+     * @param int $courseid
+     * @return \moodle_url|null
+     */
+    public static function get_custom_course_overview_image_url(int $courseid): ?\moodle_url {
+        if (!$courseid || !self::course_custom_overview_images_enabled()) {
+            return null;
+        }
+
+        $context = \context_course::instance($courseid, IGNORE_MISSING);
+        if (!$context) {
+            return null;
+        }
+
+        $fs = get_file_storage();
+        $files = $fs->get_area_files($context->id, 'course', 'overviewfiles', false, 'filename DESC', false);
+        foreach ($files as $file) {
+            if (!$file->is_valid_image() || str_starts_with($file->get_filename(), self::MANAGED_OVERVIEW_PREFIX)) {
+                continue;
+            }
+            return \moodle_url::make_pluginfile_url(
+                $context->id,
+                'course',
+                'overviewfiles',
+                null,
+                '/',
+                $file->get_filename()
+            );
         }
 
         return null;
@@ -6112,7 +6298,7 @@ class manager {
         }
 
         $fs = get_file_storage();
-        $files = $fs->get_area_files($context->id, 'course', 'overviewfiles', 0, 'filename DESC', false);
+        $files = $fs->get_area_files($context->id, 'course', 'overviewfiles', false, 'filename DESC', false);
         foreach ($files as $file) {
             if ($file->is_valid_image() && str_starts_with($file->get_filename(), self::MANAGED_OVERVIEW_PREFIX)) {
                 return $file;
@@ -6130,7 +6316,7 @@ class manager {
      */
     public static function course_has_custom_overview_image(int $contextid): bool {
         $fs = get_file_storage();
-        $files = $fs->get_area_files($contextid, 'course', 'overviewfiles', 0, 'filename', false);
+        $files = $fs->get_area_files($contextid, 'course', 'overviewfiles', false, 'filename', false);
         foreach ($files as $file) {
             if (!$file->is_valid_image()) {
                 continue;
@@ -6151,7 +6337,7 @@ class manager {
      */
     protected static function get_layers_revision(array $layerspecs): string {
         $layerspecs = self::sort_layer_specs($layerspecs);
-        $parts = ['render:8:' . self::CARD_CANVAS_WIDTH . 'x' . self::CARD_CANVAS_HEIGHT];
+        $parts = ['render:11:' . self::CARD_CANVAS_WIDTH . 'x' . self::CARD_CANVAS_HEIGHT];
         foreach ($layerspecs as $position => $layerspec) {
             $record = $layerspec['record'];
             $file = self::get_banner_image_file($record);
@@ -7519,7 +7705,7 @@ class manager {
             $imagestyles[] = 'object-position: ' . self::get_css_object_position_for_anchor($anchor) . ';';
         }
 
-        self::append_image_crop_styles($imagestyles, $record);
+        self::append_image_crop_styles($imagestyles, $record, $fitmode === self::FIT_MODE_BANNER);
 
         return [
             'wrapperstyle' => implode(' ', $wrapperstyles),
@@ -7534,13 +7720,33 @@ class manager {
      * @param \stdClass $record
      * @return void
      */
-    protected static function append_image_crop_styles(array &$imagestyles, \stdClass $record): void {
+    protected static function append_image_crop_styles(
+        array &$imagestyles,
+        \stdClass $record,
+        bool $fillwrapper = false
+    ): void {
         if (empty($record->imagecropenabled)) {
             return;
         }
 
         $crop = self::normalise_image_crop($record);
         if (!$crop['enabled']) {
+            return;
+        }
+
+        if ($fillwrapper) {
+            $imagestyles[] = 'position: absolute;';
+            $imagestyles[] = 'top: 0;';
+            $imagestyles[] = 'left: 0;';
+            $imagestyles[] = 'right: auto;';
+            $imagestyles[] = 'bottom: auto;';
+            $imagestyles[] = 'flex: 0 0 auto;';
+            $imagestyles[] = 'width: ' . self::format_css_percentage(10000.0 / $crop['width']) . ';';
+            $imagestyles[] = 'height: ' . self::format_css_percentage(10000.0 / $crop['height']) . ';';
+            $imagestyles[] = 'max-width: none;';
+            $imagestyles[] = 'transform: translate(-' . self::format_css_percentage($crop['left']) . ', -' .
+                self::format_css_percentage($crop['top']) . ');';
+            $imagestyles[] = 'transform-origin: top left;';
             return;
         }
 
@@ -8069,6 +8275,7 @@ class manager {
             'italic' => 0,
             'underline' => 0,
             'allcaps' => 0,
+            'aboveborder' => 1,
             'frameenabled' => 0,
             'frameshadowenabled' => 0,
             'shadowenabled' => 1,
@@ -8078,6 +8285,7 @@ class manager {
             'x' => [50, 0, 100],
             'y' => [50, 0, 100],
             'fontsize' => [100, 25, 160],
+            'lineheight' => [105, 80, 180],
             'frameopacity' => [35, 0, 100],
             'frameborderwidth' => [0, 0, 10],
             'frameradius' => [12, 0, 80],
@@ -8114,6 +8322,8 @@ class manager {
 
             $out[$context] = [
                 'fontfamily' => '',
+                'frametype' => 'box',
+                'stylemode' => 'custom',
                 'align' => self::normalise_slideshow_alignment(
                     (string)$getconfig('align', self::SLIDESHOW_ALIGN_CENTER)
                 ),
@@ -8135,6 +8345,12 @@ class manager {
             if (array_key_exists($fontfamily, self::get_slideshow_font_family_options())) {
                 $out[$context]['fontfamily'] = $fontfamily;
             }
+            $frametype = (string)$getconfig('frametype', 'box');
+            $out[$context]['frametype'] = in_array($frametype, ['box', 'highlight'], true) ? $frametype : 'box';
+            $stylemode = (string)$getconfig('stylemode', 'custom');
+            $out[$context]['stylemode'] = in_array($stylemode, ['site', 'course', 'activity', 'custom'], true)
+                ? $stylemode
+                : 'custom';
             if ($context === 'activity') {
                 $mode = (string)$getconfig('activitytitlemode', 'activity');
                 $out[$context]['activitytitlemode'] = in_array($mode, ['activity', 'course', 'both', 'none'], true)
@@ -8159,6 +8375,7 @@ class manager {
             'italic',
             'underline',
             'allcaps',
+            'aboveborder',
             'frameenabled',
             'frameshadowenabled',
             'shadowenabled',
@@ -8168,6 +8385,7 @@ class manager {
             'x' => [50, 0, 100],
             'y' => [50, 0, 100],
             'fontsize' => [100, 25, 160],
+            'lineheight' => [105, 80, 180],
             'frameopacity' => [35, 0, 100],
             'frameborderwidth' => [0, 0, 10],
             'frameradius' => [12, 0, 80],
@@ -8228,6 +8446,22 @@ class manager {
                 set_config(
                     $prefix . 'fontfamily',
                     array_key_exists($fontfamily, self::get_slideshow_font_family_options()) ? $fontfamily : '',
+                    'local_course_banner_builder'
+                );
+            }
+            if (array_key_exists('frametype', $configs[$context])) {
+                $frametype = (string)($configs[$context]['frametype'] ?? 'box');
+                set_config(
+                    $prefix . 'frametype',
+                    in_array($frametype, ['box', 'highlight'], true) ? $frametype : 'box',
+                    'local_course_banner_builder'
+                );
+            }
+            if (array_key_exists('stylemode', $configs[$context])) {
+                $stylemode = (string)($configs[$context]['stylemode'] ?? 'custom');
+                set_config(
+                    $prefix . 'stylemode',
+                    in_array($stylemode, ['site', 'course', 'activity', 'custom'], true) ? $stylemode : 'custom',
                     'local_course_banner_builder'
                 );
             }
@@ -8304,6 +8538,7 @@ class manager {
                 'bannerformat' => self::get_course_banner_format(),
                 'activitypagesenabled' => self::course_banners_on_activity_pages_enabled(),
                 'defaultimagebannersenabled' => self::course_default_image_banners_enabled(),
+                'customoverviewimagesenabled' => self::course_custom_overview_images_enabled(),
                 'enabledcustomfields' => (string)get_config('local_course_banner_builder', 'enabledcustomfields'),
             ],
             'titleoverlays' => self::export_banner_title_configuration(['course', 'activity']),
@@ -8893,6 +9128,13 @@ class manager {
                     'local_course_banner_builder'
                 );
             }
+            if (array_key_exists('customoverviewimagesenabled', $data['settings'])) {
+                set_config(
+                    'coursecustomoverviewimagesenabled',
+                    empty($data['settings']['customoverviewimagesenabled']) ? 0 : 1,
+                    'local_course_banner_builder'
+                );
+            }
             if (array_key_exists('enabledcustomfields', $data['settings'])) {
                 $enabledcustomfields = array_filter(array_map('intval', explode(',', (string)$data['settings']['enabledcustomfields'])));
                 $enabledcustomfields = array_values(array_unique(array_filter(array_map(
@@ -9460,13 +9702,9 @@ class manager {
         }
         raise_memory_limit(MEMORY_EXTRA);
 
-        $layerspecs = self::sort_layer_specs($layerspecs);
         $overviewlayers = [];
-        foreach ($layerspecs as $index => $layerspec) {
+        foreach (self::sort_layer_specs($layerspecs) as $layerspec) {
             $record = $layerspec['record'];
-            if (self::get_banner_image_file($record) && self::should_render_as_native_course_header_overlay_by_index($layerspecs, $index)) {
-                continue;
-            }
             if (self::get_banner_image_file($record) || !empty($record->borderenabled)) {
                 $overviewlayers[] = $layerspec;
             }
@@ -9474,18 +9712,17 @@ class manager {
 
         if (empty($overviewlayers)) {
             return self::build_blank_image(
-                self::DEFAULT_CANVAS_WIDTH,
-                self::DEFAULT_CANVAS_HEIGHT,
+                self::CARD_CANVAS_WIDTH,
+                self::CARD_CANVAS_HEIGHT,
                 'course_' . $courseid . '_banner.png'
             );
         }
 
-        return self::build_composite_image(
+        return self::build_course_card_composite_image(
             $overviewlayers,
-            self::DEFAULT_CANVAS_WIDTH,
-            self::DEFAULT_CANVAS_HEIGHT,
-            'course_' . $courseid . '_banner.png',
-            false
+            self::CARD_CANVAS_WIDTH,
+            self::CARD_CANVAS_HEIGHT,
+            'course_' . $courseid . '_banner.png'
         );
     }
 
@@ -9502,12 +9739,11 @@ class manager {
         }
         raise_memory_limit(MEMORY_EXTRA);
 
-        return self::build_composite_image(
+        return self::build_course_card_composite_image(
             $layerspecs,
             self::CARD_CANVAS_WIDTH,
             self::CARD_CANVAS_HEIGHT,
-            'course_' . $courseid . '_card.png',
-            true
+            'course_' . $courseid . '_card.png'
         );
     }
 
@@ -9524,81 +9760,108 @@ class manager {
         }
         raise_memory_limit(MEMORY_EXTRA);
 
-        $widepath = self::build_composite_image(
+        return self::build_course_card_composite_image(
             $layerspecs,
-            self::CARD_CANVAS_WIDTH,
-            self::CARD_CANVAS_HEIGHT,
-            'course_' . $courseid . '_squarecard.png',
-            true
+            self::CARD_SQUARE_CANVAS_SIZE,
+            self::CARD_SQUARE_CANVAS_SIZE,
+            'course_' . $courseid . '_squarecard.png'
         );
-        if (!$widepath) {
+    }
+
+    /**
+     * Build a card thumbnail by cropping a logical 4:1 banner into the card surface.
+     *
+     * This keeps layer placement visually consistent with the real banner while
+     * avoiding image deformation inside Moodle's rectangular and square cards.
+     *
+     * @param array $layerspecs
+     * @param int $width
+     * @param int $height
+     * @param string $filename
+     * @return string|null
+     */
+    protected static function build_course_card_composite_image(
+        array $layerspecs,
+        int $width,
+        int $height,
+        string $filename
+    ): ?string {
+        $layerspecs = self::sort_layer_specs($layerspecs);
+        $imagelayers = [];
+        $borderrecords = [];
+
+        foreach ($layerspecs as $layerspec) {
+            $record = $layerspec['record'];
+            if (!empty($record->borderenabled)) {
+                $borderrecord = clone $record;
+                $borderrecord->borderinnerrounded = 0;
+                $borderrecord->bordersides = 'top,right,bottom,left';
+                $borderrecords[] = $borderrecord;
+            }
+            if (self::get_banner_image_file($record)) {
+                $imagerecord = clone $record;
+                $imagerecord->borderenabled = 0;
+                $imagelayers[] = $layerspec;
+                $imagelayers[array_key_last($imagelayers)]['record'] = $imagerecord;
+            }
+        }
+
+        if (empty($imagelayers) && empty($borderrecords)) {
             return null;
         }
 
-        $wide = imagecreatefrompng($widepath);
-        @unlink($widepath);
-        if (!$wide) {
-            return null;
-        }
-
-        $size = self::CARD_SQUARE_CANVAS_SIZE;
-        $widewidth = imagesx($wide);
-        $wideheight = imagesy($wide);
-        $canvas = imagecreatetruecolor($size, $size);
+        $canvas = imagecreatetruecolor($width, $height);
         if (!$canvas) {
-            imagedestroy($wide);
             return null;
         }
 
         imagealphablending($canvas, false);
         imagesavealpha($canvas, true);
         $transparent = imagecolorallocatealpha($canvas, 0, 0, 0, 127);
-        imagefilledrectangle($canvas, 0, 0, $size, $size, $transparent);
+        imagefilledrectangle($canvas, 0, 0, $width, $height, $transparent);
+        imagealphablending($canvas, true);
 
-        $background = imagecreatetruecolor($size, $size);
-        if ($background) {
-            imagealphablending($background, false);
-            imagesavealpha($background, true);
-            imagefilledrectangle($background, 0, 0, $size, $size, $transparent);
-            $scale = max($size / max(1, $widewidth), $size / max(1, $wideheight));
-            $bgwidth = (int)ceil($widewidth * $scale);
-            $bgheight = (int)ceil($wideheight * $scale);
-            $bgx = (int)floor(($size - $bgwidth) / 2);
-            $bgy = (int)floor(($size - $bgheight) / 2);
-            imagecopyresampled($background, $wide, $bgx, $bgy, 0, 0, $bgwidth, $bgheight, $widewidth, $wideheight);
-            for ($i = 0; $i < 6; $i++) {
-                imagefilter($background, IMG_FILTER_GAUSSIAN_BLUR);
+        if (!empty($imagelayers)) {
+            $bannerpath = self::build_composite_image(
+                $imagelayers,
+                self::DEFAULT_CANVAS_WIDTH,
+                self::DEFAULT_CANVAS_HEIGHT,
+                'course_card_banner_' . sha1($filename) . '.png',
+                false
+            );
+            if ($bannerpath) {
+                $banner = imagecreatefrompng($bannerpath);
+                @unlink($bannerpath);
+                if ($banner) {
+                    self::copy_layer_cover(
+                        $canvas,
+                        $banner,
+                        $width,
+                        $height,
+                        imagesx($banner),
+                        imagesy($banner)
+                    );
+                    imagedestroy($banner);
+                }
             }
-            imagefilter($background, IMG_FILTER_BRIGHTNESS, 16);
-            imagealphablending($canvas, true);
-            imagecopy($canvas, $background, 0, 0, 0, 0, $size, $size);
-            imagedestroy($background);
         }
 
-        $foregroundwidth = (int)round($size * 0.9);
-        $foregroundheight = (int)round($foregroundwidth * ($wideheight / max(1, $widewidth)));
-        $foregroundx = (int)floor(($size - $foregroundwidth) / 2);
-        $foregroundy = (int)floor(($size - $foregroundheight) / 2);
-        imagealphablending($canvas, true);
-        imagecopyresampled(
-            $canvas,
-            $wide,
-            $foregroundx,
-            $foregroundy,
-            0,
-            0,
-            $foregroundwidth,
-            $foregroundheight,
-            $widewidth,
-            $wideheight
-        );
-        imagedestroy($wide);
+        foreach ($borderrecords as $borderrecord) {
+            self::draw_layer_border(
+                $canvas,
+                $borderrecord,
+                ['x' => 0, 'y' => 0, 'width' => $width, 'height' => $height],
+                $width,
+                $height,
+                true
+            );
+        }
 
         imagealphablending($canvas, false);
         imagesavealpha($canvas, true);
 
         $tempdir = make_temp_directory('local_course_banner_builder');
-        $filepath = $tempdir . DIRECTORY_SEPARATOR . 'course_' . $courseid . '_squarecard.png';
+        $filepath = $tempdir . DIRECTORY_SEPARATOR . $filename;
         imagepng($canvas, $filepath);
         imagedestroy($canvas);
 

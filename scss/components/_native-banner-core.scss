@@ -49,6 +49,30 @@
     pointer-events: none;
 }
 
+.local-course-banner-builder-banner-title-overlay--highlight-frame > span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    line-height: inherit;
+    vertical-align: middle;
+}
+
+.local-course-banner-builder-banner-title-overlay--highlight-frame > br {
+    display: block;
+    content: "";
+    margin-bottom: 0.14em;
+}
+
+.local-course-banner-builder-banner-title-overlay--highlight-frame {
+    background: transparent !important;
+    border: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    white-space: pre-wrap;
+}
+
 .local-course-banner-builder-banner-overlay-layer,
 .local-course-banner-builder-title-preview-overlay {
     position: absolute;
@@ -72,11 +96,18 @@
 
 .local-course-banner-builder-title-top-choice {
     grid-column: 1;
-    grid-row: 1;
+    grid-row: 2;
     justify-content: flex-start;
     justify-self: stretch;
     margin-top: 0.28rem;
     padding-bottom: 0.45rem;
+}
+
+.local-course-banner-builder-title-inherit-choice {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: center;
+    padding-bottom: 0.35rem;
 }
 
 .local-course-banner-builder-title-preview-frame {
@@ -97,7 +128,7 @@
 
 .local-course-banner-builder-title-preview-main {
     grid-column: 1;
-    grid-row: 2;
+    grid-row: 3;
     display: grid;
     gap: 0.15rem;
     min-width: 0;
@@ -116,7 +147,34 @@
 }
 
 .local-course-banner-builder-title-preview-text [data-title-preview-label="1"] {
-    white-space: pre;
+    display: inline;
+    line-height: inherit;
+    white-space: pre-wrap;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+}
+
+.local-course-banner-builder-title-preview-text [data-title-preview-label="1"] > span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    line-height: inherit;
+    vertical-align: middle;
+}
+
+.local-course-banner-builder-title-preview-text [data-title-preview-label="1"] > br {
+    display: block;
+    content: "";
+    margin-bottom: 0.14em;
+}
+
+.local-course-banner-builder-title-preview-text--highlight-frame {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
 }
 
 .local-course-banner-builder-title-preview-text.local-course-banner-builder-slideshow-preview-draggable--selected {
@@ -132,6 +190,14 @@
     .local-course-banner-builder-preview-resize-handle {
     opacity: 1;
     pointer-events: auto;
+}
+
+.local-course-banner-builder-native-shell--format-standard {
+    box-sizing: border-box !important;
+    width: min(100%, 1320px) !important;
+    max-width: 1320px !important;
+    margin-right: auto !important;
+    margin-left: auto !important;
 }
 
 .local-course-banner-builder-title-preview-toolbar,
@@ -207,7 +273,7 @@
 
 .local-course-banner-builder-title-side-actions.local-course-banner-builder-modal-preview-action-list {
     grid-column: 2;
-    grid-row: 1 / 4;
+    grid-row: 3 / 6;
     align-self: flex-start;
     align-content: start;
     justify-self: auto;
@@ -261,14 +327,24 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    justify-content: flex-end;
-    min-height: 3rem;
+    justify-content: flex-start;
+    min-height: 3.25rem;
     margin-top: 0.65rem;
     margin-right: 0;
-    padding: 0.55rem 1.65rem 0.05rem;
+    padding: 0.55rem 1.65rem;
     border-top: 1px solid var(--bs-border-color, #dee2e6);
     background: var(--bs-body-bg, #fff);
     box-shadow: none;
+}
+
+.modal[id^="local-course-banner-builder-"] form
+    .local-course-banner-builder-submit-actions.local-course-banner-builder-title-submit-actions {
+    justify-content: flex-start !important;
+    align-items: center !important;
+}
+
+.local-course-banner-builder-title-submit-actions > button[type="submit"] {
+    margin-left: auto;
 }
 
 .local-course-banner-builder-title-footer-button {

@@ -454,47 +454,50 @@ document.addEventListener('DOMContentLoaded', function() {
             'Palatino Linotype', 'Segoe UI', 'Helvetica Neue', 'Courier New', 'Lucida Console',
             'Open Sans', 'Lato', 'Montserrat', 'Poppins', 'Merriweather', 'Playfair Display'
         ];
-        var getFormatSizeScale = function(format) {
+        var getFormatSizeScale = function(format, kind) {
             if (format === 'standard') {
                 return 1.24;
             }
             if (format === 'fullwidthtopcompact') {
+                if (kind === 'label') {
+                    return 1;
+                }
                 return 0.78;
             }
             return 1;
         };
         var buildTitleSize = function(percent, format) {
             var scale = Math.max(25, Math.min(100, parseInt(percent || '100', 10))) / 100;
-            scale = scale * getFormatSizeScale(format || '');
+            scale = scale * getFormatSizeScale(format || '', 'title');
             return 'clamp(' + (10 * scale).toFixed(3) + 'cqh, min(' + (28 * scale).toFixed(3) +
                 'cqh, ' + (3.4 * scale).toFixed(3) + 'cqw), ' + (36 * scale).toFixed(3) + 'cqh)';
         };
         var buildBodySize = function(percent, format) {
             var scale = Math.max(25, Math.min(100, parseInt(percent || '100', 10))) / 100;
-            scale = scale * getFormatSizeScale(format || '');
+            scale = scale * getFormatSizeScale(format || '', 'body');
             return 'clamp(' + (5.5 * scale).toFixed(3) + 'cqh, min(' + (14 * scale).toFixed(3) +
                 'cqh, ' + (1.7 * scale).toFixed(3) + 'cqw), ' + (19 * scale).toFixed(3) + 'cqh)';
         };
         var buildLabelSize = function(percent, format) {
             var scale = Math.max(25, Math.min(100, parseInt(percent || '100', 10))) / 100;
-            scale = scale * getFormatSizeScale(format || '');
+            scale = scale * getFormatSizeScale(format || '', 'label');
             return 'clamp(' + (3.5 * scale).toFixed(3) + 'cqh, min(' + (6.4 * scale).toFixed(3) +
                 'cqh, ' + (0.82 * scale).toFixed(3) + 'cqw), ' + (8.4 * scale).toFixed(3) + 'cqh)';
         };
         var buildActionSize = function(percent, format) {
             var scale = Math.max(25, Math.min(100, parseInt(percent || '100', 10))) / 100;
-            scale = scale * getFormatSizeScale(format || '');
+            scale = scale * getFormatSizeScale(format || '', 'action');
             return 'clamp(' + (6 * scale).toFixed(3) + 'cqh, min(' + (13 * scale).toFixed(3) +
                 'cqh, ' + (1.6 * scale).toFixed(3) + 'cqw), ' + (18 * scale).toFixed(3) + 'cqh)';
         };
         var buildActionWidth = function(percent, format) {
             var scale = Math.max(25, Math.min(100, parseInt(percent || '100', 10))) / 100;
-            scale = scale * getFormatSizeScale(format || '');
+            scale = scale * getFormatSizeScale(format || '', 'actionwidth');
             return 'clamp(' + (10 * scale).toFixed(3) + 'cqw, ' + (18 * scale).toFixed(3) + 'cqw, ' + (34 * scale).toFixed(3) + 'cqw)';
         };
         var buildActionHeight = function(percent, format) {
             var scale = Math.max(25, Math.min(100, parseInt(percent || '100', 10))) / 100;
-            scale = scale * getFormatSizeScale(format || '');
+            scale = scale * getFormatSizeScale(format || '', 'actionheight');
             return 'clamp(' + (10 * scale).toFixed(3) + 'cqh, min(' + (22 * scale).toFixed(3) +
                 'cqh, ' + (2.7 * scale).toFixed(3) + 'cqw), ' + (34 * scale).toFixed(3) + 'cqh)';
         };
@@ -1857,7 +1860,7 @@ function local_course_banner_builder_clean_slideshow_values(array $values): arra
         'labelbold', 'labelitalic', 'labelunderline', 'labelstrike', 'labelallcaps'] as $field) {
         $clean[$field] = empty($values[$field]) ? 0 : 1;
     }
-    foreach (['delay', 'overlayopacity', 'titlefontsize', 'bodyfontsize', 'actionsize', 'actionwidth',
+    foreach (['delay', 'overlayopacity', 'titlefontsize', 'bodyfontsize', 'bodylineheight', 'actionsize', 'actionwidth',
         'actionheight', 'labelsize', 'labeltextsize',
         'actionopacity', 'actionborderwidth', 'actionradius', 'actionpadding',
         'actionshadowopacity', 'actionshadowblur', 'actionshadowdistance', 'actionshadowdirection',
@@ -1937,6 +1940,9 @@ if (optional_param('updateslideshow', 0, PARAM_BOOL) && confirm_sesskey()) {
             'bodyfontsize' => $defaulttext || $defaultall
                 ? manager::SLIDESHOW_DEFAULT_BODY_FONT_PERCENT
                 : optional_param('bodyfontsize', manager::SLIDESHOW_DEFAULT_BODY_FONT_PERCENT, PARAM_INT),
+            'bodylineheight' => $defaulttext || $defaultall
+                ? (int)$styledefaults['bodylineheight']
+                : optional_param('bodylineheight', (int)$styledefaults['bodylineheight'], PARAM_INT),
             'actionsize' => $defaulttext || $defaultall
                 ? manager::SLIDESHOW_DEFAULT_ACTION_SIZE_PERCENT
                 : optional_param('actionsize', manager::SLIDESHOW_DEFAULT_ACTION_SIZE_PERCENT, PARAM_INT),
@@ -2311,7 +2317,7 @@ function local_course_banner_builder_slideshow_font_clamp(string $kind, int $per
         if ($format === manager::BANNER_FORMAT_STANDARD) {
             $scale *= 1.24;
         } else if ($format === manager::BANNER_FORMAT_FULLWIDTH_TOP_COMPACT) {
-            $scale *= 0.78;
+            $scale *= $kind === 'label' ? 1.0 : 0.78;
         }
     }
     if ($kind === 'title') {
@@ -2403,6 +2409,7 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
     $labelcolors = $config['labelcolors'] ?? manager::get_default_slideshow_label_colors();
     $titlefontsize = max(25, min(100, (int)($config['titlefontsize'] ?? manager::SLIDESHOW_DEFAULT_TITLE_FONT_PERCENT)));
     $bodyfontsize = max(25, min(100, (int)($config['bodyfontsize'] ?? manager::SLIDESHOW_DEFAULT_BODY_FONT_PERCENT)));
+    $bodylineheight = max(80, min(200, (int)($config['bodylineheight'] ?? 135)));
     $actionsize = max(25, min(100, (int)($config['actionsize'] ?? manager::SLIDESHOW_DEFAULT_ACTION_SIZE_PERCENT)));
     $actionwidth = max(25, min(100, (int)($config['actionwidth'] ?? manager::SLIDESHOW_DEFAULT_ACTION_WIDTH_PERCENT)));
     $actionheight = max(25, min(100, (int)($config['actionheight'] ?? manager::SLIDESHOW_DEFAULT_ACTION_HEIGHT_PERCENT)));
@@ -2486,6 +2493,10 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
     $actiony = (float)($config['actiony'] ?? manager::SLIDESHOW_DEFAULT_ACTION_Y);
     $labelx = (float)($config['labelx'] ?? manager::SLIDESHOW_DEFAULT_LABEL_X);
     $labely = (float)($config['labely'] ?? manager::SLIDESHOW_DEFAULT_LABEL_Y);
+    if ($bannerformat === manager::BANNER_FORMAT_FULLWIDTH_TOP_COMPACT &&
+            abs($labely - manager::SLIDESHOW_DEFAULT_LABEL_Y) < 0.001) {
+        $labely = 18.0;
+    }
     $previewstyle = '--local-course-banner-builder-slideshow-overlay-rgb: ' .
         s((string)($config['overlayrgb'] ?? '0, 0, 0')) .
         '; --local-course-banner-builder-slideshow-overlay-opacity: ' . number_format($opacity / 100, 2, '.', '') . ';';
@@ -2493,6 +2504,7 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
         local_course_banner_builder_slideshow_font_clamp('title', $titlefontsize, $bannerformat) . ';';
     $previewstyle .= ' --local-course-banner-builder-slideshow-body-font-size: ' .
         local_course_banner_builder_slideshow_font_clamp('body', $bodyfontsize, $bannerformat) . ';';
+    $previewstyle .= ' --local-course-banner-builder-slideshow-body-line-height: ' . $bodylineheight . '%;';
     $previewstyle .= ' --local-course-banner-builder-slideshow-action-font-size: ' .
         local_course_banner_builder_slideshow_font_clamp('action', $actionsize, $bannerformat) . ';';
     $previewstyle .= ' --local-course-banner-builder-slideshow-action-width: ' .
@@ -2977,6 +2989,13 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
         return $html . html_writer::end_div();
     };
 
+    $previewlabelicon = $context === manager::SLIDESHOW_CONTEXT_SITE ? 'fa-bullhorn' : 'fa-comments';
+    $previewlabelkey = $context === manager::SLIDESHOW_CONTEXT_SITE
+        ? 'slideshow:type:siteannouncements'
+        : 'slideshow:type:courseforum';
+    $previewlabelclass = $context === manager::SLIDESHOW_CONTEXT_SITE ? 'siteannouncements' : 'forums';
+    $previewsecondarylabel = $context === manager::SLIDESHOW_CONTEXT_SITE ? 'CAT2' : 'COURSE101';
+
     $previewcontent = html_writer::div('', 'local-course-banner-builder-slideshow-admin-preview-backdrop') .
         html_writer::div('', 'local-course-banner-builder-slideshow-admin-preview-overlay') .
         html_writer::div(
@@ -2993,11 +3012,16 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
                 ]) .
                 $cornertoggle('label', get_string('slideshowtogglecorners', 'local_course_banner_builder')) .
                 html_writer::span(
-                    html_writer::span(get_string('slideshow:type:courseforum', 'local_course_banner_builder')),
-                    'local-course-banner-builder-slideshow-label local-course-banner-builder-slideshow-label--forums'
+                    html_writer::tag('i', '', [
+                        'class' => 'fa ' . $previewlabelicon . ' local-course-banner-builder-slideshow-label-icon',
+                        'aria-hidden' => 'true',
+                    ]) .
+                    html_writer::span(get_string($previewlabelkey, 'local_course_banner_builder')),
+                    'local-course-banner-builder-slideshow-label local-course-banner-builder-slideshow-label--' .
+                        $previewlabelclass
                 ) .
                 html_writer::span(
-                    html_writer::span('COURSE101'),
+                    html_writer::span($previewsecondarylabel),
                     'local-course-banner-builder-slideshow-label ' .
                         'local-course-banner-builder-slideshow-label--course-shortname'
                 ) .
@@ -3186,6 +3210,9 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
             'bodytext',
             $slidercontrol('bodyfontsizeproxy', get_string('slideshowbodytext', 'local_course_banner_builder'),
                 $bodyfontsize, 25, 100, '--local-course-banner-builder-slideshow-body-font-size', '%', 'bodyfontsize') .
+            $slidercontrol('bodylineheight', get_string('slideshowbodylineheight', 'local_course_banner_builder'),
+                $bodylineheight, 80, 200, '--local-course-banner-builder-slideshow-body-line-height',
+                '%', null, (int)$styledefaults['bodylineheight']) .
             $proxyfontcontrol('bodyfontfamily', get_string('slideshowbodyfontfamily', 'local_course_banner_builder'), $bodyfontfamily) .
             $proxycolorcontrol('bodycolor', get_string('slideshowbodycolor', 'local_course_banner_builder'), $bodycolor) .
             html_writer::div(get_string('slideshowtextformat', 'local_course_banner_builder'),
@@ -3748,6 +3775,12 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
             'local-course-banner-builder-slideshow-label-color-heading--sample'
     );
     $controls .= html_writer::end_div();
+    $sampleicons = [
+        'forums' => 'fa-comments',
+        'siteannouncements' => 'fa-bullhorn',
+        'assignments' => 'fa-tasks',
+        'quizzes' => 'fa-question-circle',
+    ];
     foreach ($labeldefaults as $type => $defaults) {
         $colors = $labelcolors[$type] ?? $defaults;
         $labelkey = $type === 'forums' ? 'slideshow:type:courseforum' :
@@ -3776,8 +3809,16 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
             $colors, $defaults);
         $controls .= $labelcolourfield($type, 'shadow', get_string('slideshowlabelsshadowcolor', 'local_course_banner_builder'),
             $colors, $defaults);
+        $samplecontent = '';
+        if (!empty($sampleicons[$type])) {
+            $samplecontent .= html_writer::tag('i', '', [
+                'class' => 'fa ' . $sampleicons[$type] . ' local-course-banner-builder-slideshow-label-icon',
+                'aria-hidden' => 'true',
+            ]);
+        }
+        $samplecontent .= html_writer::span(get_string($labelkey, 'local_course_banner_builder'));
         $controls .= html_writer::span(
-            get_string($labelkey, 'local_course_banner_builder'),
+            $samplecontent,
             $sampleclass . ' local-course-banner-builder-slideshow-label-color-sample',
             [
                 'style' => $samplestyle,
