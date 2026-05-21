@@ -4468,6 +4468,12 @@ class manager {
                 property_exists($data, 'overlaytarget')) {
             $record->overlaytarget = self::normalise_overlay_target((string)($data->overlaytarget ?? self::OVERLAY_TARGET_BOTH));
         }
+        if (!empty($data->overlayenabled) && property_exists($data, 'overlaybannercolor')) {
+            $data->overlayslideshowcolor = $data->overlaybannercolor;
+        }
+        if (!empty($data->overlayenabled) && property_exists($data, 'overlaybanneropacity')) {
+            $data->overlayslideshowopacity = $data->overlaybanneropacity;
+        }
         foreach (['overlaybannercolor', 'overlayslideshowcolor'] as $fieldname) {
             if (self::table_field_exists('local_course_banner_elements', $fieldname) && property_exists($data, $fieldname)) {
                 $record->{$fieldname} = self::normalise_color_string((string)($data->{$fieldname} ?? '#000000'));
@@ -7828,14 +7834,9 @@ class manager {
                 'value' => self::get_overlay_target_options()[$target] ?? $target,
             ],
             [
-                'label' => get_string('overlaybannerappearance', 'local_course_banner_builder'),
+                'label' => get_string('overlayappearance', 'local_course_banner_builder'),
                 'value' => self::normalise_color_string((string)($record->overlaybannercolor ?? '#000000')) . ' / ' .
                     self::format_css_percentage((float)($record->overlaybanneropacity ?? 25)),
-            ],
-            [
-                'label' => get_string('overlayslideshowappearance', 'local_course_banner_builder'),
-                'value' => self::normalise_color_string((string)($record->overlayslideshowcolor ?? '#000000')) . ' / ' .
-                    self::format_css_percentage((float)($record->overlayslideshowopacity ?? 38)),
             ],
             [
                 'label' => get_string('overlaytitleabove', 'local_course_banner_builder'),

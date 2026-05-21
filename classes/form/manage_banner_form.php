@@ -438,42 +438,49 @@ class manage_banner_form extends \moodleform {
                     : \local_course_banner_builder\manager::OVERLAY_TARGET_BOTH
             );
 
-            foreach ([
-                'overlaybanner' => get_string('overlaybannerappearance', 'local_course_banner_builder'),
-                'overlayslideshow' => get_string('overlayslideshowappearance', 'local_course_banner_builder'),
-            ] as $prefix => $label) {
-                $mform->addElement('static', $prefix . 'heading', '', \html_writer::div(
-                    $label,
-                    'local-course-banner-builder-slideshow-side-title mt-2'
-                ));
-                $colorgroup = [];
-                $colorgroup[] = $mform->createElement('text', $prefix . 'color', '', [
-                    'data-overlay-color-text' => $prefix,
-                ]);
-                $colorgroup[] = $mform->createElement('html', \html_writer::empty_tag('input', [
-                    'type' => 'color',
-                    'id' => 'id_' . $prefix . 'color_picker',
-                    'class' => 'form-control form-control-color local-course-banner-builder-color-picker',
-                    'value' => '#000000',
-                    'data-overlay-color-picker' => $prefix,
-                    'aria-label' => get_string('overlaycolor', 'local_course_banner_builder'),
-                ]));
-                $mform->addGroup($colorgroup, $prefix . 'colorgroup', get_string('overlaycolor', 'local_course_banner_builder'), '', false);
-                $mform->setType($prefix . 'color', PARAM_RAW_TRIMMED);
-                $mform->setDefault($prefix . 'color', '#000000');
-                $mform->addElement('text', $prefix . 'opacity', get_string('overlayopacity', 'local_course_banner_builder'), [
-                    'size' => 6,
-                    'data-upgrade-number' => '1',
-                    'data-number-min' => '0',
-                    'data-number-max' => '100',
-                    'data-number-step' => '1',
-                    'data-field-suffix' => '%',
-                    'data-percent-slider-input' => '1',
-                ]);
-                $mform->setType($prefix . 'opacity', PARAM_FLOAT);
-                $mform->setDefault($prefix . 'opacity', $prefix === 'overlaybanner' ? 25 : 38);
-                $this->add_percent_slider_static($mform, $prefix . 'opacity', 0, 100, 1);
-            }
+            $mform->addElement('static', 'overlayappearanceheading', '', \html_writer::div(
+                get_string('overlayappearance', 'local_course_banner_builder'),
+                'local-course-banner-builder-slideshow-side-title mt-2'
+            ));
+            $colorgroup = [];
+            $colorgroup[] = $mform->createElement('html', \html_writer::empty_tag('input', [
+                'type' => 'color',
+                'id' => 'id_overlaybannercolor_picker',
+                'class' => 'form-control form-control-color local-course-banner-builder-color-picker',
+                'value' => '#000000',
+                'data-overlay-color-picker' => 'overlaybanner',
+                'aria-label' => get_string('overlaycolor', 'local_course_banner_builder'),
+            ]));
+            $colorgroup[] = $mform->createElement('text', 'overlaybannercolor', '', [
+                'data-overlay-color-text' => 'overlaybanner',
+            ]);
+            $mform->addGroup(
+                $colorgroup,
+                'overlaybannercolorgroup',
+                get_string('overlaycolor', 'local_course_banner_builder'),
+                '',
+                false
+            );
+            $mform->setType('overlaybannercolor', PARAM_RAW_TRIMMED);
+            $mform->setDefault('overlaybannercolor', '#000000');
+            $mform->addElement('text', 'overlaybanneropacity', get_string('overlayopacity', 'local_course_banner_builder'), [
+                'size' => 6,
+                'data-upgrade-number' => '1',
+                'data-number-min' => '0',
+                'data-number-max' => '100',
+                'data-number-step' => '1',
+                'data-field-suffix' => '%',
+                'data-percent-slider-input' => '1',
+            ]);
+            $mform->setType('overlaybanneropacity', PARAM_FLOAT);
+            $mform->setDefault('overlaybanneropacity', 25);
+            $this->add_percent_slider_static($mform, 'overlaybanneropacity', 0, 100, 1);
+            $mform->addElement('hidden', 'overlayslideshowcolor', '#000000', ['id' => 'id_overlayslideshowcolor']);
+            $mform->setType('overlayslideshowcolor', PARAM_RAW_TRIMMED);
+            $mform->setDefault('overlayslideshowcolor', '#000000');
+            $mform->addElement('hidden', 'overlayslideshowopacity', 38, ['id' => 'id_overlayslideshowopacity']);
+            $mform->setType('overlayslideshowopacity', PARAM_FLOAT);
+            $mform->setDefault('overlayslideshowopacity', 38);
             $mform->addElement('advcheckbox', 'overlaytitleabove', get_string('overlaytitleabove', 'local_course_banner_builder'));
             $mform->setDefault('overlaytitleabove', 1);
             $mform->addElement('advcheckbox', 'overlayborderabove', get_string('overlayborderabove', 'local_course_banner_builder'));

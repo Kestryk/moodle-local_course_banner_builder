@@ -320,6 +320,7 @@ $string['nocustomfieldsourceenabled'] = 'No custom field enabled in the plugin s
 $string['nolayeradded'] = 'No layer added';
 $string['nooverridepossibleonborders'] = 'No override possible on borders';
 $string['nooverridepossibleonoverlays'] = 'No override possible on overlays';
+$string['overlayappearance'] = 'Overlay appearance';
 $string['overlaybannerappearance'] = 'Banner overlay appearance';
 $string['overlayborderabove'] = 'Border above overlay';
 $string['overlaycolor'] = 'Overlay colour';

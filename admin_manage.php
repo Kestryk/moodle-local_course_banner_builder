@@ -1553,6 +1553,7 @@ $PAGE->requires->strings_for_js([
     'layertype:image',
     'layertype:overlay',
     'layeroverlay',
+    'overlayappearance',
     'overlaybannerappearance',
     'overlayborderabove',
     'overlaycolor',
@@ -4043,46 +4044,56 @@ function localCourseBannerBuilderEnsureOverlayFallbackControls(layerForm) {
         );
     }
 
-    [
-        ['overlaybanner', localCourseBannerBuilderGetJsString('overlaybannerappearance', 'Banner overlay'), '25'],
-        ['overlayslideshow', localCourseBannerBuilderGetJsString('overlayslideshowappearance', 'Slideshow overlay'), '38']
-    ].forEach(function(config) {
-        var prefix = config[0];
-        var heading = document.createElement('div');
-        heading.className = 'local-course-banner-builder-slideshow-side-title mt-2';
-        heading.textContent = config[1];
-        section.appendChild(heading);
-        if (!layerForm.querySelector('#id_' + prefix + 'color')) {
-            var color = document.createElement('input');
-            color.type = 'text';
-            color.id = 'id_' + prefix + 'color';
-            color.name = prefix + 'color';
-            color.className = 'form-control';
-            color.value = '#000000';
-            color.setAttribute('data-overlay-color-text', prefix);
-            localCourseBannerBuilderCreateOverlayFallbackField(
-                section,
-                localCourseBannerBuilderGetJsString('overlaycolor', 'Overlay color'),
-                color
-            );
-        }
-        if (!layerForm.querySelector('#id_' + prefix + 'opacity')) {
-            var opacity = document.createElement('input');
-            opacity.type = 'number';
-            opacity.id = 'id_' + prefix + 'opacity';
-            opacity.name = prefix + 'opacity';
-            opacity.className = 'form-control';
-            opacity.min = '0';
-            opacity.max = '100';
-            opacity.step = '1';
-            opacity.value = config[2];
-            localCourseBannerBuilderCreateOverlayFallbackField(
-                section,
-                localCourseBannerBuilderGetJsString('overlayopacity', 'Overlay opacity'),
-                opacity
-            );
-        }
-    });
+    var heading = document.createElement('div');
+    heading.className = 'local-course-banner-builder-slideshow-side-title mt-2';
+    heading.textContent = localCourseBannerBuilderGetJsString('overlayappearance', 'Overlay appearance');
+    section.appendChild(heading);
+    if (!layerForm.querySelector('#id_overlaybannercolor')) {
+        var color = document.createElement('input');
+        color.type = 'text';
+        color.id = 'id_overlaybannercolor';
+        color.name = 'overlaybannercolor';
+        color.className = 'form-control';
+        color.value = '#000000';
+        color.setAttribute('data-overlay-color-text', 'overlaybanner');
+        localCourseBannerBuilderCreateOverlayFallbackField(
+            section,
+            localCourseBannerBuilderGetJsString('overlaycolor', 'Overlay color'),
+            color
+        );
+    }
+    if (!layerForm.querySelector('#id_overlaybanneropacity')) {
+        var opacity = document.createElement('input');
+        opacity.type = 'number';
+        opacity.id = 'id_overlaybanneropacity';
+        opacity.name = 'overlaybanneropacity';
+        opacity.className = 'form-control';
+        opacity.min = '0';
+        opacity.max = '100';
+        opacity.step = '1';
+        opacity.value = '25';
+        localCourseBannerBuilderCreateOverlayFallbackField(
+            section,
+            localCourseBannerBuilderGetJsString('overlayopacity', 'Overlay opacity'),
+            opacity
+        );
+    }
+    if (!layerForm.querySelector('#id_overlayslideshowcolor')) {
+        var slideshowColor = document.createElement('input');
+        slideshowColor.type = 'hidden';
+        slideshowColor.id = 'id_overlayslideshowcolor';
+        slideshowColor.name = 'overlayslideshowcolor';
+        slideshowColor.value = '#000000';
+        section.appendChild(slideshowColor);
+    }
+    if (!layerForm.querySelector('#id_overlayslideshowopacity')) {
+        var slideshowOpacity = document.createElement('input');
+        slideshowOpacity.type = 'hidden';
+        slideshowOpacity.id = 'id_overlayslideshowopacity';
+        slideshowOpacity.name = 'overlayslideshowopacity';
+        slideshowOpacity.value = '38';
+        section.appendChild(slideshowOpacity);
+    }
 
     [
         ['overlaytitleabove', localCourseBannerBuilderGetJsString('overlaytitleabove', 'Titles above overlay')],
@@ -4634,7 +4645,8 @@ function localCourseBannerBuilderSyncLayerInputModes(scope) {
         if (sourceBlocksNewOverlay) {
             overlaySection.open = false;
         }
-        if (isOverlayOnly || isExistingOverlayLayer) {
+        if ((isOverlayOnly || isExistingOverlayLayer) &&
+                overlaySection.getAttribute('data-modal-preview-side-panel') !== '1') {
             overlaySection.classList.remove('is-collapsed');
             overlaySection.open = true;
         }
@@ -12366,6 +12378,7 @@ function localCourseBannerBuilderValidateLayerForm(e) {
     var borderToggle = layerForm ? layerForm.querySelector('[data-border-toggle=\"1\"][type=\"checkbox\"]') : null;
     var hasExistingImageInput = layerForm ? layerForm.querySelector('#id_hasexistingimage') : null;
     var warning = layerForm ? layerForm.querySelector('[data-layer-validation-warning=\"1\"]') : null;
+    localCourseBannerBuilderSyncUnifiedOverlayAppearance(layerForm);
     if (!filemanager || !borderToggle || !warning) {
         return true;
     }
@@ -13502,6 +13515,49 @@ function localCourseBannerBuilderMarkOverlayCustom(form) {
     localCourseBannerBuilderSetOverlayStyleMode(form, 'custom');
 }
 
+function localCourseBannerBuilderSyncUnifiedOverlayAppearance(form) {
+    if (!form) {
+        return;
+    }
+    var bannerColor = form.querySelector('#id_overlaybannercolor');
+    var bannerOpacity = form.querySelector('#id_overlaybanneropacity');
+    var slideshowColor = form.querySelector('#id_overlayslideshowcolor');
+    var slideshowOpacity = form.querySelector('#id_overlayslideshowopacity');
+    if (bannerColor && slideshowColor) {
+        slideshowColor.value = bannerColor.value || '#000000';
+    }
+    if (bannerOpacity && slideshowOpacity) {
+        slideshowOpacity.value = bannerOpacity.value || '25';
+    }
+}
+
+function localCourseBannerBuilderInitialiseUnifiedOverlayAppearance(form) {
+    if (!form || form.dataset.overlayUnifiedAppearanceInitialised === '1') {
+        localCourseBannerBuilderSyncUnifiedOverlayAppearance(form);
+        return;
+    }
+    form.dataset.overlayUnifiedAppearanceInitialised = '1';
+    var target = form.querySelector('#id_overlaytarget');
+    var bannerColor = form.querySelector('#id_overlaybannercolor');
+    var bannerPicker = form.querySelector('[data-overlay-color-picker=\"overlaybanner\"]');
+    var bannerOpacity = form.querySelector('#id_overlaybanneropacity');
+    var slideshowColor = form.querySelector('#id_overlayslideshowcolor');
+    var slideshowOpacity = form.querySelector('#id_overlayslideshowopacity');
+    if (target && target.value === 'slideshow') {
+        if (bannerColor && slideshowColor && slideshowColor.value) {
+            bannerColor.value = slideshowColor.value;
+        }
+        if (bannerPicker && bannerColor && bannerColor.value) {
+            bannerPicker.value = localCourseBannerBuilderNormaliseHexColor(bannerColor.value, bannerPicker.value || '#000000');
+            localCourseBannerBuilderSyncColourInput(bannerPicker);
+        }
+        if (bannerOpacity && slideshowOpacity && slideshowOpacity.value !== '') {
+            bannerOpacity.value = slideshowOpacity.value;
+        }
+    }
+    localCourseBannerBuilderSyncUnifiedOverlayAppearance(form);
+}
+
 function localCourseBannerBuilderApplyOverlayInheritance(form) {
     var accordion = form ? form.querySelector('[data-overlay-accordion=\"1\"]') : null;
     if (!accordion) {
@@ -13509,31 +13565,30 @@ function localCourseBannerBuilderApplyOverlayInheritance(form) {
     }
     var color = accordion.getAttribute('data-overlay-inherit-color') || '#000000';
     var opacity = accordion.getAttribute('data-overlay-inherit-opacity') || '38';
-    ['overlaybanner', 'overlayslideshow'].forEach(function(prefix) {
-        var colorInput = form.querySelector('#id_' + prefix + 'color');
-        var colorPicker = form.querySelector('[data-overlay-color-picker=\"' + prefix + '\"]');
-        var opacityInput = form.querySelector('#id_' + prefix + 'opacity');
-        if (colorInput) {
-            colorInput.value = color;
-            colorInput.dispatchEvent(new Event('input', {bubbles: true}));
-            colorInput.dispatchEvent(new Event('change', {bubbles: true}));
-        }
-        if (colorPicker) {
-            colorPicker.value = color;
-            colorPicker.dispatchEvent(new Event('input', {bubbles: true}));
-        }
-        if (opacityInput) {
-            opacityInput.value = opacity;
-            opacityInput.dispatchEvent(new Event('input', {bubbles: true}));
-            opacityInput.dispatchEvent(new Event('change', {bubbles: true}));
-        }
-    });
+    var colorInput = form.querySelector('#id_overlaybannercolor');
+    var colorPicker = form.querySelector('[data-overlay-color-picker=\"overlaybanner\"]');
+    var opacityInput = form.querySelector('#id_overlaybanneropacity');
+    if (colorInput) {
+        colorInput.value = color;
+        colorInput.dispatchEvent(new Event('input', {bubbles: true}));
+        colorInput.dispatchEvent(new Event('change', {bubbles: true}));
+    }
+    if (colorPicker) {
+        colorPicker.value = localCourseBannerBuilderNormaliseHexColor(color, colorPicker.value || '#000000');
+        colorPicker.dispatchEvent(new Event('input', {bubbles: true}));
+    }
+    if (opacityInput) {
+        opacityInput.value = opacity;
+        opacityInput.dispatchEvent(new Event('input', {bubbles: true}));
+        opacityInput.dispatchEvent(new Event('change', {bubbles: true}));
+    }
+    localCourseBannerBuilderSyncUnifiedOverlayAppearance(form);
     localCourseBannerBuilderSetOverlayStyleMode(form, 'inherit');
     localCourseBannerBuilderSyncModalOverlayPreview(form);
 }
 
 function localCourseBannerBuilderEnhanceOverlaySidePanelControls(form, overlayAccordion) {
-    if (!form || !overlayAccordion || overlayAccordion.dataset.overlayControlsEnhanced === '1') {
+    if (!form || !overlayAccordion) {
         return;
     }
     overlayAccordion.dataset.overlayControlsEnhanced = '1';
@@ -13544,33 +13599,37 @@ function localCourseBannerBuilderEnhanceOverlaySidePanelControls(form, overlayAc
         overlayEnabledRow.setAttribute('aria-hidden', 'true');
     }
 
-    var modeWrap = document.createElement('div');
-    modeWrap.className = 'local-course-banner-builder-overlay-mode-wrap mb-2';
-    var modeTitle = document.createElement('div');
-    modeTitle.className = 'local-course-banner-builder-slideshow-side-title';
-    modeTitle.textContent = localCourseBannerBuilderGetJsString('overlaystylemode', 'Overlay style');
-    var modeChoice = localCourseBannerBuilderCreateSegmentedChoice(
-        [
-            {value: 'inherit', label: localCourseBannerBuilderGetJsString('overlaystylemode:inherit', 'Inherit slideshow overlay')},
-            {value: 'custom', label: localCourseBannerBuilderGetJsString('overlaystylemode:custom', 'Custom style')}
-        ],
-        'custom',
-        'data-overlay-style-mode-option',
-        function(value) {
-            if (value === 'inherit') {
-                localCourseBannerBuilderApplyOverlayInheritance(form);
-            } else {
-                localCourseBannerBuilderSetOverlayStyleMode(form, 'custom');
-            }
-        }
-    );
-    modeChoice.setAttribute('data-overlay-style-mode-choice', '1');
-    modeWrap.appendChild(modeTitle);
-    modeWrap.appendChild(modeChoice);
+    var modeWrap = overlayAccordion.querySelector('[data-overlay-style-mode-wrap=\"1\"]');
     var firstBodyNode = Array.prototype.slice.call(overlayAccordion.children).find(function(child) {
         return child.tagName && child.tagName.toLowerCase() !== 'summary';
     });
-    overlayAccordion.insertBefore(modeWrap, firstBodyNode || null);
+    if (!modeWrap) {
+        modeWrap = document.createElement('div');
+        modeWrap.className = 'local-course-banner-builder-overlay-mode-wrap mb-2';
+        modeWrap.setAttribute('data-overlay-style-mode-wrap', '1');
+        var modeTitle = document.createElement('div');
+        modeTitle.className = 'local-course-banner-builder-slideshow-side-title';
+        modeTitle.textContent = localCourseBannerBuilderGetJsString('overlaystylemode', 'Overlay style');
+        var modeChoice = localCourseBannerBuilderCreateSegmentedChoice(
+            [
+                {value: 'inherit', label: localCourseBannerBuilderGetJsString('overlaystylemode:inherit', 'Inherit slideshow overlay')},
+                {value: 'custom', label: localCourseBannerBuilderGetJsString('overlaystylemode:custom', 'Custom style')}
+            ],
+            'custom',
+            'data-overlay-style-mode-option',
+            function(value) {
+                if (value === 'inherit') {
+                    localCourseBannerBuilderApplyOverlayInheritance(form);
+                } else {
+                    localCourseBannerBuilderSetOverlayStyleMode(form, 'custom');
+                }
+            }
+        );
+        modeChoice.setAttribute('data-overlay-style-mode-choice', '1');
+        modeWrap.appendChild(modeTitle);
+        modeWrap.appendChild(modeChoice);
+        overlayAccordion.insertBefore(modeWrap, firstBodyNode || null);
+    }
 
     var target = form.querySelector('#id_overlaytarget');
     var targetRow = localCourseBannerBuilderGetOverlayControlRow(target);
@@ -13582,9 +13641,18 @@ function localCourseBannerBuilderEnhanceOverlaySidePanelControls(form, overlayAc
                 targetRow.hidden = true;
                 targetRow.setAttribute('aria-hidden', 'true');
             }
+            var existingTargetChoice = overlayAccordion.querySelector('[data-overlay-target-choice=\"1\"]');
+            var existingTargetTitle = overlayAccordion.querySelector('[data-overlay-target-title=\"1\"]');
+            if (existingTargetChoice) {
+                existingTargetChoice.hidden = true;
+            }
+            if (existingTargetTitle) {
+                existingTargetTitle.hidden = true;
+            }
         } else if (!overlayAccordion.querySelector('[data-overlay-target-choice=\"1\"]')) {
             var targetTitle = document.createElement('div');
             targetTitle.className = 'local-course-banner-builder-slideshow-side-title';
+            targetTitle.setAttribute('data-overlay-target-title', '1');
             targetTitle.textContent = localCourseBannerBuilderGetJsString('overlaytarget', 'Overlay target');
             var targetChoice = localCourseBannerBuilderCreateSegmentedChoice(
                 [
@@ -13609,28 +13677,78 @@ function localCourseBannerBuilderEnhanceOverlaySidePanelControls(form, overlayAc
             if (targetRow) {
                 targetRow.hidden = true;
                 targetRow.setAttribute('aria-hidden', 'true');
-                overlayAccordion.insertBefore(targetTitle, targetRow.nextSibling);
+                overlayAccordion.insertBefore(targetTitle, modeWrap.nextSibling);
                 overlayAccordion.insertBefore(targetChoice, targetTitle.nextSibling);
             }
         }
+        var currentTargetChoice = overlayAccordion.querySelector('[data-overlay-target-choice=\"1\"]');
+        if (currentTargetChoice) {
+            localCourseBannerBuilderSetSegmentedChoice(
+                Array.prototype.slice.call(currentTargetChoice.querySelectorAll('[data-overlay-target-option]')),
+                target.value || 'both',
+                'data-overlay-target-option'
+            );
+        }
+        if (target.dataset.overlayTargetBound !== '1') {
+            target.addEventListener('change', function() {
+                var targetChoice = overlayAccordion.querySelector('[data-overlay-target-choice=\"1\"]');
+                if (targetChoice) {
+                    localCourseBannerBuilderSetSegmentedChoice(
+                        Array.prototype.slice.call(targetChoice.querySelectorAll('[data-overlay-target-option]')),
+                        target.value || 'both',
+                        'data-overlay-target-option'
+                    );
+                }
+                localCourseBannerBuilderSyncUnifiedOverlayAppearance(form);
+                localCourseBannerBuilderSyncModalOverlayPreview(form);
+            });
+            target.dataset.overlayTargetBound = '1';
+        }
     }
+
+    ['overlayslideshowheading', 'overlayslideshowcolorgroup', 'overlayslideshowopacity', 'overlayslideshowopacity_slider'].forEach(function(name) {
+        var row = form.querySelector('#fitem_id_' + name + ', #fgroup_id_' + name);
+        if (row) {
+            row.hidden = true;
+            row.setAttribute('aria-hidden', 'true');
+        }
+    });
+    localCourseBannerBuilderInitialiseUnifiedOverlayAppearance(form);
 
     Array.prototype.slice.call(overlayAccordion.querySelectorAll('[data-overlay-color-text]')).forEach(function(input) {
         input.classList.add('local-course-banner-builder-slideshow-hex-input');
+        if (input.dataset.overlayUnifiedBound === '1') {
+            return;
+        }
         input.addEventListener('input', function() {
+            localCourseBannerBuilderSyncUnifiedOverlayAppearance(form);
             localCourseBannerBuilderMarkOverlayCustom(form);
+            localCourseBannerBuilderSyncModalOverlayPreview(form);
         });
+        input.dataset.overlayUnifiedBound = '1';
     });
     Array.prototype.slice.call(overlayAccordion.querySelectorAll('[data-overlay-color-picker]')).forEach(function(input) {
         input.classList.add('local-course-banner-builder-slideshow-color-input');
+        if (input.dataset.overlayUnifiedBound === '1') {
+            return;
+        }
         input.addEventListener('input', function() {
+            localCourseBannerBuilderSyncUnifiedOverlayAppearance(form);
             localCourseBannerBuilderMarkOverlayCustom(form);
+            localCourseBannerBuilderSyncModalOverlayPreview(form);
         });
+        input.dataset.overlayUnifiedBound = '1';
     });
-    Array.prototype.slice.call(overlayAccordion.querySelectorAll('#id_overlaybanneropacity, #id_overlayslideshowopacity')).forEach(function(input) {
+    Array.prototype.slice.call(overlayAccordion.querySelectorAll('#id_overlaybanneropacity')).forEach(function(input) {
+        if (input.dataset.overlayUnifiedBound === '1') {
+            return;
+        }
         input.addEventListener('input', function() {
+            localCourseBannerBuilderSyncUnifiedOverlayAppearance(form);
             localCourseBannerBuilderMarkOverlayCustom(form);
+            localCourseBannerBuilderSyncModalOverlayPreview(form);
         });
+        input.dataset.overlayUnifiedBound = '1';
     });
 
     ['overlaytitleabove', 'overlayborderabove'].forEach(function(name) {

@@ -651,6 +651,7 @@ $string['chainoverlayexistinglabel'] = 'Overlay existente na cadeia';
 $string['layeroverlay'] = 'Adicionar um overlay';
 $string['layertype:overlay'] = 'Overlay';
 $string['nooverridepossibleonoverlays'] = 'Nao e possivel substituir overlays';
+$string['overlayappearance'] = 'Aparencia do overlay';
 $string['overlaybannerappearance'] = 'Aparencia do overlay do banner';
 $string['overlayborderabove'] = 'Borda acima do overlay';
 $string['overlaycolor'] = 'Cor do overlay';
