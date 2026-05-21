@@ -3851,7 +3851,7 @@ function localCourseBannerBuilderCreateLayerTypeChoice(layerForm, borderToggle) 
             e.preventDefault();
             e.stopPropagation();
             var nextType = button.getAttribute('data-layer-type-option');
-            var overlayToggle = layerForm.querySelector('[data-overlay-toggle=\"1\"][type=\"checkbox\"]');
+            var overlayToggle = localCourseBannerBuilderGetOverlayToggle(layerForm);
             var nextIsBorder = nextType === 'border';
             var nextIsOverlay = nextType === 'overlay';
             if (nextIsBorder && borderToggle.disabled) {
@@ -3861,10 +3861,7 @@ function localCourseBannerBuilderCreateLayerTypeChoice(layerForm, borderToggle) 
                 return;
             }
             borderToggle.checked = nextIsBorder;
-            if (overlayToggle) {
-                overlayToggle.checked = nextIsOverlay;
-                overlayToggle.dispatchEvent(new Event('change', {bubbles: true}));
-            }
+            localCourseBannerBuilderSetOverlayToggle(layerForm, nextIsOverlay);
             borderToggle.dispatchEvent(new Event('change', {bubbles: true}));
             localCourseBannerBuilderSyncLayerTypeChoice(layerForm);
         });
@@ -3875,14 +3872,13 @@ function localCourseBannerBuilderCreateLayerTypeChoice(layerForm, borderToggle) 
         button.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            var overlayToggle = layerForm.querySelector('[data-overlay-toggle=\"1\"][type=\"checkbox\"]');
+            var overlayToggle = localCourseBannerBuilderGetOverlayToggle(layerForm);
             if (!overlayToggle || overlayToggle.disabled) {
                 return;
             }
             borderToggle.checked = false;
-            overlayToggle.checked = true;
             borderToggle.dispatchEvent(new Event('change', {bubbles: true}));
-            overlayToggle.dispatchEvent(new Event('change', {bubbles: true}));
+            localCourseBannerBuilderSetOverlayToggle(layerForm, true);
             localCourseBannerBuilderSyncLayerTypeChoice(layerForm);
         });
         button.dataset.layerTypeBound = '1';
@@ -3923,9 +3919,35 @@ function localCourseBannerBuilderGetOverlayToggle(layerForm) {
     if (!layerForm) {
         return null;
     }
-    return layerForm.querySelector('[data-overlay-toggle=\"1\"][type=\"checkbox\"]') ||
+    return layerForm.querySelector('#id_overlayenabled[type=\"checkbox\"]') ||
+        layerForm.querySelector('input[name=\"overlayenabled\"][type=\"checkbox\"]') ||
+        layerForm.querySelector('[data-overlay-toggle=\"1\"][type=\"checkbox\"]') ||
+        layerForm.querySelector('#id_overlayenabled[type=\"hidden\"]') ||
+        layerForm.querySelector('input[name=\"overlayenabled\"][type=\"hidden\"]') ||
         layerForm.querySelector('[data-overlay-toggle=\"1\"][type=\"hidden\"]') ||
         layerForm.querySelector('[data-overlay-toggle=\"1\"]');
+}
+
+function localCourseBannerBuilderReadOverlayToggle(layerForm) {
+    var overlayToggle = localCourseBannerBuilderGetOverlayToggle(layerForm);
+    if (!overlayToggle) {
+        return false;
+    }
+    return overlayToggle.type === 'checkbox' ? overlayToggle.checked : overlayToggle.value === '1';
+}
+
+function localCourseBannerBuilderSetOverlayToggle(layerForm, checked) {
+    var overlayToggle = localCourseBannerBuilderGetOverlayToggle(layerForm);
+    if (!overlayToggle || overlayToggle.disabled) {
+        return false;
+    }
+    if (overlayToggle.type === 'checkbox') {
+        overlayToggle.checked = !!checked;
+    } else {
+        overlayToggle.value = checked ? '1' : '0';
+    }
+    overlayToggle.dispatchEvent(new Event('change', {bubbles: true}));
+    return true;
 }
 
 function localCourseBannerBuilderEnsureLayerTypeChoice(layerForm, previewItem) {
@@ -4084,7 +4106,7 @@ function localCourseBannerBuilderSyncLayerTypeChoice(layerForm) {
         return;
     }
     var borderToggle = layerForm.querySelector('[data-border-toggle=\"1\"][type=\"checkbox\"]');
-    var overlayToggle = layerForm.querySelector('[data-overlay-toggle=\"1\"][type=\"checkbox\"]');
+    var overlayToggle = localCourseBannerBuilderGetOverlayToggle(layerForm);
     var layerTypeToggle = layerForm.querySelector('[data-layer-type-toggle=\"1\"]');
     if (!borderToggle || !layerTypeToggle) {
         return;
@@ -4094,8 +4116,7 @@ function localCourseBannerBuilderSyncLayerTypeChoice(layerForm) {
         borderToggleItem.hidden = true;
         borderToggleItem.setAttribute('aria-hidden', 'true');
     }
-    var overlayChecked = !!(overlayToggle &&
-        (overlayToggle.type === 'checkbox' ? overlayToggle.checked : overlayToggle.value === '1'));
+    var overlayChecked = localCourseBannerBuilderReadOverlayToggle(layerForm);
     var selectedType = overlayChecked ? 'overlay' : (borderToggle.checked ? 'border' : 'image');
     Array.prototype.slice.call(layerTypeToggle.querySelectorAll('[data-layer-type-option]')).forEach(function(button) {
         var type = button.getAttribute('data-layer-type-option');
@@ -4191,8 +4212,7 @@ function localCourseBannerBuilderSyncLayerInputModes(scope) {
     var editBorderLocked = !!(layerForm && layerForm.getAttribute('data-edit-border-locked') === '1');
     var hasExistingElement = !!(elementIdInput && parseInt(elementIdInput.value || '0', 10) > 0);
     var hasImage = hasFiles || hasExistingImage;
-    var overlayChecked = !!(overlayToggle &&
-        (overlayToggle.type === 'checkbox' ? overlayToggle.checked : overlayToggle.value === '1'));
+    var overlayChecked = localCourseBannerBuilderReadOverlayToggle(layerForm);
     var isOverlayOnly = !!(overlayChecked && !hasImage);
     var isBorderOnly = borderToggle.checked && !hasImage && !isOverlayOnly;
     var isExistingBorderLayer = hasExistingElement && (currentIsBorderLayer || editBorderLocked);
@@ -4209,10 +4229,7 @@ function localCourseBannerBuilderSyncLayerInputModes(scope) {
         borderToggle.checked = false;
     }
     if (overlayToggle && sourceBlocksNewOverlay && overlayChecked) {
-        overlayToggle.checked = false;
-        if (overlayToggle.type !== 'checkbox') {
-            overlayToggle.value = '0';
-        }
+        localCourseBannerBuilderSetOverlayToggle(layerForm, false);
         isOverlayOnly = false;
     }
     borderToggle.disabled = hasImage || isExistingBorderLayer || sourceBlocksNewBorder;
@@ -12094,7 +12111,7 @@ function localCourseBannerBuilderBindLayerFormEvents(scope) {
         borderToggle.dataset.layerBound = '1';
     }
 
-    var overlayToggle = layerForm.querySelector('[data-overlay-toggle=\"1\"][type=\"checkbox\"]');
+    var overlayToggle = localCourseBannerBuilderGetOverlayToggle(layerForm);
     if (overlayToggle && !overlayToggle.dataset.layerBound) {
         overlayToggle.addEventListener('change', function() {
             localCourseBannerBuilderSyncLayerInputModes(layerForm);
@@ -12161,7 +12178,7 @@ function localCourseBannerBuilderBindLayerFormEvents(scope) {
             e.stopPropagation();
             var form = button.closest('form.mform');
             var borderToggle = form ? form.querySelector('[data-border-toggle=\"1\"][type=\"checkbox\"]') : null;
-            var overlayToggle = form ? form.querySelector('[data-overlay-toggle=\"1\"][type=\"checkbox\"]') : null;
+            var overlayToggle = localCourseBannerBuilderGetOverlayToggle(form);
             if (!borderToggle) {
                 return;
             }
@@ -12175,10 +12192,7 @@ function localCourseBannerBuilderBindLayerFormEvents(scope) {
                 return;
             }
             borderToggle.checked = nextType === 'border';
-            if (overlayToggle) {
-                overlayToggle.checked = nextType === 'overlay';
-                overlayToggle.dispatchEvent(new Event('change', {bubbles: true}));
-            }
+            localCourseBannerBuilderSetOverlayToggle(form, nextType === 'overlay');
             borderToggle.dispatchEvent(new Event('change', {bubbles: true}));
             if (nextType === 'border') {
                 var accordion = form.querySelector('[data-border-accordion=\"1\"]');
@@ -14372,9 +14386,13 @@ function localCourseBannerBuilderRestoreCreateLayerModal() {
             borderToggleWrapper.classList.remove('local-course-banner-builder-option-disabled');
         }
     }
-    var overlayToggle = form.querySelector('[data-overlay-toggle=\"1\"][type=\"checkbox\"]');
+    var overlayToggle = localCourseBannerBuilderGetOverlayToggle(form);
     if (overlayToggle) {
-        overlayToggle.checked = false;
+        if (overlayToggle.type === 'checkbox') {
+            overlayToggle.checked = false;
+        } else {
+            overlayToggle.value = '0';
+        }
         var sourceHasOverlayLayerInput = form.querySelector('#id_sourcehasoverlaylayer');
         var sourceHasOverlayLayer = !!(
             sourceHasOverlayLayerInput && parseInt(sourceHasOverlayLayerInput.value || '0', 10) > 0
