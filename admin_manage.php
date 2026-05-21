@@ -13611,20 +13611,23 @@ function localCourseBannerBuilderEnsureOverlayAppearanceControls(form, overlayAc
     appearanceTitle.textContent = localCourseBannerBuilderGetJsString('overlayappearance', 'Overlay appearance');
     container.appendChild(appearanceTitle);
 
-    var colorTitle = document.createElement('div');
-    colorTitle.className = 'local-course-banner-builder-slideshow-side-title';
-    colorTitle.textContent = localCourseBannerBuilderGetJsString('overlaycolor', 'Overlay colour');
-    container.appendChild(colorTitle);
-
+    var colorBlock = document.createElement('div');
+    colorBlock.className = 'mb-3 local-course-banner-builder-overlay-color-block';
+    var colorLabel = document.createElement('label');
+    colorLabel.className = 'form-label';
+    colorLabel.textContent = localCourseBannerBuilderGetJsString('overlaycolor', 'Overlay colour');
     var colorWrap = document.createElement('div');
-    colorWrap.className = 'local-course-banner-builder-overlay-color-control';
+    colorWrap.className = 'local-course-banner-builder-title-color-field';
     if (bannerPicker) {
-        bannerPicker.classList.add('local-course-banner-builder-slideshow-color-input');
+        bannerPicker.className = 'form-control form-control-color local-course-banner-builder-color-input';
         colorWrap.appendChild(bannerPicker);
     }
-    bannerColor.classList.add('local-course-banner-builder-slideshow-hex-input');
+    bannerColor.className = 'form-control';
+    bannerColor.setAttribute('pattern', '^#[0-9A-Fa-f]{6}$');
     colorWrap.appendChild(bannerColor);
-    container.appendChild(colorWrap);
+    colorBlock.appendChild(colorLabel);
+    colorBlock.appendChild(colorWrap);
+    container.appendChild(colorBlock);
 
     var opacityTitle = document.createElement('div');
     opacityTitle.className = 'local-course-banner-builder-slideshow-side-title';

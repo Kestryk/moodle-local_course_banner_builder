@@ -6102,18 +6102,31 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
   display: contents;
 }
 
-.local-course-banner-builder-overlay-color-control {
+.local-course-banner-builder-overlay-color-block {
+  grid-column: 1/-1;
+  width: 100%;
+  margin-bottom: 0.75rem;
+}
+
+.local-course-banner-builder-overlay-color-block .form-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--local-course-banner-builder-admin-heading, #40546b);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-title-color-field {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 0.35rem;
   width: 100%;
 }
 
-.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-overlay-color-control .local-course-banner-builder-slideshow-color-input {
-  display: block;
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-title-color-field .local-course-banner-builder-color-input {
   width: 100%;
   min-width: 0;
-  height: 2.45rem;
+  min-height: 2.45rem;
   padding: 0.2rem;
 }
 
