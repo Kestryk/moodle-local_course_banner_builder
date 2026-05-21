@@ -1553,6 +1553,21 @@ $PAGE->requires->strings_for_js([
     'layertype:image',
     'layertype:overlay',
     'layeroverlay',
+    'overlaybannerappearance',
+    'overlayborderabove',
+    'overlaycolor',
+    'overlayopacity',
+    'overlaysettings',
+    'overlayslideshowappearance',
+    'overlaystylemode',
+    'overlaystylemode:custom',
+    'overlaystylemode:inherit',
+    'overlaytarget',
+    'overlaytarget:banner',
+    'overlaytarget:both',
+    'overlaytarget:slideshow',
+    'overlaytitleabove',
+    'previewcoursetitle',
     'modalbodynotfound',
     'no',
     'nextimages',
@@ -1568,6 +1583,7 @@ $PAGE->requires->strings_for_js([
     'showotherlayers',
     'showpreviewborder',
     'sharpinnercorners',
+    'sourcealreadyhasoverlayinline',
     'summarycustomsize',
     'summarykeepaspect',
     'summaryleft',
@@ -1795,6 +1811,7 @@ $themename = strtolower((string)($PAGE->theme->name ?? ''));
 $adminclasses = [
     'local-course-banner-builder-admin',
     $themename === 'easyedu' ? 'local-course-banner-builder-admin--easyedu' : 'local-course-banner-builder-admin--native',
+    $issitebanneradmin ? 'local-course-banner-builder-admin--site' : 'local-course-banner-builder-admin--course',
 ];
 
 $categoryoptions = \local_course_banner_builder\manager::get_category_source_options();
@@ -2061,6 +2078,12 @@ $form = new \local_course_banner_builder\form\manage_banner_form(null, [
     'activechildoverlaylayers' => $activechildoverlaylayers,
     'currentisborderlayer' => $currentisborderlayer,
     'currentisoverlaylayer' => $currentisoverlaylayer,
+    'issitebanneradmin' => $issitebanneradmin,
+    'slideshowoverlaydefault' => \local_course_banner_builder\manager::get_slideshow_config(
+        $issitebanneradmin
+            ? \local_course_banner_builder\manager::SLIDESHOW_CONTEXT_SITE
+            : \local_course_banner_builder\manager::SLIDESHOW_CONTEXT_COURSE
+    ),
     'formmode' => $formmode,
     'filemanageroptions' => \local_course_banner_builder\manager::get_filemanager_options(empty($elementid)),
     'uploadguidance' => \local_course_banner_builder\manager::get_upload_guidance(),
@@ -3837,6 +3860,7 @@ function localCourseBannerBuilderCreateLayerTypeChoice(layerForm, borderToggle) 
         'overlay'
     );
     var warning = document.createElement('span');
+    var overlayWarning = document.createElement('span');
     item.id = 'fitem_id_layertypechoice';
     item.className = 'mb-3 row fitem femptylabel local-course-banner-builder-layer-type-choice-fallback';
     target.className = 'col-md-9 felement';
@@ -3846,6 +3870,12 @@ function localCourseBannerBuilderCreateLayerTypeChoice(layerForm, borderToggle) 
     group.setAttribute('data-layer-type-toggle', '1');
     warning.className = 'local-course-banner-builder-layer-type-warning text-danger d-none';
     warning.setAttribute('data-layer-type-border-warning', '1');
+    overlayWarning.className = 'local-course-banner-builder-layer-type-warning text-danger d-none';
+    overlayWarning.setAttribute('data-layer-type-overlay-warning', '1');
+    overlayWarning.textContent = localCourseBannerBuilderGetJsString(
+        'sourcealreadyhasoverlayinline',
+        'An overlay layer already exists in this source'
+    );
     [imageButton, borderButton].forEach(function(button) {
         button.addEventListener('click', function(e) {
             e.preventDefault();
@@ -3866,6 +3896,7 @@ function localCourseBannerBuilderCreateLayerTypeChoice(layerForm, borderToggle) 
     });
     choice.appendChild(group);
     choice.appendChild(warning);
+    choice.appendChild(overlayWarning);
     target.appendChild(choice);
     item.appendChild(target);
     return item;
@@ -3920,6 +3951,40 @@ function localCourseBannerBuilderCreateOverlayFallbackField(container, label, in
     return input;
 }
 
+function localCourseBannerBuilderSetSegmentedChoice(buttons, activeValue, attribute) {
+    buttons.forEach(function(button) {
+        var active = button.getAttribute(attribute) === activeValue;
+        button.classList.toggle('btn-primary', active);
+        button.classList.toggle('btn-outline-secondary', !active);
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+}
+
+function localCourseBannerBuilderCreateSegmentedChoice(options, activeValue, attribute, onSelect) {
+    var group = document.createElement('div');
+    group.className = 'btn-group local-course-banner-builder-overlay-segmented-choice';
+    group.setAttribute('role', 'group');
+    options.forEach(function(option) {
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'btn btn-sm btn-outline-secondary';
+        button.setAttribute(attribute, option.value);
+        button.textContent = option.label;
+        button.addEventListener('click', function(event) {
+            event.preventDefault();
+            onSelect(option.value);
+        });
+        group.appendChild(button);
+    });
+    localCourseBannerBuilderSetSegmentedChoice(
+        Array.prototype.slice.call(group.querySelectorAll('button')),
+        activeValue,
+        attribute
+    );
+    return group;
+}
+
 function localCourseBannerBuilderEnsureOverlayFallbackControls(layerForm) {
     if (!layerForm || layerForm.querySelector('[data-overlay-section=\"1\"]')) {
         return;
@@ -3931,9 +3996,15 @@ function localCourseBannerBuilderEnsureOverlayFallbackControls(layerForm) {
     section.setAttribute('data-overlay-section', '1');
     section.setAttribute('data-overlay-accordion', '1');
     section.setAttribute('data-create-overlay-locked', '0');
+    section.setAttribute(
+        'data-overlay-site-only',
+        document.querySelector('.local-course-banner-builder-admin--site') ? '1' : '0'
+    );
+    section.setAttribute('data-overlay-inherit-color', '#000000');
+    section.setAttribute('data-overlay-inherit-opacity', '38');
     section.hidden = true;
     summaryTitle.className = 'local-course-banner-builder-border-summary-title';
-    summaryTitle.textContent = localCourseBannerBuilderGetJsString('layeroverlay', 'Overlay');
+    summaryTitle.textContent = localCourseBannerBuilderGetJsString('overlaysettings', 'Overlay settings');
     summary.appendChild(summaryTitle);
     section.appendChild(summary);
 
@@ -3965,12 +4036,16 @@ function localCourseBannerBuilderEnsureOverlayFallbackControls(layerForm) {
             }
             target.appendChild(option);
         });
-        localCourseBannerBuilderCreateOverlayFallbackField(section, 'Overlay target', target);
+        localCourseBannerBuilderCreateOverlayFallbackField(
+            section,
+            localCourseBannerBuilderGetJsString('overlaytarget', 'Overlay target'),
+            target
+        );
     }
 
     [
-        ['overlaybanner', 'Banner overlay', '25'],
-        ['overlayslideshow', 'Slideshow overlay', '38']
+        ['overlaybanner', localCourseBannerBuilderGetJsString('overlaybannerappearance', 'Banner overlay'), '25'],
+        ['overlayslideshow', localCourseBannerBuilderGetJsString('overlayslideshowappearance', 'Slideshow overlay'), '38']
     ].forEach(function(config) {
         var prefix = config[0];
         var heading = document.createElement('div');
@@ -3985,7 +4060,11 @@ function localCourseBannerBuilderEnsureOverlayFallbackControls(layerForm) {
             color.className = 'form-control';
             color.value = '#000000';
             color.setAttribute('data-overlay-color-text', prefix);
-            localCourseBannerBuilderCreateOverlayFallbackField(section, 'Overlay color', color);
+            localCourseBannerBuilderCreateOverlayFallbackField(
+                section,
+                localCourseBannerBuilderGetJsString('overlaycolor', 'Overlay color'),
+                color
+            );
         }
         if (!layerForm.querySelector('#id_' + prefix + 'opacity')) {
             var opacity = document.createElement('input');
@@ -3997,13 +4076,17 @@ function localCourseBannerBuilderEnsureOverlayFallbackControls(layerForm) {
             opacity.max = '100';
             opacity.step = '1';
             opacity.value = config[2];
-            localCourseBannerBuilderCreateOverlayFallbackField(section, 'Overlay opacity', opacity);
+            localCourseBannerBuilderCreateOverlayFallbackField(
+                section,
+                localCourseBannerBuilderGetJsString('overlayopacity', 'Overlay opacity'),
+                opacity
+            );
         }
     });
 
     [
-        ['overlaytitleabove', 'Titles above overlay'],
-        ['overlayborderabove', 'Borders above overlay']
+        ['overlaytitleabove', localCourseBannerBuilderGetJsString('overlaytitleabove', 'Titles above overlay')],
+        ['overlayborderabove', localCourseBannerBuilderGetJsString('overlayborderabove', 'Borders above overlay')]
     ].forEach(function(config) {
         if (layerForm.querySelector('#id_' + config[0])) {
             return;
@@ -4185,6 +4268,10 @@ function localCourseBannerBuilderEnsureLayerTypeChoice(layerForm, previewItem) {
     if (!warning && layerTypeItem) {
         warning = layerTypeItem.querySelector('[data-layer-type-border-warning=\"1\"]');
     }
+    var overlayWarning = choice.querySelector('[data-layer-type-overlay-warning=\"1\"]');
+    if (!overlayWarning && layerTypeItem) {
+        overlayWarning = layerTypeItem.querySelector('[data-layer-type-overlay-warning=\"1\"]');
+    }
     if (!group && borderToggle && !localCourseBannerBuilderIsEditLayerForm(layerForm)) {
         var fallback = localCourseBannerBuilderCreateLayerTypeChoice(layerForm, borderToggle);
         group = fallback.querySelector('[data-layer-type-toggle=\"1\"]');
@@ -4195,6 +4282,9 @@ function localCourseBannerBuilderEnsureLayerTypeChoice(layerForm, previewItem) {
     }
     if (warning && warning.parentNode !== choice) {
         choice.appendChild(warning);
+    }
+    if (overlayWarning && overlayWarning.parentNode !== choice) {
+        choice.appendChild(overlayWarning);
     }
     if (choice.parentNode !== previewItem.parentNode || choice.nextSibling !== previewItem) {
         previewItem.parentNode.insertBefore(choice, previewItem);
@@ -4364,6 +4454,23 @@ function localCourseBannerBuilderSyncLayerTypeChoice(layerForm) {
             !(hasExistingElement && currentIsBorderLayer);
         warning.classList.toggle('d-none', !sourceBlocksNewBorder || borderToggle.checked);
     }
+    var overlayWarning = layerForm.querySelector('[data-layer-type-overlay-warning=\"1\"]');
+    if (overlayWarning) {
+        var overlaySection = layerForm.querySelector('[data-overlay-section=\"1\"]');
+        var sourceHasOverlayLayerInput = layerForm.querySelector('#id_sourcehasoverlaylayer');
+        var currentIsOverlayLayerInput = layerForm.querySelector('#id_currentisoverlaylayer');
+        var overlayElementIdInput = layerForm.querySelector('#id_elementid');
+        var sourceHasOverlayLayer = !!(sourceHasOverlayLayerInput &&
+            parseInt(sourceHasOverlayLayerInput.value || '0', 10) > 0);
+        var createOverlayLocked = !!(overlaySection &&
+            parseInt(overlaySection.getAttribute('data-create-overlay-locked') || '0', 10) > 0);
+        var currentIsOverlayLayer = !!(currentIsOverlayLayerInput &&
+            parseInt(currentIsOverlayLayerInput.value || '0', 10) > 0);
+        var hasOverlayElement = !!(overlayElementIdInput && parseInt(overlayElementIdInput.value || '0', 10) > 0);
+        var sourceBlocksNewOverlay = (sourceHasOverlayLayer || createOverlayLocked) &&
+            !(hasOverlayElement && currentIsOverlayLayer);
+        overlayWarning.classList.toggle('d-none', !sourceBlocksNewOverlay || selectedType === 'overlay');
+    }
     var imageSection = layerForm.querySelector('[data-image-options-section=\"1\"]');
     if (imageSection) {
         var imageOptionsButton = layerForm.querySelector('[data-modal-preview-side-panel-target=\"imageoptions\"]');
@@ -4474,6 +4581,21 @@ function localCourseBannerBuilderSyncLayerInputModes(scope) {
     }
     if (filemanagerItem) {
         filemanagerItem.hidden = isBorderOnly || isOverlayOnly;
+    }
+    var sortOrderInput = layerForm.querySelector('#id_sortorder');
+    var sortOrderItem = sortOrderInput ? sortOrderInput.closest('.fitem, .form-group, .mb-3, .row') : null;
+    if (sortOrderInput) {
+        sortOrderInput.disabled = isBorderOnly || isOverlayOnly || isExistingBorderLayer || isExistingOverlayLayer;
+        sortOrderInput.setAttribute(
+            'aria-disabled',
+            sortOrderInput.disabled ? 'true' : 'false'
+        );
+    }
+    if (sortOrderItem) {
+        sortOrderItem.classList.toggle(
+            'local-course-banner-builder-option-disabled',
+            isBorderOnly || isOverlayOnly || isExistingBorderLayer || isExistingOverlayLayer
+        );
     }
     [
         layerForm.querySelector('#id_fitmodeoverride'),
@@ -13321,6 +13443,11 @@ function localCourseBannerBuilderEnsureModalOverlayControls(form) {
     overlayAccordion.setAttribute('data-modal-preview-side-panel', '1');
     overlayAccordion.setAttribute('data-modal-preview-side-panel-key', 'overlaystyle');
     overlayAccordion.setAttribute('data-preview-action-group', 'overlay');
+    var summaryTitle = overlayAccordion.querySelector('.local-course-banner-builder-border-summary-title');
+    if (summaryTitle) {
+        summaryTitle.textContent = localCourseBannerBuilderGetJsString('overlaysettings', 'Overlay settings');
+    }
+    localCourseBannerBuilderEnhanceOverlaySidePanelControls(form, overlayAccordion);
     if (!existingButton) {
         overlayAccordion.hidden = true;
         overlayAccordion.classList.add('is-collapsed');
@@ -13345,7 +13472,7 @@ function localCourseBannerBuilderEnsureModalOverlayControls(form) {
     localCourseBannerBuilderSetActionButtonContent(
         overlayButton,
         'fa-adjust',
-        localCourseBannerBuilderGetJsString('layeroverlay', 'Overlay')
+        localCourseBannerBuilderGetJsString('overlaysettings', 'Overlay settings')
     );
     overlayButton.addEventListener('click', function() {
         var shouldOpen = overlayAccordion.hidden || overlayAccordion.classList.contains('is-collapsed');
@@ -13353,6 +13480,193 @@ function localCourseBannerBuilderEnsureModalOverlayControls(form) {
         localCourseBannerBuilderToggleOpacityPanel(overlayAccordion, overlayButton, shouldOpen);
     });
     host.appendChild(overlayButton);
+}
+
+function localCourseBannerBuilderGetOverlayControlRow(input) {
+    return input ? input.closest('.fitem, .form-group, .mb-3, .row') : null;
+}
+
+function localCourseBannerBuilderSetOverlayStyleMode(form, mode) {
+    var group = form ? form.querySelector('[data-overlay-style-mode-choice=\"1\"]') : null;
+    if (!group) {
+        return;
+    }
+    localCourseBannerBuilderSetSegmentedChoice(
+        Array.prototype.slice.call(group.querySelectorAll('[data-overlay-style-mode-option]')),
+        mode,
+        'data-overlay-style-mode-option'
+    );
+}
+
+function localCourseBannerBuilderMarkOverlayCustom(form) {
+    localCourseBannerBuilderSetOverlayStyleMode(form, 'custom');
+}
+
+function localCourseBannerBuilderApplyOverlayInheritance(form) {
+    var accordion = form ? form.querySelector('[data-overlay-accordion=\"1\"]') : null;
+    if (!accordion) {
+        return;
+    }
+    var color = accordion.getAttribute('data-overlay-inherit-color') || '#000000';
+    var opacity = accordion.getAttribute('data-overlay-inherit-opacity') || '38';
+    ['overlaybanner', 'overlayslideshow'].forEach(function(prefix) {
+        var colorInput = form.querySelector('#id_' + prefix + 'color');
+        var colorPicker = form.querySelector('[data-overlay-color-picker=\"' + prefix + '\"]');
+        var opacityInput = form.querySelector('#id_' + prefix + 'opacity');
+        if (colorInput) {
+            colorInput.value = color;
+            colorInput.dispatchEvent(new Event('input', {bubbles: true}));
+            colorInput.dispatchEvent(new Event('change', {bubbles: true}));
+        }
+        if (colorPicker) {
+            colorPicker.value = color;
+            colorPicker.dispatchEvent(new Event('input', {bubbles: true}));
+        }
+        if (opacityInput) {
+            opacityInput.value = opacity;
+            opacityInput.dispatchEvent(new Event('input', {bubbles: true}));
+            opacityInput.dispatchEvent(new Event('change', {bubbles: true}));
+        }
+    });
+    localCourseBannerBuilderSetOverlayStyleMode(form, 'inherit');
+    localCourseBannerBuilderSyncModalOverlayPreview(form);
+}
+
+function localCourseBannerBuilderEnhanceOverlaySidePanelControls(form, overlayAccordion) {
+    if (!form || !overlayAccordion || overlayAccordion.dataset.overlayControlsEnhanced === '1') {
+        return;
+    }
+    overlayAccordion.dataset.overlayControlsEnhanced = '1';
+    var overlayEnabled = localCourseBannerBuilderGetOverlayToggle(form);
+    var overlayEnabledRow = localCourseBannerBuilderGetOverlayControlRow(overlayEnabled);
+    if (overlayEnabledRow) {
+        overlayEnabledRow.hidden = true;
+        overlayEnabledRow.setAttribute('aria-hidden', 'true');
+    }
+
+    var modeWrap = document.createElement('div');
+    modeWrap.className = 'local-course-banner-builder-overlay-mode-wrap mb-2';
+    var modeTitle = document.createElement('div');
+    modeTitle.className = 'local-course-banner-builder-slideshow-side-title';
+    modeTitle.textContent = localCourseBannerBuilderGetJsString('overlaystylemode', 'Overlay style');
+    var modeChoice = localCourseBannerBuilderCreateSegmentedChoice(
+        [
+            {value: 'inherit', label: localCourseBannerBuilderGetJsString('overlaystylemode:inherit', 'Inherit slideshow overlay')},
+            {value: 'custom', label: localCourseBannerBuilderGetJsString('overlaystylemode:custom', 'Custom style')}
+        ],
+        'custom',
+        'data-overlay-style-mode-option',
+        function(value) {
+            if (value === 'inherit') {
+                localCourseBannerBuilderApplyOverlayInheritance(form);
+            } else {
+                localCourseBannerBuilderSetOverlayStyleMode(form, 'custom');
+            }
+        }
+    );
+    modeChoice.setAttribute('data-overlay-style-mode-choice', '1');
+    modeWrap.appendChild(modeTitle);
+    modeWrap.appendChild(modeChoice);
+    var firstBodyNode = Array.prototype.slice.call(overlayAccordion.children).find(function(child) {
+        return child.tagName && child.tagName.toLowerCase() !== 'summary';
+    });
+    overlayAccordion.insertBefore(modeWrap, firstBodyNode || null);
+
+    var target = form.querySelector('#id_overlaytarget');
+    var targetRow = localCourseBannerBuilderGetOverlayControlRow(target);
+    if (target) {
+        if (overlayAccordion.getAttribute('data-overlay-site-only') === '1' ||
+                target.getAttribute('data-overlay-site-target') === '1') {
+            target.value = 'banner';
+            if (targetRow) {
+                targetRow.hidden = true;
+                targetRow.setAttribute('aria-hidden', 'true');
+            }
+        } else if (!overlayAccordion.querySelector('[data-overlay-target-choice=\"1\"]')) {
+            var targetTitle = document.createElement('div');
+            targetTitle.className = 'local-course-banner-builder-slideshow-side-title';
+            targetTitle.textContent = localCourseBannerBuilderGetJsString('overlaytarget', 'Overlay target');
+            var targetChoice = localCourseBannerBuilderCreateSegmentedChoice(
+                [
+                    {value: 'banner', label: localCourseBannerBuilderGetJsString('overlaytarget:banner', 'Banner only')},
+                    {value: 'slideshow', label: localCourseBannerBuilderGetJsString('overlaytarget:slideshow', 'Slideshow only')},
+                    {value: 'both', label: localCourseBannerBuilderGetJsString('overlaytarget:both', 'Banner and slideshow')}
+                ],
+                target.value || 'both',
+                'data-overlay-target-option',
+                function(value) {
+                    target.value = value;
+                    target.dispatchEvent(new Event('change', {bubbles: true}));
+                    localCourseBannerBuilderSetSegmentedChoice(
+                        Array.prototype.slice.call(targetChoice.querySelectorAll('[data-overlay-target-option]')),
+                        value,
+                        'data-overlay-target-option'
+                    );
+                    localCourseBannerBuilderMarkOverlayCustom(form);
+                }
+            );
+            targetChoice.setAttribute('data-overlay-target-choice', '1');
+            if (targetRow) {
+                targetRow.hidden = true;
+                targetRow.setAttribute('aria-hidden', 'true');
+                overlayAccordion.insertBefore(targetTitle, targetRow.nextSibling);
+                overlayAccordion.insertBefore(targetChoice, targetTitle.nextSibling);
+            }
+        }
+    }
+
+    Array.prototype.slice.call(overlayAccordion.querySelectorAll('[data-overlay-color-text]')).forEach(function(input) {
+        input.classList.add('local-course-banner-builder-slideshow-hex-input');
+        input.addEventListener('input', function() {
+            localCourseBannerBuilderMarkOverlayCustom(form);
+        });
+    });
+    Array.prototype.slice.call(overlayAccordion.querySelectorAll('[data-overlay-color-picker]')).forEach(function(input) {
+        input.classList.add('local-course-banner-builder-slideshow-color-input');
+        input.addEventListener('input', function() {
+            localCourseBannerBuilderMarkOverlayCustom(form);
+        });
+    });
+    Array.prototype.slice.call(overlayAccordion.querySelectorAll('#id_overlaybanneropacity, #id_overlayslideshowopacity')).forEach(function(input) {
+        input.addEventListener('input', function() {
+            localCourseBannerBuilderMarkOverlayCustom(form);
+        });
+    });
+
+    ['overlaytitleabove', 'overlayborderabove'].forEach(function(name) {
+        var input = form.querySelector('#id_' + name + '[type=\"checkbox\"]');
+        var row = localCourseBannerBuilderGetOverlayControlRow(input);
+        if (!input || !row || overlayAccordion.querySelector('[data-overlay-toggle-button-for=\"#id_' + name + '\"]')) {
+            return;
+        }
+        row.hidden = true;
+        row.setAttribute('aria-hidden', 'true');
+        var title = document.createElement('div');
+        title.className = 'local-course-banner-builder-slideshow-side-title';
+        title.textContent = (row.textContent || '').trim() || name;
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'btn btn-sm local-course-banner-builder-slideshow-enable-button';
+        button.setAttribute('data-overlay-toggle-button-for', '#id_' + name);
+        var sync = function() {
+            var checked = !!input.checked;
+            button.classList.toggle('btn-primary', checked);
+            button.classList.toggle('btn-outline-secondary', !checked);
+            localCourseBannerBuilderSetActionButtonContent(button, checked ? 'fa-toggle-on' : 'fa-toggle-off', title.textContent);
+            button.setAttribute('aria-pressed', checked ? 'true' : 'false');
+        };
+        button.addEventListener('click', function(event) {
+            event.preventDefault();
+            input.checked = !input.checked;
+            input.dispatchEvent(new Event('change', {bubbles: true}));
+            localCourseBannerBuilderMarkOverlayCustom(form);
+            sync();
+        });
+        input.addEventListener('change', sync);
+        sync();
+        overlayAccordion.insertBefore(title, row.nextSibling);
+        overlayAccordion.insertBefore(button, title.nextSibling);
+    });
 }
 
 function localCourseBannerBuilderSyncModalOverlayPreview(form) {
@@ -13363,10 +13677,14 @@ function localCourseBannerBuilderSyncModalOverlayPreview(form) {
     if (!previewRoot) {
         return;
     }
+    var previewFrame = previewRoot.querySelector('[data-banner-preview-frame=\"1\"], [data-border-preview-frame=\"1\"]') || previewRoot;
     var overlayToggle = localCourseBannerBuilderGetOverlayToggle(form);
     var target = form.querySelector('#id_overlaytarget');
     var colorInput = form.querySelector('#id_overlaybannercolor');
     var opacityInput = form.querySelector('#id_overlaybanneropacity');
+    var borderAboveInput = form.querySelector('#id_overlayborderabove');
+    var titleAboveInput = form.querySelector('#id_overlaytitleabove');
+    var overlayAccordion = form.querySelector('[data-overlay-accordion=\"1\"]');
     var overlayEnabled = localCourseBannerBuilderGetSelectedLayerType(form) === 'overlay' ||
         !!(overlayToggle && (overlayToggle.type === 'checkbox' ? overlayToggle.checked : overlayToggle.value === '1'));
     var targetValue = target ? target.value : 'both';
@@ -13376,7 +13694,9 @@ function localCourseBannerBuilderSyncModalOverlayPreview(form) {
         overlay = document.createElement('div');
         overlay.className = 'local-course-banner-builder-banner-overlay-layer';
         overlay.setAttribute('data-layer-overlay-preview', '1');
-        previewRoot.insertBefore(overlay, previewRoot.firstChild);
+    }
+    if (overlay.parentNode !== previewFrame) {
+        previewFrame.insertBefore(overlay, previewFrame.firstChild);
     }
     overlay.hidden = !show;
     if (show) {
@@ -13384,6 +13704,22 @@ function localCourseBannerBuilderSyncModalOverlayPreview(form) {
             colorInput ? colorInput.value : '#000000',
             opacityInput ? opacityInput.value : '25'
         );
+        overlay.style.zIndex = borderAboveInput && borderAboveInput.checked ? '1001' : '3001';
+    }
+    var titlePreview = previewFrame.querySelector('[data-layer-overlay-title-preview=\"1\"]');
+    if (!titlePreview) {
+        titlePreview = document.createElement('div');
+        titlePreview.className = 'local-course-banner-builder-banner-title-overlay local-course-banner-builder-layer-overlay-title-preview';
+        titlePreview.setAttribute('data-layer-overlay-title-preview', '1');
+        previewFrame.appendChild(titlePreview);
+    }
+    var showTitle = show && overlayAccordion &&
+        overlayAccordion.getAttribute('data-overlay-title-preview-enabled') === '1';
+    titlePreview.hidden = !showTitle;
+    if (showTitle) {
+        titlePreview.textContent = overlayAccordion.getAttribute('data-overlay-title-preview-text') ||
+            localCourseBannerBuilderGetJsString('previewcoursetitle', 'Course title');
+        titlePreview.style.zIndex = titleAboveInput && titleAboveInput.checked ? '3010' : '69';
     }
 }
 

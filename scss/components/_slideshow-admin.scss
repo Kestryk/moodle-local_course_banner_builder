@@ -670,6 +670,47 @@
     width: 100%;
 }
 
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-slideshow-side-title,
+.local-course-banner-builder-overlay-style-side-panel label.local-course-banner-builder-slideshow-side-title {
+    display: block;
+    margin: 0.85rem 0 0.35rem;
+    font-weight: 700;
+}
+
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-slideshow-color-input {
+    width: 100%;
+    min-height: 2.45rem;
+    margin-bottom: 0.35rem;
+}
+
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-slideshow-hex-input {
+    width: 100%;
+    max-width: none;
+    margin-bottom: 0.5rem;
+}
+
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-overlay-segmented-choice {
+    display: flex;
+    width: 100%;
+}
+
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-overlay-segmented-choice > .btn {
+    flex: 1 1 0;
+    min-width: 0;
+    white-space: normal;
+}
+
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-slideshow-enable-button {
+    justify-content: center;
+    width: 100%;
+}
+
+.local-course-banner-builder-layer-overlay-title-preview {
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
 @media (max-width: 767.98px) {
     .local-course-banner-builder-slideshow-modal-body {
         padding-right: 1rem;

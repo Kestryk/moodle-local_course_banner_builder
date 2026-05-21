@@ -94,12 +94,14 @@
 }
 
 .local-course-banner-builder-image-options-side-panel,
-.local-course-banner-builder-border-style-side-panel {
+.local-course-banner-builder-border-style-side-panel,
+.local-course-banner-builder-overlay-style-side-panel {
     max-height: none;
     overflow: visible;
 }
 
-.local-course-banner-builder-image-options-side-panel {
+.local-course-banner-builder-image-options-side-panel,
+.local-course-banner-builder-overlay-style-side-panel {
     > summary {
         display: none !important;
     }
@@ -116,7 +118,18 @@
     .local-course-banner-builder-toggle-button-source {
         display: none !important;
     }
+}
 
+.local-course-banner-builder-overlay-style-side-panel {
+    #fitem_id_overlayenabled,
+    [id^="fitem_id_overlayenabled"] {
+        display: none !important;
+    }
+}
+
+.local-course-banner-builder-image-options-side-panel,
+.local-course-banner-builder-border-style-side-panel,
+.local-course-banner-builder-overlay-style-side-panel {
     .fitem,
     .form-group,
     .mb-3,

@@ -12,7 +12,6 @@
   min-height: 180px;
   overflow: hidden;
 }
-
 .local-course-banner-builder-preview-opacity-panel {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 4.5rem;
@@ -87,12 +86,14 @@
 }
 
 .local-course-banner-builder-image-options-side-panel,
-.local-course-banner-builder-border-style-side-panel {
+.local-course-banner-builder-border-style-side-panel,
+.local-course-banner-builder-overlay-style-side-panel {
   max-height: none;
   overflow: visible;
 }
 
-.local-course-banner-builder-image-options-side-panel > summary {
+.local-course-banner-builder-image-options-side-panel > summary,
+.local-course-banner-builder-overlay-style-side-panel > summary {
   display: none !important;
 }
 
@@ -109,7 +110,10 @@
 .local-course-banner-builder-border-style-side-panel #fitem_id_borderenabled_existing_notice,
 .local-course-banner-builder-border-style-side-panel [data-toggle-button-for="#id_borderenabled"],
 .local-course-banner-builder-border-style-side-panel [data-toggle-button-host-for="#id_borderenabled"],
-.local-course-banner-builder-border-style-side-panel .local-course-banner-builder-toggle-button-source {
+.local-course-banner-builder-border-style-side-panel .local-course-banner-builder-toggle-button-source,
+.local-course-banner-builder-overlay-style-side-panel > summary,
+.local-course-banner-builder-overlay-style-side-panel #fitem_id_overlayenabled,
+.local-course-banner-builder-overlay-style-side-panel [id^=fitem_id_overlayenabled] {
   display: none !important;
 }
 .local-course-banner-builder-image-options-side-panel .fitem,
@@ -119,7 +123,11 @@
 .local-course-banner-builder-border-style-side-panel .fitem,
 .local-course-banner-builder-border-style-side-panel .form-group,
 .local-course-banner-builder-border-style-side-panel .mb-3,
-.local-course-banner-builder-border-style-side-panel .row {
+.local-course-banner-builder-border-style-side-panel .row,
+.local-course-banner-builder-overlay-style-side-panel .fitem,
+.local-course-banner-builder-overlay-style-side-panel .form-group,
+.local-course-banner-builder-overlay-style-side-panel .mb-3,
+.local-course-banner-builder-overlay-style-side-panel .row {
   display: grid;
   grid-template-columns: 1fr;
   width: 100%;
@@ -133,7 +141,10 @@
 .local-course-banner-builder-image-options-side-panel .col-md-3,
 .local-course-banner-builder-border-style-side-panel .col-form-label,
 .local-course-banner-builder-border-style-side-panel label,
-.local-course-banner-builder-border-style-side-panel .col-md-3 {
+.local-course-banner-builder-border-style-side-panel .col-md-3,
+.local-course-banner-builder-overlay-style-side-panel .col-form-label,
+.local-course-banner-builder-overlay-style-side-panel label,
+.local-course-banner-builder-overlay-style-side-panel .col-md-3 {
   display: block;
   grid-column: 1/-1;
   width: 100%;
@@ -147,7 +158,9 @@
 .local-course-banner-builder-image-options-side-panel .col-md-9,
 .local-course-banner-builder-image-options-side-panel .felement,
 .local-course-banner-builder-border-style-side-panel .col-md-9,
-.local-course-banner-builder-border-style-side-panel .felement {
+.local-course-banner-builder-border-style-side-panel .felement,
+.local-course-banner-builder-overlay-style-side-panel .col-md-9,
+.local-course-banner-builder-overlay-style-side-panel .felement {
   display: block;
   grid-column: 1/-1;
   width: 100%;
@@ -155,11 +168,13 @@
   padding: 0;
 }
 .local-course-banner-builder-image-options-side-panel .local-course-banner-builder-modal-side-target-hidden,
-.local-course-banner-builder-border-style-side-panel .local-course-banner-builder-modal-side-target-hidden {
+.local-course-banner-builder-border-style-side-panel .local-course-banner-builder-modal-side-target-hidden,
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-modal-side-target-hidden {
   display: none !important;
 }
 .local-course-banner-builder-image-options-side-panel .local-course-banner-builder-linked-range-wrapper,
-.local-course-banner-builder-border-style-side-panel .local-course-banner-builder-linked-range-wrapper {
+.local-course-banner-builder-border-style-side-panel .local-course-banner-builder-linked-range-wrapper,
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-linked-range-wrapper {
   display: grid !important;
   grid-template-columns: minmax(0, 1fr) 3.6rem 4.35rem !important;
   gap: 0.4rem;
@@ -167,11 +182,13 @@
   width: 100%;
 }
 .local-course-banner-builder-image-options-side-panel .local-course-banner-builder-linked-range-wrapper > input[type=range],
-.local-course-banner-builder-border-style-side-panel .local-course-banner-builder-linked-range-wrapper > input[type=range] {
+.local-course-banner-builder-border-style-side-panel .local-course-banner-builder-linked-range-wrapper > input[type=range],
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-linked-range-wrapper > input[type=range] {
   min-width: 0;
 }
 .local-course-banner-builder-image-options-side-panel .local-course-banner-builder-linked-range-wrapper > input[type=number],
-.local-course-banner-builder-border-style-side-panel .local-course-banner-builder-linked-range-wrapper > input[type=number] {
+.local-course-banner-builder-border-style-side-panel .local-course-banner-builder-linked-range-wrapper > input[type=number],
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-linked-range-wrapper > input[type=number] {
   min-width: 0;
   width: 100%;
   padding-right: 0.35rem;
@@ -181,7 +198,9 @@
 .local-course-banner-builder-image-options-side-panel .local-course-banner-builder-range-output,
 .local-course-banner-builder-image-options-side-panel .theme-easyedu-range-output,
 .local-course-banner-builder-border-style-side-panel .local-course-banner-builder-range-output,
-.local-course-banner-builder-border-style-side-panel .theme-easyedu-range-output {
+.local-course-banner-builder-border-style-side-panel .theme-easyedu-range-output,
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-range-output,
+.local-course-banner-builder-overlay-style-side-panel .theme-easyedu-range-output {
   min-width: 0;
   color: var(--bs-secondary-color, #6c757d);
   font-size: 0.82rem;
@@ -195,7 +214,11 @@
 .local-course-banner-builder-border-style-side-panel input[type=range],
 .local-course-banner-builder-border-style-side-panel .form-control,
 .local-course-banner-builder-border-style-side-panel .custom-select,
-.local-course-banner-builder-border-style-side-panel select {
+.local-course-banner-builder-border-style-side-panel select,
+.local-course-banner-builder-overlay-style-side-panel input[type=range],
+.local-course-banner-builder-overlay-style-side-panel .form-control,
+.local-course-banner-builder-overlay-style-side-panel .custom-select,
+.local-course-banner-builder-overlay-style-side-panel select {
   max-width: 100%;
   min-width: 0;
 }
@@ -204,7 +227,10 @@
 .local-course-banner-builder-image-options-side-panel .local-course-banner-builder-slideshow-color-input,
 .local-course-banner-builder-border-style-side-panel input[type=color],
 .local-course-banner-builder-border-style-side-panel .local-course-banner-builder-color-input,
-.local-course-banner-builder-border-style-side-panel .local-course-banner-builder-slideshow-color-input {
+.local-course-banner-builder-border-style-side-panel .local-course-banner-builder-slideshow-color-input,
+.local-course-banner-builder-overlay-style-side-panel input[type=color],
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-color-input,
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-slideshow-color-input {
   width: 100%;
   min-height: 2.25rem;
 }
@@ -213,17 +239,22 @@
 .local-course-banner-builder-image-options-side-panel input[type=text][data-hex-source],
 .local-course-banner-builder-border-style-side-panel input[type=text].local-course-banner-builder-hex-input,
 .local-course-banner-builder-border-style-side-panel input[type=text].local-course-banner-builder-slideshow-hex-input,
-.local-course-banner-builder-border-style-side-panel input[type=text][data-hex-source] {
+.local-course-banner-builder-border-style-side-panel input[type=text][data-hex-source],
+.local-course-banner-builder-overlay-style-side-panel input[type=text].local-course-banner-builder-hex-input,
+.local-course-banner-builder-overlay-style-side-panel input[type=text].local-course-banner-builder-slideshow-hex-input,
+.local-course-banner-builder-overlay-style-side-panel input[type=text][data-hex-source] {
   width: 100%;
   margin-top: 0.35rem;
 }
 .local-course-banner-builder-image-options-side-panel .btn-group,
-.local-course-banner-builder-border-style-side-panel .btn-group {
+.local-course-banner-builder-border-style-side-panel .btn-group,
+.local-course-banner-builder-overlay-style-side-panel .btn-group {
   display: inline-flex;
   width: 100%;
 }
 .local-course-banner-builder-image-options-side-panel .btn-group > .btn,
-.local-course-banner-builder-border-style-side-panel .btn-group > .btn {
+.local-course-banner-builder-border-style-side-panel .btn-group > .btn,
+.local-course-banner-builder-overlay-style-side-panel .btn-group > .btn {
   flex: 1 1 0;
   min-width: 0;
 }
@@ -6046,6 +6077,47 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 
 .local-course-banner-builder-slideshow-side-panel .local-course-banner-builder-slideshow-color-input {
   width: 100%;
+}
+
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-slideshow-side-title,
+.local-course-banner-builder-overlay-style-side-panel label.local-course-banner-builder-slideshow-side-title {
+  display: block;
+  margin: 0.85rem 0 0.35rem;
+  font-weight: 700;
+}
+
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-slideshow-color-input {
+  width: 100%;
+  min-height: 2.45rem;
+  margin-bottom: 0.35rem;
+}
+
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-slideshow-hex-input {
+  width: 100%;
+  max-width: none;
+  margin-bottom: 0.5rem;
+}
+
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-overlay-segmented-choice {
+  display: flex;
+  width: 100%;
+}
+
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-overlay-segmented-choice > .btn {
+  flex: 1 1 0;
+  min-width: 0;
+  white-space: normal;
+}
+
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-slideshow-enable-button {
+  justify-content: center;
+  width: 100%;
+}
+
+.local-course-banner-builder-layer-overlay-title-preview {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
 }
 
 @media (max-width: 767.98px) {

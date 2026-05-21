@@ -4019,10 +4019,10 @@ class manager {
      */
     protected static function get_layer_priority(\stdClass $record): int {
         if (self::is_overlay_only_layer($record)) {
-            return 1;
+            return empty($record->overlayborderabove) ? 3 : 1;
         }
         if (self::is_border_only_layer($record)) {
-            return empty($record->overlayborderabove) ? 0 : 2;
+            return 2;
         }
         if (self::is_top_image_layer($record)) {
             return 3;
@@ -4999,6 +4999,14 @@ class manager {
 
             if (!empty($record->borderenabled)) {
                 $layer = self::export_modal_preview_border_layer($record, false, false);
+                $layer['enabled'] = !empty($record->isenabled);
+                $layer['editable'] = false;
+                $layers[] = $layer;
+                continue;
+            }
+
+            if (self::record_overlay_targets_banner($record)) {
+                $layer = self::export_modal_preview_overlay_layer($record, false, false);
                 $layer['enabled'] = !empty($record->isenabled);
                 $layer['editable'] = false;
                 $layers[] = $layer;

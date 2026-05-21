@@ -53,6 +53,10 @@ class manage_banner_form extends \moodleform {
         $activechildborderlayers = (int)($this->_customdata['activechildborderlayers'] ?? 0);
         $activechildoverlaylayers = (int)($this->_customdata['activechildoverlaylayers'] ?? 0);
         $formmode = (string)($this->_customdata['formmode'] ?? 'create');
+        $issitebanneradmin = !empty($this->_customdata['issitebanneradmin']);
+        $slideshowoverlaydefault = is_array($this->_customdata['slideshowoverlaydefault'] ?? null)
+            ? $this->_customdata['slideshowoverlaydefault']
+            : [];
         $showfilemanager = !in_array($formmode, ['editborder', 'editimage', 'editoverlay'], true);
         $showadvanced = !in_array($formmode, ['editborder', 'editoverlay'], true);
         $showborder = !in_array($formmode, ['editimage', 'editoverlay'], true);
@@ -364,10 +368,22 @@ class manage_banner_form extends \moodleform {
             if ($currentisoverlaylayer) {
                 $overlaydetailsattrs['open'] = 'open';
             }
+            $overlaydetailsattrs['data-overlay-site-only'] = $issitebanneradmin ? '1' : '0';
+            $overlaydetailsattrs['data-overlay-inherit-color'] = (string)($slideshowoverlaydefault['overlaycolor'] ?? '#000000');
+            $overlaydetailsattrs['data-overlay-inherit-opacity'] = (string)round(
+                max(0, min(0.85, (float)($slideshowoverlaydefault['overlayopacity'] ?? 0.38))) * 100
+            );
+            $titlecontext = $issitebanneradmin ? 'site' : 'course';
+            $overlaydetailsattrs['data-overlay-title-preview-enabled'] =
+                (bool)get_config('local_course_banner_builder', 'bannertitle_' . $titlecontext . '_enabled') ? '1' : '0';
+            $overlaydetailsattrs['data-overlay-title-preview-text'] = get_string(
+                $issitebanneradmin ? 'previewsitetitle' : 'previewcoursetitle',
+                'local_course_banner_builder'
+            );
             $mform->addElement('html', \html_writer::start_tag('details', $overlaydetailsattrs));
             $summarycontent = self::render_collapse_expand_icon(!$currentisoverlaylayer) .
                 \html_writer::span(
-                    get_string('layeroverlay', 'local_course_banner_builder'),
+                    get_string('overlaysettings', 'local_course_banner_builder'),
                     'local-course-banner-builder-border-summary-title'
                 );
             $summarycontent .= \html_writer::span(
@@ -400,14 +416,27 @@ class manage_banner_form extends \moodleform {
                 'local-course-banner-builder-border-existing-inline text-danger d-none',
                 ['data-overlay-existing-note' => '1']
             ));
-            $mform->addElement(
-                'select',
-                'overlaytarget',
-                get_string('overlaytarget', 'local_course_banner_builder'),
-                \local_course_banner_builder\manager::get_overlay_target_options()
-            );
+            if ($issitebanneradmin) {
+                $mform->addElement('hidden', 'overlaytarget', \local_course_banner_builder\manager::OVERLAY_TARGET_BANNER, [
+                    'id' => 'id_overlaytarget',
+                    'data-overlay-site-target' => '1',
+                ]);
+            } else {
+                $mform->addElement(
+                    'select',
+                    'overlaytarget',
+                    get_string('overlaytarget', 'local_course_banner_builder'),
+                    \local_course_banner_builder\manager::get_overlay_target_options(),
+                    ['data-overlay-target-select' => '1']
+                );
+            }
             $mform->setType('overlaytarget', PARAM_ALPHA);
-            $mform->setDefault('overlaytarget', \local_course_banner_builder\manager::OVERLAY_TARGET_BOTH);
+            $mform->setDefault(
+                'overlaytarget',
+                $issitebanneradmin
+                    ? \local_course_banner_builder\manager::OVERLAY_TARGET_BANNER
+                    : \local_course_banner_builder\manager::OVERLAY_TARGET_BOTH
+            );
 
             foreach ([
                 'overlaybanner' => get_string('overlaybannerappearance', 'local_course_banner_builder'),
