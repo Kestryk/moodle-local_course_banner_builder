@@ -4017,6 +4017,24 @@ function localCourseBannerBuilderSelectLayerType(layerForm, nextType, openPanel)
     }
 }
 
+document.addEventListener('click', function(e) {
+    var button = e.target.closest('[data-layer-type-option]');
+    if (!button) {
+        return;
+    }
+    var layerForm = button.closest('form.mform');
+    if (!layerForm) {
+        return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    localCourseBannerBuilderSelectLayerType(
+        layerForm,
+        button.getAttribute('data-layer-type-option') || 'image',
+        true
+    );
+}, true);
+
 function localCourseBannerBuilderEnsureLayerTypeChoice(layerForm, previewItem) {
     if (!layerForm || !previewItem || !previewItem.parentNode) {
         return null;
