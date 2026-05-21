@@ -122,7 +122,9 @@
 
 .local-course-banner-builder-overlay-style-side-panel {
     #fitem_id_overlayenabled,
-    [id^="fitem_id_overlayenabled"] {
+    [id^="fitem_id_overlayenabled"],
+    [id^="fitem_id_overlaytitleabove"],
+    [id^="fitem_id_overlayborderabove"] {
         display: none !important;
     }
 }

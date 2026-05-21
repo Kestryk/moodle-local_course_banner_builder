@@ -13588,7 +13588,8 @@ function localCourseBannerBuilderEnsureOverlayAppearanceControls(form, overlayAc
         '[id^=\"fitem_id_overlayappearanceheading\"]',
         '[id^=\"fgroup_id_overlaybannercolorgroup\"]',
         '[id^=\"fitem_id_overlaybanneropacity\"]',
-        '[id^=\"fitem_id_overlaybanneropacity_slider\"]'
+        '[id^=\"fitem_id_overlaybanneropacity_slider\"]',
+        '[data-modal-side-range-title=\"id_overlaybanneropacity\"]'
     ].forEach(function(selector) {
         Array.prototype.slice.call(form.querySelectorAll(selector)).forEach(function(row) {
             row.hidden = true;
@@ -13606,33 +13607,41 @@ function localCourseBannerBuilderEnsureOverlayAppearanceControls(form, overlayAc
     container.className = 'local-course-banner-builder-overlay-appearance-controls';
     container.setAttribute('data-overlay-appearance-controls', '1');
 
-    var appearanceTitle = document.createElement('div');
-    appearanceTitle.className = 'local-course-banner-builder-slideshow-side-title';
-    appearanceTitle.textContent = localCourseBannerBuilderGetJsString('overlayappearance', 'Overlay appearance');
-    container.appendChild(appearanceTitle);
-
     var colorBlock = document.createElement('div');
     colorBlock.className = 'mb-3 local-course-banner-builder-overlay-color-block';
-    var colorLabel = document.createElement('label');
-    colorLabel.className = 'form-label';
-    colorLabel.textContent = localCourseBannerBuilderGetJsString('overlaycolor', 'Overlay colour');
     var colorWrap = document.createElement('div');
     colorWrap.className = 'local-course-banner-builder-title-color-field';
+    if (!bannerPicker) {
+        bannerPicker = document.createElement('input');
+        bannerPicker.type = 'color';
+        bannerPicker.name = 'overlaybannercolor_picker';
+        bannerPicker.value = localCourseBannerBuilderNormaliseHexColor(bannerColor.value, '#000000');
+        bannerPicker.setAttribute('data-overlay-color-picker', 'overlaybanner');
+        bannerPicker.setAttribute('aria-label', localCourseBannerBuilderGetJsString('overlaycolor', 'Overlay colour'));
+        bannerPicker.addEventListener('input', function() {
+            bannerColor.value = bannerPicker.value.toUpperCase();
+            localCourseBannerBuilderSyncColourInput(bannerPicker);
+            bannerColor.dispatchEvent(new Event('input', {bubbles: true}));
+        });
+        bannerPicker.addEventListener('change', function() {
+            bannerColor.value = bannerPicker.value.toUpperCase();
+            localCourseBannerBuilderSyncColourInput(bannerPicker);
+            bannerColor.dispatchEvent(new Event('change', {bubbles: true}));
+        });
+    }
     if (bannerPicker) {
         bannerPicker.className = 'form-control form-control-color local-course-banner-builder-color-input';
+        bannerPicker.hidden = false;
+        bannerPicker.removeAttribute('aria-hidden');
+        bannerPicker.value = localCourseBannerBuilderNormaliseHexColor(bannerColor.value, bannerPicker.value || '#000000');
+        localCourseBannerBuilderSyncColourInput(bannerPicker);
         colorWrap.appendChild(bannerPicker);
     }
     bannerColor.className = 'form-control';
     bannerColor.setAttribute('pattern', '^#[0-9A-Fa-f]{6}$');
     colorWrap.appendChild(bannerColor);
-    colorBlock.appendChild(colorLabel);
     colorBlock.appendChild(colorWrap);
     container.appendChild(colorBlock);
-
-    var opacityTitle = document.createElement('div');
-    opacityTitle.className = 'local-course-banner-builder-slideshow-side-title';
-    opacityTitle.textContent = localCourseBannerBuilderGetJsString('overlayopacity', 'Overlay opacity');
-    container.appendChild(opacityTitle);
 
     var sliderWrap = document.createElement('div');
     sliderWrap.className = 'local-course-banner-builder-slideshow-side-slider';
@@ -13690,42 +13699,33 @@ function localCourseBannerBuilderEnsureOverlayAppearanceControls(form, overlayAc
     return container;
 }
 
-function localCourseBannerBuilderCreateOverlaySwitch(form, input, labelText) {
-    var switchWrap = document.createElement('label');
-    switchWrap.className = 'local-course-banner-builder-toggle local-course-banner-builder-overlay-switch-toggle mb-0';
-    var visualInput = document.createElement('input');
-    visualInput.type = 'checkbox';
-    visualInput.checked = !!input.checked;
-    var slider = document.createElement('span');
-    slider.className = 'local-course-banner-builder-toggle-slider easyedu-toggle-switch__slider';
-    switchWrap.appendChild(visualInput);
-    switchWrap.appendChild(slider);
-
-    var row = document.createElement('div');
-    row.className = 'local-course-banner-builder-overlay-switch-row';
-    row.appendChild(switchWrap);
-    var label = document.createElement('span');
-    label.textContent = labelText;
-    row.appendChild(label);
+function localCourseBannerBuilderCreateOverlayToggleButton(form, input, labelText) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'btn btn-sm local-course-banner-builder-slideshow-enable-button local-course-banner-builder-overlay-toggle-button';
 
     var sync = function(fromVisual) {
         if (fromVisual) {
-            input.checked = !!visualInput.checked;
+            input.checked = !input.checked;
             input.dispatchEvent(new Event('change', {bubbles: true}));
-        } else {
-            visualInput.checked = !!input.checked;
         }
+        var checked = !!input.checked;
+        button.classList.toggle('btn-primary', checked);
+        button.classList.toggle('btn-outline-secondary', !checked);
+        localCourseBannerBuilderSetActionButtonContent(button, checked ? 'fa-toggle-on' : 'fa-toggle-off', labelText);
+        button.setAttribute('aria-pressed', checked ? 'true' : 'false');
         localCourseBannerBuilderMarkOverlayCustom(form);
         localCourseBannerBuilderSyncModalOverlayPreview(form);
     };
-    visualInput.addEventListener('change', function() {
+    button.addEventListener('click', function(event) {
+        event.preventDefault();
         sync(true);
     });
     input.addEventListener('change', function() {
         sync(false);
     });
     sync(false);
-    return row;
+    return button;
 }
 
 function localCourseBannerBuilderApplyOverlayInheritance(form) {
@@ -13822,10 +13822,6 @@ function localCourseBannerBuilderEnhanceOverlaySidePanelControls(form, overlayAc
                 existingTargetTitle.hidden = true;
             }
         } else if (!overlayAccordion.querySelector('[data-overlay-target-choice=\"1\"]')) {
-            var targetTitle = document.createElement('div');
-            targetTitle.className = 'local-course-banner-builder-slideshow-side-title';
-            targetTitle.setAttribute('data-overlay-target-title', '1');
-            targetTitle.textContent = localCourseBannerBuilderGetJsString('overlaytarget', 'Overlay target');
             var targetChoice = localCourseBannerBuilderCreateSegmentedChoice(
                 [
                     {value: 'banner', label: localCourseBannerBuilderGetJsString('overlaytarget:banner', 'Banner only')},
@@ -13846,8 +13842,7 @@ function localCourseBannerBuilderEnhanceOverlaySidePanelControls(form, overlayAc
                 }
             );
             targetChoice.setAttribute('data-overlay-target-choice', '1');
-            overlayAccordion.insertBefore(targetTitle, modeWrap.nextSibling);
-            overlayAccordion.insertBefore(targetChoice, targetTitle.nextSibling);
+            overlayAccordion.insertBefore(targetChoice, modeWrap.nextSibling);
         }
         var currentTargetChoice = overlayAccordion.querySelector('[data-overlay-target-choice=\"1\"]');
         if (currentTargetChoice) {
@@ -13930,27 +13925,21 @@ function localCourseBannerBuilderEnhanceOverlaySidePanelControls(form, overlayAc
     ['overlaytitleabove', 'overlayborderabove'].forEach(function(name) {
         var input = form.querySelector('#id_' + name + '[type=\"checkbox\"]');
         var row = localCourseBannerBuilderGetOverlayControlRow(input);
-        if (!input || !row || overlayAccordion.querySelector('[data-overlay-switch-for=\"#id_' + name + '\"]')) {
+        if (!input || !row || overlayAccordion.querySelector('[data-overlay-toggle-button-for=\"#id_' + name + '\"]')) {
             return;
         }
         row.hidden = true;
         row.setAttribute('aria-hidden', 'true');
-        var title = document.createElement('div');
-        title.className = 'local-course-banner-builder-slideshow-side-title';
-        title.textContent = (row.textContent || '').trim() || name;
-        title.setAttribute('data-overlay-switch-title-for', '#id_' + name);
-        var switchRow = localCourseBannerBuilderCreateOverlaySwitch(form, input, title.textContent);
-        switchRow.setAttribute('data-overlay-switch-for', '#id_' + name);
-        overlayAccordion.appendChild(title);
-        overlayAccordion.appendChild(switchRow);
+        var labelText = (row.textContent || '').trim() || name;
+        var button = localCourseBannerBuilderCreateOverlayToggleButton(form, input, labelText);
+        button.setAttribute('data-overlay-toggle-button-for', '#id_' + name);
+        overlayAccordion.appendChild(button);
     });
     if (appearanceControls && appearanceControls.parentNode === overlayAccordion) {
         ['overlaytitleabove', 'overlayborderabove'].forEach(function(name) {
-            var title = overlayAccordion.querySelector('[data-overlay-switch-title-for=\"#id_' + name + '\"]');
-            var switchRow = overlayAccordion.querySelector('[data-overlay-switch-for=\"#id_' + name + '\"]');
-            if (title && switchRow) {
-                overlayAccordion.appendChild(title);
-                overlayAccordion.appendChild(switchRow);
+            var button = overlayAccordion.querySelector('[data-overlay-toggle-button-for=\"#id_' + name + '\"]');
+            if (button) {
+                overlayAccordion.appendChild(button);
             }
         });
     }

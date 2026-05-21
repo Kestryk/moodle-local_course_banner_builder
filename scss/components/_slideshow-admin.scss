@@ -696,15 +696,7 @@
 .local-course-banner-builder-overlay-color-block {
     grid-column: 1 / -1;
     width: 100%;
-    margin-bottom: 0.75rem;
-}
-
-.local-course-banner-builder-overlay-color-block .form-label {
-    display: block;
     margin-bottom: 0.35rem;
-    color: var(--local-course-banner-builder-admin-heading, #40546b);
-    font-size: 0.82rem;
-    font-weight: 700;
 }
 
 .local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-title-color-field {
@@ -721,58 +713,10 @@
     padding: 0.2rem;
 }
 
-.local-course-banner-builder-overlay-switch-row {
-    display: flex;
-    align-items: center;
-    gap: 0.55rem;
-    min-height: 2rem;
-    color: var(--local-course-banner-builder-admin-heading, #40546b);
-    font-size: 0.86rem;
-    font-weight: 600;
-}
-
-.local-course-banner-builder-overlay-switch-toggle {
-    position: relative;
-    display: inline-block;
-    flex: 0 0 auto;
-    width: 2.25rem;
-    height: 1.25rem;
-}
-
-.local-course-banner-builder-overlay-switch-toggle input {
-    width: 0;
-    height: 0;
-    opacity: 0;
-}
-
-.local-course-banner-builder-overlay-switch-toggle .local-course-banner-builder-toggle-slider {
-    position: absolute;
-    inset: 0;
-    border-radius: 999px;
-    background: #a7b2bf;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-}
-
-.local-course-banner-builder-overlay-switch-toggle .local-course-banner-builder-toggle-slider::before {
-    content: "";
-    position: absolute;
-    top: 0.1875rem;
-    left: 0.1875rem;
-    width: 0.875rem;
-    height: 0.875rem;
-    border-radius: 50%;
-    background: #fff;
-    box-shadow: 0 1px 2px rgba(31, 42, 55, 0.25);
-    transition: transform 0.15s ease;
-}
-
-.local-course-banner-builder-overlay-switch-toggle input:checked + .local-course-banner-builder-toggle-slider {
-    background: var(--local-course-banner-builder-admin-accent, var(--bs-primary, #0f6cbf));
-}
-
-.local-course-banner-builder-overlay-switch-toggle input:checked + .local-course-banner-builder-toggle-slider::before {
-    transform: translateX(1rem);
+.local-course-banner-builder-overlay-toggle-button {
+    justify-content: center;
+    width: 100%;
+    margin-top: 0.35rem;
 }
 
 .local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-overlay-segmented-choice {
