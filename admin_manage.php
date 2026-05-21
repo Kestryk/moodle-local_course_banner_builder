@@ -3919,6 +3919,15 @@ function localCourseBannerBuilderIsEditImageForm(layerForm) {
         !localCourseBannerBuilderIsEditOverlayForm(layerForm));
 }
 
+function localCourseBannerBuilderGetOverlayToggle(layerForm) {
+    if (!layerForm) {
+        return null;
+    }
+    return layerForm.querySelector('[data-overlay-toggle=\"1\"][type=\"checkbox\"]') ||
+        layerForm.querySelector('[data-overlay-toggle=\"1\"][type=\"hidden\"]') ||
+        layerForm.querySelector('[data-overlay-toggle=\"1\"]');
+}
+
 function localCourseBannerBuilderEnsureLayerTypeChoice(layerForm, previewItem) {
     if (!layerForm || !previewItem || !previewItem.parentNode) {
         return null;
@@ -4156,7 +4165,7 @@ function localCourseBannerBuilderSyncLayerInputModes(scope) {
     var existingBorderNoteItem = existingBorderNote ? existingBorderNote.closest('.fitem, .form-group, .mb-3') : null;
     var existingBorderInlineNote = layerForm ? layerForm.querySelector('[data-border-existing-note-inline=\"1\"]') : null;
     var borderToggle = layerForm ? layerForm.querySelector('[data-border-toggle=\"1\"][type=\"checkbox\"]') : null;
-    var overlayToggle = layerForm ? layerForm.querySelector('[data-overlay-toggle=\"1\"]') : null;
+    var overlayToggle = localCourseBannerBuilderGetOverlayToggle(layerForm);
     var borderSection = layerForm ? layerForm.querySelector('[data-border-section=\"1\"]') : null;
     var overlaySection = layerForm ? layerForm.querySelector('[data-overlay-section=\"1\"]') : null;
     var borderSummary = borderSection ? borderSection.querySelector('summary') : null;
@@ -12371,9 +12380,7 @@ function localCourseBannerBuilderSyncModalPreviewActionButtons(form) {
     var borderToggle = form.querySelector(
         '[data-border-toggle=\"1\"][type=\"checkbox\"], [data-border-toggle=\"1\"][type=\"hidden\"]'
     );
-    var overlayToggle = form.querySelector(
-        '[data-overlay-toggle=\"1\"][type=\"checkbox\"], [data-overlay-toggle=\"1\"][type=\"hidden\"]'
-    );
+    var overlayToggle = localCourseBannerBuilderGetOverlayToggle(form);
     var currentPreviewLayer = localCourseBannerBuilderGetEditableCurrentPreviewImage(form);
     var currentPreviewImage = currentPreviewLayer ? currentPreviewLayer.querySelector('[data-preview-image-tag=\"1\"]') : null;
     var hasCurrentPreviewImage = !!(currentPreviewLayer && !currentPreviewLayer.hidden &&
@@ -13138,7 +13145,7 @@ function localCourseBannerBuilderSyncModalOverlayPreview(form) {
     if (!previewRoot) {
         return;
     }
-    var overlayToggle = form.querySelector('[data-overlay-toggle=\"1\"]');
+    var overlayToggle = localCourseBannerBuilderGetOverlayToggle(form);
     var target = form.querySelector('#id_overlaytarget');
     var colorInput = form.querySelector('#id_overlaybannercolor');
     var opacityInput = form.querySelector('#id_overlaybanneropacity');
