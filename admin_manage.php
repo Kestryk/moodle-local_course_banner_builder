@@ -13573,6 +13573,32 @@ function localCourseBannerBuilderHideElementRow(element) {
     }
 }
 
+function localCourseBannerBuilderHideOverlayLegacyLabels(overlayAccordion) {
+    if (!overlayAccordion) {
+        return;
+    }
+    [
+        'label[for=\"id_overlaytarget\"]',
+        'label[for=\"id_overlaybannercolor\"]',
+        'label[for=\"id_overlaybanneropacity\"]',
+        '[id^=\"fitem_id_overlayappearanceheading\"]',
+        '[data-overlay-legacy-label=\"1\"]'
+    ].forEach(function(selector) {
+        Array.prototype.slice.call(overlayAccordion.querySelectorAll(selector)).forEach(function(element) {
+            element.hidden = true;
+            element.setAttribute('aria-hidden', 'true');
+        });
+    });
+    Array.prototype.slice.call(overlayAccordion.querySelectorAll('.local-course-banner-builder-slideshow-side-title')).forEach(function(title) {
+        var text = (title.textContent || '').trim().toLowerCase();
+        if (['overlay target', 'overlay appearance', 'overlay colour', 'overlay opacity'].indexOf(text) !== -1) {
+            title.hidden = true;
+            title.setAttribute('aria-hidden', 'true');
+            title.setAttribute('data-overlay-legacy-label', '1');
+        }
+    });
+}
+
 function localCourseBannerBuilderEnsureOverlayAppearanceControls(form, overlayAccordion, afterNode) {
     if (!form || !overlayAccordion || overlayAccordion.querySelector('[data-overlay-appearance-controls=\"1\"]')) {
         return overlayAccordion.querySelector('[data-overlay-appearance-controls=\"1\"]') || afterNode;
@@ -13696,6 +13722,7 @@ function localCourseBannerBuilderEnsureOverlayAppearanceControls(form, overlayAc
     } else {
         overlayAccordion.appendChild(container);
     }
+    localCourseBannerBuilderHideOverlayLegacyLabels(overlayAccordion);
     return container;
 }
 
@@ -13762,6 +13789,7 @@ function localCourseBannerBuilderEnhanceOverlaySidePanelControls(form, overlayAc
         return;
     }
     overlayAccordion.dataset.overlayControlsEnhanced = '1';
+    localCourseBannerBuilderHideOverlayLegacyLabels(overlayAccordion);
     var overlayEnabled = localCourseBannerBuilderGetOverlayToggle(form);
     var overlayEnabledRow = localCourseBannerBuilderGetOverlayControlRow(overlayEnabled);
     if (overlayEnabledRow) {
@@ -13810,6 +13838,10 @@ function localCourseBannerBuilderEnhanceOverlaySidePanelControls(form, overlayAc
         }
         target.hidden = true;
         target.setAttribute('aria-hidden', 'true');
+        Array.prototype.slice.call(overlayAccordion.querySelectorAll('label[for=\"id_overlaytarget\"]')).forEach(function(label) {
+            label.hidden = true;
+            label.setAttribute('aria-hidden', 'true');
+        });
         if (overlayAccordion.getAttribute('data-overlay-site-only') === '1' ||
                 target.getAttribute('data-overlay-site-target') === '1') {
             target.value = 'banner';
@@ -13885,6 +13917,7 @@ function localCourseBannerBuilderEnhanceOverlaySidePanelControls(form, overlayAc
         overlayAccordion,
         insertAfterNode
     );
+    localCourseBannerBuilderHideOverlayLegacyLabels(overlayAccordion);
 
     Array.prototype.slice.call(overlayAccordion.querySelectorAll('[data-overlay-color-text]')).forEach(function(input) {
         input.classList.add('local-course-banner-builder-slideshow-hex-input');
@@ -13924,13 +13957,22 @@ function localCourseBannerBuilderEnhanceOverlaySidePanelControls(form, overlayAc
 
     ['overlaytitleabove', 'overlayborderabove'].forEach(function(name) {
         var input = form.querySelector('#id_' + name + '[type=\"checkbox\"]');
-        var row = localCourseBannerBuilderGetOverlayControlRow(input);
-        if (!input || !row || overlayAccordion.querySelector('[data-overlay-toggle-button-for=\"#id_' + name + '\"]')) {
+        if (!input || overlayAccordion.querySelector('[data-overlay-toggle-button-for=\"#id_' + name + '\"]')) {
             return;
         }
-        row.hidden = true;
-        row.setAttribute('aria-hidden', 'true');
-        var labelText = (row.textContent || '').trim() || name;
+        var label = input.closest('label');
+        var row = localCourseBannerBuilderGetOverlayControlRow(input);
+        var labelText = ((label && label.textContent) || (row && row.textContent) || '').trim() || name;
+        if (label) {
+            label.hidden = true;
+            label.setAttribute('aria-hidden', 'true');
+        }
+        if (row) {
+            row.hidden = true;
+            row.setAttribute('aria-hidden', 'true');
+        }
+        input.hidden = true;
+        input.setAttribute('aria-hidden', 'true');
         var button = localCourseBannerBuilderCreateOverlayToggleButton(form, input, labelText);
         button.setAttribute('data-overlay-toggle-button-for', '#id_' + name);
         overlayAccordion.appendChild(button);
