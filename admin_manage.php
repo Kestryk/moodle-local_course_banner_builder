@@ -13565,6 +13565,14 @@ function localCourseBannerBuilderInsertAfter(reference, node) {
     reference.parentNode.insertBefore(node, reference.nextSibling);
 }
 
+function localCourseBannerBuilderHideElementRow(element) {
+    var row = element ? element.closest('.fitem, .form-group, .mb-3, .row') : null;
+    if (row) {
+        row.hidden = true;
+        row.setAttribute('aria-hidden', 'true');
+    }
+}
+
 function localCourseBannerBuilderEnsureOverlayAppearanceControls(form, overlayAccordion, afterNode) {
     if (!form || !overlayAccordion || overlayAccordion.querySelector('[data-overlay-appearance-controls=\"1\"]')) {
         return overlayAccordion.querySelector('[data-overlay-appearance-controls=\"1\"]') || afterNode;
@@ -13577,16 +13585,21 @@ function localCourseBannerBuilderEnsureOverlayAppearanceControls(form, overlayAc
     }
 
     [
-        '#fitem_id_overlayappearanceheading',
-        '#fgroup_id_overlaybannercolorgroup',
-        '#fitem_id_overlaybanneropacity',
-        '#fitem_id_overlaybanneropacity_slider'
+        '[id^=\"fitem_id_overlayappearanceheading\"]',
+        '[id^=\"fgroup_id_overlaybannercolorgroup\"]',
+        '[id^=\"fitem_id_overlaybanneropacity\"]',
+        '[id^=\"fitem_id_overlaybanneropacity_slider\"]'
     ].forEach(function(selector) {
-        var row = form.querySelector(selector);
-        if (row) {
+        Array.prototype.slice.call(form.querySelectorAll(selector)).forEach(function(row) {
             row.hidden = true;
             row.setAttribute('aria-hidden', 'true');
-        }
+        });
+    });
+    localCourseBannerBuilderHideElementRow(bannerColor);
+    localCourseBannerBuilderHideElementRow(bannerPicker);
+    localCourseBannerBuilderHideElementRow(bannerOpacity);
+    Array.prototype.slice.call(form.querySelectorAll('[data-percent-slider-wrapper-for=\"id_overlaybanneropacity\"]')).forEach(function(wrapper) {
+        localCourseBannerBuilderHideElementRow(wrapper);
     });
 
     var container = document.createElement('div');
@@ -13676,7 +13689,7 @@ function localCourseBannerBuilderEnsureOverlayAppearanceControls(form, overlayAc
 
 function localCourseBannerBuilderCreateOverlaySwitch(form, input, labelText) {
     var switchWrap = document.createElement('label');
-    switchWrap.className = 'local-course-banner-builder-toggle easyedu-toggle-switch easyedu-toggle-switch--32px mb-0';
+    switchWrap.className = 'local-course-banner-builder-toggle local-course-banner-builder-overlay-switch-toggle mb-0';
     var visualInput = document.createElement('input');
     visualInput.type = 'checkbox';
     visualInput.checked = !!input.checked;
@@ -13788,13 +13801,15 @@ function localCourseBannerBuilderEnhanceOverlaySidePanelControls(form, overlayAc
     var target = form.querySelector('#id_overlaytarget');
     var targetRow = localCourseBannerBuilderGetOverlayControlRow(target);
     if (target) {
+        if (targetRow) {
+            targetRow.hidden = true;
+            targetRow.setAttribute('aria-hidden', 'true');
+        }
+        target.hidden = true;
+        target.setAttribute('aria-hidden', 'true');
         if (overlayAccordion.getAttribute('data-overlay-site-only') === '1' ||
                 target.getAttribute('data-overlay-site-target') === '1') {
             target.value = 'banner';
-            if (targetRow) {
-                targetRow.hidden = true;
-                targetRow.setAttribute('aria-hidden', 'true');
-            }
             var existingTargetChoice = overlayAccordion.querySelector('[data-overlay-target-choice=\"1\"]');
             var existingTargetTitle = overlayAccordion.querySelector('[data-overlay-target-title=\"1\"]');
             if (existingTargetChoice) {
@@ -13828,12 +13843,8 @@ function localCourseBannerBuilderEnhanceOverlaySidePanelControls(form, overlayAc
                 }
             );
             targetChoice.setAttribute('data-overlay-target-choice', '1');
-            if (targetRow) {
-                targetRow.hidden = true;
-                targetRow.setAttribute('aria-hidden', 'true');
-                overlayAccordion.insertBefore(targetTitle, modeWrap.nextSibling);
-                overlayAccordion.insertBefore(targetChoice, targetTitle.nextSibling);
-            }
+            overlayAccordion.insertBefore(targetTitle, modeWrap.nextSibling);
+            overlayAccordion.insertBefore(targetChoice, targetTitle.nextSibling);
         }
         var currentTargetChoice = overlayAccordion.querySelector('[data-overlay-target-choice=\"1\"]');
         if (currentTargetChoice) {
