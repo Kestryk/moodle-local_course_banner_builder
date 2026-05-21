@@ -413,7 +413,10 @@ class manage_banner_form extends \moodleform {
                 'overlaybanner' => get_string('overlaybannerappearance', 'local_course_banner_builder'),
                 'overlayslideshow' => get_string('overlayslideshowappearance', 'local_course_banner_builder'),
             ] as $prefix => $label) {
-                $mform->addElement('header', $prefix . 'header', $label);
+                $mform->addElement('static', $prefix . 'heading', '', \html_writer::div(
+                    $label,
+                    'local-course-banner-builder-slideshow-side-title mt-2'
+                ));
                 $colorgroup = [];
                 $colorgroup[] = $mform->createElement('text', $prefix . 'color', '', [
                     'data-overlay-color-text' => $prefix,
