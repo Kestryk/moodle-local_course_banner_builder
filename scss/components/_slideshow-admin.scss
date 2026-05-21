@@ -689,6 +689,27 @@
     margin-bottom: 0.5rem;
 }
 
+.local-course-banner-builder-overlay-appearance-controls {
+    display: contents;
+}
+
+.local-course-banner-builder-overlay-color-control {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.35rem;
+    width: 100%;
+}
+
+.local-course-banner-builder-overlay-switch-row {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    min-height: 2rem;
+    color: var(--local-course-banner-builder-admin-heading, #40546b);
+    font-size: 0.86rem;
+    font-weight: 600;
+}
+
 .local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-overlay-segmented-choice {
     display: flex;
     width: 100%;

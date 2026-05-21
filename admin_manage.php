@@ -13558,6 +13558,160 @@ function localCourseBannerBuilderInitialiseUnifiedOverlayAppearance(form) {
     localCourseBannerBuilderSyncUnifiedOverlayAppearance(form);
 }
 
+function localCourseBannerBuilderInsertAfter(reference, node) {
+    if (!reference || !reference.parentNode || !node) {
+        return;
+    }
+    reference.parentNode.insertBefore(node, reference.nextSibling);
+}
+
+function localCourseBannerBuilderEnsureOverlayAppearanceControls(form, overlayAccordion, afterNode) {
+    if (!form || !overlayAccordion || overlayAccordion.querySelector('[data-overlay-appearance-controls=\"1\"]')) {
+        return overlayAccordion.querySelector('[data-overlay-appearance-controls=\"1\"]') || afterNode;
+    }
+    var bannerColor = form.querySelector('#id_overlaybannercolor');
+    var bannerPicker = form.querySelector('[data-overlay-color-picker=\"overlaybanner\"]');
+    var bannerOpacity = form.querySelector('#id_overlaybanneropacity');
+    if (!bannerColor || !bannerOpacity) {
+        return afterNode;
+    }
+
+    [
+        '#fitem_id_overlayappearanceheading',
+        '#fgroup_id_overlaybannercolorgroup',
+        '#fitem_id_overlaybanneropacity',
+        '#fitem_id_overlaybanneropacity_slider'
+    ].forEach(function(selector) {
+        var row = form.querySelector(selector);
+        if (row) {
+            row.hidden = true;
+            row.setAttribute('aria-hidden', 'true');
+        }
+    });
+
+    var container = document.createElement('div');
+    container.className = 'local-course-banner-builder-overlay-appearance-controls';
+    container.setAttribute('data-overlay-appearance-controls', '1');
+
+    var appearanceTitle = document.createElement('div');
+    appearanceTitle.className = 'local-course-banner-builder-slideshow-side-title';
+    appearanceTitle.textContent = localCourseBannerBuilderGetJsString('overlayappearance', 'Overlay appearance');
+    container.appendChild(appearanceTitle);
+
+    var colorTitle = document.createElement('div');
+    colorTitle.className = 'local-course-banner-builder-slideshow-side-title';
+    colorTitle.textContent = localCourseBannerBuilderGetJsString('overlaycolor', 'Overlay colour');
+    container.appendChild(colorTitle);
+
+    var colorWrap = document.createElement('div');
+    colorWrap.className = 'local-course-banner-builder-overlay-color-control';
+    if (bannerPicker) {
+        bannerPicker.classList.add('local-course-banner-builder-slideshow-color-input');
+        colorWrap.appendChild(bannerPicker);
+    }
+    bannerColor.classList.add('local-course-banner-builder-slideshow-hex-input');
+    colorWrap.appendChild(bannerColor);
+    container.appendChild(colorWrap);
+
+    var opacityTitle = document.createElement('div');
+    opacityTitle.className = 'local-course-banner-builder-slideshow-side-title';
+    opacityTitle.textContent = localCourseBannerBuilderGetJsString('overlayopacity', 'Overlay opacity');
+    container.appendChild(opacityTitle);
+
+    var sliderWrap = document.createElement('div');
+    sliderWrap.className = 'local-course-banner-builder-slideshow-side-slider';
+    sliderWrap.setAttribute('data-overlay-opacity-control', '1');
+    var slider = document.createElement('input');
+    slider.type = 'range';
+    slider.className = 'custom-range local-course-banner-builder-range';
+    slider.min = bannerOpacity.getAttribute('data-number-min') || '0';
+    slider.max = bannerOpacity.getAttribute('data-number-max') || '100';
+    slider.step = bannerOpacity.getAttribute('data-number-step') || '1';
+    slider.value = bannerOpacity.value || '25';
+    slider.setAttribute('aria-label', localCourseBannerBuilderGetJsString('overlayopacity', 'Overlay opacity'));
+    var output = document.createElement('output');
+    output.className = 'text-muted local-course-banner-builder-slideshow-opacity-output';
+    bannerOpacity.classList.add('form-control-sm', 'local-course-banner-builder-slideshow-side-number');
+    bannerOpacity.type = 'number';
+    bannerOpacity.min = slider.min;
+    bannerOpacity.max = slider.max;
+    bannerOpacity.step = slider.step;
+    var syncFromValue = function(value, dispatchTarget) {
+        var number = localCourseBannerBuilderNormaliseNumericValue(value, 25);
+        var min = localCourseBannerBuilderNormaliseNumericValue(slider.min, 0);
+        var max = localCourseBannerBuilderNormaliseNumericValue(slider.max, 100);
+        number = Math.max(min, Math.min(max, number));
+        slider.value = String(number);
+        bannerOpacity.value = String(number);
+        output.textContent = String(number) + '%';
+        localCourseBannerBuilderSyncUnifiedOverlayAppearance(form);
+        localCourseBannerBuilderMarkOverlayCustom(form);
+        localCourseBannerBuilderSyncModalOverlayPreview(form);
+        if (dispatchTarget) {
+            dispatchTarget.dispatchEvent(new Event('change', {bubbles: true}));
+        }
+    };
+    slider.addEventListener('input', function() {
+        syncFromValue(slider.value, bannerOpacity);
+    });
+    bannerOpacity.addEventListener('input', function() {
+        syncFromValue(bannerOpacity.value, null);
+    });
+    bannerOpacity.addEventListener('change', function() {
+        syncFromValue(bannerOpacity.value, null);
+    });
+    sliderWrap.appendChild(slider);
+    sliderWrap.appendChild(output);
+    sliderWrap.appendChild(bannerOpacity);
+    container.appendChild(sliderWrap);
+    syncFromValue(bannerOpacity.value || slider.value, null);
+
+    if (afterNode && afterNode.parentNode === overlayAccordion) {
+        localCourseBannerBuilderInsertAfter(afterNode, container);
+    } else {
+        overlayAccordion.appendChild(container);
+    }
+    return container;
+}
+
+function localCourseBannerBuilderCreateOverlaySwitch(form, input, labelText) {
+    var switchWrap = document.createElement('label');
+    switchWrap.className = 'local-course-banner-builder-toggle easyedu-toggle-switch easyedu-toggle-switch--32px mb-0';
+    var visualInput = document.createElement('input');
+    visualInput.type = 'checkbox';
+    visualInput.checked = !!input.checked;
+    var slider = document.createElement('span');
+    slider.className = 'local-course-banner-builder-toggle-slider easyedu-toggle-switch__slider';
+    switchWrap.appendChild(visualInput);
+    switchWrap.appendChild(slider);
+
+    var row = document.createElement('div');
+    row.className = 'local-course-banner-builder-overlay-switch-row';
+    row.appendChild(switchWrap);
+    var label = document.createElement('span');
+    label.textContent = labelText;
+    row.appendChild(label);
+
+    var sync = function(fromVisual) {
+        if (fromVisual) {
+            input.checked = !!visualInput.checked;
+            input.dispatchEvent(new Event('change', {bubbles: true}));
+        } else {
+            visualInput.checked = !!input.checked;
+        }
+        localCourseBannerBuilderMarkOverlayCustom(form);
+        localCourseBannerBuilderSyncModalOverlayPreview(form);
+    };
+    visualInput.addEventListener('change', function() {
+        sync(true);
+    });
+    input.addEventListener('change', function() {
+        sync(false);
+    });
+    sync(false);
+    return row;
+}
+
 function localCourseBannerBuilderApplyOverlayInheritance(form) {
     var accordion = form ? form.querySelector('[data-overlay-accordion=\"1\"]') : null;
     if (!accordion) {
@@ -13714,6 +13868,14 @@ function localCourseBannerBuilderEnhanceOverlaySidePanelControls(form, overlayAc
         }
     });
     localCourseBannerBuilderInitialiseUnifiedOverlayAppearance(form);
+    var insertAfterNode = overlayAccordion.querySelector('[data-overlay-target-choice=\"1\"]') ||
+        overlayAccordion.querySelector('[data-overlay-style-mode-wrap=\"1\"]') ||
+        modeWrap;
+    var appearanceControls = localCourseBannerBuilderEnsureOverlayAppearanceControls(
+        form,
+        overlayAccordion,
+        insertAfterNode
+    );
 
     Array.prototype.slice.call(overlayAccordion.querySelectorAll('[data-overlay-color-text]')).forEach(function(input) {
         input.classList.add('local-course-banner-builder-slideshow-hex-input');
@@ -13754,7 +13916,7 @@ function localCourseBannerBuilderEnhanceOverlaySidePanelControls(form, overlayAc
     ['overlaytitleabove', 'overlayborderabove'].forEach(function(name) {
         var input = form.querySelector('#id_' + name + '[type=\"checkbox\"]');
         var row = localCourseBannerBuilderGetOverlayControlRow(input);
-        if (!input || !row || overlayAccordion.querySelector('[data-overlay-toggle-button-for=\"#id_' + name + '\"]')) {
+        if (!input || !row || overlayAccordion.querySelector('[data-overlay-switch-for=\"#id_' + name + '\"]')) {
             return;
         }
         row.hidden = true;
@@ -13762,29 +13924,22 @@ function localCourseBannerBuilderEnhanceOverlaySidePanelControls(form, overlayAc
         var title = document.createElement('div');
         title.className = 'local-course-banner-builder-slideshow-side-title';
         title.textContent = (row.textContent || '').trim() || name;
-        var button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'btn btn-sm local-course-banner-builder-slideshow-enable-button';
-        button.setAttribute('data-overlay-toggle-button-for', '#id_' + name);
-        var sync = function() {
-            var checked = !!input.checked;
-            button.classList.toggle('btn-primary', checked);
-            button.classList.toggle('btn-outline-secondary', !checked);
-            localCourseBannerBuilderSetActionButtonContent(button, checked ? 'fa-toggle-on' : 'fa-toggle-off', title.textContent);
-            button.setAttribute('aria-pressed', checked ? 'true' : 'false');
-        };
-        button.addEventListener('click', function(event) {
-            event.preventDefault();
-            input.checked = !input.checked;
-            input.dispatchEvent(new Event('change', {bubbles: true}));
-            localCourseBannerBuilderMarkOverlayCustom(form);
-            sync();
-        });
-        input.addEventListener('change', sync);
-        sync();
-        overlayAccordion.insertBefore(title, row.nextSibling);
-        overlayAccordion.insertBefore(button, title.nextSibling);
+        title.setAttribute('data-overlay-switch-title-for', '#id_' + name);
+        var switchRow = localCourseBannerBuilderCreateOverlaySwitch(form, input, title.textContent);
+        switchRow.setAttribute('data-overlay-switch-for', '#id_' + name);
+        overlayAccordion.appendChild(title);
+        overlayAccordion.appendChild(switchRow);
     });
+    if (appearanceControls && appearanceControls.parentNode === overlayAccordion) {
+        ['overlaytitleabove', 'overlayborderabove'].forEach(function(name) {
+            var title = overlayAccordion.querySelector('[data-overlay-switch-title-for=\"#id_' + name + '\"]');
+            var switchRow = overlayAccordion.querySelector('[data-overlay-switch-for=\"#id_' + name + '\"]');
+            if (title && switchRow) {
+                overlayAccordion.appendChild(title);
+                overlayAccordion.appendChild(switchRow);
+            }
+        });
+    }
 }
 
 function localCourseBannerBuilderSyncModalOverlayPreview(form) {
