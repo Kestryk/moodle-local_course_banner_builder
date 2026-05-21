@@ -962,9 +962,9 @@ function local_course_banner_builder_render_source_visual_editor_overlay_layer(a
     $isinherited = !empty($layer['isinherited']);
     $ishiddeninherited = !empty($layer['hiddeninherited']);
     $classes = 'local-course-banner-builder-banner-overlay-layer local-course-banner-builder-source-preview-overlay' .
-        (!empty($layer['enabled']) ? '' : ' local-course-banner-builder-source-preview-border--disabled') .
-        ($isinherited ? ' local-course-banner-builder-source-preview-border--inherited' : '') .
-        ($ishiddeninherited ? ' local-course-banner-builder-source-preview-border--hidden-inherited' : '');
+        (!empty($layer['enabled']) ? '' : ' local-course-banner-builder-source-preview-overlay--disabled') .
+        ($isinherited ? ' local-course-banner-builder-source-preview-overlay--inherited' : '') .
+        ($ishiddeninherited ? ' local-course-banner-builder-source-preview-overlay--hidden-inherited' : '');
     $attrs = [
         'class' => $classes,
         'style' => trim((string)($layer['wrapperstyle'] ?? '') . ' z-index: ' . (int)($layer['zindex'] ?? 1) . ';'),
@@ -974,12 +974,7 @@ function local_course_banner_builder_render_source_visual_editor_overlay_layer(a
         'data-preview-enabled' => !empty($layer['enabled']) ? '1' : '0',
         'data-preview-sortorder' => (string)($layer['sortorder'] ?? 0),
         'data-preview-zindex' => (string)($layer['zindex'] ?? 1),
-        'aria-hidden' => 'true',
     ];
-    if ($ishiddeninherited) {
-        $attrs['hidden'] = 'hidden';
-    }
-
     return html_writer::tag('div', '', $attrs);
 }
 
@@ -1057,9 +1052,12 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
 
     $layershtml = '';
     $haspreviewborder = false;
+    $haspreviewoverlay = false;
     $previewborderediturl = null;
+    $previewoverlayediturl = null;
     foreach ($currentdefinition['layers'] as $layer) {
-        if (($layer['type'] ?? '') !== 'border' || empty($layer['id'])) {
+        $type = (string)($layer['type'] ?? '');
+        if (!in_array($type, ['border', 'overlay'], true) || empty($layer['id'])) {
             continue;
         }
 
@@ -1076,7 +1074,14 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
                 : '/local/course_banner_builder/admin_manage.php',
             $editparams
         );
-        break;
+        if ($type === 'border' && !$previewborderediturl) {
+            $previewborderediturl = $editurl;
+        } else if ($type === 'overlay' && !$previewoverlayediturl) {
+            $previewoverlayediturl = $editurl;
+        }
+        if ($previewborderediturl && $previewoverlayediturl) {
+            break;
+        }
     }
     foreach ($definition['layers'] as $layer) {
         if (($layer['type'] ?? '') === 'border') {
@@ -1085,6 +1090,7 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
             continue;
         }
         if (($layer['type'] ?? '') === 'overlay') {
+            $haspreviewoverlay = true;
             $layershtml .= local_course_banner_builder_render_source_visual_editor_overlay_layer($layer);
             continue;
         }
@@ -1116,10 +1122,16 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
         'data-source-preview-payload' => '1',
     ]);
     $hiddenform .= html_writer::end_tag('form');
-    $borderbuttonattributes = $haspreviewborder ? [] : [
+    $borderbuttonattributes = ($haspreviewborder || $haspreviewoverlay) ? [] : [
         'disabled' => 'disabled',
         'aria-disabled' => 'true',
     ];
+    $previewtogglehidestring = $haspreviewoverlay
+        ? get_string('hidepreviewborderoverlay', 'local_course_banner_builder')
+        : get_string('hidepreviewborder', 'local_course_banner_builder');
+    $previewtoggleshowstring = $haspreviewoverlay
+        ? get_string('showpreviewborderoverlay', 'local_course_banner_builder')
+        : get_string('showpreviewborder', 'local_course_banner_builder');
     $deleteallbuttonattributes = !empty($currentdefinition['haslayers']) ? [] : [
         'disabled' => 'disabled',
         'aria-disabled' => 'true',
@@ -1182,15 +1194,22 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
                 'data-edit-layer-url' => $previewborderediturl->out(false),
             ] + $disabledattributes
         ) : '') .
-        html_writer::tag('button', $buttoncontent('fa-eye-slash', get_string('hidepreviewborder', 'local_course_banner_builder')), [
+        ($previewoverlayediturl ? html_writer::tag('button', $buttoncontent('fa-adjust', get_string('editoverlaylayer', 'local_course_banner_builder')),
+            [
+                'type' => 'button',
+                'class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action local-course-banner-builder-source-preview-button',
+                'data-edit-layer-url' => $previewoverlayediturl->out(false),
+            ] + $disabledattributes
+        ) : '') .
+        html_writer::tag('button', $buttoncontent('fa-eye-slash', $previewtogglehidestring), [
             'type' => 'button',
             'class' => 'btn btn-outline-secondary local-course-banner-builder-source-preview-button',
             'data-action' => 'local-course-banner-builder-toggle-preview-border',
-            'data-show-label' => get_string('showpreviewborder', 'local_course_banner_builder'),
-            'data-hide-label' => get_string('hidepreviewborder', 'local_course_banner_builder'),
+            'data-show-label' => $previewtoggleshowstring,
+            'data-hide-label' => $previewtogglehidestring,
             'data-show-icon' => 'fa-eye',
             'data-hide-icon' => 'fa-eye-slash',
-            'data-preview-border-visible' => $haspreviewborder ? '1' : '0',
+            'data-preview-border-visible' => ($haspreviewborder || $haspreviewoverlay) ? '1' : '0',
             'aria-pressed' => 'true',
         ] + $borderbuttonattributes) .
         html_writer::tag('button', $buttoncontent('fa-eye', get_string('showinheritedlayers', 'local_course_banner_builder')), [
@@ -1533,6 +1552,7 @@ $PAGE->requires->strings_for_js([
     'cropimage',
     'deleteselectedlayer',
     'disabledlayerthumbnail',
+    'editoverlaylayer',
     'editsourcebutton',
     'enablelayer',
     'enablelayer_help',
@@ -1542,6 +1562,7 @@ $PAGE->requires->strings_for_js([
     'hideimageinpreview',
     'hideotherlayers',
     'hidepreviewborder',
+    'hidepreviewborderoverlay',
     'imageaboveborder',
     'imagebelowborder',
     'imagelayeroptions',
@@ -1583,6 +1604,7 @@ $PAGE->requires->strings_for_js([
     'showimageinpreview',
     'showotherlayers',
     'showpreviewborder',
+    'showpreviewborderoverlay',
     'sharpinnercorners',
     'sourcealreadyhasoverlayinline',
     'summarycustomsize',
@@ -3468,6 +3490,12 @@ function localCourseBannerBuilderSyncSourcePreviewEnabledState(input) {
         if (border) {
             border.setAttribute('data-preview-enabled', enabled ? '1' : '0');
             border.classList.toggle('local-course-banner-builder-source-preview-border--disabled', !enabled);
+        }
+
+        var overlay = root.querySelector('[data-source-preview-overlay=\"1\"][data-source-preview-overlay-id=\"' + layerId + '\"]');
+        if (overlay) {
+            overlay.setAttribute('data-preview-enabled', enabled ? '1' : '0');
+            overlay.classList.toggle('local-course-banner-builder-source-preview-overlay--disabled', !enabled);
         }
 
         if (layer && enabled && !root.querySelector('.local-course-banner-builder-source-preview-layer--selected')) {
@@ -7787,6 +7815,7 @@ function localCourseBannerBuilderSetSourcePreviewInheritedLayersVisible(root, vi
     Array.prototype.slice.call(root.querySelectorAll('[data-source-preview-inherited=\"1\"]')).forEach(function(layer) {
         layer.classList.toggle('local-course-banner-builder-source-preview-layer--hidden-inherited', !visible);
         layer.classList.toggle('local-course-banner-builder-source-preview-border--hidden-inherited', !visible);
+        layer.classList.toggle('local-course-banner-builder-source-preview-overlay--hidden-inherited', !visible);
         layer.setAttribute('aria-hidden', visible ? 'false' : 'true');
         if (!visible && layer.classList.contains('local-course-banner-builder-source-preview-layer--selected')) {
             layer.classList.remove('local-course-banner-builder-source-preview-layer--selected');
@@ -12013,6 +12042,13 @@ function localCourseBannerBuilderSyncSourcePreviewOrder(root) {
             previewBorder.setAttribute('data-preview-sortorder', String(index));
             previewBorder.setAttribute('data-preview-zindex', String(borderZIndex));
             previewBorder.style.zIndex = String(borderZIndex);
+        }
+        var previewOverlay = root.querySelector('[data-source-preview-overlay=\"1\"][data-source-preview-overlay-id=\"' + layerId + '\"]');
+        if (previewOverlay && row.classList.contains('local-course-banner-builder-layer-row--overlay')) {
+            var overlayZIndex = 1000 + index + 1;
+            previewOverlay.setAttribute('data-preview-sortorder', String(index));
+            previewOverlay.setAttribute('data-preview-zindex', String(overlayZIndex));
+            previewOverlay.style.zIndex = String(overlayZIndex);
         }
     });
     Array.prototype.slice.call(root.querySelectorAll('[data-source-preview-layer=\"1\"]')).forEach(function(layer) {

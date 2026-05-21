@@ -271,10 +271,8 @@
                                         </dl>
                                     </div>
                                 {{/haslayersummary}}
-                            </td>
-                            <td>
                                 {{#hasbordersummary}}
-                                    <div class="local-course-banner-builder-border-summary">
+                                    <div class="local-course-banner-builder-border-summary mt-2">
                                         <strong class="local-course-banner-builder-border-summary-title">{{bordersummarytitle}}</strong>
                                         <dl class="local-course-banner-builder-border-summary-list">
                                             {{#bordersummaryitems}}
@@ -287,7 +285,7 @@
                                     </div>
                                 {{/hasbordersummary}}
                                 {{#hasoverlaysummary}}
-                                    <div class="local-course-banner-builder-border-summary">
+                                    <div class="local-course-banner-builder-border-summary mt-2">
                                         <strong class="local-course-banner-builder-border-summary-title">{{overlaysummarytitle}}</strong>
                                         <dl class="local-course-banner-builder-border-summary-list">
                                             {{#overlaysummaryitems}}
@@ -299,8 +297,12 @@
                                         </dl>
                                     </div>
                                 {{/hasoverlaysummary}}
-                                {{^hasbordersummary}}
-                                {{^hasoverlaysummary}}
+                            </td>
+                            <td>
+                                {{#haslayerpreviewhtml}}
+                                    {{{layerpreviewhtml}}}
+                                {{/haslayerpreviewhtml}}
+                                {{^haslayerpreviewhtml}}
                                     {{#imageurl}}
                                         <div class="local-course-banner-builder-admin-preview{{#isdynamiclayer}} local-course-banner-builder-admin-preview--dynamic{{/isdynamiclayer}}"
                                             {{#isdynamiclayer}}
@@ -335,8 +337,7 @@
                                     {{^imageurl}}
                                         <span class="text-muted">{{#str}}nolayeradded, local_course_banner_builder{{/str}}</span>
                                     {{/imageurl}}
-                                {{/hasoverlaysummary}}
-                                {{/hasbordersummary}}
+                                {{/haslayerpreviewhtml}}
                             </td>
                             <td class="local-course-banner-builder-layer-actions-cell">
                                 <div class="local-course-banner-builder-action-list">
@@ -379,9 +380,21 @@
                                 </td>
                                 <td>{{enabledlabel}}</td>
                                 <td>
-                                    <span class="text-muted">{{#str}}inherited, local_course_banner_builder{{/str}}</span>
+                                    {{#chainborderlayer.hasbordersummary}}
+                                        <div class="local-course-banner-builder-border-summary">
+                                            <strong class="local-course-banner-builder-border-summary-title">{{chainborderlayer.bordersummarytitle}}</strong>
+                                            <dl class="local-course-banner-builder-border-summary-list">
+                                                {{#chainborderlayer.bordersummaryitems}}
+                                                    <div>
+                                                        <dt>{{label}}</dt>
+                                                        <dd>{{value}}</dd>
+                                                    </div>
+                                                {{/chainborderlayer.bordersummaryitems}}
+                                            </dl>
+                                        </div>
+                                    {{/chainborderlayer.hasbordersummary}}
                                 </td>
-                                <td></td>
+                                <td>{{#chainborderlayer.haslayerpreviewhtml}}{{{chainborderlayer.layerpreviewhtml}}}{{/chainborderlayer.haslayerpreviewhtml}}</td>
                                 <td>
                                     <a class="btn btn-secondary btn-sm" href="{{sourceediturl}}">
                                         {{#str}}editsourceoflayer, local_course_banner_builder{{/str}}
@@ -426,7 +439,7 @@
                                     </div>
                                 {{/chainoverlaylayer.hasoverlaysummary}}
                             </td>
-                            <td>{{chainoverlaylayer.sourcelabel}}</td>
+                            <td>{{#chainoverlaylayer.haslayerpreviewhtml}}{{{chainoverlaylayer.layerpreviewhtml}}}{{/chainoverlaylayer.haslayerpreviewhtml}}</td>
                             <td><a class="btn btn-secondary btn-sm" href="{{chainoverlaylayer.sourceediturl}}">{{#str}}editsourceoflayer, local_course_banner_builder{{/str}}</a></td>
                         </tr>
                     </tbody>

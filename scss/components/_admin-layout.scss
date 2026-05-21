@@ -152,6 +152,34 @@
     font-size: 0.78rem;
 }
 
+.local-course-banner-builder-admin-layer-visual {
+    width: min(9rem, 100%);
+    min-width: 5.5rem;
+}
+
+.local-course-banner-builder-admin-layer-visual .local-course-banner-builder-border-preview-frame,
+.local-course-banner-builder-admin-layer-overlay-frame {
+    position: relative;
+    container-type: size;
+    width: 100%;
+    aspect-ratio: 4 / 1;
+    overflow: hidden;
+    border: 1px solid rgba(148, 163, 184, 0.32);
+    border-radius: 0.35rem;
+    background:
+        linear-gradient(45deg, rgba(148, 163, 184, 0.12) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(148, 163, 184, 0.12) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(148, 163, 184, 0.12) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(148, 163, 184, 0.12) 75%);
+    background-position: 0 0, 0 0.35rem, 0.35rem -0.35rem, -0.35rem 0;
+    background-size: 0.7rem 0.7rem;
+}
+
+.local-course-banner-builder-admin-layer-overlay-frame .local-course-banner-builder-banner-overlay-layer {
+    position: absolute;
+    inset: 0;
+}
+
 #fitem_id_borderenabled .felement,
 #fitem_id_borderenabled .col-md-9,
 .modal #fitem_id_borderenabled .felement,

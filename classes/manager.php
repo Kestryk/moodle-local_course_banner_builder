@@ -6756,6 +6756,7 @@ class manager {
             $layersummary = self::export_layer_display_summary($record);
             $isborderlayer = self::is_border_only_layer($record);
             $isoverlaylayer = self::is_overlay_only_layer($record);
+            $layerpreviewhtml = self::render_admin_layer_visual_preview($record);
             $isdynamiclayer = self::is_top_image_layer($record);
             $iscroppedlayer = !empty(self::normalise_image_crop($record)['enabled']);
             $islockedlayer = self::is_locked_order_layer($record);
@@ -6810,10 +6811,13 @@ class manager {
                 'hasfitoverride' => !$isborderlayer && !$isoverlaylayer && $fitoverride !== '',
                 'fitoverridehelp' => get_string('fitoverridehelp', 'local_course_banner_builder'),
                 'fitoverridecellclass' => (!$isborderlayer && !$isoverlaylayer && $fitoverride !== '') ? 'local-course-banner-builder-override-cell' : '',
-                'fitoverridecellstyle' => self::get_layer_override_cell_style($record, $fitoverride !== ''),
-                'fitoverridedisplay' => ($isborderlayer || $isoverlaylayer)
-                    ? get_string($isoverlaylayer ? 'nooverridepossibleonoverlays' : 'nooverridepossibleonborders', 'local_course_banner_builder')
-                    : '',
+                'fitoverridecellstyle' => self::get_layer_override_cell_style(
+                    $record,
+                    $fitoverride !== '' || $isborderlayer || $isoverlaylayer
+                ),
+                'fitoverridedisplay' => '',
+                'haslayerpreviewhtml' => $layerpreviewhtml !== '',
+                'layerpreviewhtml' => $layerpreviewhtml,
                 'haslayersummary' => !empty($layersummary),
                 'layersummaryitems' => $layersummary,
                 'hasbordersummary' => !empty($bordersummary),
@@ -6944,6 +6948,7 @@ class manager {
         $bordersource = $chainborder['source'];
         $borderrecord = $chainborder['record'];
         $bordersummary = self::export_border_summary($borderrecord);
+        $layerpreviewhtml = self::render_admin_layer_visual_preview($borderrecord);
 
         return [
             'rowclass' => 'local-course-banner-builder-layer-row--border local-course-banner-builder-layer-row--chain-border',
@@ -6951,6 +6956,8 @@ class manager {
             'name' => $borderrecord->name ?: get_string('bannerimage', 'local_course_banner_builder') . ' #' . $borderrecord->id,
             'sourcelabel' => $bordersource->label ?? $bordersource->sourcekey,
             'enabledlabel' => $borderrecord->isenabled ? get_string('yes') : get_string('no'),
+            'haslayerpreviewhtml' => $layerpreviewhtml !== '',
+            'layerpreviewhtml' => $layerpreviewhtml,
             'hasbordersummary' => !empty($bordersummary),
             'bordersummarytitle' => get_string('bordertitle', 'local_course_banner_builder'),
             'bordersummaryitems' => $bordersummary,
@@ -6975,6 +6982,7 @@ class manager {
         $overlaysource = $chainoverlay['source'];
         $overlayrecord = $chainoverlay['record'];
         $overlaysummary = self::export_overlay_summary($overlayrecord);
+        $layerpreviewhtml = self::render_admin_layer_visual_preview($overlayrecord);
 
         return [
             'rowclass' => 'local-course-banner-builder-layer-row--border local-course-banner-builder-layer-row--overlay ' .
@@ -6984,6 +6992,8 @@ class manager {
                 $overlayrecord->id,
             'sourcelabel' => $overlaysource->label ?? $overlaysource->sourcekey,
             'enabledlabel' => $overlayrecord->isenabled ? get_string('yes') : get_string('no'),
+            'haslayerpreviewhtml' => $layerpreviewhtml !== '',
+            'layerpreviewhtml' => $layerpreviewhtml,
             'hasoverlaysummary' => !empty($overlaysummary),
             'overlaysummarytitle' => get_string('overlaytitle', 'local_course_banner_builder'),
             'overlaysummaryitems' => $overlaysummary,
@@ -7012,7 +7022,63 @@ class manager {
             }
         }
 
+        if (self::is_overlay_only_layer($record)) {
+            $rgb = self::parse_color_to_rgba((string)($record->overlaybannercolor ?? '#000000'));
+            if ($rgb) {
+                return 'background-color: rgba(' . $rgb[0] . ', ' . $rgb[1] . ', ' . $rgb[2] . ', 0.10);';
+            }
+        }
+
         return 'background-color: rgba(201, 102, 26, 0.12);';
+    }
+
+    /**
+     * Render the compact visual preview used in the selected source layer table.
+     *
+     * @param \stdClass $record
+     * @return string
+     */
+    protected static function render_admin_layer_visual_preview(\stdClass $record): string {
+        if (self::is_border_only_layer($record)) {
+            $layer = self::export_modal_preview_border_layer($record, false, false);
+            $parts = '';
+            foreach (['top', 'right', 'bottom', 'left'] as $side) {
+                $parts .= \html_writer::span(
+                    '',
+                    'local-course-banner-builder-border-preview-side local-course-banner-builder-border-preview-side-' . $side,
+                    ['style' => (string)(($layer['sidestyles'] ?? [])[$side] ?? '')]
+                );
+            }
+            foreach (['top-left', 'top-right', 'bottom-right', 'bottom-left'] as $corner) {
+                $parts .= \html_writer::span(
+                    '',
+                    'local-course-banner-builder-border-preview-corner local-course-banner-builder-border-preview-corner-' . $corner
+                );
+            }
+            $parts .= \html_writer::span('', 'local-course-banner-builder-border-preview-hole');
+            $preview = \html_writer::div($parts, 'local-course-banner-builder-preview-border-layer', [
+                'style' => (string)($layer['wrapperstyle'] ?? ''),
+                'aria-hidden' => 'true',
+            ]);
+            return \html_writer::div(
+                \html_writer::div($preview, 'local-course-banner-builder-border-preview-frame'),
+                'local-course-banner-builder-admin-layer-visual local-course-banner-builder-admin-layer-visual--border'
+            );
+        }
+
+        if (self::is_overlay_only_layer($record)) {
+            $layer = self::export_modal_preview_overlay_layer($record, false, false);
+            $preview = \html_writer::div('', 'local-course-banner-builder-banner-overlay-layer', [
+                'style' => (string)($layer['wrapperstyle'] ?? ''),
+                'aria-hidden' => 'true',
+            ]);
+            return \html_writer::div(
+                \html_writer::div($preview, 'local-course-banner-builder-admin-layer-overlay-frame'),
+                'local-course-banner-builder-admin-layer-visual local-course-banner-builder-admin-layer-visual--overlay'
+            );
+        }
+
+        return '';
     }
 
     /**
