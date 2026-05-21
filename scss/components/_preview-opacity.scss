@@ -100,6 +100,13 @@
     overflow: visible;
 }
 
+.local-course-banner-builder-image-options-side-panel.is-collapsed,
+.local-course-banner-builder-border-style-side-panel.is-collapsed,
+.local-course-banner-builder-overlay-style-side-panel.is-collapsed {
+    max-height: 0;
+    overflow: hidden;
+}
+
 .local-course-banner-builder-image-options-side-panel,
 .local-course-banner-builder-overlay-style-side-panel {
     > summary {

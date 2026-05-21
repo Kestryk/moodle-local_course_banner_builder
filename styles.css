@@ -92,6 +92,13 @@
   overflow: visible;
 }
 
+.local-course-banner-builder-image-options-side-panel.is-collapsed,
+.local-course-banner-builder-border-style-side-panel.is-collapsed,
+.local-course-banner-builder-overlay-style-side-panel.is-collapsed {
+  max-height: 0;
+  overflow: hidden;
+}
+
 .local-course-banner-builder-image-options-side-panel > summary,
 .local-course-banner-builder-overlay-style-side-panel > summary {
   display: none !important;
@@ -6109,7 +6116,17 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 .local-course-banner-builder-overlay-color-block {
   grid-column: 1/-1;
   width: 100%;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.9rem;
+}
+
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-overlay-setting-title {
+  margin: 1rem 0 0.38rem;
+  font-weight: 700;
+}
+
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-overlay-setting-title:first-child,
+.local-course-banner-builder-overlay-style-side-panel [data-overlay-style-mode-wrap="1"] .local-course-banner-builder-slideshow-side-title:first-child {
+  margin-top: 0;
 }
 
 .local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-title-color-field {
@@ -6139,7 +6156,8 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 .local-course-banner-builder-overlay-toggle-button {
   justify-content: center;
   width: 100%;
-  margin-top: 0.35rem;
+  margin-top: 0;
+  margin-bottom: 0.75rem;
 }
 
 .local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-overlay-segmented-choice {
@@ -6148,12 +6166,12 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 }
 
 .local-course-banner-builder-overlay-style-side-panel [data-overlay-style-mode-wrap="1"] {
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
 }
 
 .local-course-banner-builder-overlay-style-side-panel [data-overlay-target-choice="1"] {
   margin-top: 0.35rem;
-  margin-bottom: 0.85rem;
+  margin-bottom: 1rem;
 }
 
 .local-course-banner-builder-overlay-style-side-panel label[for=id_overlaytarget],
