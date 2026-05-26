@@ -348,6 +348,7 @@ class manage_banner_form extends \moodleform {
                 $showmoodlepreview,
                 true,
                 false,
+                false,
                 get_string('imagepreviewhelp', 'local_course_banner_builder')
             ));
         }
@@ -373,13 +374,69 @@ class manage_banner_form extends \moodleform {
             $overlaydetailsattrs['data-overlay-inherit-opacity'] = (string)round(
                 max(0, min(0.85, (float)($slideshowoverlaydefault['overlayopacity'] ?? 0.38))) * 100
             );
-            $titlecontext = $issitebanneradmin ? 'site' : 'course';
+            $titlecontext = $issitebanneradmin ? 'site' :
+                ((bool)get_config('local_course_banner_builder', 'bannertitle_course_enabled') ? 'course' : 'activity');
             $overlaydetailsattrs['data-overlay-title-preview-enabled'] =
                 (bool)get_config('local_course_banner_builder', 'bannertitle_' . $titlecontext . '_enabled') ? '1' : '0';
             $overlaydetailsattrs['data-overlay-title-preview-text'] = get_string(
-                $issitebanneradmin ? 'previewsitetitle' : 'previewcoursetitle',
+                match ($titlecontext) {
+                    'site' => 'previewsitetitle',
+                    'activity' => 'previewactivitytitle',
+                    default => 'previewcoursetitle',
+                },
                 'local_course_banner_builder'
             );
+            $titleprefix = 'bannertitle_' . $titlecontext . '_';
+            $titlegetconfig = static function(string $name, $default) use ($titleprefix) {
+                $value = get_config('local_course_banner_builder', $titleprefix . $name);
+                return $value === false || $value === null || $value === '' ? $default : $value;
+            };
+            $titlehex = static function($value, string $default = '#FFFFFF'): string {
+                $value = (string)$value;
+                return preg_match('/^#[0-9a-f]{6}$/i', $value) ? strtoupper($value) : $default;
+            };
+            $titlenum = static function(string $name, float $default, float $min, float $max) use ($titlegetconfig): float {
+                return max($min, min($max, (float)$titlegetconfig($name, $default)));
+            };
+            $titlebool = static function(string $name, bool $default = false) use ($titlegetconfig): bool {
+                return (bool)$titlegetconfig($name, $default ? 1 : 0);
+            };
+            $titlestyle = [
+                'enabled' => $titlebool('enabled', true),
+                'x' => $titlenum('x', 50, 0, 100),
+                'y' => $titlenum('y', 50, 0, 100),
+                'fontsize' => $titlenum('fontsize', 100, 25, 160),
+                'lineheight' => $titlenum('lineheight', 105, 80, 180),
+                'fontfamily' => (string)$titlegetconfig('fontfamily', ''),
+                'color' => $titlehex($titlegetconfig('color', '#FFFFFF')),
+                'bold' => $titlebool('bold', true),
+                'italic' => $titlebool('italic'),
+                'underline' => $titlebool('underline'),
+                'allcaps' => $titlebool('allcaps'),
+                'frameenabled' => $titlebool('frameenabled'),
+                'frametype' => in_array((string)$titlegetconfig('frametype', 'box'), ['box', 'highlight'], true)
+                    ? (string)$titlegetconfig('frametype', 'box')
+                    : 'box',
+                'framecolor' => $titlehex($titlegetconfig('framecolor', '#000000'), '#000000'),
+                'frameopacity' => $titlenum('frameopacity', 35, 0, 100),
+                'framebordercolor' => $titlehex($titlegetconfig('framebordercolor', '#FFFFFF')),
+                'frameborderwidth' => $titlenum('frameborderwidth', 0, 0, 10),
+                'frameradius' => $titlenum('frameradius', 12, 0, 80),
+                'framepadding' => $titlenum('framepadding', 18, 0, 80),
+                'frameshadowenabled' => $titlebool('frameshadowenabled'),
+                'frameshadowcolor' => $titlehex($titlegetconfig('frameshadowcolor', '#000000'), '#000000'),
+                'frameshadowopacity' => $titlenum('frameshadowopacity', 25, 0, 100),
+                'frameshadowblur' => $titlenum('frameshadowblur', 14, 0, 80),
+                'frameshadowdistance' => $titlenum('frameshadowdistance', 6, 0, 50),
+                'frameshadowdirection' => $titlenum('frameshadowdirection', 135, 0, 360),
+                'shadowenabled' => $titlebool('shadowenabled', true),
+                'shadowcolor' => $titlehex($titlegetconfig('shadowcolor', '#000000'), '#000000'),
+                'shadowopacity' => $titlenum('shadowopacity', 55, 0, 100),
+                'shadowblur' => $titlenum('shadowblur', 10, 0, 60),
+                'shadowdistance' => $titlenum('shadowdistance', 4, 0, 40),
+                'shadowdirection' => $titlenum('shadowdirection', 135, 0, 360),
+            ];
+            $overlaydetailsattrs['data-overlay-title-preview-style'] = json_encode($titlestyle);
             $mform->addElement('html', \html_writer::start_tag('details', $overlaydetailsattrs));
             $summarycontent = self::render_collapse_expand_icon(!$currentisoverlaylayer) .
                 \html_writer::span(
@@ -486,6 +543,18 @@ class manage_banner_form extends \moodleform {
             $mform->addElement('advcheckbox', 'overlayborderabove', get_string('overlayborderabove', 'local_course_banner_builder'));
             $mform->setDefault('overlayborderabove', 1);
             $mform->addElement('html', '</details>');
+
+            if ($formmode === 'editoverlay') {
+                $mform->addElement('static', 'layerpreview', '', $this->render_banner_preview_panel(
+                    'layerpreview',
+                    $previewdefinition,
+                    $showmoodlepreview,
+                    false,
+                    false,
+                    true,
+                    get_string('borderpreviewhelp', 'local_course_banner_builder')
+                ));
+            }
         }
 
         if (!$showborder) {
@@ -696,6 +765,7 @@ class manage_banner_form extends \moodleform {
                 $showmoodlepreview,
                 false,
                 true,
+                false,
                 get_string('borderpreviewhelp', 'local_course_banner_builder')
             ));
         }
@@ -705,6 +775,7 @@ class manage_banner_form extends \moodleform {
                 'layerpreview',
                 $previewdefinition,
                 $showmoodlepreview,
+                true,
                 true,
                 true,
                 get_string('imagepreviewhelp', 'local_course_banner_builder')
@@ -790,6 +861,7 @@ class manage_banner_form extends \moodleform {
      * @param array $previewdefinition
      * @param bool $showcurrentimage
      * @param bool $showcurrentborder
+     * @param bool $showcurrentoverlay
      * @return string
      */
     protected function render_border_preview_frame(
@@ -797,7 +869,8 @@ class manage_banner_form extends \moodleform {
         string $bound,
         array $previewdefinition = [],
         bool $showcurrentimage = false,
-        bool $showcurrentborder = false
+        bool $showcurrentborder = false,
+        bool $showcurrentoverlay = false
     ): string {
         $contextlayershtml = '';
         foreach (($previewdefinition['contextlayers'] ?? []) as $layer) {
@@ -824,6 +897,18 @@ class manage_banner_form extends \moodleform {
             'sidestyles' => (array)($currentlayer['sidestyles'] ?? []),
             'dynamic' => true,
         ]) : '';
+        $currentoverlaylayer = $showcurrentoverlay ? $this->render_preview_overlay_layer(
+            $currentlayer,
+            'local-course-banner-builder-banner-overlay-layer local-course-banner-builder-preview-overlay-layer--current',
+            [
+                'data-layer-overlay-preview' => '1',
+                'data-preview-current-overlay' => '1',
+                'data-preview-sortorder' => (string)($currentlayer['sortorder'] ?? 0),
+                'data-preview-zindex' => (string)($currentlayer['zindex'] ?? (1000 + (int)($currentlayer['sortorder'] ?? 0))),
+            ],
+            (int)($currentlayer['zindex'] ?? (1000 + (int)($currentlayer['sortorder'] ?? 0)))
+        ) : '';
+        $slideshowpreviewlayer = $showcurrentoverlay ? $this->render_overlay_slideshow_target_preview() : '';
 
         $bannerformat = \local_course_banner_builder\manager::normalise_banner_format(
             (string)($previewdefinition['bannerformat'] ?? \local_course_banner_builder\manager::BANNER_FORMAT_STANDARD)
@@ -833,7 +918,9 @@ class manage_banner_form extends \moodleform {
             \html_writer::div('', 'local-course-banner-builder-banner-preview-base') .
             $contextlayershtml .
             $currentimagelayer .
-            $currentborderlayer,
+            $currentborderlayer .
+            $currentoverlaylayer .
+            $slideshowpreviewlayer,
             'local-course-banner-builder-border-preview-frame local-course-banner-builder-border-preview-frame--' . $variant .
                 ' local-course-banner-builder-border-preview-frame--format-' . $bannerformat,
             [
@@ -852,6 +939,7 @@ class manage_banner_form extends \moodleform {
      * @param bool $showmoodlepreview
      * @param bool $showcurrentimage
      * @param bool $showcurrentborder
+     * @param bool $showcurrentoverlay
      * @param string $helptext
      * @return string
      */
@@ -861,6 +949,7 @@ class manage_banner_form extends \moodleform {
         bool $showmoodlepreview,
         bool $showcurrentimage,
         bool $showcurrentborder,
+        bool $showcurrentoverlay,
         string $helptext
     ): string {
         global $PAGE;
@@ -910,7 +999,8 @@ class manage_banner_form extends \moodleform {
                         '1',
                         $previewdefinition,
                         $showcurrentimage,
-                        $showcurrentborder
+                        $showcurrentborder,
+                        $showcurrentoverlay
                     ),
                     'local-course-banner-builder-border-preview-variant'
                 ),
@@ -955,7 +1045,355 @@ class manage_banner_form extends \moodleform {
             ]);
         }
 
+        if (($layer['type'] ?? '') === 'overlay') {
+            return $this->render_preview_overlay_layer(
+                $layer,
+                'local-course-banner-builder-banner-overlay-layer local-course-banner-builder-preview-overlay-layer--context',
+                [
+                    'data-preview-context-layer' => '1',
+                    'data-preview-layer-id' => (string)($layer['id'] ?? 0),
+                    'data-preview-inherited' => !empty($layer['isinherited']) ? '1' : '0',
+                    'data-preview-sortorder' => (string)($layer['sortorder'] ?? 0),
+                    'data-preview-zindex' => (string)($layer['zindex'] ?? (1000 + (int)($layer['sortorder'] ?? 0))),
+                ],
+                (int)($layer['zindex'] ?? (1000 + (int)($layer['sortorder'] ?? 0)))
+            );
+        }
+
+        if (($layer['type'] ?? '') === 'title') {
+            return $this->render_preview_title_layer($layer, [
+                'data-preview-context-layer' => '1',
+                'data-preview-title-context-layer' => '1',
+                'data-preview-zindex' => (string)($layer['zindex'] ?? 3010),
+            ]);
+        }
+
         return '';
+    }
+
+    /**
+     * Render one contextual title preview layer.
+     *
+     * @param array $layer
+     * @param array $attributes
+     * @return string
+     */
+    protected function render_preview_title_layer(array $layer, array $attributes = []): string {
+        $text = (string)($layer['text'] ?? '');
+        $framestyle = trim((string)($layer['framestyle'] ?? ''));
+        $ishighlight = (string)($layer['frametype'] ?? 'box') === 'highlight';
+        $content = '';
+
+        if ($ishighlight && $framestyle !== '') {
+            $lines = preg_split('/\R/u', $text);
+            $lines = $lines === false ? [$text] : $lines;
+            foreach ($lines as $index => $line) {
+                $content .= \html_writer::span($line === '' ? '&nbsp;' : s($line), '', ['style' => $framestyle]);
+                if ($index < count($lines) - 1) {
+                    $content .= \html_writer::empty_tag('br');
+                }
+            }
+        } else {
+            $content = s($text);
+        }
+
+        $classes = 'local-course-banner-builder-banner-title-overlay ' .
+            'local-course-banner-builder-preview-title-layer local-course-banner-builder-preview-title-layer--context';
+        if ($ishighlight) {
+            $classes .= ' local-course-banner-builder-banner-title-overlay--highlight-frame';
+        }
+
+        return \html_writer::div($content, $classes, $attributes + [
+            'style' => (string)($layer['style'] ?? ''),
+            'aria-hidden' => 'true',
+        ]);
+    }
+
+    /**
+     * Render the non-editable slideshow example used when an overlay targets the slideshow only.
+     *
+     * @return string
+     */
+    protected function render_overlay_slideshow_target_preview(): string {
+        $issitebanneradmin = !empty($this->_customdata['issitebanneradmin']);
+        $context = $issitebanneradmin
+            ? \local_course_banner_builder\manager::SLIDESHOW_CONTEXT_SITE
+            : \local_course_banner_builder\manager::SLIDESHOW_CONTEXT_COURSE;
+        $config = is_array($this->_customdata['slideshowoverlaydefault'] ?? null)
+            ? $this->_customdata['slideshowoverlaydefault']
+            : \local_course_banner_builder\manager::get_slideshow_config($context);
+        $bannerformat = \local_course_banner_builder\manager::normalise_banner_format(
+            $issitebanneradmin
+                ? \local_course_banner_builder\manager::get_site_banner_format()
+                : \local_course_banner_builder\manager::get_course_banner_format()
+        );
+        $styledefaults = \local_course_banner_builder\manager::get_default_slideshow_style_values();
+        $stylenumber = static function(string $field) use ($config, $styledefaults): int {
+            return (int)($config[$field] ?? $styledefaults[$field]);
+        };
+        $stylestring = static function(string $field) use ($config, $styledefaults): string {
+            return (string)($config[$field] ?? $styledefaults[$field]);
+        };
+        $stylergb = static function(string $hex): string {
+            $hex = ltrim($hex, '#');
+            if (!preg_match('/^[0-9a-f]{6}$/i', $hex)) {
+                return '0, 0, 0';
+            }
+            return hexdec(substr($hex, 0, 2)) . ', ' . hexdec(substr($hex, 2, 2)) . ', ' .
+                hexdec(substr($hex, 4, 2));
+        };
+        $fontclamp = static function(string $kind, int $percent, string $format): string {
+            $scale = max(25, min(100, $percent)) / 100;
+            if ($format === \local_course_banner_builder\manager::BANNER_FORMAT_STANDARD) {
+                $scale *= 1.24;
+            } else if ($format === \local_course_banner_builder\manager::BANNER_FORMAT_FULLWIDTH_TOP_COMPACT) {
+                $scale *= $kind === 'label' ? 1.0 : 0.78;
+            }
+            if ($kind === 'title') {
+                return 'clamp(' . round(10 * $scale, 3) . 'cqh, min(' . round(28 * $scale, 3) . 'cqh, ' .
+                    round(3.4 * $scale, 3) . 'cqw), ' . round(36 * $scale, 3) . 'cqh)';
+            }
+            if ($kind === 'label') {
+                return 'clamp(' . round(3.5 * $scale, 3) . 'cqh, min(' . round(6.4 * $scale, 3) . 'cqh, ' .
+                    round(0.82 * $scale, 3) . 'cqw), ' . round(8.4 * $scale, 3) . 'cqh)';
+            }
+            if ($kind === 'action') {
+                return 'clamp(' . round(6 * $scale, 3) . 'cqh, min(' . round(13 * $scale, 3) . 'cqh, ' .
+                    round(1.6 * $scale, 3) . 'cqw), ' . round(18 * $scale, 3) . 'cqh)';
+            }
+            if ($kind === 'actionwidth') {
+                return 'clamp(' . round(10 * $scale, 3) . 'cqw, ' . round(18 * $scale, 3) . 'cqw, ' .
+                    round(34 * $scale, 3) . 'cqw)';
+            }
+            if ($kind === 'actionheight') {
+                return 'clamp(' . round(10 * $scale, 3) . 'cqh, min(' . round(22 * $scale, 3) . 'cqh, ' .
+                    round(2.7 * $scale, 3) . 'cqw), ' . round(34 * $scale, 3) . 'cqh)';
+            }
+            return 'clamp(' . round(5.5 * $scale, 3) . 'cqh, min(' . round(14 * $scale, 3) . 'cqh, ' .
+                round(1.7 * $scale, 3) . 'cqw), ' . round(19 * $scale, 3) . 'cqh)';
+        };
+
+        $titlefontsize = max(25, min(100, (int)($config['titlefontsize'] ??
+            \local_course_banner_builder\manager::SLIDESHOW_DEFAULT_TITLE_FONT_PERCENT)));
+        $bodyfontsize = max(25, min(100, (int)($config['bodyfontsize'] ??
+            \local_course_banner_builder\manager::SLIDESHOW_DEFAULT_BODY_FONT_PERCENT)));
+        $actionsize = max(25, min(100, (int)($config['actionsize'] ??
+            \local_course_banner_builder\manager::SLIDESHOW_DEFAULT_ACTION_SIZE_PERCENT)));
+        $actionwidth = max(25, min(100, (int)($config['actionwidth'] ??
+            \local_course_banner_builder\manager::SLIDESHOW_DEFAULT_ACTION_WIDTH_PERCENT)));
+        $actionheight = max(25, min(100, (int)($config['actionheight'] ??
+            \local_course_banner_builder\manager::SLIDESHOW_DEFAULT_ACTION_HEIGHT_PERCENT)));
+        $labelsize = max(25, min(100, (int)($config['labelsize'] ??
+            \local_course_banner_builder\manager::SLIDESHOW_DEFAULT_LABEL_SIZE_PERCENT)));
+        $labeltextsize = max(25, min(160, (int)($config['labeltextsize'] ?? 100)));
+        $bodylineheight = max(80, min(200, (float)($config['bodylineheight'] ?? 135)));
+        $labelorientation = (string)($config['labelorientation'] ??
+            \local_course_banner_builder\manager::SLIDESHOW_DEFAULT_LABEL_ORIENTATION);
+        $labelorientation = $labelorientation === \local_course_banner_builder\manager::SLIDESHOW_LABEL_ORIENTATION_COLUMN
+            ? \local_course_banner_builder\manager::SLIDESHOW_LABEL_ORIENTATION_COLUMN
+            : \local_course_banner_builder\manager::SLIDESHOW_LABEL_ORIENTATION_ROW;
+        $labelalign = (string)($config['labelalign'] ?? \local_course_banner_builder\manager::SLIDESHOW_DEFAULT_LABEL_ALIGN);
+        $labelalign = in_array($labelalign, ['left', 'center', 'right'], true) ? $labelalign : 'center';
+        $labelitemsalign = ['left' => 'flex-start', 'center' => 'center', 'right' => 'flex-end'][$labelalign];
+        $labelcorners = (string)($config['labelcorners'] ??
+            \local_course_banner_builder\manager::SLIDESHOW_DEFAULT_LABEL_CORNERS);
+        $actioncorners = (string)($config['actioncorners'] ??
+            \local_course_banner_builder\manager::SLIDESHOW_DEFAULT_ACTION_CORNERS);
+        $labelcolors = $config['labelcolors'] ?? \local_course_banner_builder\manager::get_default_slideshow_label_colors();
+
+        $previewstyle = '--local-course-banner-builder-slideshow-overlay-rgb: ' .
+            s((string)($config['overlayrgb'] ?? '0, 0, 0')) . ';';
+        $previewstyle .= ' --local-course-banner-builder-slideshow-overlay-opacity: ' .
+            number_format((float)($config['overlayopacity'] ??
+                \local_course_banner_builder\manager::SLIDESHOW_DEFAULT_OVERLAY_OPACITY), 2, '.', '') . ';';
+        $previewstyle .= ' --local-course-banner-builder-slideshow-title-font-size: ' .
+            $fontclamp('title', $titlefontsize, $bannerformat) . ';';
+        $previewstyle .= ' --local-course-banner-builder-slideshow-body-font-size: ' .
+            $fontclamp('body', $bodyfontsize, $bannerformat) . ';';
+        $previewstyle .= ' --local-course-banner-builder-slideshow-body-line-height: ' . $bodylineheight . '%;';
+        $previewstyle .= ' --local-course-banner-builder-slideshow-action-font-size: ' .
+            $fontclamp('action', $actionsize, $bannerformat) . ';';
+        $previewstyle .= ' --local-course-banner-builder-slideshow-action-width: ' .
+            $fontclamp('actionwidth', $actionwidth, $bannerformat) . ';';
+        $previewstyle .= ' --local-course-banner-builder-slideshow-action-height: ' .
+            $fontclamp('actionheight', $actionheight, $bannerformat) . ';';
+        $previewstyle .= ' --local-course-banner-builder-slideshow-label-font-size: ' .
+            $fontclamp('label', $labelsize, $bannerformat) . ';';
+        $previewstyle .= ' --local-course-banner-builder-slideshow-label-text-scale: ' .
+            number_format($labeltextsize / 100, 2, '.', '') . ';';
+        $previewstyle .= ' --local-course-banner-builder-slideshow-label-orientation: ' . s($labelorientation) . ';';
+        $previewstyle .= ' --local-course-banner-builder-slideshow-label-radius: ' .
+            ($labelcorners === \local_course_banner_builder\manager::SLIDESHOW_CORNER_SQUARE ? '0.28rem' : '999px') . ';';
+        $previewstyle .= ' --local-course-banner-builder-slideshow-action-radius: ' .
+            ($actioncorners === \local_course_banner_builder\manager::SLIDESHOW_CORNER_SQUARE ? '0.28rem' : '999px') . ';';
+        $previewstyle .= ' --local-course-banner-builder-slideshow-title-color: ' .
+            s((string)($config['titlecolor'] ?? \local_course_banner_builder\manager::SLIDESHOW_DEFAULT_TITLE_COLOR)) . ';';
+        $previewstyle .= ' --local-course-banner-builder-slideshow-body-color: ' .
+            s((string)($config['bodycolor'] ?? \local_course_banner_builder\manager::SLIDESHOW_DEFAULT_BODY_COLOR)) . ';';
+        $previewstyle .= ' --local-course-banner-builder-slideshow-title-font-family: ' .
+            ((string)($config['titlefontfamily'] ?? '') !== '' ? s((string)$config['titlefontfamily']) : 'inherit') . ';';
+        $previewstyle .= ' --local-course-banner-builder-slideshow-body-font-family: ' .
+            ((string)($config['bodyfontfamily'] ?? '') !== '' ? s((string)$config['bodyfontfamily']) : 'inherit') . ';';
+        $previewstyle .= ' --local-course-banner-builder-slideshow-title-text-align: ' .
+            s((string)($config['titlealign'] ?? 'center')) . ';';
+        $previewstyle .= ' --local-course-banner-builder-slideshow-body-text-align: ' .
+            s((string)($config['bodyalign'] ?? 'center')) . ';';
+        $previewstyle .= ' --local-course-banner-builder-slideshow-label-translate-x: -50%;';
+        $previewstyle .= ' --local-course-banner-builder-slideshow-label-items-align: ' . s($labelitemsalign) . ';';
+        foreach (['title' => '800', 'body' => '700', 'action' => '700', 'label' => '700'] as $target => $boldweight) {
+            $previewstyle .= ' --local-course-banner-builder-slideshow-' . $target . '-font-weight: ' .
+                (!empty($config[$target . 'bold']) ? $boldweight : '400') . ';';
+            $previewstyle .= ' --local-course-banner-builder-slideshow-' . $target . '-font-style: ' .
+                (!empty($config[$target . 'italic']) ? 'italic' : 'normal') . ';';
+            $previewstyle .= ' --local-course-banner-builder-slideshow-' . $target . '-text-decoration: ' .
+                ((!empty($config[$target . 'underline']) || !empty($config[$target . 'strike'])) ?
+                    trim((!empty($config[$target . 'underline']) ? 'underline ' : '') .
+                        (!empty($config[$target . 'strike']) ? 'line-through' : '')) : 'none') . ';';
+            $previewstyle .= ' --local-course-banner-builder-slideshow-' . $target . '-text-transform: ' .
+                (!empty($config[$target . 'allcaps']) || ($target === 'label' && !array_key_exists('labelallcaps', $config))
+                    ? 'uppercase'
+                    : 'none') . ';';
+        }
+        $previewstyle .= ' --local-course-banner-builder-slideshow-title-x: ' .
+            number_format((float)($config['titlex'] ?? \local_course_banner_builder\manager::SLIDESHOW_DEFAULT_TITLE_X), 3, '.', '') . '%;';
+        $previewstyle .= ' --local-course-banner-builder-slideshow-title-y: ' .
+            number_format((float)($config['titley'] ?? \local_course_banner_builder\manager::SLIDESHOW_DEFAULT_TITLE_Y), 3, '.', '') . '%;';
+        $previewstyle .= ' --local-course-banner-builder-slideshow-body-x: ' .
+            number_format((float)($config['bodyx'] ?? \local_course_banner_builder\manager::SLIDESHOW_DEFAULT_BODY_X), 3, '.', '') . '%;';
+        $previewstyle .= ' --local-course-banner-builder-slideshow-body-y: ' .
+            number_format((float)($config['bodyy'] ?? \local_course_banner_builder\manager::SLIDESHOW_DEFAULT_BODY_Y), 3, '.', '') . '%;';
+        $previewstyle .= ' --local-course-banner-builder-slideshow-action-x: ' .
+            number_format((float)($config['actionx'] ?? \local_course_banner_builder\manager::SLIDESHOW_DEFAULT_ACTION_X), 3, '.', '') . '%;';
+        $previewstyle .= ' --local-course-banner-builder-slideshow-action-y: ' .
+            number_format((float)($config['actiony'] ?? \local_course_banner_builder\manager::SLIDESHOW_DEFAULT_ACTION_Y), 3, '.', '') . '%;';
+        $labely = (float)($config['labely'] ?? \local_course_banner_builder\manager::SLIDESHOW_DEFAULT_LABEL_Y);
+        if ($bannerformat === \local_course_banner_builder\manager::BANNER_FORMAT_FULLWIDTH_TOP_COMPACT &&
+                abs($labely - \local_course_banner_builder\manager::SLIDESHOW_DEFAULT_LABEL_Y) < 0.001) {
+            $labely = 18.0;
+        }
+        $previewstyle .= ' --local-course-banner-builder-slideshow-label-x: ' .
+            number_format((float)($config['labelx'] ?? \local_course_banner_builder\manager::SLIDESHOW_DEFAULT_LABEL_X), 3, '.', '') . '%;';
+        $previewstyle .= ' --local-course-banner-builder-slideshow-label-y: ' . number_format($labely, 3, '.', '') . '%;';
+        foreach (['action', 'label'] as $target) {
+            $shadowdirection = deg2rad($stylenumber($target . 'shadowdirection'));
+            $previewstyle .= ' --local-course-banner-builder-slideshow-' . $target . '-opacity: ' .
+                number_format($stylenumber($target . 'opacity') / 100, 2, '.', '') . ';';
+            $previewstyle .= ' --local-course-banner-builder-slideshow-' . $target . '-border-width: ' .
+                $stylenumber($target . 'borderwidth') . 'px;';
+            $previewstyle .= ' --local-course-banner-builder-slideshow-' . $target . '-padding: ' .
+                $stylenumber($target . 'padding') . 'px;';
+            $previewstyle .= ' --local-course-banner-builder-slideshow-' . $target . '-shadow-opacity: ' .
+                number_format($stylenumber($target . 'shadowopacity') / 100, 2, '.', '') . ';';
+            $previewstyle .= ' --local-course-banner-builder-slideshow-' . $target . '-shadow-blur: ' .
+                $stylenumber($target . 'shadowblur') . 'px;';
+            $previewstyle .= ' --local-course-banner-builder-slideshow-' . $target . '-shadow-x: ' .
+                number_format(cos($shadowdirection) * $stylenumber($target . 'shadowdistance'), 2, '.', '') . 'px;';
+            $previewstyle .= ' --local-course-banner-builder-slideshow-' . $target . '-shadow-y: ' .
+                number_format(sin($shadowdirection) * $stylenumber($target . 'shadowdistance'), 2, '.', '') . 'px;';
+            $previewstyle .= ' --local-course-banner-builder-slideshow-' . $target . '-background: ' .
+                s($stylestring($target . 'backgroundcolor')) . ';';
+            $previewstyle .= ' --local-course-banner-builder-slideshow-' . $target . '-border-color: ' .
+                s($stylestring($target . 'bordercolor')) . ';';
+            $previewstyle .= ' --local-course-banner-builder-slideshow-' . $target . '-shadow-rgb: ' .
+                s($stylergb($stylestring($target . 'shadowcolor'))) . ';';
+            $previewstyle .= ' --local-course-banner-builder-slideshow-' . $target . '-font-family: ' .
+                ($stylestring($target . 'fontfamily') !== '' ? s($stylestring($target . 'fontfamily')) : 'inherit') . ';';
+            $previewstyle .= ' --local-course-banner-builder-slideshow-' . $target . '-text-color: ' .
+                s($stylestring($target . 'textcolor')) . ';';
+        }
+        foreach ($labelcolors as $type => $colors) {
+            $previewstyle .= ' --local-course-banner-builder-slideshow-label-' . s($type) . '-bg: ' .
+                s((string)($colors['background'] ?? '#000000')) . ';';
+            $previewstyle .= ' --local-course-banner-builder-slideshow-label-' . s($type) . '-color: ' .
+                s((string)($colors['text'] ?? '#FFFFFF')) . ';';
+            $previewstyle .= ' --local-course-banner-builder-slideshow-label-' . s($type) . '-border: ' .
+                s((string)($colors['border'] ?? '#FFFFFF')) . ';';
+            $previewstyle .= ' --local-course-banner-builder-slideshow-label-' . s($type) . '-shadow-rgb: ' .
+                s($stylergb((string)($colors['shadow'] ?? '#000000'))) . ';';
+        }
+
+        $previewlabelicon = $context === \local_course_banner_builder\manager::SLIDESHOW_CONTEXT_SITE ? 'fa-bullhorn' : 'fa-comments';
+        $previewlabelkey = $context === \local_course_banner_builder\manager::SLIDESHOW_CONTEXT_SITE
+            ? 'slideshow:type:siteannouncements'
+            : 'slideshow:type:courseforum';
+        $previewlabelclass = $context === \local_course_banner_builder\manager::SLIDESHOW_CONTEXT_SITE ? 'siteannouncements' : 'forums';
+        $previewsecondarylabel = $context === \local_course_banner_builder\manager::SLIDESHOW_CONTEXT_SITE ? 'CAT2' : 'COURSE101';
+        $previewcontent = \html_writer::div('', 'local-course-banner-builder-slideshow-admin-preview-backdrop') .
+            \html_writer::div('', 'local-course-banner-builder-slideshow-admin-preview-overlay') .
+            \html_writer::div(
+                \html_writer::div(
+                    \html_writer::span(
+                        \html_writer::tag('i', '', [
+                            'class' => 'fa ' . $previewlabelicon . ' local-course-banner-builder-slideshow-label-icon',
+                            'aria-hidden' => 'true',
+                        ]) . \html_writer::span(get_string($previewlabelkey, 'local_course_banner_builder')),
+                        'local-course-banner-builder-slideshow-label local-course-banner-builder-slideshow-label--' .
+                            $previewlabelclass
+                    ) .
+                    \html_writer::span(
+                        \html_writer::span($previewsecondarylabel),
+                        'local-course-banner-builder-slideshow-label local-course-banner-builder-slideshow-label--course-shortname'
+                    ),
+                    'local-course-banner-builder-slideshow-labels'
+                ) .
+                \html_writer::div(
+                    \html_writer::tag('h3', get_string('slideshowpreviewtitle', 'local_course_banner_builder'), [
+                        'class' => 'local-course-banner-builder-slideshow-title',
+                    ]),
+                    'local-course-banner-builder-slideshow-title-block'
+                ) .
+                \html_writer::div(
+                    \html_writer::tag('p', get_string('slideshowpreviewmeta', 'local_course_banner_builder'), [
+                        'class' => 'local-course-banner-builder-slideshow-meta',
+                    ]) .
+                    \html_writer::tag('p', get_string('slideshowpreviewbody', 'local_course_banner_builder'), [
+                        'class' => 'local-course-banner-builder-slideshow-body',
+                    ]),
+                    'local-course-banner-builder-slideshow-body-block'
+                ) .
+                \html_writer::div(
+                    \html_writer::tag('button', get_string('slideshowview', 'local_course_banner_builder'), [
+                        'type' => 'button',
+                        'class' => 'btn local-course-banner-builder-slideshow-action',
+                        'tabindex' => '-1',
+                    ]),
+                    'local-course-banner-builder-slideshow-action-wrap'
+                ),
+                'local-course-banner-builder-slideshow-admin-preview-content local-course-banner-builder-slideshow-slide is-active'
+            );
+
+        return \html_writer::div(
+            $previewcontent,
+            'local-course-banner-builder-slideshow-admin-preview local-course-banner-builder-layer-overlay-slideshow-preview ' .
+                'local-course-banner-builder-slideshow-admin-preview--format-' .
+                preg_replace('/[^a-z0-9_-]+/i', '', $bannerformat),
+            [
+                'data-layer-overlay-slideshow-preview' => '1',
+                'data-banner-format' => $bannerformat,
+                'style' => $previewstyle,
+                'hidden' => 'hidden',
+                'aria-hidden' => 'true',
+            ]
+        );
+    }
+
+    /**
+     * Render one overlay layer in a live preview.
+     *
+     * @param array $layer
+     * @param string $classes
+     * @param array $attributes
+     * @param int $zindex
+     * @return string
+     */
+    protected function render_preview_overlay_layer(array $layer, string $classes, array $attributes, int $zindex): string {
+        $style = trim((string)($layer['wrapperstyle'] ?? ''));
+        if ($style !== '' && !str_ends_with($style, ';')) {
+            $style .= ';';
+        }
+        return \html_writer::div('', $classes, $attributes + [
+            'style' => $style . ' z-index: ' . $zindex . ';',
+        ]);
     }
 
     /**

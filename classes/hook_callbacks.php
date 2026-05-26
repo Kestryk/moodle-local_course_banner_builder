@@ -933,7 +933,7 @@ class hook_callbacks {
         $color = preg_match('/^#[0-9a-f]{6}$/i', $color) ? $color : '#FFFFFF';
         $fontsize = (int)get_config('local_course_banner_builder', $prefix . 'fontsize');
         $fontsize = max(25, min(160, $fontsize ?: 100));
-        $lineheight = (int)get_config('local_course_banner_builder', $prefix . 'lineheight');
+        $lineheight = (float)get_config('local_course_banner_builder', $prefix . 'lineheight');
         $lineheight = max(80, min(180, $lineheight ?: 105));
         $x = max(0.0, min(100.0, (float)(get_config('local_course_banner_builder', $prefix . 'x') ?: 50)));
         $y = max(0.0, min(100.0, (float)(get_config('local_course_banner_builder', $prefix . 'y') ?: 50)));
@@ -964,6 +964,8 @@ class hook_callbacks {
                 'text-transform: ' . ($allcaps ? 'uppercase' : 'none') . ';',
                 'text-align: ' . $align . ';',
                 'line-height: ' . $lineheight . '%;',
+                '--local-course-banner-builder-inline-frame-gap: ' .
+                    round(self::inline_frame_gap_em((float)$lineheight), 3) . 'em;',
             ];
             if ((bool)get_config('local_course_banner_builder', $prefix . 'frameenabled')) {
                 $framecolor = self::banner_title_rgba(
@@ -1058,6 +1060,17 @@ class hook_callbacks {
             hexdec(substr($color, 2, 2)) . ', ' .
             hexdec(substr($color, 4, 2)) . ', ' .
             round(max(0, min(100, $opacity)) / 100, 3) . ')';
+    }
+
+    /**
+     * Compute the vertical gap between inline highlight frames from line-height.
+     *
+     * @param float $lineheightpercent
+     * @return float
+     */
+    protected static function inline_frame_gap_em(float $lineheightpercent): float {
+        $lineheightpercent = max(80.0, min(200.0, $lineheightpercent));
+        return max(0.14, min(0.6, 0.14 + ((($lineheightpercent - 105.0) / 100.0) * 0.45)));
     }
 
     /**

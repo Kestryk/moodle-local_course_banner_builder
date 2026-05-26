@@ -250,6 +250,8 @@ class manager {
     /** @var int */
     public const CONFIG_EXPORT_VERSION = 2;
     /** @var string */
+    public const EXPORT_SECTION_PLUGIN_SETTINGS = 'pluginsettings';
+    /** @var string */
     public const EXPORT_SECTION_COURSE_BANNERS = 'coursebanners';
     /** @var string */
     public const EXPORT_SECTION_SLIDESHOW = 'slideshow';
@@ -1832,7 +1834,7 @@ class manager {
             'labelTextSizePercent' => max(25, min(160, (int)($config['labeltextsize'] ?? $styledefaults['labeltextsize']))),
             'titleFontPercent' => max(25, min(100, (int)($config['titlefontsize'] ?? self::SLIDESHOW_DEFAULT_TITLE_FONT_PERCENT))),
             'bodyFontPercent' => max(25, min(100, (int)($config['bodyfontsize'] ?? self::SLIDESHOW_DEFAULT_BODY_FONT_PERCENT))),
-            'bodyLineHeightPercent' => max(80, min(200, (int)($config['bodylineheight'] ?? $styledefaults['bodylineheight']))),
+            'bodyLineHeightPercent' => max(80, min(200, (float)($config['bodylineheight'] ?? $styledefaults['bodylineheight']))),
             'actionSizePercent' => max(25, min(100, (int)($config['actionsize'] ?? self::SLIDESHOW_DEFAULT_ACTION_SIZE_PERCENT))),
             'actionWidthPercent' => max(25, min(100, (int)($config['actionwidth'] ?? self::SLIDESHOW_DEFAULT_ACTION_WIDTH_PERCENT))),
             'actionHeightPercent' => max(25, min(100, (int)($config['actionheight'] ?? self::SLIDESHOW_DEFAULT_ACTION_HEIGHT_PERCENT))),
@@ -3992,7 +3994,7 @@ class manager {
      * @return bool
      */
     protected static function is_overlay_only_layer(\stdClass $record): bool {
-        return !self::get_banner_image_file($record) && !empty($record->overlayenabled);
+        return !empty($record->overlayenabled);
     }
 
     /**
@@ -4422,6 +4424,7 @@ class manager {
                     $record->{$property} = self::normalise_percentage((float)($data->{$property} ?? $default), $minimum, 100.0);
                 }
             }
+            $record->imagecropenabled = self::normalise_image_crop($record)['enabled'] ? 1 : 0;
         }
 
         if (self::table_field_exists('local_course_banner_elements', 'borderenabled') && property_exists($data, 'borderenabled')) {
@@ -4765,6 +4768,7 @@ class manager {
                     $default = in_array($cropfield, ['width', 'height'], true) ? 100.0 : 0.0;
                     $record->{$property} = self::normalise_percentage((float)($layer[$property] ?? $default), $minimum, 100.0);
                 }
+                $record->imagecropenabled = self::normalise_image_crop($record)['enabled'] ? 1 : 0;
             }
 
             $record->timemodified = $now;
@@ -4957,6 +4961,10 @@ class manager {
                 $contextlayers[] = $layer;
             }
         }
+        $titlelayer = self::export_banner_title_preview_layer($source);
+        if ($titlelayer !== null) {
+            $contextlayers[] = $titlelayer;
+        }
         if ($elementid > 0 && $currentlayer === null) {
             foreach (self::get_source_elements($source) as $record) {
                 if ((int)$record->id !== $elementid) {
@@ -4979,6 +4987,231 @@ class manager {
             'contextlayers' => $contextlayers,
             'currentlayer' => $currentlayer,
         ];
+    }
+
+    /**
+     * Whether the source context has at least one enabled banner title.
+     *
+     * @param \stdClass $source
+     * @return bool
+     */
+    public static function source_has_active_banner_title(\stdClass $source): bool {
+        return self::get_banner_title_preview_context_for_source($source) !== null;
+    }
+
+    /**
+     * Export the contextual banner title preview layer.
+     *
+     * @param \stdClass $source
+     * @param bool $iscontext
+     * @return array|null
+     */
+    public static function export_banner_title_preview_layer(\stdClass $source, bool $iscontext = true): ?array {
+        $context = self::get_banner_title_preview_context_for_source($source);
+        if ($context === null) {
+            return null;
+        }
+
+        $config = self::export_banner_title_configuration([$context])[$context] ?? null;
+        if (empty($config) || empty($config['enabled'])) {
+            return null;
+        }
+
+        $textkey = match ($context) {
+            'site' => 'previewsitetitle',
+            'activity' => 'previewactivitytitle',
+            default => 'previewcoursetitle',
+        };
+        $style = self::build_banner_title_preview_style($config);
+
+        return [
+            'type' => 'title',
+            'enabled' => true,
+            'iscontext' => $iscontext,
+            'context' => $context,
+            'text' => get_string($textkey, 'local_course_banner_builder'),
+            'style' => $style['style'],
+            'framestyle' => $style['framestyle'],
+            'frametype' => (string)($config['frametype'] ?? 'box'),
+            'zindex' => $style['zindex'],
+        ];
+    }
+
+    /**
+     * Pick the title context to preview for a source.
+     *
+     * @param \stdClass $source
+     * @return string|null
+     */
+    protected static function get_banner_title_preview_context_for_source(\stdClass $source): ?string {
+        if (self::is_site_source($source)) {
+            return (bool)get_config('local_course_banner_builder', 'bannertitle_site_enabled') ? 'site' : null;
+        }
+
+        if ((bool)get_config('local_course_banner_builder', 'bannertitle_course_enabled')) {
+            return 'course';
+        }
+        if ((bool)get_config('local_course_banner_builder', 'bannertitle_activity_enabled')) {
+            return 'activity';
+        }
+        return null;
+    }
+
+    /**
+     * Build CSS for a banner title preview layer.
+     *
+     * @param array $config
+     * @return array{style:string,framestyle:string,zindex:int}
+     */
+    protected static function build_banner_title_preview_style(array $config): array {
+        $fontsize = max(25, min(160, (float)($config['fontsize'] ?? 100)));
+        $lineheight = max(80, min(180, (float)($config['lineheight'] ?? 105)));
+        $x = max(0, min(100, (float)($config['x'] ?? 50)));
+        $y = max(0, min(100, (float)($config['y'] ?? 50)));
+        $align = self::normalise_slideshow_alignment((string)($config['align'] ?? self::SLIDESHOW_ALIGN_CENTER));
+        $aboveborder = !empty($config['aboveborder']);
+        $zindex = $aboveborder ? 3010 : 18;
+        $fontfamily = (string)($config['fontfamily'] ?? '');
+        if ($fontfamily !== '' && !array_key_exists($fontfamily, self::get_slideshow_font_family_options())) {
+            $fontfamily = '';
+        }
+
+        $style = [
+            'left: ' . $x . '%;',
+            'top: ' . $y . '%;',
+            'z-index: ' . $zindex . ';',
+            'color: ' . self::normalise_banner_title_hex((string)($config['color'] ?? '#FFFFFF'), '#FFFFFF') . ';',
+            'font-size: clamp(' . round(8 * $fontsize / 100, 3) . 'cqh, ' .
+                round(4 * $fontsize / 100, 3) . 'cqw, ' . round(28 * $fontsize / 100, 3) . 'cqh);',
+            'font-family: ' . ($fontfamily !== '' ? s($fontfamily) : 'inherit') . ';',
+            'font-weight: ' . (!empty($config['bold']) ? '800' : '500') . ';',
+            'font-style: ' . (!empty($config['italic']) ? 'italic' : 'normal') . ';',
+            'text-decoration: ' . (!empty($config['underline']) ? 'underline' : 'none') . ';',
+            'text-transform: ' . (!empty($config['allcaps']) ? 'uppercase' : 'none') . ';',
+            'text-align: ' . $align . ';',
+            'line-height: ' . $lineheight . '%;',
+            '--local-course-banner-builder-inline-frame-gap: ' .
+                round(self::banner_title_inline_frame_gap_em((float)$lineheight), 3) . 'em;',
+        ];
+
+        $framestyle = [];
+        if (!empty($config['frameenabled'])) {
+            $framerules = [];
+            $framerules[] = 'background: ' . self::banner_title_preview_rgba(
+                (string)($config['framecolor'] ?? '#000000'),
+                (float)($config['frameopacity'] ?? 35)
+            ) . ';';
+            $framerules[] = 'border: ' . max(0, min(10, (float)($config['frameborderwidth'] ?? 0))) .
+                'px solid ' . self::normalise_banner_title_hex((string)($config['framebordercolor'] ?? '#FFFFFF'), '#FFFFFF') . ';';
+            $framerules[] = 'border-radius: ' . max(0, min(80, (float)($config['frameradius'] ?? 12))) . 'px;';
+            $padding = max(0, min(80, (float)($config['framepadding'] ?? 18)));
+            $framerules[] = 'padding: ' . round($padding / 2, 2) . 'px ' . $padding . 'px;';
+            if (!empty($config['frameshadowenabled'])) {
+                $framerules[] = 'box-shadow: ' . self::build_banner_title_preview_shadow(
+                    $config,
+                    'frameshadow',
+                    6,
+                    135,
+                    14,
+                    '#000000',
+                    25
+                ) . ';';
+            }
+            if ((string)($config['frametype'] ?? 'box') === 'highlight') {
+                $framestyle = $framerules;
+            } else {
+                $style = array_merge($style, $framerules);
+            }
+        }
+
+        if (!empty($config['shadowenabled'])) {
+            $style[] = 'text-shadow: ' . self::build_banner_title_preview_shadow(
+                $config,
+                'shadow',
+                4,
+                135,
+                10,
+                '#000000',
+                55
+            ) . ';';
+        } else {
+            $style[] = 'text-shadow: none;';
+        }
+
+        return [
+            'style' => implode(' ', $style),
+            'framestyle' => implode(' ', $framestyle),
+            'zindex' => $zindex,
+        ];
+    }
+
+    /**
+     * Normalise a title colour.
+     *
+     * @param string $color
+     * @param string $default
+     * @return string
+     */
+    protected static function normalise_banner_title_hex(string $color, string $default): string {
+        return preg_match('/^#[0-9a-f]{6}$/i', $color) ? strtoupper($color) : $default;
+    }
+
+    /**
+     * Build a title rgba() colour.
+     *
+     * @param string $color
+     * @param float $opacity
+     * @return string
+     */
+    protected static function banner_title_preview_rgba(string $color, float $opacity): string {
+        return self::build_css_color_pair(
+            self::normalise_banner_title_hex($color, '#000000'),
+            max(0, min(100, $opacity)) / 100
+        )['solid'];
+    }
+
+    /**
+     * Compute the extra gap between inline highlight frames from line-height.
+     *
+     * @param float $lineheightpercent
+     * @return float
+     */
+    protected static function banner_title_inline_frame_gap_em(float $lineheightpercent): float {
+        $lineheightpercent = max(80.0, min(200.0, $lineheightpercent));
+        return max(0.14, min(0.6, 0.14 + ((($lineheightpercent - 105.0) / 100.0) * 0.45)));
+    }
+
+    /**
+     * Build a title shadow declaration.
+     *
+     * @param array $config
+     * @param string $prefix
+     * @param float $defaultdistance
+     * @param float $defaultdirection
+     * @param float $defaultblur
+     * @param string $defaultcolor
+     * @param float $defaultopacity
+     * @return string
+     */
+    protected static function build_banner_title_preview_shadow(
+        array $config,
+        string $prefix,
+        float $defaultdistance,
+        float $defaultdirection,
+        float $defaultblur,
+        string $defaultcolor,
+        float $defaultopacity
+    ): string {
+        $distance = max(0, min(50, (float)($config[$prefix . 'distance'] ?? $defaultdistance)));
+        $angle = deg2rad(max(0, min(360, (float)($config[$prefix . 'direction'] ?? $defaultdirection))));
+        $xoffset = round(cos($angle) * $distance, 2);
+        $yoffset = round(sin($angle) * $distance, 2);
+        $blur = max(0, min(80, (float)($config[$prefix . 'blur'] ?? $defaultblur)));
+        $color = self::banner_title_preview_rgba(
+            (string)($config[$prefix . 'color'] ?? $defaultcolor),
+            (float)($config[$prefix . 'opacity'] ?? $defaultopacity)
+        );
+        return $xoffset . 'px ' . $yoffset . 'px ' . $blur . 'px ' . $color;
     }
 
     /**
@@ -5180,7 +5413,7 @@ class manager {
             'sourcekey' => $source->sourcekey,
             'hasexistingimage' => self::get_banner_image_file($record) ? 1 : 0,
             'currentisborderlayer' => (!self::get_banner_image_file($record) && !empty($record->borderenabled)) ? 1 : 0,
-            'currentisoverlaylayer' => (!self::get_banner_image_file($record) && !empty($record->overlayenabled)) ? 1 : 0,
+            'currentisoverlaylayer' => !empty($record->overlayenabled) ? 1 : 0,
             'sourcehasborderlayer' => !empty(self::get_source_border_conflict_state($source, (int)$record->id)['blocked']) ? 1 : 0,
             'sourcehasoverlaylayer' => !empty(self::get_source_overlay_conflict_state($source, (int)$record->id)['blocked']) ? 1 : 0,
             'bordersidesvalue' => implode(',', array_values(array_filter($bordersides, static function(string $side): bool {
@@ -6755,11 +6988,11 @@ class manager {
             $overlaysummary = self::export_overlay_summary($record);
             $layersummary = self::export_layer_display_summary($record);
             $isborderlayer = self::is_border_only_layer($record);
-            $isoverlaylayer = self::is_overlay_only_layer($record);
+            $isoverlaylayer = !empty($record->overlayenabled);
             $layerpreviewhtml = self::render_admin_layer_visual_preview($record);
             $isdynamiclayer = self::is_top_image_layer($record);
             $iscroppedlayer = !empty(self::normalise_image_crop($record)['enabled']);
-            $islockedlayer = self::is_locked_order_layer($record);
+            $islockedlayer = self::is_border_only_layer($record) || $isoverlaylayer;
             $rowclass = 'local-course-banner-builder-layer-row';
             if ($isborderlayer) {
                 $rowclass .= ' local-course-banner-builder-layer-row--border';
@@ -6826,6 +7059,11 @@ class manager {
                 'hasoverlaysummary' => !empty($overlaysummary),
                 'overlaysummarytitle' => get_string('overlaytitle', 'local_course_banner_builder'),
                 'overlaysummaryitems' => $overlaysummary,
+                'editlabel' => $isborderlayer
+                    ? get_string('editborderlayer', 'local_course_banner_builder')
+                    : ($isoverlaylayer
+                        ? get_string('editoverlaylayer', 'local_course_banner_builder')
+                        : get_string('editimage', 'local_course_banner_builder')),
                 'editurl' => (new \moodle_url($adminpath, [
                     'sourcekey' => $source->sourcekey,
                     'elementid' => $record->id,
@@ -6988,6 +7226,10 @@ class manager {
             'rowclass' => 'local-course-banner-builder-layer-row--border local-course-banner-builder-layer-row--overlay ' .
                 'local-course-banner-builder-layer-row--chain-border',
             'actionlabel' => get_string('chainoverlayexistinglabel', 'local_course_banner_builder'),
+            'orderlocklabel' => get_string('overlaylayerlockedorderlabel', 'local_course_banner_builder'),
+            'orderlockpopovercontent' => '<div class="no-overflow"><p>' .
+                get_string('overlaylayerlockedorderhelp', 'local_course_banner_builder') .
+                '</p></div>',
             'name' => $overlayrecord->name ?: get_string('layeroverlay', 'local_course_banner_builder') . ' #' .
                 $overlayrecord->id,
             'sourcelabel' => $overlaysource->label ?? $overlaysource->sourcekey,
@@ -7022,7 +7264,7 @@ class manager {
             }
         }
 
-        if (self::is_overlay_only_layer($record)) {
+        if (!empty($record->overlayenabled)) {
             $rgb = self::parse_color_to_rgba((string)($record->overlaybannercolor ?? '#000000'));
             if ($rgb) {
                 return 'background-color: rgba(' . $rgb[0] . ', ' . $rgb[1] . ', ' . $rgb[2] . ', 0.10);';
@@ -7066,7 +7308,7 @@ class manager {
             );
         }
 
-        if (self::is_overlay_only_layer($record)) {
+        if (!empty($record->overlayenabled)) {
             $layer = self::export_modal_preview_overlay_layer($record, false, false);
             $preview = \html_writer::div('', 'local-course-banner-builder-banner-overlay-layer', [
                 'style' => (string)($layer['wrapperstyle'] ?? ''),
@@ -7900,9 +8142,12 @@ class manager {
                 'value' => self::get_overlay_target_options()[$target] ?? $target,
             ],
             [
-                'label' => get_string('overlayappearance', 'local_course_banner_builder'),
-                'value' => self::normalise_color_string((string)($record->overlaybannercolor ?? '#000000')) . ' / ' .
-                    self::format_css_percentage((float)($record->overlaybanneropacity ?? 25)),
+                'label' => get_string('overlaycolor', 'local_course_banner_builder'),
+                'value' => self::normalise_color_string((string)($record->overlaybannercolor ?? '#000000')),
+            ],
+            [
+                'label' => get_string('overlayopacity', 'local_course_banner_builder'),
+                'value' => self::format_css_percentage((float)($record->overlaybanneropacity ?? 25)),
             ],
             [
                 'label' => get_string('overlaytitleabove', 'local_course_banner_builder'),
@@ -8179,7 +8424,11 @@ class manager {
             $imagewidth = (int)($imageinfo['width'] ?? 0);
             $imageheight = (int)($imageinfo['height'] ?? 0);
             if ($imagewidth > 0 && $imageheight > 0) {
-                $box = self::get_contained_overlay_box_percentages($imagewidth, $imageheight);
+                $effectivedimensions = self::get_effective_image_dimensions_for_crop($record, $imagewidth, $imageheight);
+                $box = self::get_contained_overlay_box_percentages(
+                    $effectivedimensions['width'],
+                    $effectivedimensions['height']
+                );
                 $wrapperstyles[] = 'width: ' . self::format_css_percentage($box['width']) . ';';
                 $wrapperstyles[] = 'height: ' . self::format_css_percentage($box['height']) . ';';
                 $wrapperstyles = array_merge($wrapperstyles, self::get_html_overlay_position_styles($record, $anchor));
@@ -8193,7 +8442,8 @@ class manager {
             $imageinfo = $file ? $file->get_imageinfo() : [];
             $imagewidth = (int)($imageinfo['width'] ?? 0);
             $imageheight = (int)($imageinfo['height'] ?? 0);
-            if (!empty($record->customsizekeepaspect) && $imagewidth > 0 && $imageheight > 0) {
+            $renderkeepaspect = !empty($record->customsizekeepaspect);
+            if ($renderkeepaspect && $imagewidth > 0 && $imageheight > 0) {
                 $widthlimit = self::normalise_percentage(
                     (float)($record->customwidthpercent ?? 100),
                     0.0,
@@ -8204,27 +8454,34 @@ class manager {
                     0.0,
                     self::CUSTOM_SIZE_PERCENT_MAX
                 );
-                $imageaspect = $imagewidth / $imageheight;
+                $effectivedimensions = self::get_effective_image_dimensions_for_crop($record, $imagewidth, $imageheight);
+                $imageaspect = $effectivedimensions['width'] / $effectivedimensions['height'];
                 $heightlimitedwidth = $heightlimit * $imageaspect;
                 $wrapperstyles[] = 'width: min(' . self::format_css_percentage($widthlimit) . ', ' .
                     rtrim(rtrim(sprintf('%.6F', $heightlimitedwidth), '0'), '.') . 'cqh);';
                 $wrapperstyles[] = 'height: auto;';
-                $wrapperstyles[] = 'aspect-ratio: ' . $imagewidth . ' / ' . $imageheight . ';';
+                $wrapperstyles[] = 'aspect-ratio: ' . $effectivedimensions['width'] . ' / ' .
+                    $effectivedimensions['height'] . ';';
             } else {
                 $wrapperstyles[] = 'width: ' . self::format_css_percentage((float)($record->customwidthpercent ?? 100)) . ';';
                 $wrapperstyles[] = 'height: ' . self::format_css_percentage((float)($record->customheightpercent ?? 100)) . ';';
             }
             $wrapperstyles = array_merge($wrapperstyles, self::get_html_overlay_position_styles($record, $anchor));
-            $imagestyles[] = 'object-fit: ' . (!empty($record->customsizekeepaspect) ? 'contain' : 'fill') . ';';
+            $imagestyles[] = 'object-fit: ' . ($renderkeepaspect ? 'contain' : 'fill') . ';';
             $imagestyles[] = 'object-position: ' . self::get_css_object_position_for_anchor($anchor) . ';';
         } else {
             $imageinfo = $file ? $file->get_imageinfo() : [];
             $imagewidth = (int)($imageinfo['width'] ?? 0);
+            $imageheight = (int)($imageinfo['height'] ?? 0);
             if ($imagewidth <= 0) {
                 $imagewidth = self::DEFAULT_CANVAS_WIDTH;
             }
+            if ($imageheight <= 0) {
+                $imageheight = self::DEFAULT_CANVAS_HEIGHT;
+            }
 
-            $wrapperstyles[] = 'width: ' . self::format_css_percent($imagewidth, self::DEFAULT_CANVAS_WIDTH) . ';';
+            $effectivedimensions = self::get_effective_image_dimensions_for_crop($record, $imagewidth, $imageheight);
+            $wrapperstyles[] = 'width: ' . self::format_css_percent($effectivedimensions['width'], self::DEFAULT_CANVAS_WIDTH) . ';';
             $wrapperstyles = array_merge($wrapperstyles, self::get_html_overlay_position_styles($record, $anchor));
             $imagestyles[] = 'height: auto;';
             $imagestyles[] = 'object-fit: none;';
@@ -8281,6 +8538,35 @@ class manager {
         $imagestyles[] = 'clip-path: inset(' . self::format_css_percentage($crop['top']) . ' ' .
             self::format_css_percentage($right) . ' ' . self::format_css_percentage($bottom) . ' ' .
             self::format_css_percentage($crop['left']) . ');';
+    }
+
+    /**
+     * Get the natural dimensions that should drive placement after a stored crop.
+     *
+     * @param \stdClass $record
+     * @param int $imagewidth
+     * @param int $imageheight
+     * @return array{width:int,height:int}
+     */
+    protected static function get_effective_image_dimensions_for_crop(
+        \stdClass $record,
+        int $imagewidth,
+        int $imageheight
+    ): array {
+        $imagewidth = max(1, $imagewidth);
+        $imageheight = max(1, $imageheight);
+        $crop = self::normalise_image_crop($record);
+        if (!$crop['enabled']) {
+            return [
+                'width' => $imagewidth,
+                'height' => $imageheight,
+            ];
+        }
+
+        return [
+            'width' => max(1, (int)round($imagewidth * ($crop['width'] / 100.0))),
+            'height' => max(1, (int)round($imageheight * ($crop['height'] / 100.0))),
+        ];
     }
 
     /**
@@ -8587,6 +8873,7 @@ class manager {
      */
     protected static function get_export_section_keys(): array {
         return [
+            self::EXPORT_SECTION_PLUGIN_SETTINGS,
             self::EXPORT_SECTION_COURSE_BANNERS,
             self::EXPORT_SECTION_SLIDESHOW,
             self::EXPORT_SECTION_SITE_BANNERS,
@@ -8600,6 +8887,10 @@ class manager {
      */
     public static function get_export_section_options(): array {
         return [
+            self::EXPORT_SECTION_PLUGIN_SETTINGS => self::get_local_string_or_fallback(
+                'exportsectionpluginsettings',
+                'Global plugin settings'
+            ),
             self::EXPORT_SECTION_COURSE_BANNERS => self::get_local_string_or_fallback(
                 'exportsectioncoursebanners',
                 'All course banner settings'
@@ -8642,7 +8933,7 @@ class manager {
         }
 
         $sections = array_values(array_intersect($allowed, array_map('strval', $sections)));
-        return empty($sections) ? $allowed : $sections;
+        return $sections;
     }
 
     /**
@@ -8669,6 +8960,9 @@ class manager {
             $coursebannerdata = self::export_course_banner_configuration();
             $export['sections'][self::EXPORT_SECTION_COURSE_BANNERS] = $coursebannerdata;
             $export['categories'] = $coursebannerdata['legacycategories'];
+        }
+        if (in_array(self::EXPORT_SECTION_PLUGIN_SETTINGS, $sections, true)) {
+            $export['sections'][self::EXPORT_SECTION_PLUGIN_SETTINGS] = self::export_plugin_settings_configuration();
         }
         if (in_array(self::EXPORT_SECTION_SLIDESHOW, $sections, true)) {
             $export['sections'][self::EXPORT_SECTION_SLIDESHOW] = self::export_slideshow_configuration();
@@ -8727,9 +9021,10 @@ class manager {
      *
      * @param string $archivepath
      * @param bool $replaceall
+     * @param array $sections
      * @return array
      */
-    public static function import_configuration_archive(string $archivepath, bool $replaceall = false): array {
+    public static function import_configuration_archive(string $archivepath, bool $replaceall = false, array $sections = []): array {
         if (!class_exists('\ZipArchive')) {
             throw new \coding_exception('The PHP ZipArchive extension is required to import banner settings with files.');
         }
@@ -8756,7 +9051,7 @@ class manager {
         self::hydrate_export_files_from_archive($data, $zip);
         $zip->close();
 
-        return self::import_configuration(json_encode($data), $replaceall);
+        return self::import_configuration(json_encode($data), $replaceall, $sections);
     }
 
     /**
@@ -9436,6 +9731,32 @@ class manager {
     }
 
     /**
+     * Export every global Moodle config value owned by this plugin.
+     *
+     * Structured sections below still export normalised data and files. This section keeps
+     * newer/global plugin settings portable even when they do not belong to one source table.
+     *
+     * @return array
+     */
+    protected static function export_plugin_settings_configuration(): array {
+        global $DB;
+
+        $settings = [];
+        $records = $DB->get_records('config_plugins', ['plugin' => 'local_course_banner_builder'], 'name ASC');
+        foreach ($records as $record) {
+            $name = (string)$record->name;
+            if ($name === 'version') {
+                continue;
+            }
+            $settings[$name] = $record->value;
+        }
+
+        return [
+            'settings' => $settings,
+        ];
+    }
+
+    /**
      * Export native course/site slideshow settings, plus legacy EasyEdu settings for compatibility.
      *
      * @return array
@@ -9639,24 +9960,37 @@ class manager {
      * @param bool $replaceall
      * @return array
      */
-    public static function import_configuration(string $json, bool $replaceall = false): array {
+    public static function import_configuration(string $json, bool $replaceall = false, array $sections = []): array {
         $data = json_decode($json, true);
         if (!is_array($data) || empty($data['schema'])) {
             throw new \coding_exception('Invalid course banner builder import payload.');
         }
 
         if (!empty($data['sections']) && is_array($data['sections'])) {
+            $sections = self::normalise_import_sections($sections, array_keys($data['sections']));
             $summary = [];
-            if (!empty($data['sections'][self::EXPORT_SECTION_COURSE_BANNERS])) {
+            if (in_array(self::EXPORT_SECTION_PLUGIN_SETTINGS, $sections, true) &&
+                    !empty($data['sections'][self::EXPORT_SECTION_PLUGIN_SETTINGS])) {
+                if ($replaceall) {
+                    self::delete_plugin_config_values();
+                }
+                $summary += self::import_plugin_settings_configuration(
+                    $data['sections'][self::EXPORT_SECTION_PLUGIN_SETTINGS]
+                );
+            }
+            if (in_array(self::EXPORT_SECTION_COURSE_BANNERS, $sections, true) &&
+                    !empty($data['sections'][self::EXPORT_SECTION_COURSE_BANNERS])) {
                 if ($replaceall) {
                     self::delete_all_configuration();
                 }
                 $summary += self::import_course_banner_configuration($data['sections'][self::EXPORT_SECTION_COURSE_BANNERS]);
             }
-            if (!empty($data['sections'][self::EXPORT_SECTION_SLIDESHOW])) {
+            if (in_array(self::EXPORT_SECTION_SLIDESHOW, $sections, true) &&
+                    !empty($data['sections'][self::EXPORT_SECTION_SLIDESHOW])) {
                 $summary += self::import_slideshow_configuration($data['sections'][self::EXPORT_SECTION_SLIDESHOW]);
             }
-            if (!empty($data['sections'][self::EXPORT_SECTION_SITE_BANNERS])) {
+            if (in_array(self::EXPORT_SECTION_SITE_BANNERS, $sections, true) &&
+                    !empty($data['sections'][self::EXPORT_SECTION_SITE_BANNERS])) {
                 $summary += self::import_site_banner_configuration($data['sections'][self::EXPORT_SECTION_SITE_BANNERS]);
             }
             theme_reset_all_caches();
@@ -9671,6 +10005,61 @@ class manager {
             self::delete_all_configuration();
         }
         return self::import_legacy_course_banner_configuration($data['categories']);
+    }
+
+    /**
+     * Normalise requested import sections against sections actually present in the archive.
+     *
+     * @param array $sections
+     * @param array $presentsections
+     * @return array
+     */
+    protected static function normalise_import_sections(array $sections, array $presentsections): array {
+        $allowed = self::get_export_section_keys();
+        $presentsections = array_values(array_intersect($allowed, array_map('strval', $presentsections)));
+        if (empty($sections)) {
+            return $presentsections;
+        }
+
+        return array_values(array_intersect($presentsections, array_map('strval', $sections)));
+    }
+
+    /**
+     * Delete global plugin config values without touching the installed version marker.
+     *
+     * @return void
+     */
+    protected static function delete_plugin_config_values(): void {
+        global $DB;
+
+        $DB->delete_records_select(
+            'config_plugins',
+            'plugin = :plugin AND name <> :versionname',
+            [
+                'plugin' => 'local_course_banner_builder',
+                'versionname' => 'version',
+            ]
+        );
+    }
+
+    /**
+     * Import global plugin config values.
+     *
+     * @param array $data
+     * @return array
+     */
+    protected static function import_plugin_settings_configuration(array $data): array {
+        $imported = 0;
+        foreach (($data['settings'] ?? []) as $name => $value) {
+            $name = (string)$name;
+            if ($name === 'version' || !preg_match('/^[a-z0-9_]+$/i', $name)) {
+                continue;
+            }
+            set_config($name, $value, 'local_course_banner_builder');
+            $imported++;
+        }
+
+        return ['importedpluginsettings' => $imported];
     }
 
     /**
@@ -10674,7 +11063,8 @@ class manager {
 
         $anchor = self::normalise_position_anchor((string)($record->positionanchor ?? self::POSITION_CENTER));
         $styles = [];
-        $styles[] = 'aspect-ratio: ' . $layerwidth . ' / ' . $layerheight . ';';
+        $effectivedimensions = self::get_effective_image_dimensions_for_crop($record, $layerwidth, $layerheight);
+        $styles[] = 'aspect-ratio: ' . $effectivedimensions['width'] . ' / ' . $effectivedimensions['height'] . ';';
         $styles[] = 'opacity: ' . self::format_css_opacity((float)($record->imageopacity ?? 1)) . ';';
 
         if ($fitmode === self::FIT_MODE_BANNER) {
@@ -10682,13 +11072,14 @@ class manager {
             $styles[] = 'height: 100%;';
             $styles[] = 'object-fit: fill;';
         } else if ($fitmode === self::FIT_MODE_COVER) {
-            $box = self::get_contained_overlay_box_percentages($layerwidth, $layerheight);
+            $box = self::get_contained_overlay_box_percentages($effectivedimensions['width'], $effectivedimensions['height']);
             $styles[] = 'width: ' . self::format_css_percentage($box['width']) . ';';
             $styles[] = 'height: ' . self::format_css_percentage($box['height']) . ';';
             $styles[] = 'object-fit: fill;';
             $styles[] = 'object-position: ' . self::get_css_object_position_for_anchor($anchor) . ';';
         } else if ($fitmode === self::FIT_MODE_CUSTOM) {
-            if (!empty($record->customsizekeepaspect)) {
+            $renderkeepaspect = !empty($record->customsizekeepaspect);
+            if ($renderkeepaspect) {
                 $widthlimit = self::normalise_percentage(
                     (float)($record->customwidthpercent ?? 100),
                     0.0,
@@ -10699,7 +11090,7 @@ class manager {
                     0.0,
                     self::CUSTOM_SIZE_PERCENT_MAX
                 );
-                $imageaspect = $layerwidth / $layerheight;
+                $imageaspect = $effectivedimensions['width'] / $effectivedimensions['height'];
                 $heightlimitedwidth = $heightlimit * $imageaspect;
                 $styles[] = 'width: min(' . self::format_css_percentage($widthlimit) . ', ' .
                     rtrim(rtrim(sprintf('%.6F', $heightlimitedwidth), '0'), '.') . 'cqh);';
@@ -10709,7 +11100,7 @@ class manager {
                 $styles[] = 'height: ' . self::format_css_percentage((float)($record->customheightpercent ?? 100)) . ';';
             }
         } else {
-            $styles[] = 'width: ' . self::format_css_percent($layerwidth, self::DEFAULT_CANVAS_WIDTH) . ';';
+            $styles[] = 'width: ' . self::format_css_percent($effectivedimensions['width'], self::DEFAULT_CANVAS_WIDTH) . ';';
             $styles[] = 'height: auto;';
         }
 
@@ -11090,7 +11481,7 @@ class manager {
         $sourcewidth = max(1, min($layerwidth - $sourcex, (int)round(($crop['width'] / 100) * $layerwidth)));
         $sourceheight = max(1, min($layerheight - $sourcey, (int)round(($crop['height'] / 100) * $layerheight)));
 
-        $cropped = imagecreatetruecolor($layerwidth, $layerheight);
+        $cropped = imagecreatetruecolor($sourcewidth, $sourceheight);
         if (!$cropped) {
             return null;
         }
@@ -11100,8 +11491,8 @@ class manager {
         imagecopy(
             $cropped,
             $layer,
-            $sourcex,
-            $sourcey,
+            0,
+            0,
             $sourcex,
             $sourcey,
             $sourcewidth,

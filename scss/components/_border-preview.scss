@@ -65,12 +65,18 @@
 .local-course-banner-builder-crop-editor {
     position: absolute;
     inset: 0;
-    z-index: 12;
+    z-index: 5200;
     pointer-events: auto;
 }
 
 .local-course-banner-builder-preview-image-layer--crop-editing {
     overflow: visible !important;
+}
+
+.local-course-banner-builder-preview-image-layer--crop-editing > .local-course-banner-builder-preview-resize-handle,
+.local-course-banner-builder-preview-image-layer--crop-editing > .local-course-banner-builder-preview-aspect-lock {
+    opacity: 0 !important;
+    pointer-events: none !important;
 }
 
 .local-course-banner-builder-crop-box {
@@ -86,10 +92,11 @@
 
 .local-course-banner-builder-crop-actions {
     position: absolute;
-    top: 0.35rem;
-    right: 0.35rem;
-    z-index: 2;
+    top: var(--local-course-banner-builder-crop-actions-top, 50%);
+    left: var(--local-course-banner-builder-crop-actions-left, calc(100% - 2.5rem));
+    z-index: 3;
     display: inline-flex;
+    flex-direction: column;
     gap: 0.35rem;
     pointer-events: auto;
 }

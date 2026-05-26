@@ -1860,7 +1860,7 @@ function local_course_banner_builder_clean_slideshow_values(array $values): arra
         'labelbold', 'labelitalic', 'labelunderline', 'labelstrike', 'labelallcaps'] as $field) {
         $clean[$field] = empty($values[$field]) ? 0 : 1;
     }
-    foreach (['delay', 'overlayopacity', 'titlefontsize', 'bodyfontsize', 'bodylineheight', 'actionsize', 'actionwidth',
+    foreach (['delay', 'overlayopacity', 'titlefontsize', 'bodyfontsize', 'actionsize', 'actionwidth',
         'actionheight', 'labelsize', 'labeltextsize',
         'actionopacity', 'actionborderwidth', 'actionradius', 'actionpadding',
         'actionshadowopacity', 'actionshadowblur', 'actionshadowdistance', 'actionshadowdirection',
@@ -1868,6 +1868,7 @@ function local_course_banner_builder_clean_slideshow_values(array $values): arra
         'labelshadowopacity', 'labelshadowblur', 'labelshadowdistance', 'labelshadowdirection'] as $field) {
         $clean[$field] = clean_param($values[$field] ?? 0, PARAM_INT);
     }
+    $clean['bodylineheight'] = clean_param($values['bodylineheight'] ?? 0, PARAM_FLOAT);
     foreach (['titlex', 'titley', 'bodyx', 'bodyy', 'actionx', 'actiony', 'labelx', 'labely'] as $field) {
         $clean[$field] = clean_param($values[$field] ?? 0, PARAM_FLOAT);
     }
@@ -1941,8 +1942,8 @@ if (optional_param('updateslideshow', 0, PARAM_BOOL) && confirm_sesskey()) {
                 ? manager::SLIDESHOW_DEFAULT_BODY_FONT_PERCENT
                 : optional_param('bodyfontsize', manager::SLIDESHOW_DEFAULT_BODY_FONT_PERCENT, PARAM_INT),
             'bodylineheight' => $defaulttext || $defaultall
-                ? (int)$styledefaults['bodylineheight']
-                : optional_param('bodylineheight', (int)$styledefaults['bodylineheight'], PARAM_INT),
+                ? (float)$styledefaults['bodylineheight']
+                : optional_param('bodylineheight', (float)$styledefaults['bodylineheight'], PARAM_FLOAT),
             'actionsize' => $defaulttext || $defaultall
                 ? manager::SLIDESHOW_DEFAULT_ACTION_SIZE_PERCENT
                 : optional_param('actionsize', manager::SLIDESHOW_DEFAULT_ACTION_SIZE_PERCENT, PARAM_INT),
@@ -2409,7 +2410,7 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
     $labelcolors = $config['labelcolors'] ?? manager::get_default_slideshow_label_colors();
     $titlefontsize = max(25, min(100, (int)($config['titlefontsize'] ?? manager::SLIDESHOW_DEFAULT_TITLE_FONT_PERCENT)));
     $bodyfontsize = max(25, min(100, (int)($config['bodyfontsize'] ?? manager::SLIDESHOW_DEFAULT_BODY_FONT_PERCENT)));
-    $bodylineheight = max(80, min(200, (int)($config['bodylineheight'] ?? 135)));
+        $bodylineheight = max(80, min(200, (float)($config['bodylineheight'] ?? 135)));
     $actionsize = max(25, min(100, (int)($config['actionsize'] ?? manager::SLIDESHOW_DEFAULT_ACTION_SIZE_PERCENT)));
     $actionwidth = max(25, min(100, (int)($config['actionwidth'] ?? manager::SLIDESHOW_DEFAULT_ACTION_WIDTH_PERCENT)));
     $actionheight = max(25, min(100, (int)($config['actionheight'] ?? manager::SLIDESHOW_DEFAULT_ACTION_HEIGHT_PERCENT)));
@@ -2793,13 +2794,14 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
     $slidercontrol = static function(
         string $name,
         string $label,
-        int $value,
+        float $value,
         int $min,
         int $max,
         string $cssvar,
         string $unit = '',
         ?string $proxyfor = null,
-        ?int $defaultvalue = null
+        ?float $defaultvalue = null,
+        float $step = 1
     ): string {
         $inputid = $name . '-input-' . uniqid();
         $outputid = $name . '-output-' . uniqid();
@@ -2810,7 +2812,7 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
             'id' => $inputid,
             'min' => $min,
             'max' => $max,
-            'step' => 1,
+            'step' => $step,
             'value' => $value,
             'class' => 'custom-range local-course-banner-builder-range',
             'data-slideshow-design-input' => '1',
@@ -2839,7 +2841,7 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
                     'id' => $numberid,
                     'min' => $min,
                     'max' => $max,
-                    'step' => 1,
+                    'step' => $step,
                     'value' => $value,
                     'class' => 'form-control form-control-sm local-course-banner-builder-slideshow-side-number',
                     'data-slideshow-design-number-for' => '#' . $inputid,
@@ -3212,7 +3214,7 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
                 $bodyfontsize, 25, 100, '--local-course-banner-builder-slideshow-body-font-size', '%', 'bodyfontsize') .
             $slidercontrol('bodylineheight', get_string('slideshowbodylineheight', 'local_course_banner_builder'),
                 $bodylineheight, 80, 200, '--local-course-banner-builder-slideshow-body-line-height',
-                '%', null, (int)$styledefaults['bodylineheight']) .
+                '%', null, (float)$styledefaults['bodylineheight'], 0.1) .
             $proxyfontcontrol('bodyfontfamily', get_string('slideshowbodyfontfamily', 'local_course_banner_builder'), $bodyfontfamily) .
             $proxycolorcontrol('bodycolor', get_string('slideshowbodycolor', 'local_course_banner_builder'), $bodycolor) .
             html_writer::div(get_string('slideshowtextformat', 'local_course_banner_builder'),

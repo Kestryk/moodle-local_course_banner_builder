@@ -153,8 +153,29 @@
 }
 
 .local-course-banner-builder-admin-layer-visual {
-    width: min(9rem, 100%);
-    min-width: 5.5rem;
+    width: min(7rem, 100%);
+    min-width: 0;
+}
+
+.local-course-banner-builder-layer-render-cell {
+    text-align: center;
+}
+
+.local-course-banner-builder-layer-render-cell .local-course-banner-builder-admin-layer-visual,
+.local-course-banner-builder-layer-render-cell .local-course-banner-builder-admin-preview {
+    margin-inline: auto;
+}
+
+.local-course-banner-builder-layer-render-cell .local-course-banner-builder-admin-preview {
+    width: min(7rem, 100%);
+}
+
+.local-course-banner-builder-chain-layer-label {
+    display: block;
+    margin-left: 1.85rem;
+    font-size: 0.76rem;
+    line-height: 1.2;
+    color: #64748b;
 }
 
 .local-course-banner-builder-admin-layer-visual .local-course-banner-builder-border-preview-frame,
@@ -162,7 +183,7 @@
     position: relative;
     container-type: size;
     width: 100%;
-    aspect-ratio: 4 / 1;
+    aspect-ratio: 1 / 1;
     overflow: hidden;
     border: 1px solid rgba(148, 163, 184, 0.32);
     border-radius: 0.35rem;
@@ -482,7 +503,8 @@
     position: relative;
 }
 
-.local-course-banner-builder-layer-row--border .local-course-banner-builder-lock-help--border {
+.local-course-banner-builder-layer-row--border .local-course-banner-builder-lock-help--border,
+.local-course-banner-builder-layer-row--border .local-course-banner-builder-lock-help--overlay {
     position: absolute;
     top: 0.45rem;
     left: 0.85rem;
@@ -1191,6 +1213,70 @@
     max-width: 100%;
     margin-right: auto;
     margin-left: auto;
+}
+
+#local-course-banner-builder-add-layer-modal .modal-content {
+    position: relative;
+}
+
+.local-course-banner-builder-layer-modal-drop-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px dashed rgba(15, 108, 191, 0.78);
+    border-radius: inherit;
+    background: rgba(15, 108, 191, 0.1);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.14s ease, visibility 0.14s ease, background-color 0.14s ease;
+}
+
+.local-course-banner-builder-layer-modal-drop-overlay.is-visible {
+    opacity: 1;
+    visibility: visible;
+    background: rgba(15, 108, 191, 0.16);
+}
+
+.local-course-banner-builder-layer-modal-drop-plus {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 5.5rem;
+    height: 5.5rem;
+    border-radius: 999px;
+    background: var(--bs-primary, #0f6cbf);
+    color: #fff;
+    font-size: 0;
+    line-height: 1;
+    box-shadow: 0 0.8rem 2rem rgba(15, 108, 191, 0.28);
+    transform: scale(0.92);
+    transition: transform 0.14s ease;
+}
+
+.local-course-banner-builder-layer-modal-drop-plus::before,
+.local-course-banner-builder-layer-modal-drop-plus::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 2.35rem;
+    height: 0.42rem;
+    border-radius: 999px;
+    background: currentColor;
+    transform: translate(-50%, -50%);
+}
+
+.local-course-banner-builder-layer-modal-drop-plus::after {
+    transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.local-course-banner-builder-layer-modal-drop-overlay.is-visible .local-course-banner-builder-layer-modal-drop-plus {
+    transform: scale(1);
 }
 
 .modal #fitem_id_borderstyle .custom-select {
