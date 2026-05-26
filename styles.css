@@ -12,7 +12,6 @@
   min-height: 180px;
   overflow: hidden;
 }
-
 .local-course-banner-builder-preview-opacity-panel {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 4.5rem;
@@ -87,12 +86,21 @@
 }
 
 .local-course-banner-builder-image-options-side-panel,
-.local-course-banner-builder-border-style-side-panel {
+.local-course-banner-builder-border-style-side-panel,
+.local-course-banner-builder-overlay-style-side-panel {
   max-height: none;
   overflow: visible;
 }
 
-.local-course-banner-builder-image-options-side-panel > summary {
+.local-course-banner-builder-image-options-side-panel.is-collapsed,
+.local-course-banner-builder-border-style-side-panel.is-collapsed,
+.local-course-banner-builder-overlay-style-side-panel.is-collapsed {
+  max-height: 0;
+  overflow: hidden;
+}
+
+.local-course-banner-builder-image-options-side-panel > summary,
+.local-course-banner-builder-overlay-style-side-panel > summary {
   display: none !important;
 }
 
@@ -109,7 +117,14 @@
 .local-course-banner-builder-border-style-side-panel #fitem_id_borderenabled_existing_notice,
 .local-course-banner-builder-border-style-side-panel [data-toggle-button-for="#id_borderenabled"],
 .local-course-banner-builder-border-style-side-panel [data-toggle-button-host-for="#id_borderenabled"],
-.local-course-banner-builder-border-style-side-panel .local-course-banner-builder-toggle-button-source {
+.local-course-banner-builder-border-style-side-panel .local-course-banner-builder-toggle-button-source,
+.local-course-banner-builder-overlay-style-side-panel > summary,
+.local-course-banner-builder-overlay-style-side-panel #fitem_id_overlayenabled,
+.local-course-banner-builder-overlay-style-side-panel [id^=fitem_id_overlayenabled],
+.local-course-banner-builder-overlay-style-side-panel [id^=fitem_id_overlaytitleabove],
+.local-course-banner-builder-overlay-style-side-panel [id^=fitem_id_overlayborderabove],
+.local-course-banner-builder-overlay-style-side-panel label.form-check:has(#id_overlaytitleabove),
+.local-course-banner-builder-overlay-style-side-panel label.form-check:has(#id_overlayborderabove) {
   display: none !important;
 }
 .local-course-banner-builder-image-options-side-panel .fitem,
@@ -119,7 +134,11 @@
 .local-course-banner-builder-border-style-side-panel .fitem,
 .local-course-banner-builder-border-style-side-panel .form-group,
 .local-course-banner-builder-border-style-side-panel .mb-3,
-.local-course-banner-builder-border-style-side-panel .row {
+.local-course-banner-builder-border-style-side-panel .row,
+.local-course-banner-builder-overlay-style-side-panel .fitem,
+.local-course-banner-builder-overlay-style-side-panel .form-group,
+.local-course-banner-builder-overlay-style-side-panel .mb-3,
+.local-course-banner-builder-overlay-style-side-panel .row {
   display: grid;
   grid-template-columns: 1fr;
   width: 100%;
@@ -133,7 +152,10 @@
 .local-course-banner-builder-image-options-side-panel .col-md-3,
 .local-course-banner-builder-border-style-side-panel .col-form-label,
 .local-course-banner-builder-border-style-side-panel label,
-.local-course-banner-builder-border-style-side-panel .col-md-3 {
+.local-course-banner-builder-border-style-side-panel .col-md-3,
+.local-course-banner-builder-overlay-style-side-panel .col-form-label,
+.local-course-banner-builder-overlay-style-side-panel label,
+.local-course-banner-builder-overlay-style-side-panel .col-md-3 {
   display: block;
   grid-column: 1/-1;
   width: 100%;
@@ -147,7 +169,9 @@
 .local-course-banner-builder-image-options-side-panel .col-md-9,
 .local-course-banner-builder-image-options-side-panel .felement,
 .local-course-banner-builder-border-style-side-panel .col-md-9,
-.local-course-banner-builder-border-style-side-panel .felement {
+.local-course-banner-builder-border-style-side-panel .felement,
+.local-course-banner-builder-overlay-style-side-panel .col-md-9,
+.local-course-banner-builder-overlay-style-side-panel .felement {
   display: block;
   grid-column: 1/-1;
   width: 100%;
@@ -155,11 +179,13 @@
   padding: 0;
 }
 .local-course-banner-builder-image-options-side-panel .local-course-banner-builder-modal-side-target-hidden,
-.local-course-banner-builder-border-style-side-panel .local-course-banner-builder-modal-side-target-hidden {
+.local-course-banner-builder-border-style-side-panel .local-course-banner-builder-modal-side-target-hidden,
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-modal-side-target-hidden {
   display: none !important;
 }
 .local-course-banner-builder-image-options-side-panel .local-course-banner-builder-linked-range-wrapper,
-.local-course-banner-builder-border-style-side-panel .local-course-banner-builder-linked-range-wrapper {
+.local-course-banner-builder-border-style-side-panel .local-course-banner-builder-linked-range-wrapper,
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-linked-range-wrapper {
   display: grid !important;
   grid-template-columns: minmax(0, 1fr) 3.6rem 4.35rem !important;
   gap: 0.4rem;
@@ -167,11 +193,13 @@
   width: 100%;
 }
 .local-course-banner-builder-image-options-side-panel .local-course-banner-builder-linked-range-wrapper > input[type=range],
-.local-course-banner-builder-border-style-side-panel .local-course-banner-builder-linked-range-wrapper > input[type=range] {
+.local-course-banner-builder-border-style-side-panel .local-course-banner-builder-linked-range-wrapper > input[type=range],
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-linked-range-wrapper > input[type=range] {
   min-width: 0;
 }
 .local-course-banner-builder-image-options-side-panel .local-course-banner-builder-linked-range-wrapper > input[type=number],
-.local-course-banner-builder-border-style-side-panel .local-course-banner-builder-linked-range-wrapper > input[type=number] {
+.local-course-banner-builder-border-style-side-panel .local-course-banner-builder-linked-range-wrapper > input[type=number],
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-linked-range-wrapper > input[type=number] {
   min-width: 0;
   width: 100%;
   padding-right: 0.35rem;
@@ -181,7 +209,9 @@
 .local-course-banner-builder-image-options-side-panel .local-course-banner-builder-range-output,
 .local-course-banner-builder-image-options-side-panel .theme-easyedu-range-output,
 .local-course-banner-builder-border-style-side-panel .local-course-banner-builder-range-output,
-.local-course-banner-builder-border-style-side-panel .theme-easyedu-range-output {
+.local-course-banner-builder-border-style-side-panel .theme-easyedu-range-output,
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-range-output,
+.local-course-banner-builder-overlay-style-side-panel .theme-easyedu-range-output {
   min-width: 0;
   color: var(--bs-secondary-color, #6c757d);
   font-size: 0.82rem;
@@ -195,7 +225,11 @@
 .local-course-banner-builder-border-style-side-panel input[type=range],
 .local-course-banner-builder-border-style-side-panel .form-control,
 .local-course-banner-builder-border-style-side-panel .custom-select,
-.local-course-banner-builder-border-style-side-panel select {
+.local-course-banner-builder-border-style-side-panel select,
+.local-course-banner-builder-overlay-style-side-panel input[type=range],
+.local-course-banner-builder-overlay-style-side-panel .form-control,
+.local-course-banner-builder-overlay-style-side-panel .custom-select,
+.local-course-banner-builder-overlay-style-side-panel select {
   max-width: 100%;
   min-width: 0;
 }
@@ -204,7 +238,10 @@
 .local-course-banner-builder-image-options-side-panel .local-course-banner-builder-slideshow-color-input,
 .local-course-banner-builder-border-style-side-panel input[type=color],
 .local-course-banner-builder-border-style-side-panel .local-course-banner-builder-color-input,
-.local-course-banner-builder-border-style-side-panel .local-course-banner-builder-slideshow-color-input {
+.local-course-banner-builder-border-style-side-panel .local-course-banner-builder-slideshow-color-input,
+.local-course-banner-builder-overlay-style-side-panel input[type=color],
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-color-input,
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-slideshow-color-input {
   width: 100%;
   min-height: 2.25rem;
 }
@@ -213,17 +250,22 @@
 .local-course-banner-builder-image-options-side-panel input[type=text][data-hex-source],
 .local-course-banner-builder-border-style-side-panel input[type=text].local-course-banner-builder-hex-input,
 .local-course-banner-builder-border-style-side-panel input[type=text].local-course-banner-builder-slideshow-hex-input,
-.local-course-banner-builder-border-style-side-panel input[type=text][data-hex-source] {
+.local-course-banner-builder-border-style-side-panel input[type=text][data-hex-source],
+.local-course-banner-builder-overlay-style-side-panel input[type=text].local-course-banner-builder-hex-input,
+.local-course-banner-builder-overlay-style-side-panel input[type=text].local-course-banner-builder-slideshow-hex-input,
+.local-course-banner-builder-overlay-style-side-panel input[type=text][data-hex-source] {
   width: 100%;
   margin-top: 0.35rem;
 }
 .local-course-banner-builder-image-options-side-panel .btn-group,
-.local-course-banner-builder-border-style-side-panel .btn-group {
+.local-course-banner-builder-border-style-side-panel .btn-group,
+.local-course-banner-builder-overlay-style-side-panel .btn-group {
   display: inline-flex;
   width: 100%;
 }
 .local-course-banner-builder-image-options-side-panel .btn-group > .btn,
-.local-course-banner-builder-border-style-side-panel .btn-group > .btn {
+.local-course-banner-builder-border-style-side-panel .btn-group > .btn,
+.local-course-banner-builder-overlay-style-side-panel .btn-group > .btn {
   flex: 1 1 0;
   min-width: 0;
 }
@@ -765,7 +807,7 @@
 .local-course-banner-builder-banner-title-overlay--highlight-frame > br {
   display: block;
   content: "";
-  margin-bottom: 0.14em;
+  margin-bottom: var(--local-course-banner-builder-inline-frame-gap, 0.14em);
 }
 
 .local-course-banner-builder-banner-title-overlay--highlight-frame {
@@ -773,7 +815,22 @@
   border: 0 !important;
   padding: 0 !important;
   box-shadow: none !important;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--local-course-banner-builder-inline-frame-gap, 0.14em);
   white-space: pre-wrap;
+  line-height: 1 !important;
+}
+
+.local-course-banner-builder-banner-title-overlay--highlight-frame > span {
+  line-height: 1 !important;
+}
+
+.local-course-banner-builder-banner-title-overlay--highlight-frame > br {
+  display: none !important;
+  margin: 0 !important;
 }
 
 .local-course-banner-builder-banner-overlay-layer,
@@ -870,7 +927,7 @@
 .local-course-banner-builder-title-preview-text [data-title-preview-label="1"] > br {
   display: block;
   content: "";
-  margin-bottom: 0.14em;
+  margin-bottom: var(--local-course-banner-builder-inline-frame-gap, 0.14em);
 }
 
 .local-course-banner-builder-title-preview-text--highlight-frame {
@@ -878,6 +935,29 @@
   border: 0 !important;
   box-shadow: none !important;
   padding: 0 !important;
+  line-height: 1 !important;
+}
+
+.local-course-banner-builder-title-preview-text--highlight-frame [data-title-preview-label="1"],
+.local-course-banner-builder-title-preview-text--highlight-frame [data-title-preview-label="1"] > span,
+.local-course-banner-builder-title-preview-text--highlight-frame [data-layer-overlay-title-label="1"],
+.local-course-banner-builder-title-preview-text--highlight-frame [data-layer-overlay-title-label="1"] > span {
+  line-height: 1 !important;
+}
+
+.local-course-banner-builder-title-preview-text--highlight-frame [data-title-preview-label="1"],
+.local-course-banner-builder-title-preview-text--highlight-frame [data-layer-overlay-title-label="1"] {
+  display: inline-flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--local-course-banner-builder-inline-frame-gap, 0.14em);
+}
+
+.local-course-banner-builder-title-preview-text--highlight-frame [data-title-preview-label="1"] > br,
+.local-course-banner-builder-title-preview-text--highlight-frame [data-layer-overlay-title-label="1"] > br {
+  display: none !important;
+  margin: 0 !important;
 }
 
 .local-course-banner-builder-title-preview-text.local-course-banner-builder-slideshow-preview-draggable--selected {
@@ -1573,6 +1653,51 @@ img.local-course-banner-builder-course-card-thumb {
   font-size: 0.78rem;
 }
 
+.local-course-banner-builder-admin-layer-visual {
+  width: min(7rem, 100%);
+  min-width: 0;
+}
+
+.local-course-banner-builder-layer-render-cell {
+  text-align: center;
+}
+
+.local-course-banner-builder-layer-render-cell .local-course-banner-builder-admin-layer-visual,
+.local-course-banner-builder-layer-render-cell .local-course-banner-builder-admin-preview {
+  margin-inline: auto;
+}
+
+.local-course-banner-builder-layer-render-cell .local-course-banner-builder-admin-preview {
+  width: min(7rem, 100%);
+}
+
+.local-course-banner-builder-chain-layer-label {
+  display: block;
+  margin-left: 1.85rem;
+  font-size: 0.76rem;
+  line-height: 1.2;
+  color: #64748b;
+}
+
+.local-course-banner-builder-admin-layer-visual .local-course-banner-builder-border-preview-frame,
+.local-course-banner-builder-admin-layer-overlay-frame {
+  position: relative;
+  container-type: size;
+  width: 100%;
+  aspect-ratio: 1/1;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  border-radius: 0.35rem;
+  background: linear-gradient(45deg, rgba(148, 163, 184, 0.12) 25%, transparent 25%), linear-gradient(-45deg, rgba(148, 163, 184, 0.12) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(148, 163, 184, 0.12) 75%), linear-gradient(-45deg, transparent 75%, rgba(148, 163, 184, 0.12) 75%);
+  background-position: 0 0, 0 0.35rem, 0.35rem -0.35rem, -0.35rem 0;
+  background-size: 0.7rem 0.7rem;
+}
+
+.local-course-banner-builder-admin-layer-overlay-frame .local-course-banner-builder-banner-overlay-layer {
+  position: absolute;
+  inset: 0;
+}
+
 #fitem_id_borderenabled .felement,
 #fitem_id_borderenabled .col-md-9,
 .modal #fitem_id_borderenabled .felement,
@@ -1875,7 +2000,8 @@ img.local-course-banner-builder-course-card-thumb {
   position: relative;
 }
 
-.local-course-banner-builder-layer-row--border .local-course-banner-builder-lock-help--border {
+.local-course-banner-builder-layer-row--border .local-course-banner-builder-lock-help--border,
+.local-course-banner-builder-layer-row--border .local-course-banner-builder-lock-help--overlay {
   position: absolute;
   top: 0.45rem;
   left: 0.85rem;
@@ -2573,6 +2699,70 @@ img.local-course-banner-builder-course-card-thumb {
   margin-left: auto;
 }
 
+#local-course-banner-builder-add-layer-modal .modal-content {
+  position: relative;
+}
+
+.local-course-banner-builder-layer-modal-drop-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px dashed rgba(15, 108, 191, 0.78);
+  border-radius: inherit;
+  background: rgba(15, 108, 191, 0.1);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.14s ease, visibility 0.14s ease, background-color 0.14s ease;
+}
+
+.local-course-banner-builder-layer-modal-drop-overlay.is-visible {
+  opacity: 1;
+  visibility: visible;
+  background: rgba(15, 108, 191, 0.16);
+}
+
+.local-course-banner-builder-layer-modal-drop-plus {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 5.5rem;
+  height: 5.5rem;
+  border-radius: 999px;
+  background: var(--bs-primary, #0f6cbf);
+  color: #fff;
+  font-size: 0;
+  line-height: 1;
+  box-shadow: 0 0.8rem 2rem rgba(15, 108, 191, 0.28);
+  transform: scale(0.92);
+  transition: transform 0.14s ease;
+}
+
+.local-course-banner-builder-layer-modal-drop-plus::before,
+.local-course-banner-builder-layer-modal-drop-plus::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2.35rem;
+  height: 0.42rem;
+  border-radius: 999px;
+  background: currentColor;
+  transform: translate(-50%, -50%);
+}
+
+.local-course-banner-builder-layer-modal-drop-plus::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.local-course-banner-builder-layer-modal-drop-overlay.is-visible .local-course-banner-builder-layer-modal-drop-plus {
+  transform: scale(1);
+}
+
 .modal #fitem_id_borderstyle .custom-select {
   margin-top: 0 !important;
 }
@@ -3145,9 +3335,16 @@ button[data-toggler=drawers][data-target=theme_boost-drawers-blocks] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 0.95rem;
-  height: 0.95rem;
-  border-radius: 999px;
+  flex: 0 0 1rem;
+  width: 1rem !important;
+  min-width: 1rem !important;
+  max-width: 1rem !important;
+  height: 1rem !important;
+  min-height: 1rem !important;
+  max-height: 1rem !important;
+  aspect-ratio: 1/1;
+  padding: 0 !important;
+  border-radius: 50% !important;
   background: var(--bs-info, #008196);
   color: #fff;
   font-size: 0.62rem;
@@ -3943,7 +4140,9 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 }
 
 .local-course-banner-builder-source-preview-layer--disabled,
-.local-course-banner-builder-source-preview-border--disabled {
+.local-course-banner-builder-source-preview-border--disabled,
+.local-course-banner-builder-source-preview-overlay--disabled,
+.local-course-banner-builder-source-preview-title--disabled {
   display: none !important;
 }
 
@@ -3954,7 +4153,9 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 }
 
 .local-course-banner-builder-source-preview-layer--hidden-inherited,
-.local-course-banner-builder-source-preview-border--hidden-inherited {
+.local-course-banner-builder-source-preview-border--hidden-inherited,
+.local-course-banner-builder-source-preview-overlay--hidden-inherited,
+.local-course-banner-builder-source-preview-title--hidden-inherited {
   display: none !important;
 }
 
@@ -4050,6 +4251,19 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
   box-shadow: none;
 }
 
+.local-course-banner-builder-preview-selection-outline {
+  position: absolute;
+  z-index: 9200;
+  border: 3px solid rgba(15, 108, 191, 0.92);
+  border-radius: 0.5rem;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.72);
+  pointer-events: none;
+}
+
+.local-course-banner-builder-title-preview-context-layer {
+  pointer-events: none;
+}
+
 .local-course-banner-builder-source-preview-layer--selected .local-course-banner-builder-preview-resize-handle {
   opacity: 1;
   pointer-events: auto;
@@ -4126,7 +4340,9 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
   outline: none;
 }
 
-.local-course-banner-builder-source-preview-panel[data-preview-border-hidden="1"] .local-course-banner-builder-source-preview-border {
+.local-course-banner-builder-source-preview-panel[data-preview-border-hidden="1"] .local-course-banner-builder-source-preview-border,
+.local-course-banner-builder-source-preview-panel[data-preview-border-hidden="1"] .local-course-banner-builder-source-preview-overlay,
+.local-course-banner-builder-source-preview-panel[data-preview-border-hidden="1"] .local-course-banner-builder-source-preview-title {
   display: none;
 }
 
@@ -4136,12 +4352,28 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
   pointer-events: auto;
 }
 
-.local-course-banner-builder-preview-image-layer[data-preview-draft-selection-overlay="1"] {
-  z-index: 9000 !important;
+.local-course-banner-builder-preview-draft-layer[data-preview-draft-active-shell="1"] {
+  pointer-events: none;
+  cursor: move;
+  opacity: 1;
 }
 
-.local-course-banner-builder-preview-image-layer[data-preview-draft-selection-overlay="1"] > .local-course-banner-builder-preview-image {
-  opacity: 0;
+.local-course-banner-builder-preview-draft-layer[data-preview-draft-active-shell="1"] > .local-course-banner-builder-preview-image {
+  pointer-events: none;
+}
+
+.local-course-banner-builder-preview-image-layer--current[data-preview-draft-selection-overlay="1"] {
+  z-index: 9100 !important;
+}
+
+.local-course-banner-builder-preview-image-layer--current[data-preview-draft-selection-overlay="1"]:not(.local-course-banner-builder-preview-image-layer--crop-editing) > .local-course-banner-builder-preview-image {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+.local-course-banner-builder-preview-draft-layer[data-preview-draft-active-shell-disabled="1"] {
+  pointer-events: none !important;
+  cursor: default;
 }
 
 .local-course-banner-builder-preview-recenter {
@@ -4305,12 +4537,18 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 .local-course-banner-builder-crop-editor {
   position: absolute;
   inset: 0;
-  z-index: 12;
+  z-index: 5200;
   pointer-events: auto;
 }
 
 .local-course-banner-builder-preview-image-layer--crop-editing {
   overflow: visible !important;
+}
+
+.local-course-banner-builder-preview-image-layer--crop-editing > .local-course-banner-builder-preview-resize-handle,
+.local-course-banner-builder-preview-image-layer--crop-editing > .local-course-banner-builder-preview-aspect-lock {
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 .local-course-banner-builder-crop-box {
@@ -4326,10 +4564,11 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 
 .local-course-banner-builder-crop-actions {
   position: absolute;
-  top: 0.35rem;
-  right: 0.35rem;
-  z-index: 2;
+  top: var(--local-course-banner-builder-crop-actions-top, 50%);
+  left: var(--local-course-banner-builder-crop-actions-left, calc(100% - 2.5rem));
+  z-index: 3;
   display: inline-flex;
+  flex-direction: column;
   gap: 0.35rem;
   pointer-events: auto;
 }
@@ -5002,6 +5241,41 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
   width: 15% !important;
 }
 
+.local-course-banner-builder-admin--native .table-responsive > .local-course-banner-builder-layer-table colgroup col:nth-child(1),
+.local-course-banner-builder-admin--native .local-course-banner-builder-chain-table > .generaltable colgroup col:nth-child(1) {
+  width: 8% !important;
+}
+
+.local-course-banner-builder-admin--native .table-responsive > .local-course-banner-builder-layer-table colgroup col:nth-child(2),
+.local-course-banner-builder-admin--native .local-course-banner-builder-chain-table > .generaltable colgroup col:nth-child(2) {
+  width: 6% !important;
+}
+
+.local-course-banner-builder-admin--native .table-responsive > .local-course-banner-builder-layer-table colgroup col:nth-child(3),
+.local-course-banner-builder-admin--native .local-course-banner-builder-chain-table > .generaltable colgroup col:nth-child(3) {
+  width: 18% !important;
+}
+
+.local-course-banner-builder-admin--native .table-responsive > .local-course-banner-builder-layer-table colgroup col:nth-child(4),
+.local-course-banner-builder-admin--native .local-course-banner-builder-chain-table > .generaltable colgroup col:nth-child(4) {
+  width: 7% !important;
+}
+
+.local-course-banner-builder-admin--native .table-responsive > .local-course-banner-builder-layer-table colgroup col:nth-child(5),
+.local-course-banner-builder-admin--native .local-course-banner-builder-chain-table > .generaltable colgroup col:nth-child(5) {
+  width: 24% !important;
+}
+
+.local-course-banner-builder-admin--native .table-responsive > .local-course-banner-builder-layer-table colgroup col:nth-child(6),
+.local-course-banner-builder-admin--native .local-course-banner-builder-chain-table > .generaltable colgroup col:nth-child(6) {
+  width: 11rem !important;
+}
+
+.local-course-banner-builder-admin--native .table-responsive > .local-course-banner-builder-layer-table colgroup col:nth-child(7),
+.local-course-banner-builder-admin--native .local-course-banner-builder-chain-table > .generaltable colgroup col:nth-child(7) {
+  width: 20% !important;
+}
+
 .local-course-banner-builder-configured-sources-table td:nth-child(8) .local-course-banner-builder-thumb-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 56px));
@@ -5170,7 +5444,29 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 }
 
 .local-course-banner-builder-admin--native .local-course-banner-builder-layer-table {
-  min-width: 54rem;
+  min-width: 48rem;
+  table-layout: fixed;
+}
+
+.local-course-banner-builder-admin--native .local-course-banner-builder-layer-table th:nth-child(6),
+.local-course-banner-builder-admin--native .local-course-banner-builder-layer-table td:nth-child(6),
+.local-course-banner-builder-admin--native .local-course-banner-builder-chain-table .generaltable td:nth-child(6) {
+  width: 11rem !important;
+  min-width: 11rem !important;
+  max-width: 11rem !important;
+  padding-left: 0.35rem;
+  padding-right: 0.35rem;
+}
+
+.local-course-banner-builder-admin--native .local-course-banner-builder-layer-render-heading {
+  white-space: normal;
+  text-align: center;
+}
+
+.local-course-banner-builder-admin--native .local-course-banner-builder-layer-render-cell .local-course-banner-builder-admin-layer-visual,
+.local-course-banner-builder-admin--native .local-course-banner-builder-layer-render-cell .local-course-banner-builder-admin-preview {
+  width: 148px;
+  max-width: 100%;
 }
 
 .local-course-banner-builder-admin--native .local-course-banner-builder-layer-actions-cell .btn,
@@ -5594,6 +5890,27 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
   min-height: 0;
   height: auto;
   margin: 0 auto;
+}
+
+.local-course-banner-builder-layer-overlay-slideshow-preview {
+  position: absolute;
+  inset: 0;
+  z-index: 3020;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  aspect-ratio: auto;
+  border: 0;
+  border-radius: inherit;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+.local-course-banner-builder-layer-overlay-slideshow-preview .local-course-banner-builder-slideshow-admin-preview-content,
+.local-course-banner-builder-layer-overlay-slideshow-preview .local-course-banner-builder-slideshow-labels,
+.local-course-banner-builder-layer-overlay-slideshow-preview .local-course-banner-builder-slideshow-action {
+  pointer-events: none;
 }
 
 .local-course-banner-builder-slideshow-admin-preview-backdrop {
@@ -6048,6 +6365,124 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
   width: 100%;
 }
 
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-slideshow-side-title,
+.local-course-banner-builder-overlay-style-side-panel label.local-course-banner-builder-slideshow-side-title {
+  display: block;
+  margin: 0.85rem 0 0.35rem;
+  font-weight: 700;
+}
+
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-slideshow-color-input {
+  width: 100%;
+  min-height: 2.45rem;
+  margin-bottom: 0.35rem;
+}
+
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-slideshow-hex-input {
+  width: 100%;
+  max-width: none;
+  margin-bottom: 0.5rem;
+}
+
+.local-course-banner-builder-overlay-appearance-controls {
+  display: contents;
+}
+
+.local-course-banner-builder-overlay-color-block {
+  grid-column: 1/-1;
+  width: 100%;
+  margin-bottom: 0.9rem;
+}
+
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-overlay-setting-title {
+  margin: 1rem 0 0.38rem;
+  font-weight: 700;
+}
+
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-overlay-setting-title:first-child,
+.local-course-banner-builder-overlay-style-side-panel [data-overlay-style-mode-wrap="1"] .local-course-banner-builder-slideshow-side-title:first-child {
+  margin-top: 0;
+}
+
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-title-color-field {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
+}
+
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-title-color-field .local-course-banner-builder-color-input {
+  flex: 0 0 3rem;
+  width: 3rem;
+  min-width: 0;
+  min-height: 2.45rem;
+  padding: 0.2rem;
+  margin: 0;
+}
+
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-title-color-field > input[type=text] {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  margin: 0;
+}
+
+.local-course-banner-builder-overlay-toggle-button {
+  justify-content: center;
+  width: 100%;
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+}
+
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-overlay-segmented-choice {
+  display: flex;
+  width: 100%;
+}
+
+.local-course-banner-builder-overlay-style-side-panel [data-overlay-style-mode-wrap="1"] {
+  margin-bottom: 1rem;
+}
+
+.local-course-banner-builder-overlay-style-side-panel [data-overlay-target-choice="1"] {
+  margin-top: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.local-course-banner-builder-overlay-style-side-panel [data-overlay-target-title="1"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.local-course-banner-builder-overlay-style-side-panel [data-overlay-target-title="1"] .local-course-banner-builder-table-help-icon {
+  flex: 0 0 auto;
+}
+
+.local-course-banner-builder-overlay-style-side-panel label[for=id_overlaytarget],
+.local-course-banner-builder-overlay-style-side-panel label[for=id_overlaybannercolor],
+.local-course-banner-builder-overlay-style-side-panel label[for=id_overlaybanneropacity],
+.local-course-banner-builder-overlay-style-side-panel [data-overlay-legacy-label="1"] {
+  display: none !important;
+}
+
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-overlay-segmented-choice > .btn {
+  flex: 1 1 0;
+  min-width: 0;
+  white-space: normal;
+}
+
+.local-course-banner-builder-overlay-style-side-panel .local-course-banner-builder-slideshow-enable-button {
+  justify-content: center;
+  width: 100%;
+}
+
+.local-course-banner-builder-layer-overlay-title-preview {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
 @media (max-width: 767.98px) {
   .local-course-banner-builder-slideshow-modal-body {
     padding-right: 1rem;
@@ -6321,6 +6756,12 @@ span[data-flexitour=container].orphan .modal-dialog {
 .local-course-banner-builder-admin--native .local-course-banner-builder-border-preview-frame--format-fullwidthtopcompact {
   aspect-ratio: 8/1;
   min-height: 0;
+}
+
+.local-course-banner-builder-admin--native .local-course-banner-builder-layer-render-cell .local-course-banner-builder-admin-layer-visual .local-course-banner-builder-border-preview-frame,
+.local-course-banner-builder-admin--native .local-course-banner-builder-layer-render-cell .local-course-banner-builder-admin-layer-overlay-frame {
+  aspect-ratio: 1/1 !important;
+  min-height: 0 !important;
 }
 
 .local-course-banner-builder-admin--native .local-course-banner-builder-toggle {

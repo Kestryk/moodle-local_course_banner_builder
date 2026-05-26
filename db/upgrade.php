@@ -707,5 +707,27 @@ function xmldb_local_course_banner_builder_upgrade(int $oldversion): bool {
         upgrade_plugin_savepoint(true, 2026042411, 'local', 'course_banner_builder');
     }
 
+    if ($oldversion < 2026042412) {
+        $table = new xmldb_table('local_course_banner_elements');
+        $fields = [
+            new xmldb_field('overlayenabled', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'borderinnerrounded'),
+            new xmldb_field('overlaytarget', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, 'both', 'overlayenabled'),
+            new xmldb_field('overlaybannercolor', XMLDB_TYPE_CHAR, '32', null, XMLDB_NOTNULL, null, '#000000', 'overlaytarget'),
+            new xmldb_field('overlaybanneropacity', XMLDB_TYPE_NUMBER, '10, 2', null, XMLDB_NOTNULL, null, '25', 'overlaybannercolor'),
+            new xmldb_field('overlayslideshowcolor', XMLDB_TYPE_CHAR, '32', null, XMLDB_NOTNULL, null, '#000000', 'overlaybanneropacity'),
+            new xmldb_field('overlayslideshowopacity', XMLDB_TYPE_NUMBER, '10, 2', null, XMLDB_NOTNULL, null, '38', 'overlayslideshowcolor'),
+            new xmldb_field('overlaytitleabove', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'overlayslideshowopacity'),
+            new xmldb_field('overlayborderabove', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'overlaytitleabove'),
+        ];
+
+        foreach ($fields as $field) {
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+
+        upgrade_plugin_savepoint(true, 2026042412, 'local', 'course_banner_builder');
+    }
+
     return true;
 }

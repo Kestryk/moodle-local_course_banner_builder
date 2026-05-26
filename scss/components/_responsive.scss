@@ -98,6 +98,14 @@ span[data-flexitour="container"].orphan .modal-dialog {
     min-height: 0;
 }
 
+.local-course-banner-builder-admin--native .local-course-banner-builder-layer-render-cell
+    .local-course-banner-builder-admin-layer-visual .local-course-banner-builder-border-preview-frame,
+.local-course-banner-builder-admin--native .local-course-banner-builder-layer-render-cell
+    .local-course-banner-builder-admin-layer-overlay-frame {
+    aspect-ratio: 1 / 1 !important;
+    min-height: 0 !important;
+}
+
 .local-course-banner-builder-admin--native .local-course-banner-builder-toggle {
     position: relative;
     display: inline-block;

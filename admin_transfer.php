@@ -30,6 +30,7 @@ require_once($CFG->libdir . '/adminlib.php');
 $action = optional_param('action', '', PARAM_ALPHA);
 $replaceall = optional_param('replaceall', 0, PARAM_BOOL);
 $exportsections = optional_param_array('exportsections', [], PARAM_ALPHAEXT);
+$importsections = optional_param_array('importsections', [], PARAM_ALPHAEXT);
 
 admin_externalpage_setup('local_course_banner_builder_transfer');
 require_capability('local/course_banner_builder:manage', context_system::instance());
@@ -58,7 +59,11 @@ if (optional_param('importconfig', 0, PARAM_BOOL) && confirm_sesskey()) {
                 is_uploaded_file($uploaded['tmp_name'])) {
             $filename = (string)($uploaded['name'] ?? '');
             if (strtolower(pathinfo($filename, PATHINFO_EXTENSION)) === 'zip') {
-                \local_course_banner_builder\manager::import_configuration_archive($uploaded['tmp_name'], (bool)$replaceall);
+                \local_course_banner_builder\manager::import_configuration_archive(
+                    $uploaded['tmp_name'],
+                    (bool)$replaceall,
+                    $importsections
+                );
             } else {
                 throw new coding_exception('Invalid course banner builder archive.');
             }
@@ -81,6 +86,7 @@ echo $OUTPUT->heading($exportoptionslabel, 3);
 echo html_writer::start_tag('form', ['method' => 'post', 'action' => $url->out(false), 'class' => 'mb-4']);
 echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]);
 echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'action', 'value' => 'export']);
+echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'exportsections[]', 'value' => '__submitted']);
 foreach (\local_course_banner_builder\manager::get_export_section_options() as $section => $label) {
     echo html_writer::div(
         html_writer::checkbox('exportsections[]', $section, true, $label),
@@ -105,6 +111,7 @@ echo html_writer::start_tag('form', [
 ]);
 echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]);
 echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'importconfig', 'value' => 1]);
+echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'importsections[]', 'value' => '__submitted']);
 echo html_writer::tag('label', $archiveuploadlabel, ['class' => 'form-label', 'for' => 'local-course-banner-builder-import-archive']);
 echo html_writer::empty_tag('input', [
     'type' => 'file',
@@ -114,6 +121,16 @@ echo html_writer::empty_tag('input', [
     'accept' => '.zip,application/zip',
 ]);
 echo html_writer::checkbox('replaceall', 1, (bool)$replaceall, get_string('importconfigreplaceall', 'local_course_banner_builder'));
+echo html_writer::div('', 'mb-3');
+$importoptionslabel = get_string_manager()->string_exists('importoptions', 'local_course_banner_builder') ?
+    get_string('importoptions', 'local_course_banner_builder') : 'Import options';
+echo $OUTPUT->heading($importoptionslabel, 4);
+foreach (\local_course_banner_builder\manager::get_export_section_options() as $section => $label) {
+    echo html_writer::div(
+        html_writer::checkbox('importsections[]', $section, true, $label),
+        'form-check mb-2'
+    );
+}
 echo html_writer::empty_tag('br');
 echo html_writer::empty_tag('input', [
     'type' => 'submit',
