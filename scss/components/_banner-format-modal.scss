@@ -145,12 +145,25 @@
     border-radius: 0;
 }
 
+.local-course-banner-builder-format-skeleton--fullwidthtopinset .local-course-banner-builder-format-skeleton-banner {
+    position: absolute;
+    top: 1.25rem;
+    right: 0.45rem;
+    left: 0.45rem;
+    height: 1.65rem;
+    border-radius: 0;
+}
+
 .local-course-banner-builder-format-skeleton--fullwidthtop .local-course-banner-builder-format-skeleton-title {
     margin-top: 3.55rem;
 }
 
 .local-course-banner-builder-format-skeleton--fullwidthtopcompact .local-course-banner-builder-format-skeleton-title {
     margin-top: 2.65rem;
+}
+
+.local-course-banner-builder-format-skeleton--fullwidthtopinset .local-course-banner-builder-format-skeleton-title {
+    margin-top: 3.08rem;
 }
 
 .local-course-banner-builder-format-skeleton-line {

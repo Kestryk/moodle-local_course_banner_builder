@@ -25,7 +25,7 @@ namespace local_course_banner_builder\local;
  */
 class usertours {
     /** @var int Shipped tour version. */
-    protected const TOUR_VERSION = 3;
+    protected const TOUR_VERSION = 4;
 
     /** @var string[] Tour package files. */
     protected const TOUR_FILES = [

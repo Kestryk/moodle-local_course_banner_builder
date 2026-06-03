@@ -147,7 +147,23 @@
     pointer-events: auto;
 }
 
-.local-course-banner-builder-thumb-crop-badge .fa {
+.local-course-banner-builder-thumb-above-border-badge {
+    color: #6d28d9;
+}
+
+.local-course-banner-builder-thumb-above-overlay-badge {
+    color: #0f766e;
+}
+
+.local-course-banner-builder-thumb-above-both-badge {
+    color: #7c3aed;
+}
+
+.local-course-banner-builder-thumb-crop-badge .fa,
+.local-course-banner-builder-thumb-center-fixed-badge .fa,
+.local-course-banner-builder-thumb-above-border-badge .fa,
+.local-course-banner-builder-thumb-above-overlay-badge .fa,
+.local-course-banner-builder-thumb-above-both-badge .fa {
     margin: 0;
     font-size: 0.78rem;
 }
@@ -504,11 +520,35 @@
 }
 
 .local-course-banner-builder-layer-row--border .local-course-banner-builder-lock-help--border,
-.local-course-banner-builder-layer-row--border .local-course-banner-builder-lock-help--overlay {
+.local-course-banner-builder-layer-row--border .local-course-banner-builder-lock-help--overlay,
+.local-course-banner-builder-layer-row--dynamic .local-course-banner-builder-lock-help--dynamic,
+.local-course-banner-builder-layer-row--above-overlay .local-course-banner-builder-lock-help--overlay-top,
+.local-course-banner-builder-layer-row--below-inherited .local-course-banner-builder-lock-help--below-inherited,
+.local-course-banner-builder-layer-row--above-inherited .local-course-banner-builder-lock-help--above-inherited {
     position: absolute;
     top: 0.45rem;
     left: 0.85rem;
     z-index: 2;
+}
+
+.local-course-banner-builder-lock-help--dynamic .fa {
+    color: #6d28d9;
+}
+
+.local-course-banner-builder-lock-help--overlay-top .fa {
+    color: #0f766e;
+}
+
+.local-course-banner-builder-lock-help--both-top .fa {
+    color: #7c2d12;
+}
+
+.local-course-banner-builder-lock-help--below-inherited .fa {
+    color: #334155;
+}
+
+.local-course-banner-builder-lock-help--above-inherited .fa {
+    color: #2563eb;
 }
 
 .local-course-banner-builder-drag-corner {
@@ -1215,6 +1255,12 @@
     margin-left: auto;
 }
 
+.modal #fitem_id_bannerimage_filemanager .local-course-banner-builder-filemanager-view-disabled {
+    pointer-events: none;
+    opacity: 0.42;
+    cursor: not-allowed;
+}
+
 #local-course-banner-builder-add-layer-modal .modal-content {
     position: relative;
 }
@@ -1396,6 +1442,8 @@
     gap: 0.28rem;
     width: min(100%, 1320px);
     margin: 0.22rem auto 0;
+    position: relative;
+    z-index: 35;
 }
 
 .local-course-banner-builder-source-preview-visibility-toggle-row + .local-course-banner-builder-source-preview-filmstrip {
@@ -1410,8 +1458,10 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 1.45rem;
-    height: 1.45rem;
+    width: 1.9rem;
+    height: 1.9rem;
+    min-width: 1.9rem;
+    min-height: 1.9rem;
     padding: 0;
     border-radius: 999px;
     border: 0;
@@ -1419,6 +1469,9 @@
     background: transparent;
     box-shadow: none;
     text-decoration: none;
+    position: relative;
+    z-index: 36;
+    pointer-events: auto;
 }
 
 .local-course-banner-builder-source-preview-visibility-toggle:hover,
@@ -1433,6 +1486,7 @@
     margin: 0;
     line-height: 1;
     font-size: 0.95rem;
+    pointer-events: none;
 }
 
 .local-course-banner-builder-source-preview-filmstrip-track {

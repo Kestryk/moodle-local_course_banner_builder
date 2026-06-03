@@ -36,6 +36,8 @@ class manage_banner_form extends \moodleform {
      * @return void
      */
     public function definition(): void {
+        global $SITE;
+
         $mform = $this->_form;
         $selectedcategoryid = (int)($this->_customdata['selectedcategoryid'] ?? 0);
         $filemanageroptions = $this->_customdata['filemanageroptions'] ?? [];
@@ -289,6 +291,38 @@ class manage_banner_form extends \moodleform {
             $mform->addHelpButton('dynamicimagesizeenabled', 'dynamicimagesizeenabled', 'local_course_banner_builder');
 
             $mform->addElement(
+            'advcheckbox',
+            'imagecenterfixed',
+            get_string('imagecenterfixed', 'local_course_banner_builder')
+            );
+            $mform->setDefault('imagecenterfixed', 0);
+            $mform->addHelpButton('imagecenterfixed', 'imagecenterfixed', 'local_course_banner_builder');
+
+            $mform->addElement(
+            'advcheckbox',
+            'imageaboveoverlayenabled',
+            get_string('imageaboveoverlayenabled', 'local_course_banner_builder')
+            );
+            $mform->setDefault('imageaboveoverlayenabled', 0);
+            $mform->addHelpButton('imageaboveoverlayenabled', 'imageaboveoverlayenabled', 'local_course_banner_builder');
+
+            $mform->addElement(
+            'advcheckbox',
+            'imagebelowinheritedenabled',
+            get_string('imagebelowinheritedenabled', 'local_course_banner_builder')
+            );
+            $mform->setDefault('imagebelowinheritedenabled', 0);
+            $mform->addHelpButton('imagebelowinheritedenabled', 'imagebelowinheritedenabled', 'local_course_banner_builder');
+
+            $mform->addElement(
+            'advcheckbox',
+            'imageaboveinheritedenabled',
+            get_string('imageaboveinheritedenabled', 'local_course_banner_builder')
+            );
+            $mform->setDefault('imageaboveinheritedenabled', 0);
+            $mform->addHelpButton('imageaboveinheritedenabled', 'imageaboveinheritedenabled', 'local_course_banner_builder');
+
+            $mform->addElement(
             'select',
             'positionanchor',
             get_string('positionanchor', 'local_course_banner_builder'),
@@ -378,14 +412,17 @@ class manage_banner_form extends \moodleform {
                 ((bool)get_config('local_course_banner_builder', 'bannertitle_course_enabled') ? 'course' : 'activity');
             $overlaydetailsattrs['data-overlay-title-preview-enabled'] =
                 (bool)get_config('local_course_banner_builder', 'bannertitle_' . $titlecontext . '_enabled') ? '1' : '0';
-            $overlaydetailsattrs['data-overlay-title-preview-text'] = get_string(
-                match ($titlecontext) {
-                    'site' => 'previewsitetitle',
-                    'activity' => 'previewactivitytitle',
-                    default => 'previewcoursetitle',
-                },
-                'local_course_banner_builder'
-            );
+            if ($titlecontext === 'site') {
+                $sitetitle = trim((string)($SITE->fullname ?? ''));
+                $overlaydetailsattrs['data-overlay-title-preview-text'] = $sitetitle === ''
+                    ? get_string('previewsitetitle', 'local_course_banner_builder')
+                    : $sitetitle;
+            } else {
+                $overlaydetailsattrs['data-overlay-title-preview-text'] = get_string(
+                    $titlecontext === 'activity' ? 'previewactivitytitle' : 'previewcoursetitle',
+                    'local_course_banner_builder'
+                );
+            }
             $titleprefix = 'bannertitle_' . $titlecontext . '_';
             $titlegetconfig = static function(string $name, $default) use ($titleprefix) {
                 $value = get_config('local_course_banner_builder', $titleprefix . $name);
@@ -405,14 +442,19 @@ class manage_banner_form extends \moodleform {
                 'enabled' => $titlebool('enabled', true),
                 'x' => $titlenum('x', 50, 0, 100),
                 'y' => $titlenum('y', 50, 0, 100),
-                'fontsize' => $titlenum('fontsize', 100, 25, 160),
-                'lineheight' => $titlenum('lineheight', 105, 80, 180),
+                'fontsize' => $titlenum('fontsize', 100, 25, 480),
+                'lineheight' => $titlenum('lineheight', 105, 40, 540),
                 'fontfamily' => (string)$titlegetconfig('fontfamily', ''),
                 'color' => $titlehex($titlegetconfig('color', '#FFFFFF')),
+                'align' => in_array((string)$titlegetconfig('align', 'center'), ['left', 'center', 'right'], true)
+                    ? (string)$titlegetconfig('align', 'center')
+                    : 'center',
                 'bold' => $titlebool('bold', true),
                 'italic' => $titlebool('italic'),
                 'underline' => $titlebool('underline'),
+                'strike' => $titlebool('strike'),
                 'allcaps' => $titlebool('allcaps'),
+                'aboveoverlay' => $titlebool('aboveoverlay', true),
                 'frameenabled' => $titlebool('frameenabled'),
                 'frametype' => in_array((string)$titlegetconfig('frametype', 'box'), ['box', 'highlight'], true)
                     ? (string)$titlegetconfig('frametype', 'box')
@@ -422,7 +464,7 @@ class manage_banner_form extends \moodleform {
                 'framebordercolor' => $titlehex($titlegetconfig('framebordercolor', '#FFFFFF')),
                 'frameborderwidth' => $titlenum('frameborderwidth', 0, 0, 10),
                 'frameradius' => $titlenum('frameradius', 12, 0, 80),
-                'framepadding' => $titlenum('framepadding', 18, 0, 80),
+                'framepadding' => $titlenum('framepadding', 18, 0, 240),
                 'frameshadowenabled' => $titlebool('frameshadowenabled'),
                 'frameshadowcolor' => $titlehex($titlegetconfig('frameshadowcolor', '#000000'), '#000000'),
                 'frameshadowopacity' => $titlenum('frameshadowopacity', 25, 0, 100),
@@ -903,6 +945,8 @@ class manage_banner_form extends \moodleform {
             [
                 'data-layer-overlay-preview' => '1',
                 'data-preview-current-overlay' => '1',
+                'data-preview-overlay-title-above' => !empty($currentlayer['overlaytitleabove']) ? '1' : '0',
+                'data-preview-overlay-border-above' => !empty($currentlayer['overlayborderabove']) ? '1' : '0',
                 'data-preview-sortorder' => (string)($currentlayer['sortorder'] ?? 0),
                 'data-preview-zindex' => (string)($currentlayer['zindex'] ?? (1000 + (int)($currentlayer['sortorder'] ?? 0))),
             ],
@@ -981,6 +1025,43 @@ class manage_banner_form extends \moodleform {
             'local-course-banner-builder-banner-preview-toolbar'
         );
         $previewvariant = $showmoodlepreview ? 'moodle' : 'easyedu';
+        $previewsource = null;
+        $sourcekey = trim((string)($this->_customdata['sourcekey'] ?? ''));
+        if ($sourcekey !== '') {
+            $previewsource = \local_course_banner_builder\manager::resolve_source($sourcekey);
+        }
+        if (!$previewsource && !empty($this->_customdata['issitebanneradmin'])) {
+            $previewsource = \local_course_banner_builder\manager::get_site_source();
+        }
+
+        $titlecontextdefinition = null;
+        if ($previewsource) {
+            $titlelayer = \local_course_banner_builder\manager::export_banner_title_preview_layer($previewsource);
+            if ($titlelayer) {
+                $titlecontextdefinition = [
+                    'text' => (string)($titlelayer['text'] ?? ''),
+                    'style' => (string)($titlelayer['style'] ?? ''),
+                    'framestyle' => (string)($titlelayer['framestyle'] ?? ''),
+                    'frametype' => (string)($titlelayer['frametype'] ?? 'box'),
+                    'zindex' => (int)($titlelayer['zindex'] ?? 3010),
+                ];
+            }
+        }
+        if ($titlecontextdefinition === null) {
+            foreach (($previewdefinition['contextlayers'] ?? []) as $layer) {
+                if (($layer['type'] ?? '') !== 'title') {
+                    continue;
+                }
+                $titlecontextdefinition = [
+                    'text' => (string)($layer['text'] ?? ''),
+                    'style' => (string)($layer['style'] ?? ''),
+                    'framestyle' => (string)($layer['framestyle'] ?? ''),
+                    'frametype' => (string)($layer['frametype'] ?? 'box'),
+                    'zindex' => (int)($layer['zindex'] ?? 3010),
+                ];
+                break;
+            }
+        }
         $previewactions = $showcurrentimage ? \html_writer::div(
             \html_writer::tag('button', get_string('recenterpreviewimage', 'local_course_banner_builder'), [
                 'type' => 'button',
@@ -1008,7 +1089,9 @@ class manage_banner_form extends \moodleform {
                 [
                     'data-border-preview' => $showcurrentborder ? '1' : '0',
                     'data-layer-banner-preview' => '1',
+                    'data-preview-source-context' => (string)($previewdefinition['sourcecontext'] ?? ''),
                     'data-default-fitmode' => (string)($previewdefinition['defaultfitmode'] ?? \local_course_banner_builder\manager::FIT_MODE_BANNER),
+                    'data-preview-title-context-definition' => $titlecontextdefinition ? json_encode($titlecontextdefinition) : '',
                 ]
             ) .
             $previewactions .
@@ -1053,6 +1136,8 @@ class manage_banner_form extends \moodleform {
                     'data-preview-context-layer' => '1',
                     'data-preview-layer-id' => (string)($layer['id'] ?? 0),
                     'data-preview-inherited' => !empty($layer['isinherited']) ? '1' : '0',
+                    'data-preview-overlay-title-above' => !empty($layer['overlaytitleabove']) ? '1' : '0',
+                    'data-preview-overlay-border-above' => !empty($layer['overlayborderabove']) ? '1' : '0',
                     'data-preview-sortorder' => (string)($layer['sortorder'] ?? 0),
                     'data-preview-zindex' => (string)($layer['zindex'] ?? (1000 + (int)($layer['sortorder'] ?? 0))),
                 ],
@@ -1411,6 +1496,10 @@ class manage_banner_form extends \moodleform {
             'data-preview-custom-height' => (string)($currentlayer['customheightpercent'] ?? 100),
             'data-preview-keep-aspect' => !empty($currentlayer['customsizekeepaspect']) ? '1' : '0',
             'data-preview-dynamic-image' => !empty($currentlayer['dynamicimagesizeenabled']) ? '1' : '0',
+            'data-preview-center-fixed' => !empty($currentlayer['imagecenterfixed']) ? '1' : '0',
+            'data-preview-above-overlay' => !empty($currentlayer['imageaboveoverlayenabled']) ? '1' : '0',
+            'data-preview-below-inherited' => !empty($currentlayer['imagebelowinheritedenabled']) ? '1' : '0',
+            'data-preview-above-inherited' => !empty($currentlayer['imageaboveinheritedenabled']) ? '1' : '0',
             'data-preview-image-opacity' => (string)($currentlayer['imageopacity'] ?? 100),
             'data-preview-crop-enabled' => !empty($currentlayer['imagecropenabled']) ? '1' : '0',
             'data-preview-crop-left' => (string)($currentlayer['imagecropleftpercent'] ?? 0),
@@ -1464,6 +1553,18 @@ class manage_banner_form extends \moodleform {
         $attributes['data-preview-zindex'] = (string)$zindex;
         if (!isset($attributes['data-preview-image-opacity'])) {
             $attributes['data-preview-image-opacity'] = (string)($layer['imageopacity'] ?? 100);
+        }
+        if (!isset($attributes['data-preview-above-overlay'])) {
+            $attributes['data-preview-above-overlay'] = !empty($layer['imageaboveoverlayenabled']) ? '1' : '0';
+        }
+        if (!isset($attributes['data-preview-below-inherited'])) {
+            $attributes['data-preview-below-inherited'] = !empty($layer['imagebelowinheritedenabled']) ? '1' : '0';
+        }
+        if (!isset($attributes['data-preview-above-inherited'])) {
+            $attributes['data-preview-above-inherited'] = !empty($layer['imageaboveinheritedenabled']) ? '1' : '0';
+        }
+        if (!isset($attributes['data-preview-center-fixed'])) {
+            $attributes['data-preview-center-fixed'] = !empty($layer['imagecenterfixed']) ? '1' : '0';
         }
         $attributes['data-preview-crop-enabled'] = !empty($layer['imagecropenabled']) ? '1' : '0';
         $attributes['data-preview-crop-left'] = (string)($layer['imagecropleftpercent'] ?? 0);

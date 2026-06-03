@@ -458,7 +458,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (format === 'standard') {
                 return 1.24;
             }
-            if (format === 'fullwidthtopcompact') {
+            if (format === 'fullwidthtopcompact' || format === 'fullwidthtopinset') {
                 if (kind === 'label') {
                     return 1;
                 }
@@ -579,9 +579,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     var slideshowPreviewDefaults = {
         label: {x: 14, y: 10},
-        title: {x: 50, y: 32},
-        body: {x: 50, y: 43},
-        action: {x: 50, y: 80}
+        title: {x: 50, y: 24},
+        body: {x: 50, y: 54},
+        action: {x: 50, y: 84}
     };
     var slideshowPreviewSelectionClass = 'local-course-banner-builder-slideshow-preview-draggable--selected';
     var slideshowPreviewDrag = null;
@@ -1238,6 +1238,7 @@ document.addEventListener('DOMContentLoaded', function() {
         preview.addEventListener('pointerdown', function(event) {
             var target = event.target.closest('[data-slideshow-preview-draggable]');
             if (!target) {
+                slideshowPreviewSelect(preview, '');
                 return;
             }
             event.preventDefault();
@@ -1845,6 +1846,15 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 ");
 
+$deleteallpluginsettings = optional_param('deleteallpluginsettings', 0, PARAM_BOOL);
+if ($deleteallpluginsettings && confirm_sesskey()) {
+    manager::delete_all_plugin_configuration();
+    redirect(
+        new moodle_url('/local/course_banner_builder/admin_slideshow.php'),
+        get_string('allpluginsettingsdeleted', 'local_course_banner_builder')
+    );
+}
+
 /**
  * Clean one bulk-posted slideshow form payload.
  *
@@ -1860,7 +1870,7 @@ function local_course_banner_builder_clean_slideshow_values(array $values): arra
         'labelbold', 'labelitalic', 'labelunderline', 'labelstrike', 'labelallcaps'] as $field) {
         $clean[$field] = empty($values[$field]) ? 0 : 1;
     }
-    foreach (['delay', 'overlayopacity', 'titlefontsize', 'bodyfontsize', 'actionsize', 'actionwidth',
+    foreach (['delay', 'maxslides', 'siteannouncementdays', 'overlayopacity', 'titlefontsize', 'bodyfontsize', 'actionsize', 'actionwidth',
         'actionheight', 'labelsize', 'labeltextsize',
         'actionopacity', 'actionborderwidth', 'actionradius', 'actionpadding',
         'actionshadowopacity', 'actionshadowblur', 'actionshadowdistance', 'actionshadowdirection',
@@ -1923,6 +1933,12 @@ if (optional_param('updateslideshow', 0, PARAM_BOOL) && confirm_sesskey()) {
             'quizzes' => optional_param('quizzes', 0, PARAM_BOOL),
             'autoplay' => optional_param('autoplay', 0, PARAM_BOOL),
             'delay' => optional_param('delay', manager::SLIDESHOW_DEFAULT_DELAY, PARAM_INT),
+            'maxslides' => optional_param('maxslides', manager::SLIDESHOW_DEFAULT_MAX_SLIDES, PARAM_INT),
+            'siteannouncementdays' => optional_param(
+                'siteannouncementdays',
+                manager::SLIDESHOW_DEFAULT_SITE_ANNOUNCEMENT_DAYS,
+                PARAM_INT
+            ),
             'arrows' => optional_param('arrows', 0, PARAM_BOOL),
             'dots' => optional_param('dots', 0, PARAM_BOOL),
             'overlaycolor' => $defaultoverlay
@@ -2137,6 +2153,7 @@ function local_course_banner_builder_render_slideshow_banner_format_modal(
             manager::BANNER_FORMAT_CONTENT_WIDE => 'bannerformat:contentwide_help',
             manager::BANNER_FORMAT_FULLWIDTH_TOP => 'bannerformat:fullwidthtop_help',
             manager::BANNER_FORMAT_FULLWIDTH_TOP_COMPACT => 'bannerformat:fullwidthtopcompact_help',
+            manager::BANNER_FORMAT_FULLWIDTH_TOP_INSET => 'bannerformat:fullwidthtopinset_help',
             default => 'bannerformat:standard_help',
         };
         $radioattrs = [
@@ -3041,9 +3058,14 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
                 html_writer::tag('p', get_string('slideshowpreviewmeta', 'local_course_banner_builder'), [
                     'class' => 'local-course-banner-builder-slideshow-meta',
                 ]) .
-                html_writer::tag('p', get_string('slideshowpreviewbody', 'local_course_banner_builder'), [
+                html_writer::tag('p',
+                    get_string('slideshowpreviewbody', 'local_course_banner_builder') .
+                        html_writer::empty_tag('br') .
+                        get_string('slideshowpreviewbodyline2', 'local_course_banner_builder'),
+                    [
                     'class' => 'local-course-banner-builder-slideshow-body',
-                ]) .
+                    ]
+                ) .
                     $resizehandles(),
                 'local-course-banner-builder-slideshow-body-block',
                 ['data-slideshow-preview-draggable' => 'body']
@@ -3883,10 +3905,10 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
         html_writer::div(
             html_writer::tag('button',
                 html_writer::tag('i', '', ['class' => 'fa fa-palette me-2', 'aria-hidden' => 'true']) .
-                    html_writer::span(get_string('slideshoweditappearance', 'local_course_banner_builder')),
+                    html_writer::span(get_string('slideshoweditappearancefor', 'local_course_banner_builder', $contextlabel)),
                 [
                     'type' => 'button',
-                    'class' => 'btn btn-outline-secondary local-course-banner-builder-compact-save-button',
+                    'class' => 'btn btn-primary local-course-banner-builder-slideshow-edit-appearance-button',
                     'data-toggle' => 'modal',
                     'data-bs-toggle' => 'modal',
                     'data-target' => '#' . $modalid,
@@ -3921,7 +3943,6 @@ function local_course_banner_builder_render_slideshow_form(string $context): str
 
     $content .= html_writer::start_div('local-course-banner-builder-slideshow-grid');
     $content .= html_writer::start_div('local-course-banner-builder-slideshow-section');
-    $content .= html_writer::tag('h4', get_string('slideshowdisplay', 'local_course_banner_builder'), ['class' => 'h6']);
     $content .= local_course_banner_builder_slideshow_toggle(
         'enabled',
         get_string('slideshowenabled', 'local_course_banner_builder'),
@@ -3970,7 +3991,6 @@ function local_course_banner_builder_render_slideshow_form(string $context): str
     $content .= html_writer::end_div();
 
     $content .= html_writer::start_div('local-course-banner-builder-slideshow-section');
-    $content .= html_writer::tag('h4', get_string('slideshowcontrols', 'local_course_banner_builder'), ['class' => 'h6']);
     $content .= local_course_banner_builder_slideshow_toggle(
         'autoplay',
         get_string('slideshowautoplay', 'local_course_banner_builder'),
@@ -3990,6 +4010,38 @@ function local_course_banner_builder_render_slideshow_form(string $context): str
     ]);
     $content .= html_writer::div(get_string('slideshowdelay_help', 'local_course_banner_builder'), 'form-text text-muted');
     $content .= html_writer::end_div();
+    $content .= html_writer::start_div('form-group local-course-banner-builder-slideshow-max-slides');
+    $content .= html_writer::tag('label', get_string('slideshowmaxslides', 'local_course_banner_builder'), [
+        'for' => 'slideshow-max-slides-' . $context,
+    ]);
+    $content .= html_writer::empty_tag('input', [
+        'type' => 'number',
+        'class' => 'form-control',
+        'id' => 'slideshow-max-slides-' . $context,
+        'name' => 'maxslides',
+        'min' => 1,
+        'max' => manager::SLIDESHOW_MAX_SLIDES,
+        'step' => 1,
+        'value' => (int)($config['maxslides'] ?? manager::SLIDESHOW_DEFAULT_MAX_SLIDES),
+    ]);
+    $content .= html_writer::div(get_string('slideshowmaxslides_help', 'local_course_banner_builder'), 'form-text text-muted');
+    $content .= html_writer::end_div();
+    $content .= html_writer::start_div('form-group local-course-banner-builder-slideshow-site-announcement-days');
+    $content .= html_writer::tag('label', get_string('slideshowsiteannouncementdays', 'local_course_banner_builder'), [
+        'for' => 'slideshow-site-announcement-days-' . $context,
+    ]);
+    $content .= html_writer::empty_tag('input', [
+        'type' => 'number',
+        'class' => 'form-control',
+        'id' => 'slideshow-site-announcement-days-' . $context,
+        'name' => 'siteannouncementdays',
+        'min' => 1,
+        'max' => 3650,
+        'step' => 1,
+        'value' => (int)($config['siteannouncementdays'] ?? manager::SLIDESHOW_DEFAULT_SITE_ANNOUNCEMENT_DAYS),
+    ]);
+    $content .= html_writer::div(get_string('slideshowsiteannouncementdays_help', 'local_course_banner_builder'), 'form-text text-muted');
+    $content .= html_writer::end_div();
     $content .= local_course_banner_builder_slideshow_toggle(
         'arrows',
         get_string('slideshowarrows', 'local_course_banner_builder'),
@@ -4003,13 +4055,12 @@ function local_course_banner_builder_render_slideshow_form(string $context): str
     $content .= html_writer::end_div();
     $content .= html_writer::end_div();
 
-    $content .= html_writer::tag('h4', get_string('slideshowoverlaysettings', 'local_course_banner_builder'), ['class' => 'h6 mt-3']);
     $content .= local_course_banner_builder_render_slideshow_overlay_settings($config, $context);
 
     $content .= html_writer::div(
         html_writer::tag('button',
             html_writer::tag('i', '', ['class' => 'fa fa-rotate-left me-2', 'aria-hidden' => 'true']) .
-                html_writer::span(get_string('slideshowdefaultsettings', 'local_course_banner_builder')),
+                html_writer::span(get_string('slideshowdefaultsettingsfor', 'local_course_banner_builder', $title)),
             [
                 'type' => 'submit',
                 'name' => 'defaultsettings',
@@ -4030,6 +4081,29 @@ function local_course_banner_builder_render_slideshow_form(string $context): str
 echo $OUTPUT->header();
 
 echo html_writer::start_div('local-course-banner-builder-admin local-course-banner-builder-admin--native local-course-banner-builder-slideshow-admin');
+$deletepluginsettingsform = html_writer::tag(
+    'form',
+    html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]) .
+    html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'deleteallpluginsettings', 'value' => 1]) .
+    html_writer::tag(
+        'button',
+        html_writer::tag('i', '', ['class' => 'fa fa-trash-can me-2', 'aria-hidden' => 'true']) .
+            html_writer::span(get_string('deleteallpluginsettings', 'local_course_banner_builder')),
+        [
+            'type' => 'submit',
+            'class' => 'btn btn-outline-danger local-course-banner-builder-dashed-action local-course-banner-builder-admin-reset-button',
+            'data-modal' => 'confirmation',
+            'data-modal-title' => get_string('confirm', 'moodle'),
+            'data-modal-content' => get_string('deleteallpluginsettingsconfirm', 'local_course_banner_builder'),
+            'data-modal-yes-button' => get_string('delete', 'moodle'),
+        ]
+    ),
+    [
+        'method' => 'post',
+        'action' => (new moodle_url('/local/course_banner_builder/admin_slideshow.php'))->out(false),
+        'class' => 'd-inline local-course-banner-builder-admin-reset-form',
+    ]
+);
 $courseformatmodal = local_course_banner_builder_render_slideshow_banner_format_modal(
     manager::SLIDESHOW_CONTEXT_COURSE,
     manager::get_course_banner_format()
@@ -4049,6 +4123,12 @@ echo html_writer::div(
         new moodle_url('/local/course_banner_builder/admin_site.php'),
         html_writer::tag('i', '', ['class' => 'fa fa-desktop me-2', 'aria-hidden' => 'true']) .
             html_writer::span(get_string('managesitebannerquick', 'local_course_banner_builder')),
+        ['class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action']
+    ) .
+    html_writer::link(
+        new moodle_url('/local/course_banner_builder/admin_transfer.php'),
+        html_writer::tag('i', '', ['class' => 'fa fa-right-left me-2', 'aria-hidden' => 'true']) .
+            html_writer::span(get_string('transferconfig', 'local_course_banner_builder')),
         ['class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action']
     ) .
     html_writer::tag(
@@ -4076,7 +4156,8 @@ echo html_writer::div(
             'data-bs-toggle' => 'modal',
             'data-bs-target' => '#local-course-banner-builder-slideshow-course-format-modal',
         ]
-    ),
+    ) .
+    $deletepluginsettingsform,
     'local-course-banner-builder-admin-switcher mb-3'
 );
 echo $siteformatmodal . $courseformatmodal;

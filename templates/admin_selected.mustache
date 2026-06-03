@@ -140,7 +140,7 @@
     {{/sourcevisualeditorhtml}}
     <div class="local-course-banner-builder-table-heading">
         <h3 class="h6 local-course-banner-builder-table-title">
-            {{#str}}sourcelayerslist, local_course_banner_builder{{/str}}
+            {{sourcelayerslistlabel}}
         </h3>
         <span class="local-course-banner-builder-table-heading-spacer" aria-hidden="true"></span>
     </div>
@@ -207,7 +207,7 @@
                         <th scope="col">{{#str}}actions, local_course_banner_builder{{/str}}</th>
                     </tr>
                 </thead>
-                <tbody class="local-course-banner-builder-layer-sortable" data-layer-sortable="{{#iscumulative}}1{{/iscumulative}}{{^iscumulative}}0{{/iscumulative}}">
+                <tbody class="local-course-banner-builder-layer-sortable" data-layer-sortable="{{#iscumulative}}1{{/iscumulative}}{{^iscumulative}}0{{/iscumulative}}" data-layer-sortable-sourcekey="{{sourcekey}}">
                     {{#elements}}
                         <tr class="{{rowclass}}" data-layer-row="1" {{#iscumulative}}{{#isreorderable}}draggable="true"{{/isreorderable}}{{/iscumulative}}>
                             <td class="local-course-banner-builder-layer-select-cell">
@@ -217,7 +217,7 @@
                                     {{/isreorderable}}
                                 {{/iscumulative}}
                                 {{#hasorderlockhelp}}
-                                <a class="btn btn-link p-0 icon-no-margin local-course-banner-builder-lock-help local-course-banner-builder-lock-help--{{#isborderlayer}}border{{/isborderlayer}}{{#isoverlaylayer}}overlay{{/isoverlaylayer}}{{#isdynamiclayer}}dynamic{{/isdynamiclayer}}"
+                                <a class="btn btn-link p-0 icon-no-margin local-course-banner-builder-lock-help{{#isborderlayer}} local-course-banner-builder-lock-help--border{{/isborderlayer}}{{#isoverlaylayer}} local-course-banner-builder-lock-help--overlay{{/isoverlaylayer}}{{#isdynamiclayer}} local-course-banner-builder-lock-help--dynamic{{/isdynamiclayer}}{{#isaboveoverlaylayer}} local-course-banner-builder-lock-help--overlay-top{{/isaboveoverlaylayer}}{{#isbelowinheritedlayer}} local-course-banner-builder-lock-help--below-inherited{{/isbelowinheritedlayer}}{{#isaboveinheritedlayer}} local-course-banner-builder-lock-help--above-inherited{{/isaboveinheritedlayer}}"
                                    role="button"
                                    data-container="body"
                                    data-toggle="popover"
@@ -227,7 +227,7 @@
                                    data-trigger="hover"
                                    tabindex="0"
                                    aria-label="{{orderlocklabel}}">
-                                <i class="icon fa fa-lock fa-fw" title="{{orderlocklabel}}" role="img" aria-label="{{orderlocklabel}}"></i>
+                                <i class="icon fa {{orderlockicon}} fa-fw" role="img" aria-label="{{orderlocklabel}}"></i>
                                 </a>
                                 {{/hasorderlockhelp}}
                                 <input class="local-course-banner-builder-layer-select" type="checkbox" name="selectedelements[]" value="{{id}}" form="local-course-banner-builder-bulk-delete">
@@ -320,20 +320,92 @@
                                             title="{{dynamiclabel}}"
                                             {{/isdynamiclayer}}>
                                             <img src="{{imageurl}}" alt="">
-                                            {{#iscroppedlayer}}
-                                                <span class="local-course-banner-builder-thumb-crop-badge"
-                                                    role="button"
-                                                    data-container="body"
-                                                    data-toggle="popover"
-                                                    data-placement="left"
-                                                    data-content="{{croppedpopovercontent}}"
-                                                    data-html="true"
-                                                    data-trigger="hover"
-                                                    tabindex="0"
-                                                    aria-label="{{croppedlabel}}">
-                                                    <i class="fa fa-crop" aria-hidden="true"></i>
-                                                </span>
-                                            {{/iscroppedlayer}}
+                                            <span class="local-course-banner-builder-thumb-badge-stack">
+                                                {{#iscroppedlayer}}
+                                                    <span class="local-course-banner-builder-thumb-status-badge local-course-banner-builder-thumb-crop-badge"
+                                                        role="button"
+                                                        data-container="body"
+                                                        data-toggle="popover"
+                                                        data-placement="left"
+                                                        data-content="{{croppedpopovercontent}}"
+                                                        data-html="true"
+                                                        data-trigger="hover"
+                                                        tabindex="0"
+                                                        aria-label="{{croppedlabel}}">
+                                                        <i class="fa fa-crop" aria-hidden="true"></i>
+                                                    </span>
+                                                {{/iscroppedlayer}}
+                                                {{#isdynamiclayer}}
+                                                    <span class="local-course-banner-builder-thumb-status-badge local-course-banner-builder-thumb-above-border-badge"
+                                                        role="button"
+                                                        data-container="body"
+                                                        data-toggle="popover"
+                                                        data-placement="left"
+                                                        data-content="{{aboveborderpopovercontent}}"
+                                                        data-html="true"
+                                                        data-trigger="hover"
+                                                        tabindex="0"
+                                                        aria-label="{{aboveborderlabel}}">
+                                                        <i class="fa fa-level-up" aria-hidden="true"></i>
+                                                    </span>
+                                                {{/isdynamiclayer}}
+                                                {{#isaboveoverlaylayer}}
+                                                    <span class="local-course-banner-builder-thumb-status-badge local-course-banner-builder-thumb-above-overlay-badge"
+                                                        role="button"
+                                                        data-container="body"
+                                                        data-toggle="popover"
+                                                        data-placement="left"
+                                                        data-content="{{aboveoverlaypopovercontent}}"
+                                                        data-html="true"
+                                                        data-trigger="hover"
+                                                        tabindex="0"
+                                                        aria-label="{{aboveoverlaylabel}}">
+                                                        <i class="fa fa-layer-group" aria-hidden="true"></i>
+                                                    </span>
+                                                {{/isaboveoverlaylayer}}
+                                                {{#isbelowinheritedlayer}}
+                                                    <span class="local-course-banner-builder-thumb-status-badge local-course-banner-builder-thumb-below-inherited-badge"
+                                                        role="button"
+                                                        data-container="body"
+                                                        data-toggle="popover"
+                                                        data-placement="left"
+                                                        data-content="{{belowinheritedpopovercontent}}"
+                                                        data-html="true"
+                                                        data-trigger="hover"
+                                                        tabindex="0"
+                                                        aria-label="{{belowinheritedlabel}}">
+                                                        <i class="fa fa-level-down" aria-hidden="true"></i>
+                                                    </span>
+                                                {{/isbelowinheritedlayer}}
+                                                {{#isaboveinheritedlayer}}
+                                                    <span class="local-course-banner-builder-thumb-status-badge local-course-banner-builder-thumb-above-inherited-badge"
+                                                        role="button"
+                                                        data-container="body"
+                                                        data-toggle="popover"
+                                                        data-placement="left"
+                                                        data-content="{{aboveinheritedpopovercontent}}"
+                                                        data-html="true"
+                                                        data-trigger="hover"
+                                                        tabindex="0"
+                                                        aria-label="{{aboveinheritedlabel}}">
+                                                        <i class="fa fa-layer-group" aria-hidden="true"></i>
+                                                    </span>
+                                                {{/isaboveinheritedlayer}}
+                                                {{#iscenterfixedlayer}}
+                                                    <span class="local-course-banner-builder-thumb-status-badge local-course-banner-builder-thumb-center-fixed-badge"
+                                                        role="button"
+                                                        data-container="body"
+                                                        data-toggle="popover"
+                                                        data-placement="left"
+                                                        data-content="{{centerfixedpopovercontent}}"
+                                                        data-html="true"
+                                                        data-trigger="hover"
+                                                        tabindex="0"
+                                                        aria-label="{{centerfixedlabel}}">
+                                                        <i class="fa fa-thumb-tack" aria-hidden="true"></i>
+                                                    </span>
+                                                {{/iscenterfixedlayer}}
+                                            </span>
                                         </div>
                                     {{/imageurl}}
                                     {{^imageurl}}
@@ -433,7 +505,7 @@
                                    data-trigger="hover"
                                    tabindex="0"
                                    aria-label="{{chainoverlaylayer.orderlocklabel}}">
-                                    <i class="icon fa fa-lock fa-fw" title="{{chainoverlaylayer.orderlocklabel}}" role="img" aria-label="{{chainoverlaylayer.orderlocklabel}}"></i>
+                                    <i class="icon fa fa-lock fa-fw" role="img" aria-label="{{chainoverlaylayer.orderlocklabel}}"></i>
                                 </a>
                                 <span class="local-course-banner-builder-chain-layer-label">{{chainoverlaylayer.actionlabel}}</span>
                             </td>
@@ -466,7 +538,7 @@
         {{/haschainoverlaylayer}}
         {{^haselements}}
             <p class="local-course-banner-builder-empty-layer-list text-muted mb-0">
-                {{#str}}nosourcelayers, local_course_banner_builder{{/str}}
+                {{nosourcelayerslabel}}
             </p>
         {{/haselements}}
         {{#haselements}}

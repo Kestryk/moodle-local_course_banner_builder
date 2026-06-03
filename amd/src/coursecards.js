@@ -551,7 +551,8 @@ define(['core/config'], function(Config) {
      */
     const getNativeBannerInsertionPoint = function(format) {
         const courseHeader = document.querySelector('#course-header');
-        if (courseHeader && format !== 'fullwidthtop' && format !== 'fullwidthtopcompact') {
+        if (courseHeader && format !== 'fullwidthtop' && format !== 'fullwidthtopcompact' &&
+                format !== 'fullwidthtopinset') {
             return {
                 element: courseHeader,
                 method: 'append'
@@ -562,7 +563,8 @@ define(['core/config'], function(Config) {
         if (pageHeader) {
             return {
                 element: pageHeader,
-                method: (format === 'fullwidthtop' || format === 'fullwidthtopcompact') ? 'beforebegin' : 'afterend'
+                method: (format === 'fullwidthtop' || format === 'fullwidthtopcompact' ||
+                    format === 'fullwidthtopinset') ? 'beforebegin' : 'afterend'
             };
         }
 
@@ -603,7 +605,9 @@ define(['core/config'], function(Config) {
             return;
         }
 
-        const format = ['contentwide', 'fullwidthtop', 'fullwidthtopcompact'].indexOf(options.bannerFormat) !== -1 ?
+        const format = ['contentwide', 'fullwidthtop', 'fullwidthtopcompact', 'fullwidthtopinset'].indexOf(
+            options.bannerFormat
+        ) !== -1 ?
             options.bannerFormat :
             'standard';
         const insertion = getNativeBannerInsertionPoint(format);

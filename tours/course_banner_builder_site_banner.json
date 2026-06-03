@@ -1,17 +1,17 @@
-﻿{
-  "name": "tour:sitebanner:name,local_course_banner_builder",
-  "description": "tour:sitebanner:description,local_course_banner_builder",
+{
+  "name": "Course Banner Builder - Site banner",
+  "description": "Complete guided tour for the site banner visual editor.",
   "pathmatch": "/local/course_banner_builder/admin_site.php%",
   "enabled": "1",
   "sortorder": "0",
   "endtourlabel": "",
   "configdata": "{\"placement\":\"bottom\",\"orphan\":\"1\",\"backdrop\":\"1\",\"reflex\":\"0\",\"showtourwhen\":\"1\"}",
   "displaystepnumbers": true,
-  "version": "2026042405",
+  "version": "2026060301",
   "steps": [
     {
-      "title": "tour:sitebanner:intro:title,local_course_banner_builder",
-      "content": "tour:sitebanner:intro:content,local_course_banner_builder",
+      "title": "Bannière de site",
+      "content": "<p>La bannière de site est une source unique utilisée pour la page d'accueil ou les espaces globaux du site. Elle ne suit pas la logique de catégories des cours.</p><p>Elle peut contenir des images, une bordure, un overlay et un titre de site.</p>",
       "contentformat": "1",
       "targettype": "2",
       "targetvalue": "",
@@ -19,8 +19,8 @@
       "configdata": "{\"placement\":\"bottom\"}"
     },
     {
-      "title": "tour:sitebanner:enable:title,local_course_banner_builder",
-      "content": "tour:sitebanner:enable:content,local_course_banner_builder",
+      "title": "Activer la bannière de site",
+      "content": "<p>Ce bouton active ou désactive l'affichage de la bannière de site. Les réglages restent sauvegardés même si l'affichage est désactivé.</p>",
       "contentformat": "1",
       "targettype": "0",
       "targetvalue": ".local-course-banner-builder-site-enable-button",
@@ -28,8 +28,8 @@
       "configdata": "{\"placement\":\"bottom\"}"
     },
     {
-      "title": "tour:sitebanner:format:title,local_course_banner_builder",
-      "content": "tour:sitebanner:format:content,local_course_banner_builder",
+      "title": "Format de la bannière de site",
+      "content": "<p>Le format définit la largeur, la hauteur et les marges du rendu de site. Il faut le choisir avant de positionner finement les images et le titre.</p><p>Les aperçus d'administration utilisent le même format pour éviter les écarts entre édition et rendu final.</p>",
       "contentformat": "1",
       "targettype": "0",
       "targetvalue": ".local-course-banner-builder-admin-format-button",
@@ -37,8 +37,8 @@
       "configdata": "{\"placement\":\"bottom\"}"
     },
     {
-      "title": "tour:sitebanner:settings:title,local_course_banner_builder",
-      "content": "tour:sitebanner:settings:content,local_course_banner_builder",
+      "title": "Paramètres de la source de site",
+      "content": "<p>Les paramètres de la source de site contrôlent la composition de la bannière de site, mais ils ne définissent pas l'overlay du diaporama.</p><p>L'overlay des diapositives de site est géré dans l'administration des diaporamas. Le calque overlay de site ne court-circuite donc pas le style du diaporama.</p>",
       "contentformat": "1",
       "targettype": "0",
       "targetvalue": ".local-course-banner-builder-settings-action",
@@ -46,8 +46,8 @@
       "configdata": "{\"placement\":\"bottom\"}"
     },
     {
-      "title": "tour:sitebanner:preview:title,local_course_banner_builder",
-      "content": "tour:sitebanner:preview:content,local_course_banner_builder",
+      "title": "Aperçu de la bannière de site",
+      "content": "<p>L'aperçu montre la bannière comme elle sera rendue sur le site : images, bordure, overlay, titre du site et diaporama si applicable.</p><p>Les boutons Show/Hide masquent temporairement les aides visuelles ou les éléments spéciaux pour travailler plus facilement.</p>",
       "contentformat": "1",
       "targettype": "0",
       "targetvalue": ".local-course-banner-builder-source-preview-panel",
@@ -55,12 +55,39 @@
       "configdata": "{\"placement\":\"top\"}"
     },
     {
-      "title": "tour:sitebanner:layers:title,local_course_banner_builder",
-      "content": "tour:sitebanner:layers:content,local_course_banner_builder",
+      "title": "Commandes à droite de l'aperçu",
+      "content": "<p>Les boutons à droite ouvrent les réglages de l'élément sélectionné : options d'image, édition du titre, édition de la bordure ou de l'overlay.</p><p>Dans la bannière de site, le titre affiché dans les aperçus doit être le titre du site, pas un titre d'activité.</p>",
+      "contentformat": "1",
+      "targettype": "0",
+      "targetvalue": ".local-course-banner-builder-source-preview-button",
+      "sortorder": "5",
+      "configdata": "{\"placement\":\"left\"}"
+    },
+    {
+      "title": "Titre de bannière de site",
+      "content": "<p>Le titre de site peut être rendu directement dans la bannière. Son éditeur règle la position, l'alignement, la taille du texte, le type de frame, le line highlight, les ombres et la superposition avec bordure ou overlay.</p><p>Le rendu de la modale, l'aperçu général et la bannière réelle doivent utiliser les mêmes proportions afin que le placement soit fiable.</p>",
+      "contentformat": "1",
+      "targettype": "2",
+      "targetvalue": "",
+      "sortorder": "6",
+      "configdata": "{\"placement\":\"bottom\"}"
+    },
+    {
+      "title": "Liste des calques de site",
+      "content": "<p>Cette liste décrit chaque calque de la source de site. Les vignettes montrent le rendu du calque, et les icônes signalent les états spéciaux : crop, image figée, poussée au-dessus de la bordure, au-dessus de l'overlay ou au-dessus/dessous de l'héritage.</p><p>Les lignes verrouillées ne peuvent pas être glissées car leur ordre est déterminé par une règle visuelle.</p>",
       "contentformat": "1",
       "targettype": "0",
       "targetvalue": ".local-course-banner-builder-layer-table",
-      "sortorder": "5",
+      "sortorder": "7",
+      "configdata": "{\"placement\":\"top\"}"
+    },
+    {
+      "title": "Ordre et superposition",
+      "content": "<p>En mode cumulatif, les images normales peuvent être ordonnées par glisser-déposer ou avec les icônes sous l'aperçu. Les états pushed above border, pushed above overlay et pushed above inherited layers prennent le dessus sur l'ordre manuel.</p><p>Utilisez ces états uniquement quand une image doit rester visuellement au-dessus ou au-dessous d'un groupe précis.</p>",
+      "contentformat": "1",
+      "targettype": "0",
+      "targetvalue": ".local-course-banner-builder-layer-table",
+      "sortorder": "8",
       "configdata": "{\"placement\":\"top\"}"
     }
   ]
