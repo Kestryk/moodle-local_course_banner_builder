@@ -108,6 +108,9 @@ class hook_callbacks {
             'overlays' => $overlays,
             'border' => $border,
             'title' => self::get_banner_title_overlay($titlecontext, $titletext),
+            'replacemoodletitle' => $titlecontext === 'course' &&
+                (bool)get_config('local_course_banner_builder', 'bannertitle_course_enabled') &&
+                (bool)get_config('local_course_banner_builder', 'bannertitle_course_replacemoodletitle'),
             'themehasbanner' => $themehasbanner,
             'allownativebanner' => $allownativebanner,
             'hascourselayers' => $hascourselayers,
@@ -197,6 +200,9 @@ class hook_callbacks {
     protected static function get_course_banner_runtime_css(): string {
         return implode("\n", [
             '.local-course-banner-builder-native-shell {',
+            '    position: relative;',
+            '    z-index: 0;',
+            '    isolation: isolate;',
             '    margin: calc(var(--navbar-height, 60px) + 0.75rem) auto 0.75rem;',
             '}',
             '.local-course-banner-builder-native-shell--mounted {',
@@ -240,6 +246,16 @@ class hook_callbacks {
             '    padding-right: 0 !important;',
             '    box-sizing: border-box !important;',
             '}',
+            '.local-course-banner-builder-native-shell--format-fullwidthtopinset {',
+            '    width: calc(100% - clamp(3rem, 4.8vw, 6rem)) !important;',
+            '    max-width: none !important;',
+            '    margin-top: 0 !important;',
+            '    margin-left: auto !important;',
+            '    margin-right: auto !important;',
+            '    padding-left: 0 !important;',
+            '    padding-right: 0 !important;',
+            '    box-sizing: border-box !important;',
+            '}',
             '.local-course-banner-builder-native-shell--format-contentwide {',
             '    width: min(100%, 1500px) !important;',
             '    max-width: 1500px !important;',
@@ -255,8 +271,14 @@ class hook_callbacks {
             '    margin-top: var(--local-course-banner-builder-fullwidth-nav-offset, 0);',
             '    margin-bottom: 0.75rem;',
             '}',
+            '.local-course-banner-builder-native-shell--format-fullwidthtopinset.local-course-banner-builder-native-shell--mounted {',
+            '    margin-top: var(--local-course-banner-builder-fullwidth-nav-offset, 0);',
+            '    margin-bottom: 0.75rem;',
+            '}',
             '.local-course-banner-builder {',
             '    position: relative;',
+            '    z-index: 0;',
+            '    isolation: isolate;',
             '    width: 100%;',
             '    min-height: 180px;',
             '    overflow: hidden;',
@@ -270,12 +292,24 @@ class hook_callbacks {
             '.local-course-banner-builder-banner-title-overlay {',
             '    position: absolute;',
             '    z-index: 80;',
-            '    max-width: min(86%, 54rem);',
+            '    --local-course-banner-builder-title-anchor-x: 50%;',
+            '    --local-course-banner-builder-title-safe-left: 0px;',
+            '    --local-course-banner-builder-title-safe-right: 0px;',
+            '    max-width: max(1rem, calc((min(' .
+                'calc(var(--local-course-banner-builder-title-anchor-x) - var(--local-course-banner-builder-title-safe-left)), ' .
+                'calc(100% - var(--local-course-banner-builder-title-safe-right) - ' .
+                    'var(--local-course-banner-builder-title-anchor-x))) * 2) - 1.25rem));',
             '    transform: translate(-50%, -50%);',
+            '    display: inline-flex;',
+            '    flex-direction: column;',
+            '    width: max-content;',
+            '    min-width: 0;',
             '    font-weight: 800;',
             '    line-height: 1.05;',
             '    letter-spacing: 0;',
-            '    white-space: pre-line;',
+            '    white-space: pre-wrap;',
+            '    overflow-wrap: normal;',
+            '    word-break: normal;',
             '    text-shadow: 0 0.15rem 0.7rem rgba(0, 0, 0, 0.45);',
             '    pointer-events: none;',
             '}',
@@ -284,26 +318,27 @@ class hook_callbacks {
             '    border: 0 !important;',
             '    padding: 0 !important;',
             '    box-shadow: none !important;',
+            '    display: block;',
             '    white-space: pre-wrap;',
             '}',
             '.local-course-banner-builder-banner-title-overlay--highlight-frame > span {',
-            '    display: inline-flex;',
-            '    align-items: center;',
-            '    justify-content: center;',
+            '    display: inline;',
             '    line-height: inherit;',
-            '    vertical-align: middle;',
             '    -webkit-box-decoration-break: clone;',
             '    box-decoration-break: clone;',
             '}',
             '.local-course-banner-builder-banner-title-overlay--highlight-frame > br {',
             '    display: block;',
             '    content: "";',
-            '    margin-bottom: 0.14em;',
+            '    margin-bottom: var(--local-course-banner-builder-inline-frame-gap, 0.14em);',
             '}',
             '.local-course-banner-builder-slideshow-host {',
             '    position: relative !important;',
             '    overflow: hidden !important;',
             '    container-type: size;',
+            '}',
+            '.local-course-banner-builder-slideshow-host.local-course-banner-builder-slideshow-nonbanner-active > .local-course-banner-builder-banner-title-overlay {',
+            '    display: none !important;',
             '}',
             '.local-course-banner-builder-slideshow {',
             '    position: absolute;',
@@ -493,23 +528,23 @@ class hook_callbacks {
             '}',
             '.local-course-banner-builder-slideshow-title-block {',
             '    left: var(--local-course-banner-builder-slideshow-title-x, 50%);',
-            '    top: var(--local-course-banner-builder-slideshow-title-y, 32%);',
+            '    top: var(--local-course-banner-builder-slideshow-title-y, 24%);',
             '    max-width: min(84%, 72rem);',
             '    text-align: var(--local-course-banner-builder-slideshow-title-text-align, center);',
             '}',
             '.local-course-banner-builder-slideshow-body-block {',
             '    left: var(--local-course-banner-builder-slideshow-body-x, 50%);',
-            '    top: var(--local-course-banner-builder-slideshow-body-y, 43%);',
+            '    top: var(--local-course-banner-builder-slideshow-body-y, 54%);',
             '    width: min(86%, 72rem);',
             '    max-width: min(86%, 72rem);',
-            '    max-height: max(2rem, calc(100% - var(--local-course-banner-builder-slideshow-body-y, 43%) - 18%));',
-            '    transform: translate(-50%, 0);',
-            '    overflow: hidden;',
+            '    max-height: none;',
+            '    transform: translate(-50%, -50%);',
+            '    overflow: visible;',
             '    text-align: var(--local-course-banner-builder-slideshow-body-text-align, center);',
             '}',
             '.local-course-banner-builder-slideshow-action-wrap {',
             '    left: var(--local-course-banner-builder-slideshow-action-x, 50%);',
-            '    top: calc(var(--local-course-banner-builder-slideshow-action-y, 80%) - var(--local-course-banner-builder-slideshow-action-y-adjust, 0%));',
+            '    top: calc(var(--local-course-banner-builder-slideshow-action-y, 84%) - var(--local-course-banner-builder-slideshow-action-y-adjust, 0%));',
             '    max-width: min(96%, 42rem);',
             '}',
             '.local-course-banner-builder-native-course-banner--format-standard .local-course-banner-builder-slideshow,',
@@ -517,6 +552,9 @@ class hook_callbacks {
                 '.local-course-banner-builder-slideshow { --local-course-banner-builder-slideshow-action-y-adjust: 3%; }',
             '.local-course-banner-builder-native-course-banner--format-fullwidthtopcompact .local-course-banner-builder-slideshow,',
             '.local-course-banner-builder-site-banner.local-course-banner-builder-native-course-banner--format-fullwidthtopcompact ' .
+                '.local-course-banner-builder-slideshow { --local-course-banner-builder-slideshow-action-y-adjust: 4%; }',
+            '.local-course-banner-builder-native-course-banner--format-fullwidthtopinset .local-course-banner-builder-slideshow,',
+            '.local-course-banner-builder-site-banner.local-course-banner-builder-native-course-banner--format-fullwidthtopinset ' .
                 '.local-course-banner-builder-slideshow { --local-course-banner-builder-slideshow-action-y-adjust: 4%; }',
             '.local-course-banner-builder-slideshow-title {',
             '    margin: 0 auto;',
@@ -534,6 +572,7 @@ class hook_callbacks {
             '.local-course-banner-builder-slideshow-meta,',
             '.local-course-banner-builder-slideshow-body {',
             '    margin: 0 auto;',
+            '    width: 100%;',
             '    max-width: min(100%, 64rem);',
             '    color: var(--local-course-banner-builder-slideshow-body-color, rgba(255, 255, 255, 0.88));',
             '    font-size: var(--local-course-banner-builder-slideshow-body-font-size, clamp(5.5cqh, min(14cqh, 1.7cqw), 19cqh));',
@@ -543,6 +582,7 @@ class hook_callbacks {
             '    text-decoration: var(--local-course-banner-builder-slideshow-body-text-decoration, none);',
             '    text-transform: var(--local-course-banner-builder-slideshow-body-text-transform, none);',
             '    line-height: var(--local-course-banner-builder-slideshow-body-line-height, 135%);',
+            '    text-align: inherit;',
             '    overflow-wrap: anywhere;',
             '}',
             '.local-course-banner-builder-slideshow-body {',
@@ -558,7 +598,8 @@ class hook_callbacks {
             '    min-width: var(--local-course-banner-builder-slideshow-action-width, clamp(10cqw, 18cqw, 34cqw));',
             '    height: var(--local-course-banner-builder-slideshow-action-height, clamp(10cqh, min(22cqh, 2.7cqw), 34cqh));',
             '    min-height: var(--local-course-banner-builder-slideshow-action-height, clamp(10cqh, min(22cqh, 2.7cqw), 34cqh));',
-            '    padding: clamp(0.28rem, 1.15cqh, 0.55rem) clamp(0.8rem, 2.4cqh, 1.2rem);',
+            '    padding: calc(var(--local-course-banner-builder-slideshow-action-padding, 12px) * 0.5) ' .
+                'var(--local-course-banner-builder-slideshow-action-padding, 12px);',
             '    font-size: var(--local-course-banner-builder-slideshow-action-font-size, clamp(6cqh, min(13cqh, 1.6cqw), 18cqh));',
             '    line-height: 1.1;',
             '    text-align: center;',
@@ -566,17 +607,26 @@ class hook_callbacks {
             '    transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;',
             '}',
             '.local-course-banner-builder-slideshow-action.btn {',
-            '    border-color: #fff;',
-            '    background: #fff;',
-            '    color: #111827;',
+            '    border-width: var(--local-course-banner-builder-slideshow-action-border-width, 1px);',
+            '    border-color: var(--local-course-banner-builder-slideshow-action-border-color, #fff);',
+            '    background: var(--local-course-banner-builder-slideshow-action-background, #fff);',
+            '    color: var(--local-course-banner-builder-slideshow-action-text-color, #111827);',
+            '    opacity: var(--local-course-banner-builder-slideshow-action-opacity, 1);',
+            '    font-family: var(--local-course-banner-builder-slideshow-action-font-family, inherit);',
             '    font-size: var(--local-course-banner-builder-slideshow-action-font-size, clamp(6cqh, min(13cqh, 1.6cqw), 18cqh)) !important;',
             '    min-width: var(--local-course-banner-builder-slideshow-action-width, clamp(10cqw, 18cqw, 34cqw)) !important;',
             '    height: var(--local-course-banner-builder-slideshow-action-height, clamp(10cqh, min(22cqh, 2.7cqw), 34cqh)) !important;',
             '    min-height: var(--local-course-banner-builder-slideshow-action-height, clamp(10cqh, min(22cqh, 2.7cqw), 34cqh)) !important;',
-            '    font-weight: 700;',
+            '    font-weight: var(--local-course-banner-builder-slideshow-action-font-weight, 700);',
+            '    font-style: var(--local-course-banner-builder-slideshow-action-font-style, normal);',
+            '    text-decoration: var(--local-course-banner-builder-slideshow-action-text-decoration, none);',
             '    text-transform: var(--local-course-banner-builder-slideshow-action-text-transform, none);',
             '    border-radius: var(--local-course-banner-builder-slideshow-action-radius, var(--bs-border-radius, 0.375rem));',
-            '    box-shadow: 0 0.35rem 1rem rgba(0, 0, 0, 0.28);',
+            '    box-shadow: var(--local-course-banner-builder-slideshow-action-shadow-x, 0) ' .
+                'var(--local-course-banner-builder-slideshow-action-shadow-y, 0.35rem) ' .
+                'var(--local-course-banner-builder-slideshow-action-shadow-blur, 1rem) ' .
+                'rgba(var(--local-course-banner-builder-slideshow-action-shadow-rgb, 0, 0, 0), ' .
+                'var(--local-course-banner-builder-slideshow-action-shadow-opacity, 0.28));',
             '}',
             '.local-course-banner-builder-slideshow-action.btn:hover,',
             '.local-course-banner-builder-slideshow-action.btn:focus {',
@@ -703,6 +753,12 @@ class hook_callbacks {
             '    background-size: cover;',
             '    box-shadow: none;',
             '}',
+            '.local-course-banner-builder-native-course-title-replaced #page-header .page-header-headings,',
+            '.local-course-banner-builder-native-course-title-replaced #page-header h1,',
+            '#page-header.local-course-banner-builder-native-course-title-replaced .page-header-headings,',
+            '#page-header.local-course-banner-builder-native-course-title-replaced h1 {',
+            '    display: none !important;',
+            '}',
             '.local-course-banner-builder-native-course-banner--format-contentwide {',
             '    width: 100% !important;',
             '    max-width: 1500px !important;',
@@ -730,6 +786,16 @@ class hook_callbacks {
             '    margin-top: 0;',
             '    border-radius: 0;',
             '}',
+            '.local-course-banner-builder-native-course-banner--format-fullwidthtopinset {',
+            '    width: 100% !important;',
+            '    max-width: none !important;',
+            '    box-sizing: border-box;',
+            '    aspect-ratio: 6.1 / 1;',
+            '    min-height: 150px;',
+            '    max-height: 300px;',
+            '    margin-top: 0;',
+            '    border-radius: 0;',
+            '}',
             '.local-course-banner-builder-overlay-host {',
             '    position: relative;',
             '    overflow: hidden;',
@@ -742,8 +808,8 @@ class hook_callbacks {
             '    pointer-events: none;',
             '}',
             '.local-course-banner-builder-fixed-overlay-image {',
-            '    position: absolute;',
-            '    inset: 0;',
+            '    position: static;',
+            '    inset: auto;',
             '    display: block;',
             '    max-width: none;',
             '    object-fit: contain;',
@@ -912,6 +978,134 @@ class hook_callbacks {
     }
 
     /**
+     * Export border inset CSS variables onto the banner container so title wrapping can respect them.
+     *
+     * @param array|null $border
+     * @return string
+     */
+    protected static function get_banner_title_border_inset_style(?array $border): string {
+        if (empty($border) || !is_array($border)) {
+            return '';
+        }
+        $wrapperstyle = (string)($border['wrapperstyle'] ?? $border['boxstyle'] ?? $border['style'] ?? '');
+        if ($wrapperstyle === '') {
+            return '';
+        }
+        $out = [];
+        foreach (['top', 'right', 'bottom', 'left'] as $side) {
+            if (preg_match(
+                '/(--local-course-banner-builder-preview-' . $side . '-width\s*:\s*[^;]+;?)/i',
+                $wrapperstyle,
+                $match
+            )) {
+                $declaration = trim($match[1]);
+                $out[] = str_ends_with($declaration, ';') ? $declaration : $declaration . ';';
+            }
+        }
+        return implode(' ', $out);
+    }
+
+    /**
+     * Build positioning and wrap-width rules for banner titles.
+     *
+     * @param float $x
+     * @param string $align
+     * @param bool $aboveborder
+     * @return array
+     */
+    protected static function build_banner_title_position_rules(float $x, string $align, bool $aboveborder): array {
+        $safeleftrule = $aboveborder ? '0px' : 'var(--local-course-banner-builder-preview-left-width, 0px)';
+        $saferightrule = $aboveborder ? '0px' : 'var(--local-course-banner-builder-preview-right-width, 0px)';
+        $transform = match ($align) {
+            'left' => 'translate(0, -50%)',
+            'right' => 'translate(-100%, -50%)',
+            default => 'translate(calc(var(--local-course-banner-builder-title-raw-x) * -1), -50%)',
+        };
+        $available = match ($align) {
+            'left' => 'calc(100% - var(--local-course-banner-builder-title-anchor-x) - ' .
+                'var(--local-course-banner-builder-title-safe-right) - 1.25rem)',
+            'right' => 'calc(var(--local-course-banner-builder-title-anchor-x) - ' .
+                'var(--local-course-banner-builder-title-safe-left) - 1.25rem)',
+            default => 'calc(100% - var(--local-course-banner-builder-title-safe-left) - ' .
+                'var(--local-course-banner-builder-title-safe-right) - 1.25rem)',
+        };
+        return [
+            '--local-course-banner-builder-title-safe-left: ' . $safeleftrule . ';',
+            '--local-course-banner-builder-title-safe-right: ' . $saferightrule . ';',
+            '--local-course-banner-builder-title-raw-x: ' . $x . '%;',
+            '--local-course-banner-builder-title-anchor-x: clamp(calc(' . $safeleftrule . ' + 0.625rem), ' .
+                $x . '%, calc(100% - ' . $saferightrule . ' - 0.625rem));',
+            'left: var(--local-course-banner-builder-title-anchor-x);',
+            'transform: ' . $transform . ';',
+            'max-width: max(1rem, ' . $available . ');',
+        ];
+    }
+
+    /**
+     * Build a native banner title z-index that respects border and overlay ordering.
+     *
+     * @param bool $aboveborder
+     * @param bool $aboveoverlay
+     * @return int
+     */
+    protected static function banner_title_zindex(bool $aboveborder, bool $aboveoverlay): int {
+        if (!$aboveborder) {
+            return $aboveoverlay ? 1500 : 900;
+        }
+        return $aboveoverlay ? 4010 : 2500;
+    }
+
+    /**
+     * Return the responsive base font-size used by title frames.
+     *
+     * @return string
+     */
+    protected static function banner_title_base_font_size_css(): string {
+        return 'clamp(0.62rem, min(7.4cqh, 2.65cqw), 2.35rem)';
+    }
+
+    /**
+     * Return a transform origin for scaled title text.
+     *
+     * @param string $align
+     * @return string
+     */
+    protected static function banner_title_text_transform_origin(string $align): string {
+        return match ($align) {
+            'left' => 'left center',
+            'right' => 'right center',
+            default => 'center center',
+        };
+    }
+
+    /**
+     * Convert title frame padding control value to responsive CSS.
+     *
+     * @param float $padding
+     * @return string
+     */
+    protected static function banner_title_frame_padding_css(float $padding): string {
+        $padding = max(0.0, min(240.0, $padding));
+        return round(($padding / 2.0) / 16.0, 4) . 'em ' . round($padding / 16.0, 4) . 'em';
+    }
+
+    /**
+     * Wrap title text in a scaled visual span without changing frame layout size.
+     *
+     * @param string $text
+     * @param float $scale
+     * @param string $align
+     * @return string
+     */
+    protected static function render_scaled_banner_title_text(string $text, float $scale, string $align): string {
+        return \html_writer::span($text === '' ? '&nbsp;' : s($text), '', [
+            'data-title-render-node' => '1',
+            'style' => 'display: inline-block; line-height: 1; transform: scale(' . round($scale, 4) .
+                '); transform-origin: ' . self::banner_title_text_transform_origin($align) . ';',
+        ]);
+    }
+
+    /**
      * Build one optional title overlay for native banners.
      *
      * @param string $context
@@ -931,10 +1125,10 @@ class hook_callbacks {
         }
         $color = (string)get_config('local_course_banner_builder', $prefix . 'color');
         $color = preg_match('/^#[0-9a-f]{6}$/i', $color) ? $color : '#FFFFFF';
-        $fontsize = (int)get_config('local_course_banner_builder', $prefix . 'fontsize');
-        $fontsize = max(25, min(160, $fontsize ?: 100));
+        $fontsize = (float)get_config('local_course_banner_builder', $prefix . 'fontsize');
+        $fontsize = max(25, min(480, $fontsize ?: 100));
         $lineheight = (float)get_config('local_course_banner_builder', $prefix . 'lineheight');
-        $lineheight = max(80, min(180, $lineheight ?: 105));
+        $lineheight = max(40, min(540, $lineheight ?: 105));
         $x = max(0.0, min(100.0, (float)(get_config('local_course_banner_builder', $prefix . 'x') ?: 50)));
         $y = max(0.0, min(100.0, (float)(get_config('local_course_banner_builder', $prefix . 'y') ?: 50)));
         $align = (string)get_config('local_course_banner_builder', $prefix . 'align');
@@ -944,29 +1138,42 @@ class hook_callbacks {
             $bold = (bool)get_config('local_course_banner_builder', $prefix . 'bold');
             $italic = (bool)get_config('local_course_banner_builder', $prefix . 'italic');
             $underline = (bool)get_config('local_course_banner_builder', $prefix . 'underline');
+            $strike = (bool)get_config('local_course_banner_builder', $prefix . 'strike');
             $allcaps = (bool)get_config('local_course_banner_builder', $prefix . 'allcaps');
             $aboveborder = get_config('local_course_banner_builder', $prefix . 'aboveborder');
             $aboveborder = $aboveborder === false ? true : (bool)$aboveborder;
+            $aboveoverlay = get_config('local_course_banner_builder', $prefix . 'aboveoverlay');
+            $aboveoverlay = $aboveoverlay === false ? true : (bool)$aboveoverlay;
             $frametype = (string)get_config('local_course_banner_builder', $prefix . 'frametype');
             $frametype = in_array($frametype, ['box', 'highlight'], true) ? $frametype : 'box';
             $framestyle = [];
-            $style = [
-                'left: ' . $x . '%;',
+            $style = array_merge(self::build_banner_title_position_rules($x, $align, $aboveborder), [
                 'top: ' . $y . '%;',
-                'z-index: ' . ($aboveborder ? '80' : '18') . ';',
+                'z-index: ' . self::banner_title_zindex($aboveborder, $aboveoverlay) . ';',
+                'display: inline-flex;',
+                'flex-direction: column;',
+                'width: max-content;',
+                'min-width: 0;',
                 'color: ' . $color . ';',
-                'font-size: clamp(' . round(8 * $fontsize / 100, 3) . 'cqh, ' .
-                    round(4 * $fontsize / 100, 3) . 'cqw, ' . round(28 * $fontsize / 100, 3) . 'cqh);',
+                'font-size: ' . self::banner_title_base_font_size_css() . ';',
                 'font-family: ' . ($fontfamily !== '' ? s($fontfamily) : 'inherit') . ';',
                 'font-weight: ' . ($bold ? '800' : '500') . ';',
                 'font-style: ' . ($italic ? 'italic' : 'normal') . ';',
-                'text-decoration: ' . ($underline ? 'underline' : 'none') . ';',
+                'text-decoration: ' . (implode(' ', array_filter([
+                    $underline ? 'underline' : '',
+                    $strike ? 'line-through' : '',
+                ])) ?: 'none') . ';',
                 'text-transform: ' . ($allcaps ? 'uppercase' : 'none') . ';',
                 'text-align: ' . $align . ';',
+                'align-items: ' . ($align === 'left' ? 'flex-start' : ($align === 'right' ? 'flex-end' : 'center')) . ';',
+                'justify-content: flex-start;',
                 'line-height: ' . $lineheight . '%;',
+                'white-space: pre-wrap;',
+                'overflow-wrap: normal;',
+                'word-break: normal;',
                 '--local-course-banner-builder-inline-frame-gap: ' .
                     round(self::inline_frame_gap_em((float)$lineheight), 3) . 'em;',
-            ];
+            ]);
             if ((bool)get_config('local_course_banner_builder', $prefix . 'frameenabled')) {
                 $framecolor = self::banner_title_rgba(
                     (string)get_config('local_course_banner_builder', $prefix . 'framecolor'),
@@ -980,8 +1187,9 @@ class hook_callbacks {
                         '#FFFFFF'
                     ) . ';';
                 $framerules[] = 'border-radius: ' . max(0, min(80, (float)get_config('local_course_banner_builder', $prefix . 'frameradius'))) . 'px;';
-                $padding = max(0, min(80, (float)get_config('local_course_banner_builder', $prefix . 'framepadding')));
-                $framerules[] = 'padding: ' . round($padding / 2, 2) . 'px ' . $padding . 'px;';
+                $padding = max(0, min(240, (float)get_config('local_course_banner_builder', $prefix . 'framepadding')));
+                $framerules[] = 'padding: ' . self::banner_title_frame_padding_css($padding) . ';';
+                $framerules[] = 'line-height: ' . $lineheight . '%;';
                 if ((bool)get_config('local_course_banner_builder', $prefix . 'frameshadowenabled')) {
                     $distance = max(0, min(50, (float)get_config('local_course_banner_builder', $prefix . 'frameshadowdistance')));
                     $angle = deg2rad(max(0, min(360, (float)get_config('local_course_banner_builder', $prefix . 'frameshadowdirection'))));
@@ -1032,6 +1240,8 @@ class hook_callbacks {
             'style' => $titleenabled ? implode(' ', $style) : '',
             'framestyle' => $titleenabled && !empty($framestyle) ? implode(' ', $framestyle) : '',
             'frametype' => $titleenabled ? ($frametype ?? 'box') : 'box',
+            'textscale' => $titleenabled ? max(0.25, min(4.8, $fontsize / 100)) : 1.0,
+            'align' => $align ?? 'center',
             'overlaystyle' => $overlaystyle,
         ];
     }
@@ -1069,8 +1279,8 @@ class hook_callbacks {
      * @return float
      */
     protected static function inline_frame_gap_em(float $lineheightpercent): float {
-        $lineheightpercent = max(80.0, min(200.0, $lineheightpercent));
-        return max(0.14, min(0.6, 0.14 + ((($lineheightpercent - 105.0) / 100.0) * 0.45)));
+        $lineheightpercent = max(40.0, min(540.0, $lineheightpercent));
+        return max(0.14, min(2.1, 0.14 + ((($lineheightpercent - 105.0) / 100.0) * 0.45)));
     }
 
     /**
@@ -1094,18 +1304,27 @@ class hook_callbacks {
         if (!empty($title['text']) && !empty($title['style'])) {
             $text = format_string((string)$title['text']);
             $framestyle = (string)($title['framestyle'] ?? '');
+            $textscale = (float)($title['textscale'] ?? 1.0);
+            $align = (string)($title['align'] ?? 'center');
             if ($framestyle !== '' && ($title['frametype'] ?? '') === 'highlight') {
                 $lines = preg_split('/\R/u', $text);
                 $lines = $lines === false ? [$text] : $lines;
                 $content = [];
                 foreach ($lines as $line) {
-                    $content[] = \html_writer::span($line === '' ? '&nbsp;' : $line, '', ['style' => $framestyle]);
+                    $content[] = \html_writer::span(
+                        self::render_scaled_banner_title_text((string)$line, $textscale, $align),
+                        '',
+                        [
+                            'style' => $framestyle,
+                            'data-title-highlight-line' => '1',
+                        ]
+                    );
                 }
                 $content = implode('<br>', $content);
             } else {
                 $content = $framestyle !== ''
-                    ? \html_writer::span($text, '', ['style' => $framestyle])
-                    : $text;
+                    ? \html_writer::span(self::render_scaled_banner_title_text($text, $textscale, $align), '', ['style' => $framestyle])
+                    : self::render_scaled_banner_title_text($text, $textscale, $align);
             }
             $out .= \html_writer::div(
                 $content,
@@ -1174,15 +1393,22 @@ class hook_callbacks {
         }
         $content .= self::render_banner_title_overlay($payload['title'] ?? null);
 
+        $borderinsetstyle = self::get_banner_title_border_inset_style(
+            !empty($payload['border']) && is_array($payload['border']) ? $payload['border'] : null
+        );
+        if ($borderinsetstyle !== '') {
+            $contentstyle = trim($contentstyle . ' ' . $borderinsetstyle);
+        }
+
         $banner = \html_writer::div(
             $content,
             'local-course-banner-builder local-course-banner-builder-native-course-banner ' .
                 'local-course-banner-builder-native-course-banner--format-' . $format .
                 ($usesdefaultimage ? ' local-course-banner-builder-native-course-banner--moodle-generated' : ''),
             [
-                'data-course-banner-builder-native' => '1',
-                'aria-hidden' => 'true',
-                'style' => $contentstyle,
+            'data-course-banner-builder-native' => '1',
+            'aria-hidden' => 'true',
+            'style' => $contentstyle,
             ]
         );
 
@@ -1190,6 +1416,7 @@ class hook_callbacks {
             'local-course-banner-builder-native-shell--format-' . $format, [
             'id' => 'local-course-banner-builder-native-shell',
             'data-banner-format' => $format,
+            'data-replace-moodle-title' => !empty($payload['replacemoodletitle']) ? '1' : '0',
         ]);
     }
 
@@ -1229,12 +1456,14 @@ class hook_callbacks {
     protected static function render_site_banner_html(array $payload): string {
         $format = manager::normalise_banner_format((string)($payload['bannerformat'] ?? manager::BANNER_FORMAT_STANDARD));
         $content = '';
+        $directborder = null;
         foreach (($payload['layers'] ?? []) as $layer) {
             if (!is_array($layer) || empty($layer['enabled'])) {
                 continue;
             }
 
             if (($layer['type'] ?? '') === 'border') {
+                $directborder = $layer;
                 $content .= self::render_native_border_html($layer);
                 continue;
             }
@@ -1286,6 +1515,7 @@ class hook_callbacks {
             [
                 'data-course-banner-builder-site' => '1',
                 'aria-hidden' => 'true',
+                'style' => self::get_banner_title_border_inset_style($directborder),
             ]
         );
 
@@ -1358,8 +1588,12 @@ class hook_callbacks {
             measureScrollbarWidth() :
             0;
         const baseWidth = Math.floor(frame.clientWidth || frameRect.width || document.documentElement.clientWidth || window.innerWidth || 0);
-        const usableWidth = Math.max(0, baseWidth - overlayScrollbarReserve);
-        const targetLeft = Math.round(frameRect.left || 0);
+        const format = shell.getAttribute('data-banner-format') || 'standard';
+        const sideInset = format === 'fullwidthtopinset' ?
+            Math.round(Math.min(48, Math.max(24, baseWidth * 0.024))) :
+            0;
+        const usableWidth = Math.max(0, baseWidth - overlayScrollbarReserve - (sideInset * 2));
+        const targetLeft = Math.round((frameRect.left || 0) + sideInset);
         if (usableWidth > 0) {
             shell.style.setProperty('box-sizing', 'border-box', 'important');
             shell.style.setProperty('position', 'relative', 'important');
@@ -1399,8 +1633,17 @@ class hook_callbacks {
 
         const pageHeader = document.getElementById('page-header');
         const format = shell.getAttribute('data-banner-format') || 'standard';
-        const isFullWidthTop = format === 'fullwidthtop' || format === 'fullwidthtopcompact';
+        const isFullWidthTop = format === 'fullwidthtop' || format === 'fullwidthtopcompact' ||
+            format === 'fullwidthtopinset';
+        const replaceMoodleTitle = shell.getAttribute('data-replace-moodle-title') === '1';
         if (pageHeader) {
+            if (replaceMoodleTitle) {
+                pageHeader.classList.add('local-course-banner-builder-native-course-title-replaced');
+                document.documentElement.classList.add('local-course-banner-builder-native-course-title-replaced');
+                if (document.body) {
+                    document.body.classList.add('local-course-banner-builder-native-course-title-replaced');
+                }
+            }
             const method = isFullWidthTop ? 'beforebegin' : 'afterend';
             const alreadyPlaced = isFullWidthTop ?
                 shell.nextElementSibling === pageHeader :
@@ -1492,8 +1735,12 @@ JS;
             measureScrollbarWidth() :
             0;
         const baseWidth = Math.floor(frame.clientWidth || frameRect.width || document.documentElement.clientWidth || window.innerWidth || 0);
-        const usableWidth = Math.max(0, baseWidth - overlayScrollbarReserve);
-        const targetLeft = Math.round(frameRect.left || 0);
+        const format = shell.getAttribute('data-banner-format') || 'standard';
+        const sideInset = format === 'fullwidthtopinset' ?
+            Math.round(Math.min(48, Math.max(24, baseWidth * 0.024))) :
+            0;
+        const usableWidth = Math.max(0, baseWidth - overlayScrollbarReserve - (sideInset * 2));
+        const targetLeft = Math.round((frameRect.left || 0) + sideInset);
         if (usableWidth > 0) {
             shell.style.setProperty('box-sizing', 'border-box', 'important');
             shell.style.setProperty('position', 'relative', 'important');
@@ -1533,7 +1780,8 @@ JS;
 
         const pageHeader = document.getElementById('page-header');
         const format = shell.getAttribute('data-banner-format') || 'standard';
-        const isFullWidthTop = format === 'fullwidthtop' || format === 'fullwidthtopcompact';
+        const isFullWidthTop = format === 'fullwidthtop' || format === 'fullwidthtopcompact' ||
+            format === 'fullwidthtopinset';
         if (pageHeader) {
             const method = isFullWidthTop ? 'beforebegin' : 'afterend';
             const alreadyPlaced = isFullWidthTop ?
@@ -1740,6 +1988,10 @@ JS;
         const next = ((index % slides.length) + slides.length) % slides.length;
         root.dataset.slideshowIndex = String(next);
         root.dataset.slideshowDirection = direction || 'forward';
+        const host = root.parentElement;
+        if (host) {
+            host.classList.toggle('local-course-banner-builder-slideshow-nonbanner-active', next !== 0);
+        }
         root.classList.toggle('is-empty-active', !!(payload.slides[next] && payload.slides[next].empty));
         slides.forEach(function(slide, slideIndex) {
             const active = slideIndex === next;
@@ -1764,6 +2016,7 @@ JS;
         root.setAttribute('aria-label', 'Banner slideshow');
         root.dataset.slideshowIndex = '0';
         root.classList.toggle('is-empty-active', !!(payload.slides[0] && payload.slides[0].empty));
+        target.classList.remove('local-course-banner-builder-slideshow-nonbanner-active');
         root.style.setProperty('--local-course-banner-builder-slideshow-overlay-rgb', payload.overlayRgb || '0, 0, 0');
         root.style.setProperty(
             '--local-course-banner-builder-slideshow-overlay-opacity',
@@ -1773,7 +2026,7 @@ JS;
             if (format === 'standard') {
                 return 1.24;
             }
-            if (format === 'fullwidthtopcompact') {
+            if (format === 'fullwidthtopcompact' || format === 'fullwidthtopinset') {
                 if (kind === 'label') {
                     return 1;
                 }
@@ -2017,7 +2270,7 @@ JS;
         );
         root.style.setProperty(
             '--local-course-banner-builder-slideshow-title-y',
-            String(payload.titleY || 32) + '%'
+            String(payload.titleY || 24) + '%'
         );
         root.style.setProperty(
             '--local-course-banner-builder-slideshow-body-x',
@@ -2025,7 +2278,7 @@ JS;
         );
         root.style.setProperty(
             '--local-course-banner-builder-slideshow-body-y',
-            String(payload.bodyY || 43) + '%'
+            String(payload.bodyY || 54) + '%'
         );
         root.style.setProperty(
             '--local-course-banner-builder-slideshow-action-x',
@@ -2033,7 +2286,7 @@ JS;
         );
         root.style.setProperty(
             '--local-course-banner-builder-slideshow-action-y',
-            String(payload.actionY || 74) + '%'
+            String(payload.actionY || 84) + '%'
         );
         root.style.setProperty(
             '--local-course-banner-builder-slideshow-label-x',

@@ -10,6 +10,8 @@
 
 .local-course-banner-builder {
     position: relative;
+    z-index: 0;
+    isolation: isolate;
     width: 100%;
     min-height: 180px;
     overflow: hidden;

@@ -40,6 +40,12 @@ $PAGE->set_url($url);
 $PAGE->set_context(context_system::instance());
 $PAGE->set_title(get_string('exportimport', 'local_course_banner_builder'));
 $PAGE->set_heading(get_string('exportimport', 'local_course_banner_builder'));
+$PAGE->requires->css('/local/course_banner_builder/styles.css');
+
+if (optional_param('deleteallpluginsettings', 0, PARAM_BOOL) && confirm_sesskey()) {
+    \local_course_banner_builder\manager::delete_all_plugin_configuration();
+    redirect($url, get_string('allpluginsettingsdeleted', 'local_course_banner_builder'));
+}
 
 if ($action === 'export' && confirm_sesskey()) {
     $archivepath = \local_course_banner_builder\manager::create_configuration_export_zip($exportsections);
@@ -77,6 +83,69 @@ if (optional_param('importconfig', 0, PARAM_BOOL) && confirm_sesskey()) {
 }
 
 echo $OUTPUT->header();
+echo html_writer::start_div('local-course-banner-builder-admin local-course-banner-builder-admin--native');
+echo html_writer::div(
+    html_writer::link(
+        new moodle_url('/local/course_banner_builder/admin_manage.php'),
+        html_writer::tag('i', '', ['class' => 'fa fa-image me-2', 'aria-hidden' => 'true']) .
+            html_writer::span(get_string('managecoursebannersquick', 'local_course_banner_builder')),
+        ['class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action']
+    ) .
+    html_writer::link(
+        new moodle_url('/local/course_banner_builder/admin_site.php'),
+        html_writer::tag('i', '', ['class' => 'fa fa-desktop me-2', 'aria-hidden' => 'true']) .
+            html_writer::span(get_string('managesitebannerquick', 'local_course_banner_builder')),
+        ['class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action']
+    ) .
+    html_writer::link(
+        new moodle_url('/local/course_banner_builder/admin_slideshow.php'),
+        html_writer::tag('i', '', ['class' => 'fa fa-images me-2', 'aria-hidden' => 'true']) .
+            html_writer::span(get_string('manageslideshowquick', 'local_course_banner_builder')),
+        ['class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action']
+    ) .
+    html_writer::link(
+        new moodle_url('/local/course_banner_builder/admin_manage.php', [
+            'openformatmodal' => 1,
+            'bannerformatcontext' => 'course',
+        ]),
+        html_writer::tag('i', '', ['class' => 'fa fa-columns me-2', 'aria-hidden' => 'true']) .
+            html_writer::span(get_string('coursebannerformatbutton', 'local_course_banner_builder')),
+        ['class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action']
+    ) .
+    html_writer::link(
+        new moodle_url('/local/course_banner_builder/admin_site.php', [
+            'openformatmodal' => 1,
+            'bannerformatcontext' => 'site',
+        ]),
+        html_writer::tag('i', '', ['class' => 'fa fa-columns me-2', 'aria-hidden' => 'true']) .
+            html_writer::span(get_string('sitebannerformatbutton', 'local_course_banner_builder')),
+        ['class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action']
+    ) .
+    html_writer::tag(
+        'form',
+        html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]) .
+        html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'deleteallpluginsettings', 'value' => 1]) .
+        html_writer::tag(
+            'button',
+            html_writer::tag('i', '', ['class' => 'fa fa-trash-can me-2', 'aria-hidden' => 'true']) .
+                html_writer::span(get_string('deleteallpluginsettings', 'local_course_banner_builder')),
+            [
+                'type' => 'submit',
+                'class' => 'btn btn-outline-danger local-course-banner-builder-dashed-action local-course-banner-builder-admin-reset-button',
+                'data-modal' => 'confirmation',
+                'data-modal-title' => get_string('confirm', 'moodle'),
+                'data-modal-content' => get_string('deleteallpluginsettingsconfirm', 'local_course_banner_builder'),
+                'data-modal-yes-button' => get_string('delete', 'moodle'),
+            ]
+        ),
+        [
+            'method' => 'post',
+            'action' => $url->out(false),
+            'class' => 'd-inline local-course-banner-builder-admin-reset-form',
+        ]
+    ),
+    'local-course-banner-builder-admin-switcher mb-3'
+);
 echo $OUTPUT->heading(get_string('exportimport', 'local_course_banner_builder'));
 
 echo html_writer::tag('p', get_string('exportconfigdesc', 'local_course_banner_builder'));
@@ -139,4 +208,5 @@ echo html_writer::empty_tag('input', [
 ]);
 echo html_writer::end_tag('form');
 
+echo html_writer::end_div();
 echo $OUTPUT->footer();

@@ -729,5 +729,83 @@ function xmldb_local_course_banner_builder_upgrade(int $oldversion): bool {
         upgrade_plugin_savepoint(true, 2026042412, 'local', 'course_banner_builder');
     }
 
+    if ($oldversion < 2026042413) {
+        $table = new xmldb_table('local_course_banner_elements');
+        $field = new xmldb_field(
+            'imagecenterfixed',
+            XMLDB_TYPE_INTEGER,
+            '1',
+            null,
+            XMLDB_NOTNULL,
+            null,
+            '0',
+            'dynamicimagesizeenabled'
+        );
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_plugin_savepoint(true, 2026042413, 'local', 'course_banner_builder');
+    }
+
+    if ($oldversion < 2026052700) {
+        $table = new xmldb_table('local_course_banner_elements');
+        $field = new xmldb_field(
+            'imageaboveoverlayenabled',
+            XMLDB_TYPE_INTEGER,
+            '1',
+            null,
+            XMLDB_NOTNULL,
+            null,
+            '0',
+            'imagecenterfixed'
+        );
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_plugin_savepoint(true, 2026052700, 'local', 'course_banner_builder');
+    }
+
+    if ($oldversion < 2026060100) {
+        $table = new xmldb_table('local_course_banner_elements');
+        $fields = [
+            new xmldb_field(
+                'imagebelowinheritedenabled',
+                XMLDB_TYPE_INTEGER,
+                '1',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '0',
+                'imageaboveoverlayenabled'
+            ),
+            new xmldb_field(
+                'imageaboveinheritedenabled',
+                XMLDB_TYPE_INTEGER,
+                '1',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '0',
+                'imagebelowinheritedenabled'
+            ),
+        ];
+
+        foreach ($fields as $field) {
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+
+        upgrade_plugin_savepoint(true, 2026060100, 'local', 'course_banner_builder');
+    }
+
+    if ($oldversion < 2026060301) {
+        \local_course_banner_builder\local\usertours::install_or_update();
+
+        upgrade_plugin_savepoint(true, 2026060301, 'local', 'course_banner_builder');
+    }
+
     return true;
 }

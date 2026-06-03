@@ -6,6 +6,11 @@
     container-type: size;
 }
 
+.local-course-banner-builder-slideshow-host.local-course-banner-builder-slideshow-nonbanner-active >
+    .local-course-banner-builder-banner-title-overlay {
+    display: none !important;
+}
+
 .local-course-banner-builder-slideshow {
     position: absolute;
     inset: 0;
@@ -236,25 +241,25 @@
 
 .local-course-banner-builder-slideshow-title-block {
     left: var(--local-course-banner-builder-slideshow-title-x, 50%);
-    top: var(--local-course-banner-builder-slideshow-title-y, 32%);
+    top: var(--local-course-banner-builder-slideshow-title-y, 24%);
     max-width: min(84%, 72rem);
     text-align: var(--local-course-banner-builder-slideshow-title-text-align, center);
 }
 
 .local-course-banner-builder-slideshow-body-block {
     left: var(--local-course-banner-builder-slideshow-body-x, 50%);
-    top: var(--local-course-banner-builder-slideshow-body-y, 43%);
+    top: var(--local-course-banner-builder-slideshow-body-y, 54%);
     width: min(86%, 72rem);
     max-width: min(86%, 72rem);
-    max-height: max(2rem, calc(100% - var(--local-course-banner-builder-slideshow-body-y, 43%) - 18%));
-    transform: translate(-50%, 0);
-    overflow: hidden;
+    max-height: none;
+    transform: translate(-50%, -50%);
+    overflow: visible;
     text-align: var(--local-course-banner-builder-slideshow-body-text-align, center);
 }
 
 .local-course-banner-builder-slideshow-action-wrap {
     left: var(--local-course-banner-builder-slideshow-action-x, 50%);
-    top: calc(var(--local-course-banner-builder-slideshow-action-y, 80%) - var(--local-course-banner-builder-slideshow-action-y-adjust, 0%));
+    top: calc(var(--local-course-banner-builder-slideshow-action-y, 84%) - var(--local-course-banner-builder-slideshow-action-y-adjust, 0%));
     max-width: min(96%, 42rem);
 }
 
@@ -267,6 +272,12 @@
 .local-course-banner-builder-slideshow-admin-preview--format-fullwidthtopcompact,
 .local-course-banner-builder-native-course-banner--format-fullwidthtopcompact .local-course-banner-builder-slideshow,
 .local-course-banner-builder-site-banner.local-course-banner-builder-native-course-banner--format-fullwidthtopcompact .local-course-banner-builder-slideshow {
+    --local-course-banner-builder-slideshow-action-y-adjust: 4%;
+}
+
+.local-course-banner-builder-slideshow-admin-preview--format-fullwidthtopinset,
+.local-course-banner-builder-native-course-banner--format-fullwidthtopinset .local-course-banner-builder-slideshow,
+.local-course-banner-builder-site-banner.local-course-banner-builder-native-course-banner--format-fullwidthtopinset .local-course-banner-builder-slideshow {
     --local-course-banner-builder-slideshow-action-y-adjust: 4%;
 }
 

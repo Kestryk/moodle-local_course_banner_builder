@@ -185,35 +185,106 @@
                                 {{#thumbnails}}
                                     <div class="local-course-banner-builder-thumb-item" title="{{name}}">
                                         <img src="{{imageurl}}" alt="">
-                                        {{#isdynamic}}
-                                            <span class="local-course-banner-builder-thumb-dynamic-badge"
-                                                role="button"
-                                                data-container="body"
-                                                data-toggle="popover"
-                                                data-placement="right"
-                                                data-content="{{dynamicpopovercontent}}"
-                                                data-html="true"
-                                                data-trigger="hover"
-                                                tabindex="0"
-                                                aria-label="{{dynamiclabel}}"
-                                                title="{{dynamiclabel}}">
-                                                <i class="fa fa-level-up" aria-hidden="true"></i>
-                                            </span>
-                                        {{/isdynamic}}
-                                        {{#iscropped}}
-                                            <span class="local-course-banner-builder-thumb-crop-badge"
-                                                role="button"
-                                                data-container="body"
-                                                data-toggle="popover"
-                                                data-placement="right"
-                                                data-content="{{croppedpopovercontent}}"
-                                                data-html="true"
-                                                data-trigger="hover"
-                                                tabindex="0"
-                                                aria-label="{{croppedlabel}}">
-                                                <i class="fa fa-crop" aria-hidden="true"></i>
-                                            </span>
-                                        {{/iscropped}}
+                                        <span class="local-course-banner-builder-thumb-badge-stack">
+                                            {{#iscropped}}
+                                                <span class="local-course-banner-builder-thumb-status-badge local-course-banner-builder-thumb-crop-badge"
+                                                    role="button"
+                                                    data-container="body"
+                                                    data-toggle="popover"
+                                                    data-placement="right"
+                                                    data-content="{{croppedpopovercontent}}"
+                                                    data-html="true"
+                                                    data-trigger="hover"
+                                                    tabindex="0"
+                                                    aria-label="{{croppedlabel}}">
+                                                    <i class="fa fa-crop" aria-hidden="true"></i>
+                                                </span>
+                                            {{/iscropped}}
+                                            {{#isaboveborder}}
+                                                <span class="local-course-banner-builder-thumb-status-badge local-course-banner-builder-thumb-above-border-badge"
+                                                    role="button"
+                                                    data-container="body"
+                                                    data-toggle="popover"
+                                                    data-placement="right"
+                                                    data-content="{{aboveborderpopovercontent}}"
+                                                    data-html="true"
+                                                    data-trigger="hover"
+                                                    tabindex="0"
+                                                    aria-label="{{aboveborderlabel}}">
+                                                    <i class="fa fa-level-up" aria-hidden="true"></i>
+                                                </span>
+                                            {{/isaboveborder}}
+                                            {{#isaboveoverlay}}
+                                                <span class="local-course-banner-builder-thumb-status-badge local-course-banner-builder-thumb-above-overlay-badge"
+                                                    role="button"
+                                                    data-container="body"
+                                                    data-toggle="popover"
+                                                    data-placement="right"
+                                                    data-content="{{aboveoverlaypopovercontent}}"
+                                                    data-html="true"
+                                                    data-trigger="hover"
+                                                    tabindex="0"
+                                                    aria-label="{{aboveoverlaylabel}}">
+                                                    <i class="fa fa-layer-group" aria-hidden="true"></i>
+                                                </span>
+                                            {{/isaboveoverlay}}
+                                            {{#isaboveboth}}
+                                                <span class="local-course-banner-builder-thumb-status-badge local-course-banner-builder-thumb-above-both-badge"
+                                                    role="button"
+                                                    data-container="body"
+                                                    data-toggle="popover"
+                                                    data-placement="right"
+                                                    data-content="{{abovebothpopovercontent}}"
+                                                    data-html="true"
+                                                    data-trigger="hover"
+                                                    tabindex="0"
+                                                    aria-label="{{abovebothlabel}}">
+                                                    <i class="fa fa-clone" aria-hidden="true"></i>
+                                                </span>
+                                            {{/isaboveboth}}
+                                            {{#isbelowinherited}}
+                                                <span class="local-course-banner-builder-thumb-status-badge local-course-banner-builder-thumb-below-inherited-badge"
+                                                    role="button"
+                                                    data-container="body"
+                                                    data-toggle="popover"
+                                                    data-placement="right"
+                                                    data-content="{{belowinheritedpopovercontent}}"
+                                                    data-html="true"
+                                                    data-trigger="hover"
+                                                    tabindex="0"
+                                                    aria-label="{{belowinheritedlabel}}">
+                                                    <i class="fa fa-level-down" aria-hidden="true"></i>
+                                                </span>
+                                            {{/isbelowinherited}}
+                                            {{#isaboveinherited}}
+                                                <span class="local-course-banner-builder-thumb-status-badge local-course-banner-builder-thumb-above-inherited-badge"
+                                                    role="button"
+                                                    data-container="body"
+                                                    data-toggle="popover"
+                                                    data-placement="right"
+                                                    data-content="{{aboveinheritedpopovercontent}}"
+                                                    data-html="true"
+                                                    data-trigger="hover"
+                                                    tabindex="0"
+                                                    aria-label="{{aboveinheritedlabel}}">
+                                                    <i class="fa fa-layer-group" aria-hidden="true"></i>
+                                                </span>
+                                            {{/isaboveinherited}}
+                                            {{#iscenterfixed}}
+                                                <span class="local-course-banner-builder-thumb-status-badge local-course-banner-builder-thumb-center-fixed-badge"
+                                                    role="button"
+                                                    data-container="body"
+                                                    data-toggle="popover"
+                                                    data-placement="right"
+                                                    data-content="{{centerfixedpopovercontent}}"
+                                                    data-html="true"
+                                                    data-trigger="hover"
+                                                    tabindex="0"
+                                                    aria-label="{{centerfixedlabel}}">
+                                                    <i class="fa fa-thumb-tack" aria-hidden="true"></i>
+                                                </span>
+                                            {{/iscenterfixed}}
+                                        </span>
                                     </div>
                                 {{/thumbnails}}
                                 {{#hasmorethumbnails}}

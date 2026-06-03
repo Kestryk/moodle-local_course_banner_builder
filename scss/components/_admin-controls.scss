@@ -780,7 +780,8 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 }
 
 .local-course-banner-builder-preview-image-layer:hover > .local-course-banner-builder-preview-aspect-lock,
-.local-course-banner-builder-preview-image-layer--current[data-preview-current-layer="1"] > .local-course-banner-builder-preview-aspect-lock,
+.local-course-banner-builder-preview-image-layer--current[data-preview-current-layer="1"]:not([data-preview-layer-deselected="1"])
+    > .local-course-banner-builder-preview-aspect-lock,
 .local-course-banner-builder-source-preview-layer:hover > .local-course-banner-builder-preview-aspect-lock,
 .local-course-banner-builder-source-preview-layer--selected > .local-course-banner-builder-preview-aspect-lock,
 .local-course-banner-builder-preview-draft-layer:hover > .local-course-banner-builder-preview-aspect-lock {
@@ -943,7 +944,7 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 }
 
 .local-course-banner-builder-preview-draft-layer[data-preview-draft-active-shell="1"] {
-    pointer-events: none;
+    pointer-events: auto;
     cursor: move;
     opacity: 1;
 }

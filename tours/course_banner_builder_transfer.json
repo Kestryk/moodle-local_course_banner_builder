@@ -1,35 +1,35 @@
-﻿{
-  "name": "tour:transfer:name,local_course_banner_builder",
-  "description": "tour:transfer:description,local_course_banner_builder",
+{
+  "name": "Course Banner Builder - Import and export",
+  "description": "Guided tour for exporting and importing Course Banner Builder configuration.",
   "pathmatch": "/local/course_banner_builder/admin_transfer.php%",
   "enabled": "1",
   "sortorder": "0",
   "endtourlabel": "",
   "configdata": "{\"placement\":\"bottom\",\"orphan\":\"1\",\"backdrop\":\"1\",\"reflex\":\"0\",\"showtourwhen\":\"1\"}",
   "displaystepnumbers": true,
-  "version": "2026042405",
+  "version": "2026060301",
   "steps": [
     {
-      "title": "tour:transfer:intro:title,local_course_banner_builder",
-      "content": "tour:transfer:intro:content,local_course_banner_builder",
-      "contentformat": "1",
-      "targettype": "2",
-      "targetvalue": "",
-      "sortorder": "0",
-      "configdata": "{\"placement\":\"bottom\"}"
-    },
-    {
-      "title": "tour:transfer:export:title,local_course_banner_builder",
-      "content": "tour:transfer:export:content,local_course_banner_builder",
+      "title": "Import et export",
+      "content": "<p>Cette page sert à transporter la configuration du plugin entre deux Moodle ou à faire une sauvegarde avant des modifications importantes.</p><p>L'export peut contenir les paramètres globaux, les sources, les calques, les images, les bordures, les overlays, les titres et les réglages de diaporama.</p>",
       "contentformat": "1",
       "targettype": "0",
-      "targetvalue": "form[action*=\"admin_transfer.php\"]",
-      "sortorder": "1",
-      "configdata": "{\"placement\":\"bottom\"}"
+      "targetvalue": "form[action*='admin_transfer.php']",
+      "sortorder": "0",
+      "configdata": "{\"placement\":\"top\"}"
     },
     {
-      "title": "tour:transfer:archive:title,local_course_banner_builder",
-      "content": "tour:transfer:archive:content,local_course_banner_builder",
+      "title": "Choisir quoi exporter",
+      "content": "<p>Utilisez les sections de sélection pour exporter uniquement ce qui est nécessaire. Par exemple, vous pouvez transférer seulement les bannières de site, seulement les sources de cours, ou tout le plugin.</p><p>Un export complet est recommandé avant une migration ou une refonte globale.</p>",
+      "contentformat": "1",
+      "targettype": "0",
+      "targetvalue": ".local-course-banner-builder-export-sections",
+      "sortorder": "1",
+      "configdata": "{\"placement\":\"top\"}"
+    },
+    {
+      "title": "Fichier d'import",
+      "content": "<p>L'import attend l'archive créée par le plugin. Elle contient la configuration JSON et les fichiers nécessaires aux calques d'image.</p><p>Gardez l'archive intacte : renommer ou retirer des fichiers peut empêcher la restauration complète des images.</p>",
       "contentformat": "1",
       "targettype": "0",
       "targetvalue": "#local-course-banner-builder-import-archive",
@@ -37,17 +37,17 @@
       "configdata": "{\"placement\":\"top\"}"
     },
     {
-      "title": "tour:transfer:replace:title,local_course_banner_builder",
-      "content": "tour:transfer:replace:content,local_course_banner_builder",
+      "title": "Remplacer ou fusionner",
+      "content": "<p>Le mode remplacement supprime la configuration correspondante avant d'importer. Le mode fusion ajoute ou met à jour ce qui est présent dans l'archive.</p><p>Utilisez le remplacement uniquement quand vous voulez que la destination devienne identique à l'archive pour les sections sélectionnées.</p>",
       "contentformat": "1",
       "targettype": "0",
-      "targetvalue": "input[name=\"replaceall\"]",
+      "targetvalue": "input[name='replaceall']",
       "sortorder": "3",
       "configdata": "{\"placement\":\"top\"}"
     },
     {
-      "title": "tour:transfer:strategy:title,local_course_banner_builder",
-      "content": "tour:transfer:strategy:content,local_course_banner_builder",
+      "title": "Après import",
+      "content": "<p>Après un import, vérifiez les pages de site, les sources de cours et les diaporamas. Les chemins de fichiers, les champs personnalisés et les catégories peuvent différer entre environnements.</p><p>Si les champs personnalisés n'existent pas sur la destination, créez-les ou adaptez les sources importées.</p>",
       "contentformat": "1",
       "targettype": "2",
       "targetvalue": "",

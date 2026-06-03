@@ -60,9 +60,13 @@
 
 .local-course-banner-builder-slideshow-actions {
     display: flex;
-    justify-content: flex-start;
+    justify-content: center;
     gap: 0.5rem;
     margin-top: 1rem;
+}
+
+.local-course-banner-builder-slideshow-actions .local-course-banner-builder-compact-save-button {
+    width: min(100%, 24rem);
 }
 
 .local-course-banner-builder-slideshow-global-actions {
@@ -165,6 +169,10 @@
 
 .local-course-banner-builder-slideshow-admin-preview--format-fullwidthtopcompact {
     aspect-ratio: 8 / 1;
+}
+
+.local-course-banner-builder-slideshow-admin-preview--format-fullwidthtopinset {
+    aspect-ratio: 6.1 / 1;
 }
 
 .local-course-banner-builder-slideshow-admin-preview--large {
@@ -303,7 +311,25 @@
 
 .local-course-banner-builder-slideshow-preview-launch {
     display: flex;
-    justify-content: flex-start;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.local-course-banner-builder-slideshow-edit-appearance-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    width: min(100%, 24rem);
+    min-height: 2.75rem;
+    padding: 0.65rem 1.15rem;
+    border-radius: 0.5rem;
+    font-weight: 700;
+    box-shadow: none;
+}
+
+.local-course-banner-builder-slideshow-edit-appearance-button .fa {
+    font-size: 1.1rem;
 }
 
 .local-course-banner-builder-slideshow-overlay-controls label {
@@ -582,6 +608,10 @@
 .local-course-banner-builder-slideshow-modal-body {
     position: relative;
     padding-right: calc(18rem + 1.75rem);
+    padding-left: 1rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
 }
 
 .local-course-banner-builder-slideshow-modal-preview {

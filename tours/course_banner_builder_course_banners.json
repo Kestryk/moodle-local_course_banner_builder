@@ -1,17 +1,17 @@
-﻿{
-  "name": "tour:coursebanners:name,local_course_banner_builder",
-  "description": "tour:coursebanners:description,local_course_banner_builder",
+{
+  "name": "Course Banner Builder - Course banners",
+  "description": "Complete guided tour for course banner sources, inheritance, previews and layers.",
   "pathmatch": "/local/course_banner_builder/admin_manage.php%",
   "enabled": "1",
   "sortorder": "0",
   "endtourlabel": "",
   "configdata": "{\"placement\":\"bottom\",\"orphan\":\"1\",\"backdrop\":\"1\",\"reflex\":\"0\",\"showtourwhen\":\"1\"}",
   "displaystepnumbers": true,
-  "version": "2026042405",
+  "version": "2026060301",
   "steps": [
     {
-      "title": "tour:coursebanners:intro:title,local_course_banner_builder",
-      "content": "tour:coursebanners:intro:content,local_course_banner_builder",
+      "title": "Gestion des bannières de cours",
+      "content": "<p>Cette page construit les bannières utilisées sur les pages de cours et, selon vos réglages, sur les pages d'activité.</p><p>Chaque bannière est composée de sources, puis de calques. Les sources décident où une règle s'applique. Les calques décident ce qui est rendu visuellement.</p>",
       "contentformat": "1",
       "targettype": "2",
       "targetvalue": "",
@@ -19,8 +19,8 @@
       "configdata": "{\"placement\":\"bottom\"}"
     },
     {
-      "title": "tour:coursebanners:format:title,local_course_banner_builder",
-      "content": "tour:coursebanners:format:content,local_course_banner_builder",
+      "title": "Formats de bannière",
+      "content": "<p>Les boutons de format changent la proportion utilisée par les aperçus et par le rendu final. Choisissez le format avant de régler précisément les positions, car les pourcentages sont interprétés dans ce cadre.</p><p>Les formats plus hauts donnent plus d'espace aux titres et aux diaporamas. Les formats plus bas demandent des calques plus simples et mieux centrés.</p>",
       "contentformat": "1",
       "targettype": "0",
       "targetvalue": ".local-course-banner-builder-admin-format-button",
@@ -28,8 +28,8 @@
       "configdata": "{\"placement\":\"bottom\"}"
     },
     {
-      "title": "tour:coursebanners:nav:title,local_course_banner_builder",
-      "content": "tour:coursebanners:nav:content,local_course_banner_builder",
+      "title": "Navigation d'administration",
+      "content": "<p>Ces boutons donnent accès aux principales vues du plugin : bannière de site, bannières de cours, diaporamas, import/export et paramètres globaux.</p><p>Le bouton de suppression des paramètres du plugin doit être utilisé avec prudence : il sert à repartir d'une configuration propre.</p>",
       "contentformat": "1",
       "targettype": "0",
       "targetvalue": ".local-course-banner-builder-admin-switch-button",
@@ -37,35 +37,35 @@
       "configdata": "{\"placement\":\"bottom\"}"
     },
     {
-      "title": "tour:coursebanners:selected:title,local_course_banner_builder",
-      "content": "tour:coursebanners:selected:content,local_course_banner_builder",
+      "title": "Sources de bannière",
+      "content": "<p>Une source est une règle d'affichage. Elle peut représenter une catégorie Moodle, une valeur de champ personnalisé de cours, ou une autre condition prise en charge par le plugin.</p><p>Par exemple, une source peut cibler tous les cours d'une catégorie, ou tous les cours dont un champ personnalisé vaut EMLV, ESILV ou IIM.</p>",
       "contentformat": "1",
       "targettype": "0",
-      "targetvalue": "#local-course-banner-builder-selected-source-content",
+      "targetvalue": ".local-course-banner-builder-configured-sources-table",
       "sortorder": "3",
       "configdata": "{\"placement\":\"top\"}"
     },
     {
-      "title": "tour:coursebanners:settings:title,local_course_banner_builder",
-      "content": "tour:coursebanners:settings:content,local_course_banner_builder",
+      "title": "Héritage des sources",
+      "content": "<p>L'héritage signifie qu'un cours peut recevoir des calques venant de plusieurs niveaux : sa catégorie, les catégories parentes, ou une source de champ personnalisé.</p><p>En mode cumulatif, les calques hérités peuvent se combiner. En mode remplacement, une source peut remplacer ce qui venait avant. Les règles de priorité indiquent si la source actuelle se place avant, après, remplace, ou est remplacée par l'héritage existant.</p>",
       "contentformat": "1",
       "targettype": "0",
-      "targetvalue": ".local-course-banner-builder-settings-action",
+      "targetvalue": ".local-course-banner-builder-configured-sources-table",
       "sortorder": "4",
-      "configdata": "{\"placement\":\"bottom\"}"
+      "configdata": "{\"placement\":\"top\"}"
     },
     {
-      "title": "tour:coursebanners:preview:title,local_course_banner_builder",
-      "content": "tour:coursebanners:preview:content,local_course_banner_builder",
+      "title": "Source actuellement sélectionnée",
+      "content": "<p>Cette zone affiche la source en cours d'édition. Tous les calques ajoutés ici appartiennent à cette source, sauf ceux qui sont hérités d'une autre règle.</p><p>Vérifiez toujours la source sélectionnée avant d'ajouter ou supprimer un calque.</p>",
       "contentformat": "1",
       "targettype": "0",
-      "targetvalue": ".local-course-banner-builder-source-preview-panel",
+      "targetvalue": "#local-course-banner-builder-selected-source-content",
       "sortorder": "5",
       "configdata": "{\"placement\":\"top\"}"
     },
     {
-      "title": "tour:coursebanners:composition:title,local_course_banner_builder",
-      "content": "tour:coursebanners:composition:content,local_course_banner_builder",
+      "title": "Paramètres de la source",
+      "content": "<p>Les paramètres de source contrôlent la composition : mode cumulatif ou aléatoire, règles d'héritage, comportement par défaut des images, et options propres aux sources de champ personnalisé.</p><p>Le mode cumulatif empile les calques. Le mode aléatoire garde l'ordre pour l'édition mais n'affiche qu'une image active à la fois.</p>",
       "contentformat": "1",
       "targettype": "0",
       "targetvalue": ".local-course-banner-builder-settings-action",
@@ -73,67 +73,85 @@
       "configdata": "{\"placement\":\"bottom\"}"
     },
     {
-      "title": "tour:coursebanners:add:title,local_course_banner_builder",
-      "content": "tour:coursebanners:add:content,local_course_banner_builder",
+      "title": "Aperçu général",
+      "content": "<p>L'aperçu général montre le rendu effectif de la source : images, bordures, overlay, titre de bannière et calques hérités selon le contexte.</p><p>Les boutons Show/Hide permettent de masquer temporairement la bordure, l'overlay ou le titre pour travailler plus lisiblement. Cette action ne supprime rien.</p>",
       "contentformat": "1",
       "targettype": "0",
-      "targetvalue": ".local-course-banner-builder-add-layer-primary",
+      "targetvalue": ".local-course-banner-builder-source-preview-panel",
       "sortorder": "7",
+      "configdata": "{\"placement\":\"top\"}"
+    },
+    {
+      "title": "Boutons à droite de l'aperçu",
+      "content": "<p>Les boutons placés à droite de l'aperçu ouvrent les réglages importants de l'élément sélectionné : édition de bordure, édition d'overlay, édition du titre, options d'image, opacité, position au-dessus de la bordure ou de l'overlay.</p><p>Ils ne s'affichent que lorsque le contexte le permet. Par exemple, Edit overlay apparaît uniquement si un overlay existe dans la source ou la chaîne pertinente.</p>",
+      "contentformat": "1",
+      "targettype": "0",
+      "targetvalue": ".local-course-banner-builder-source-preview-button",
+      "sortorder": "8",
+      "configdata": "{\"placement\":\"left\"}"
+    },
+    {
+      "title": "Titres de bannière de cours et d'activité",
+      "content": "<p>Les titres de bannière contrôlent le texte affiché dans la bannière de cours ou d'activité. Le style peut être hérité ou personnalisé : police, taille du texte, frame, line highlight, ombres, alignement et position.</p><p>Le titre d'activité et le titre de cours peuvent avoir des règles différentes. L'option Replace Moodle course title permet d'éviter un doublon avec le titre Moodle standard quand le titre est déjà intégré à la bannière.</p><p>Les options Title above border et Title above overlay décident si le titre passe devant ces calques spéciaux. Si elles sont désactivées, la bordure ou l'overlay doivent pouvoir rester au-dessus du titre.</p>",
+      "contentformat": "1",
+      "targettype": "2",
+      "targetvalue": "",
+      "sortorder": "9",
       "configdata": "{\"placement\":\"bottom\"}"
     },
     {
-      "title": "tour:coursebanners:toolbar:title,local_course_banner_builder",
-      "content": "tour:coursebanners:toolbar:content,local_course_banner_builder",
+      "title": "Icônes sous l'aperçu",
+      "content": "<p>La barre d'icônes sert au travail rapide : annuler, rétablir, aimanter sur les guides, recentrer, recadrer, cacher un calque, figer une image au centre, envoyer derrière ou ramener devant.</p><p>Ces icônes agissent sur l'élément sélectionné. Si une image est forcée au-dessus d'une bordure, d'un overlay ou de l'héritage, les commandes d'ordre peuvent être désactivées car son ordre devient fixe.</p>",
       "contentformat": "1",
       "targettype": "0",
       "targetvalue": ".local-course-banner-builder-source-preview-canvas",
-      "sortorder": "8",
+      "sortorder": "10",
       "configdata": "{\"placement\":\"bottom\"}"
     },
     {
-      "title": "tour:coursebanners:filmstrip:title,local_course_banner_builder",
-      "content": "tour:coursebanners:filmstrip:content,local_course_banner_builder",
+      "title": "Sélection visuelle",
+      "content": "<p>Cliquez un calque dans l'aperçu ou dans le carrousel sous l'aperçu pour le sélectionner. Le contour de sélection reste visible même si le calque est partiellement derrière un autre élément.</p><p>Cliquer en dehors de l'élément désélectionne le calque et évite de modifier le mauvais élément.</p>",
       "contentformat": "1",
       "targettype": "0",
-      "targetvalue": "[data-source-preview-filmstrip=\"1\"]",
-      "sortorder": "9",
-      "configdata": "{\"placement\":\"top\"}"
-    },
-    {
-      "title": "tour:coursebanners:layers:title,local_course_banner_builder",
-      "content": "tour:coursebanners:layers:content,local_course_banner_builder",
-      "contentformat": "1",
-      "targettype": "0",
-      "targetvalue": ".local-course-banner-builder-layer-table",
-      "sortorder": "10",
-      "configdata": "{\"placement\":\"top\"}"
-    },
-    {
-      "title": "tour:coursebanners:sources:title,local_course_banner_builder",
-      "content": "tour:coursebanners:sources:content,local_course_banner_builder",
-      "contentformat": "1",
-      "targettype": "0",
-      "targetvalue": ".local-course-banner-builder-configured-sources-table",
+      "targetvalue": "[data-source-preview-filmstrip='1']",
       "sortorder": "11",
       "configdata": "{\"placement\":\"top\"}"
     },
     {
-      "title": "tour:coursebanners:save:title,local_course_banner_builder",
-      "content": "tour:coursebanners:save:content,local_course_banner_builder",
+      "title": "Ajouter un calque",
+      "content": "<p>Ce bouton ouvre la modale d'ajout de calques. Vous pouvez ajouter des images, une bordure ou un overlay.</p><p>Une source ou une chaîne de sources ne peut contenir qu'une bordure active et un overlay actif. Le plugin bloque l'ajout lorsque cette règle est déjà satisfaite.</p>",
       "contentformat": "1",
       "targettype": "0",
-      "targetvalue": ".local-course-banner-builder-bulk-action-row",
+      "targetvalue": ".local-course-banner-builder-add-layer-primary",
       "sortorder": "12",
+      "configdata": "{\"placement\":\"bottom\"}"
+    },
+    {
+      "title": "Liste des calques",
+      "content": "<p>La colonne Banner layer ne contient que des aperçus. La colonne Layer infos & overrides résume les informations utiles : taille, crop, bordure, overlay, opacité, ou état poussé au-dessus/dessous d'autres calques.</p><p>Les images normales peuvent être glissées pour modifier leur sort order. Les bordures, overlays et images avec un ordre forcé sont verrouillés et affichent une icône explicative.</p>",
+      "contentformat": "1",
+      "targettype": "0",
+      "targetvalue": ".local-course-banner-builder-layer-table",
+      "sortorder": "13",
       "configdata": "{\"placement\":\"top\"}"
     },
     {
-      "title": "tour:coursebanners:performance:title,local_course_banner_builder",
-      "content": "tour:coursebanners:performance:content,local_course_banner_builder",
+      "title": "Bordures et overlays",
+      "content": "<p>Une bordure est un calque spécial : son ordre est fixe, elle se rend autour de la bannière, et elle peut être placée au-dessus ou sous certains éléments selon les options.</p><p>Un overlay est aussi un calque spécial : il applique une couleur et une opacité sur la bannière, et peut passer sous ou au-dessus du titre et de la bordure selon les réglages.</p>",
       "contentformat": "1",
-      "targettype": "2",
-      "targetvalue": "",
-      "sortorder": "13",
-      "configdata": "{\"placement\":\"bottom\"}"
+      "targettype": "0",
+      "targetvalue": ".local-course-banner-builder-layer-table",
+      "sortorder": "14",
+      "configdata": "{\"placement\":\"top\"}"
+    },
+    {
+      "title": "Enregistrer et régénérer",
+      "content": "<p>Les changements visuels sont stockés dans la configuration du plugin puis utilisés pour générer les bannières. Les images d'aperçu de cours envoyées par les enseignants peuvent être conservées selon les paramètres globaux.</p><p>Après de gros changements, vérifiez un cours réel dans chaque source importante pour confirmer que l'héritage, le titre et les calques rendent comme prévu.</p>",
+      "contentformat": "1",
+      "targettype": "0",
+      "targetvalue": ".local-course-banner-builder-bulk-action-row",
+      "sortorder": "15",
+      "configdata": "{\"placement\":\"top\"}"
     }
   ]
 }
