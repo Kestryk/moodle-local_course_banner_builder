@@ -3194,7 +3194,8 @@ class manager {
         string $customfieldpriority = self::CUSTOMFIELD_PRIORITY_CATEGORY,
         string $sourceparentkey = '',
         bool $sourceisroot = false,
-        bool $sourceinheritchildren = false
+        bool $sourceinheritchildren = false,
+        bool $sync = true
     ): void {
         global $DB;
 
@@ -3257,7 +3258,9 @@ class manager {
         $record->timemodified = time();
         $DB->update_record('local_course_banner_order', $record);
 
-        self::sync_courses_for_source($source);
+        if ($sync) {
+            self::sync_courses_for_source($source);
+        }
     }
 
     /**
@@ -5245,7 +5248,7 @@ class manager {
      * @param int $elementid
      * @return void
      */
-    public static function delete_banner_element(int $elementid): void {
+    public static function delete_banner_element(int $elementid, bool $sync = true): void {
         global $DB;
 
         $record = self::get_banner_element($elementid);
@@ -5264,7 +5267,7 @@ class manager {
         $DB->delete_records('local_course_banner_elements', ['id' => $record->id]);
 
         $source = self::resolve_source(self::get_record_source_key($record));
-        if ($source) {
+        if ($sync && $source) {
             self::sync_courses_for_source($source);
         }
     }
@@ -5275,7 +5278,7 @@ class manager {
      * @param int $categoryid
      * @return void
      */
-    public static function delete_category_content(int $categoryid): void {
+    public static function delete_category_content(int $categoryid, bool $sync = true): void {
         global $DB;
 
         self::delete_category_images($categoryid, false);
@@ -5284,7 +5287,9 @@ class manager {
         } else {
             $DB->delete_records('local_course_banner_order', ['categoryid' => $categoryid]);
         }
-        self::sync_courses_for_category_tree($categoryid);
+        if ($sync) {
+            self::sync_courses_for_category_tree($categoryid);
+        }
     }
 
     /**
@@ -5293,11 +5298,11 @@ class manager {
      * @param \stdClass $source
      * @return void
      */
-    public static function delete_source_content(\stdClass $source): void {
+    public static function delete_source_content(\stdClass $source, bool $sync = true): void {
         global $DB;
 
         if ($source->type === self::SOURCE_TYPE_CATEGORY) {
-            self::delete_category_content((int)$source->categoryid);
+            self::delete_category_content((int)$source->categoryid, $sync);
             return;
         }
 
@@ -5305,7 +5310,9 @@ class manager {
         if (self::table_field_exists('local_course_banner_order', 'sourcekey')) {
             $DB->delete_records('local_course_banner_order', ['sourcekey' => $source->sourcekey]);
         }
-        self::sync_courses_for_source($source);
+        if ($sync) {
+            self::sync_courses_for_source($source);
+        }
     }
 
     /**
@@ -9620,7 +9627,7 @@ class manager {
      *
      * @return void
      */
-    public static function delete_all_configuration(): void {
+    public static function delete_all_configuration(bool $sync = true): void {
         global $DB;
 
         $categoryids = $DB->get_fieldset_select('local_course_banner_elements', 'DISTINCT categoryid', 'categoryid IS NOT NULL');
@@ -9628,9 +9635,12 @@ class manager {
         $hadcustomfieldsources = self::table_field_exists('local_course_banner_elements', 'sourcetype') &&
             $DB->record_exists('local_course_banner_elements', ['sourcetype' => self::SOURCE_TYPE_CUSTOMFIELD]);
         foreach ($DB->get_records('local_course_banner_elements') as $element) {
-            self::delete_banner_element((int)$element->id);
+            self::delete_banner_element((int)$element->id, false);
         }
         $DB->delete_records('local_course_banner_order');
+        if (!$sync) {
+            return;
+        }
         foreach (array_unique(array_map('intval', $categoryids)) as $categoryid) {
             self::sync_courses_for_category_tree($categoryid);
         }
@@ -10794,6 +10804,8 @@ class manager {
      * @return array
      */
     public static function import_configuration(string $json, bool $replaceall = false, array $sections = []): array {
+        global $DB;
+
         $data = json_decode($json, true);
         if (!is_array($data) || empty($data['schema'])) {
             throw new \coding_exception('Invalid course banner builder import payload.');
@@ -10802,29 +10814,35 @@ class manager {
         if (!empty($data['sections']) && is_array($data['sections'])) {
             $sections = self::normalise_import_sections($sections, array_keys($data['sections']));
             $summary = [];
-            if (in_array(self::EXPORT_SECTION_PLUGIN_SETTINGS, $sections, true) &&
-                    !empty($data['sections'][self::EXPORT_SECTION_PLUGIN_SETTINGS])) {
-                if ($replaceall) {
-                    self::delete_plugin_config_values();
+            $transaction = $DB->start_delegated_transaction();
+            try {
+                if (in_array(self::EXPORT_SECTION_PLUGIN_SETTINGS, $sections, true) &&
+                        !empty($data['sections'][self::EXPORT_SECTION_PLUGIN_SETTINGS])) {
+                    if ($replaceall) {
+                        self::delete_plugin_config_values();
+                    }
+                    $summary += self::import_plugin_settings_configuration(
+                        $data['sections'][self::EXPORT_SECTION_PLUGIN_SETTINGS]
+                    );
                 }
-                $summary += self::import_plugin_settings_configuration(
-                    $data['sections'][self::EXPORT_SECTION_PLUGIN_SETTINGS]
-                );
-            }
-            if (in_array(self::EXPORT_SECTION_COURSE_BANNERS, $sections, true) &&
-                    !empty($data['sections'][self::EXPORT_SECTION_COURSE_BANNERS])) {
-                if ($replaceall) {
-                    self::delete_all_configuration();
+                if (in_array(self::EXPORT_SECTION_COURSE_BANNERS, $sections, true) &&
+                        !empty($data['sections'][self::EXPORT_SECTION_COURSE_BANNERS])) {
+                    if ($replaceall) {
+                        self::delete_all_configuration(false);
+                    }
+                    $summary += self::import_course_banner_configuration($data['sections'][self::EXPORT_SECTION_COURSE_BANNERS]);
                 }
-                $summary += self::import_course_banner_configuration($data['sections'][self::EXPORT_SECTION_COURSE_BANNERS]);
-            }
-            if (in_array(self::EXPORT_SECTION_SLIDESHOW, $sections, true) &&
-                    !empty($data['sections'][self::EXPORT_SECTION_SLIDESHOW])) {
-                $summary += self::import_slideshow_configuration($data['sections'][self::EXPORT_SECTION_SLIDESHOW]);
-            }
-            if (in_array(self::EXPORT_SECTION_SITE_BANNERS, $sections, true) &&
-                    !empty($data['sections'][self::EXPORT_SECTION_SITE_BANNERS])) {
-                $summary += self::import_site_banner_configuration($data['sections'][self::EXPORT_SECTION_SITE_BANNERS]);
+                if (in_array(self::EXPORT_SECTION_SLIDESHOW, $sections, true) &&
+                        !empty($data['sections'][self::EXPORT_SECTION_SLIDESHOW])) {
+                    $summary += self::import_slideshow_configuration($data['sections'][self::EXPORT_SECTION_SLIDESHOW]);
+                }
+                if (in_array(self::EXPORT_SECTION_SITE_BANNERS, $sections, true) &&
+                        !empty($data['sections'][self::EXPORT_SECTION_SITE_BANNERS])) {
+                    $summary += self::import_site_banner_configuration($data['sections'][self::EXPORT_SECTION_SITE_BANNERS]);
+                }
+                $transaction->allow_commit();
+            } catch (\Throwable $e) {
+                $transaction->rollback($e);
             }
             theme_reset_all_caches();
             return $summary;
@@ -10834,10 +10852,18 @@ class manager {
             throw new \coding_exception('Invalid course banner builder import payload.');
         }
 
-        if ($replaceall) {
-            self::delete_all_configuration();
+        $transaction = $DB->start_delegated_transaction();
+        try {
+            if ($replaceall) {
+                self::delete_all_configuration(false);
+            }
+            $summary = self::import_legacy_course_banner_configuration($data['categories']);
+            $transaction->allow_commit();
+        } catch (\Throwable $e) {
+            $transaction->rollback($e);
         }
-        return self::import_legacy_course_banner_configuration($data['categories']);
+        theme_reset_all_caches();
+        return $summary;
     }
 
     /**
@@ -10975,7 +11001,7 @@ class manager {
         foreach ($resolvedsources as [$sourcedata, $source]) {
             $parentkey = self::resolve_import_parent_key($sourcedata, $sourcekeymap, $fieldmap);
 
-            self::delete_source_content($source);
+            self::delete_source_content($source, false);
             self::save_source_settings(
                 $source,
                 (string)($sourcedata['settings']['compositionmode'] ?? self::MODE_CUMULATIVE),
@@ -10984,7 +11010,8 @@ class manager {
                 (string)($sourcedata['settings']['customfieldpriority'] ?? self::CUSTOMFIELD_PRIORITY_CATEGORY),
                 $parentkey,
                 !empty($sourcedata['settings']['sourceisroot']),
-                !empty($sourcedata['settings']['sourceinheritchildren'])
+                !empty($sourcedata['settings']['sourceinheritchildren']),
+                false
             );
             self::import_extra_source_settings_fields($source, $sourcedata['settings'] ?? []);
 
@@ -10992,7 +11019,6 @@ class manager {
                 self::import_source_element($source, $elementdata);
             }
 
-            self::sync_courses_for_source($source);
             $imported++;
         }
 
@@ -11013,7 +11039,8 @@ class manager {
                 (string)($settings->customfieldpriority ?? self::CUSTOMFIELD_PRIORITY_CATEGORY),
                 $parentkey,
                 false,
-                !empty($settings->sourceinheritchildren)
+                !empty($settings->sourceinheritchildren),
+                false
             );
             self::import_extra_source_settings_fields($source, $sourcedata['settings'] ?? []);
         }
@@ -11161,7 +11188,7 @@ class manager {
         $imported = 0;
         if (!empty($data['source']) && is_array($data['source'])) {
             $source = self::get_site_source();
-            self::delete_source_content($source);
+            self::delete_source_content($source, false);
             self::save_source_settings(
                 $source,
                 (string)($data['source']['settings']['compositionmode'] ?? self::MODE_CUMULATIVE),
@@ -11170,13 +11197,13 @@ class manager {
                 (string)($data['source']['settings']['customfieldpriority'] ?? self::CUSTOMFIELD_PRIORITY_CATEGORY),
                 '',
                 true,
+                false,
                 false
             );
             self::import_extra_source_settings_fields($source, $data['source']['settings'] ?? []);
             foreach (($data['source']['elements'] ?? []) as $elementdata) {
                 self::import_source_element($source, $elementdata);
             }
-            self::sync_courses_for_source($source);
             $imported = 1;
         } else {
             $legacy = self::import_easyedu_theme_configuration($data);
@@ -11514,18 +11541,22 @@ class manager {
             if (!$source) {
                 continue;
             }
-            self::delete_source_content($source);
+            self::delete_source_content($source, false);
             self::save_source_settings(
                 $source,
                 (string)($categorydata['settings']['compositionmode'] ?? self::MODE_CUMULATIVE),
                 (string)($categorydata['settings']['fitmode'] ?? self::FIT_MODE_ORIGINAL),
-                (string)($categorydata['settings']['fitapplyscope'] ?? self::FIT_SCOPE_DESCENDANTS)
+                (string)($categorydata['settings']['fitapplyscope'] ?? self::FIT_SCOPE_DESCENDANTS),
+                self::CUSTOMFIELD_PRIORITY_CATEGORY,
+                '',
+                false,
+                false,
+                false
             );
             self::import_extra_source_settings_fields($source, $categorydata['settings'] ?? []);
             foreach (($categorydata['elements'] ?? []) as $elementdata) {
                 self::import_source_element($source, $elementdata);
             }
-            self::sync_courses_for_source($source);
             $imported++;
         }
 

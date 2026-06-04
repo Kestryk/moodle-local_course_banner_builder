@@ -1,67 +1,67 @@
 {
-  "name": "Course Banner Builder - Site layer modals",
-  "description": "Guided tour for adding and editing site banner layers.",
-  "pathmatch": "/local/course_banner_builder/admin_site.php%",
-  "enabled": "1",
-  "sortorder": "1",
-  "endtourlabel": "",
-  "configdata": "{\"placement\":\"bottom\",\"orphan\":\"1\",\"backdrop\":\"1\",\"reflex\":\"0\",\"showtourwhen\":\"0\"}",
-  "displaystepnumbers": true,
-  "version": "2026060301",
-  "steps": [
-    {
-      "title": "Modales de calques de site",
-      "content": "<p>Ces modales règlent les calques de la bannière de site. La logique est proche des bannières de cours, mais sans chaîne de catégories.</p><p>Les aperçus doivent afficher le titre du site et les calques de site, pas un titre d'activité.</p>",
-      "contentformat": "1",
-      "targettype": "2",
-      "targetvalue": "",
-      "sortorder": "0",
-      "configdata": "{\"placement\":\"bottom\"}"
-    },
-    {
-      "title": "Image, bordure ou overlay",
-      "content": "<p>Le sélecteur de type crée un calque image, une bordure ou un overlay. Les images peuvent être multiples, tandis que bordure et overlay restent uniques dans la source de site.</p>",
-      "contentformat": "1",
-      "targettype": "0",
-      "targetvalue": ".local-course-banner-builder-layer-type-toggle",
-      "sortorder": "1",
-      "configdata": "{\"placement\":\"bottom\"}"
-    },
-    {
-      "title": "Overlay de site",
-      "content": "<p>Dans la bannière de site, l'overlay de bannière ne choisit pas de cible diaporama. Il modifie uniquement l'overlay de la bannière.</p><p>Le diaporama de site hérite de son propre style par défaut depuis l'administration des diaporamas.</p>",
-      "contentformat": "1",
-      "targettype": "0",
-      "targetvalue": "[data-overlay-section='1']",
-      "sortorder": "2",
-      "configdata": "{\"placement\":\"top\"}"
-    },
-    {
-      "title": "Aperçu et calques de site",
-      "content": "<p>Show other layers affiche les autres calques de la bannière de site avec le titre du site et le style de titre actuellement enregistré.</p><p>Utilisez cet aperçu pour vérifier les interactions entre image, bordure, overlay et titre avant sauvegarde.</p>",
-      "contentformat": "1",
-      "targettype": "0",
-      "targetvalue": ".local-course-banner-builder-banner-preview-panel",
-      "sortorder": "3",
-      "configdata": "{\"placement\":\"top\"}"
-    },
-    {
-      "title": "Images de site",
-      "content": "<p>Les images de site peuvent être agrandies au-delà du cadre pour créer un fond. Si vous utilisez le mode figé au centre, l'image essaie de conserver la zone choisie dans le cadre de bannière lors du responsive.</p><p>Les options Push above border et Push above overlay forcent l'image à rester au-dessus de ces calques spéciaux.</p>",
-      "contentformat": "1",
-      "targettype": "0",
-      "targetvalue": ".local-course-banner-builder-preview-image-layer--current",
-      "sortorder": "4",
-      "configdata": "{\"placement\":\"top\"}"
-    },
-    {
-      "title": "Sauvegarde",
-      "content": "<p>Save layer(s) applique les changements à la source de site. Après sauvegarde, contrôlez l'aperçu général et une page réelle du site pour confirmer le rendu responsive.</p>",
-      "contentformat": "1",
-      "targettype": "0",
-      "targetvalue": "[data-modal-preview-submit-proxy='1']",
-      "sortorder": "5",
-      "configdata": "{\"placement\":\"top\"}"
-    }
-  ]
+    "name": "tour:sitelayermodals:current:name,local_course_banner_builder",
+    "description": "tour:sitelayermodals:current:description,local_course_banner_builder",
+    "pathmatch": "/local/course_banner_builder/admin_site.php%",
+    "enabled": "1",
+    "sortorder": "1",
+    "endtourlabel": "",
+    "configdata": "{\"placement\":\"bottom\",\"orphan\":\"1\",\"backdrop\":\"1\",\"reflex\":\"0\",\"showtourwhen\":\"0\"}",
+    "displaystepnumbers": true,
+    "version": "2026060302",
+    "steps": [
+        {
+            "title": "tour:sitelayermodals:current:intro:title,local_course_banner_builder",
+            "content": "tour:sitelayermodals:current:intro:content,local_course_banner_builder",
+            "contentformat": "1",
+            "targettype": "2",
+            "targetvalue": "",
+            "sortorder": "0",
+            "configdata": "{\"placement\":\"bottom\"}"
+        },
+        {
+            "title": "tour:sitelayermodals:current:type:title,local_course_banner_builder",
+            "content": "tour:sitelayermodals:current:type:content,local_course_banner_builder",
+            "contentformat": "1",
+            "targettype": "0",
+            "targetvalue": ".local-course-banner-builder-layer-type-toggle",
+            "sortorder": "1",
+            "configdata": "{\"placement\":\"bottom\"}"
+        },
+        {
+            "title": "tour:sitelayermodals:current:overlay:title,local_course_banner_builder",
+            "content": "tour:sitelayermodals:current:overlay:content,local_course_banner_builder",
+            "contentformat": "1",
+            "targettype": "0",
+            "targetvalue": "[data-overlay-section='1']",
+            "sortorder": "2",
+            "configdata": "{\"placement\":\"top\"}"
+        },
+        {
+            "title": "tour:sitelayermodals:current:preview:title,local_course_banner_builder",
+            "content": "tour:sitelayermodals:current:preview:content,local_course_banner_builder",
+            "contentformat": "1",
+            "targettype": "0",
+            "targetvalue": ".local-course-banner-builder-banner-preview-panel",
+            "sortorder": "3",
+            "configdata": "{\"placement\":\"top\"}"
+        },
+        {
+            "title": "tour:sitelayermodals:current:images:title,local_course_banner_builder",
+            "content": "tour:sitelayermodals:current:images:content,local_course_banner_builder",
+            "contentformat": "1",
+            "targettype": "0",
+            "targetvalue": ".local-course-banner-builder-preview-image-layer--current",
+            "sortorder": "4",
+            "configdata": "{\"placement\":\"top\"}"
+        },
+        {
+            "title": "tour:sitelayermodals:current:save:title,local_course_banner_builder",
+            "content": "tour:sitelayermodals:current:save:content,local_course_banner_builder",
+            "contentformat": "1",
+            "targettype": "0",
+            "targetvalue": "[data-modal-preview-submit-proxy='1']",
+            "sortorder": "5",
+            "configdata": "{\"placement\":\"top\"}"
+        }
+    ]
 }

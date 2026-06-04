@@ -32,10 +32,22 @@ $replaceall = optional_param('replaceall', 0, PARAM_BOOL);
 $exportsections = optional_param_array('exportsections', [], PARAM_ALPHAEXT);
 $importsections = optional_param_array('importsections', [], PARAM_ALPHAEXT);
 
-admin_externalpage_setup('local_course_banner_builder_transfer');
-require_capability('local/course_banner_builder:manage', context_system::instance());
-
 $url = new moodle_url('/local/course_banner_builder/admin_transfer.php');
+require_login();
+require_capability('local/course_banner_builder:manage', context_system::instance());
+try {
+    admin_externalpage_setup('local_course_banner_builder_transfer');
+} catch (\moodle_exception $exception) {
+    if ($exception->errorcode !== 'sectionerror') {
+        throw $exception;
+    }
+    $PAGE->set_context(context_system::instance());
+    $PAGE->set_url($url);
+    $PAGE->set_pagelayout('admin');
+    $PAGE->set_title(get_string('exportimport', 'local_course_banner_builder'));
+    $PAGE->set_heading(get_string('pluginname', 'local_course_banner_builder'));
+}
+
 $PAGE->set_url($url);
 $PAGE->set_context(context_system::instance());
 $PAGE->set_title(get_string('exportimport', 'local_course_banner_builder'));

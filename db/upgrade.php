@@ -807,5 +807,11 @@ function xmldb_local_course_banner_builder_upgrade(int $oldversion): bool {
         upgrade_plugin_savepoint(true, 2026060301, 'local', 'course_banner_builder');
     }
 
+    if ($oldversion < 2026060302) {
+        \local_course_banner_builder\local\usertours::install_or_update();
+
+        upgrade_plugin_savepoint(true, 2026060302, 'local', 'course_banner_builder');
+    }
+
     return true;
 }

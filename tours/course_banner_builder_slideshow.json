@@ -1,121 +1,121 @@
 {
-  "name": "Course Banner Builder - Slideshows",
-  "description": "Complete guided tour for site and course slideshow settings.",
-  "pathmatch": "/local/course_banner_builder/admin_slideshow.php%",
-  "enabled": "1",
-  "sortorder": "0",
-  "endtourlabel": "",
-  "configdata": "{\"placement\":\"bottom\",\"orphan\":\"1\",\"backdrop\":\"1\",\"reflex\":\"0\",\"showtourwhen\":\"1\"}",
-  "displaystepnumbers": true,
-  "version": "2026060301",
-  "steps": [
-    {
-      "title": "Rôle des diaporamas",
-      "content": "<p>Les diaporamas ajoutent des slides dynamiques au-dessus des bannières. Ils peuvent afficher des annonces de site, annonces de cours, activités à venir, devoirs ou quiz selon le contexte activé.</p><p>La première slide peut cohabiter avec la bannière et son titre. Les slides suivantes ne doivent jamais afficher le titre de bannière fixe.</p>",
-      "contentformat": "1",
-      "targettype": "2",
-      "targetvalue": "",
-      "sortorder": "0",
-      "configdata": "{\"placement\":\"bottom\"}"
-    },
-    {
-      "title": "Deux contextes distincts",
-      "content": "<p>Les réglages du diaporama de site et du diaporama de cours sont séparés. Vous pouvez donc avoir une apparence, des types de contenus et des limites différentes selon l'endroit où la bannière est affichée.</p>",
-      "contentformat": "1",
-      "targettype": "0",
-      "targetvalue": ".local-course-banner-builder-slideshow-admin-grid",
-      "sortorder": "1",
-      "configdata": "{\"placement\":\"top\"}"
-    },
-    {
-      "title": "Activation et conditions",
-      "content": "<p>Les interrupteurs activent le contexte ou un type de contenu. Un réglage désactivé reste sauvegardé mais ne génère pas de slide.</p><p>Les annonces de site peuvent aussi expirer après un nombre de jours, et le nombre total de slides est plafonné par le plugin pour garder la bannière lisible.</p>",
-      "contentformat": "1",
-      "targettype": "0",
-      "targetvalue": "[data-local-slideshow-toggle-button='1']",
-      "sortorder": "2",
-      "configdata": "{\"placement\":\"bottom\"}"
-    },
-    {
-      "title": "Paramètres par défaut",
-      "content": "<p>Les boutons de paramètres par défaut appliquent les valeurs de référence du plugin au diaporama de site ou de cours.</p><p>Ils servent à retrouver une base cohérente après des essais de style, de position ou de typographie.</p>",
-      "contentformat": "1",
-      "targettype": "0",
-      "targetvalue": ".local-course-banner-builder-slideshow-defaults-button",
-      "sortorder": "3",
-      "configdata": "{\"placement\":\"bottom\"}"
-    },
-    {
-      "title": "Edit appearance",
-      "content": "<p>Edit appearance ouvre l'éditeur visuel du diaporama. C'est l'endroit principal pour régler la couleur d'overlay, les textes, les labels, le bouton View, les ombres et les positions.</p><p>Utilisez-le après avoir choisi les types de slides à afficher.</p>",
-      "contentformat": "1",
-      "targettype": "0",
-      "targetvalue": ".local-course-banner-builder-slideshow-actions",
-      "sortorder": "4",
-      "configdata": "{\"placement\":\"bottom\"}"
-    },
-    {
-      "title": "Aperçu interactif",
-      "content": "<p>L'aperçu du diaporama utilise le format de bannière sélectionné. Il montre un titre, un paragraphe, des labels et le bouton View avec des longueurs proches du rendu réel.</p><p>Les éléments peuvent être déplacés pour enregistrer leur position en pourcentage.</p>",
-      "contentformat": "1",
-      "targettype": "0",
-      "targetvalue": ".local-course-banner-builder-slideshow-admin-preview",
-      "sortorder": "5",
-      "configdata": "{\"placement\":\"top\"}"
-    },
-    {
-      "title": "Icônes sous l'aperçu",
-      "content": "<p>Les icônes servent à annuler, rétablir, aimanter sur les guides, recentrer, basculer les styles de texte et gérer l'affichage des éléments. Elles fonctionnent sur l'élément sélectionné.</p><p>Les mêmes logiques visuelles sont reprises dans les éditeurs de titre et de calques pour garder une interface cohérente.</p>",
-      "contentformat": "1",
-      "targettype": "0",
-      "targetvalue": ".local-course-banner-builder-slideshow-preview-toolbar",
-      "sortorder": "6",
-      "configdata": "{\"placement\":\"top\"}"
-    },
-    {
-      "title": "Overlay du diaporama",
-      "content": "<p>L'overlay du diaporama améliore la lisibilité du texte sur des images variées. Réglez sa couleur et son opacité ici pour le diaporama concerné.</p><p>Les overlays de bannière de site ne remplacent pas ce style. Les overlays de cours peuvent l'utiliser comme référence selon leur cible.</p>",
-      "contentformat": "1",
-      "targettype": "0",
-      "targetvalue": "[data-slideshow-overlay-settings='1']",
-      "sortorder": "7",
-      "configdata": "{\"placement\":\"top\"}"
-    },
-    {
-      "title": "Texte du diaporama",
-      "content": "<p>Les réglages de texte contrôlent le titre de slide, le paragraphe et le bouton View. Le paragraphe doit être testé avec un exemple long car le contenu réel de Moodle varie fortement.</p><p>Les tailles, line height, graisse, italique, souligné et barré doivent rester lisibles sur tous les formats de bannière.</p>",
-      "contentformat": "1",
-      "targettype": "0",
-      "targetvalue": "[data-slideshow-text-settings='1']",
-      "sortorder": "8",
-      "configdata": "{\"placement\":\"top\"}"
-    },
-    {
-      "title": "Labels et bouton View",
-      "content": "<p>Les labels identifient le type de slide ou le cours associé. Le bouton View est l'action qui mène vers l'annonce, l'activité ou le contenu concerné.</p><p>Les positions par défaut doivent garder un espace suffisant entre titre, paragraphe et bouton, y compris lorsque le paragraphe affiche deux lignes.</p>",
-      "contentformat": "1",
-      "targettype": "0",
-      "targetvalue": "[data-slideshow-label-layout-settings='1']",
-      "sortorder": "9",
-      "configdata": "{\"placement\":\"top\"}"
-    },
-    {
-      "title": "Format de bannière",
-      "content": "<p>Le format sélectionné influence le cadre de l'aperçu. Un design réussi doit être vérifié dans le format de site et le format de cours, surtout si les tailles de texte sont élevées.</p>",
-      "contentformat": "1",
-      "targettype": "0",
-      "targetvalue": ".local-course-banner-builder-admin-format-button",
-      "sortorder": "10",
-      "configdata": "{\"placement\":\"bottom\"}"
-    },
-    {
-      "title": "Sauvegarder",
-      "content": "<p>Enregistrez les réglages du diaporama après modification. Le plugin enregistre la configuration visuelle et les règles d'affichage, mais récupère les contenus de slide depuis Moodle au moment du rendu.</p>",
-      "contentformat": "1",
-      "targettype": "0",
-      "targetvalue": "[data-action='local-course-banner-builder-save-all-slideshows']",
-      "sortorder": "11",
-      "configdata": "{\"placement\":\"top\"}"
-    }
-  ]
+    "name": "tour:slideshow:current:name,local_course_banner_builder",
+    "description": "tour:slideshow:current:description,local_course_banner_builder",
+    "pathmatch": "/local/course_banner_builder/admin_slideshow.php%",
+    "enabled": "1",
+    "sortorder": "0",
+    "endtourlabel": "",
+    "configdata": "{\"placement\":\"bottom\",\"orphan\":\"1\",\"backdrop\":\"1\",\"reflex\":\"0\",\"showtourwhen\":\"1\"}",
+    "displaystepnumbers": true,
+    "version": "2026060302",
+    "steps": [
+        {
+            "title": "tour:slideshow:current:purpose:title,local_course_banner_builder",
+            "content": "tour:slideshow:current:purpose:content,local_course_banner_builder",
+            "contentformat": "1",
+            "targettype": "2",
+            "targetvalue": "",
+            "sortorder": "0",
+            "configdata": "{\"placement\":\"bottom\"}"
+        },
+        {
+            "title": "tour:slideshow:current:contexts:title,local_course_banner_builder",
+            "content": "tour:slideshow:current:contexts:content,local_course_banner_builder",
+            "contentformat": "1",
+            "targettype": "0",
+            "targetvalue": ".local-course-banner-builder-slideshow-admin-grid",
+            "sortorder": "1",
+            "configdata": "{\"placement\":\"top\"}"
+        },
+        {
+            "title": "tour:slideshow:current:activation:title,local_course_banner_builder",
+            "content": "tour:slideshow:current:activation:content,local_course_banner_builder",
+            "contentformat": "1",
+            "targettype": "0",
+            "targetvalue": "[data-local-slideshow-toggle-button='1']",
+            "sortorder": "2",
+            "configdata": "{\"placement\":\"bottom\"}"
+        },
+        {
+            "title": "tour:slideshow:current:defaults:title,local_course_banner_builder",
+            "content": "tour:slideshow:current:defaults:content,local_course_banner_builder",
+            "contentformat": "1",
+            "targettype": "0",
+            "targetvalue": ".local-course-banner-builder-slideshow-defaults-button",
+            "sortorder": "3",
+            "configdata": "{\"placement\":\"bottom\"}"
+        },
+        {
+            "title": "tour:slideshow:current:appearance:title,local_course_banner_builder",
+            "content": "tour:slideshow:current:appearance:content,local_course_banner_builder",
+            "contentformat": "1",
+            "targettype": "0",
+            "targetvalue": ".local-course-banner-builder-slideshow-actions",
+            "sortorder": "4",
+            "configdata": "{\"placement\":\"bottom\"}"
+        },
+        {
+            "title": "tour:slideshow:current:preview:title,local_course_banner_builder",
+            "content": "tour:slideshow:current:preview:content,local_course_banner_builder",
+            "contentformat": "1",
+            "targettype": "0",
+            "targetvalue": ".local-course-banner-builder-slideshow-admin-preview",
+            "sortorder": "5",
+            "configdata": "{\"placement\":\"top\"}"
+        },
+        {
+            "title": "tour:slideshow:current:icons:title,local_course_banner_builder",
+            "content": "tour:slideshow:current:icons:content,local_course_banner_builder",
+            "contentformat": "1",
+            "targettype": "0",
+            "targetvalue": ".local-course-banner-builder-slideshow-preview-toolbar",
+            "sortorder": "6",
+            "configdata": "{\"placement\":\"top\"}"
+        },
+        {
+            "title": "tour:slideshow:current:overlay:title,local_course_banner_builder",
+            "content": "tour:slideshow:current:overlay:content,local_course_banner_builder",
+            "contentformat": "1",
+            "targettype": "0",
+            "targetvalue": "[data-slideshow-overlay-settings='1']",
+            "sortorder": "7",
+            "configdata": "{\"placement\":\"top\"}"
+        },
+        {
+            "title": "tour:slideshow:current:text:title,local_course_banner_builder",
+            "content": "tour:slideshow:current:text:content,local_course_banner_builder",
+            "contentformat": "1",
+            "targettype": "0",
+            "targetvalue": "[data-slideshow-text-settings='1']",
+            "sortorder": "8",
+            "configdata": "{\"placement\":\"top\"}"
+        },
+        {
+            "title": "tour:slideshow:current:labels:title,local_course_banner_builder",
+            "content": "tour:slideshow:current:labels:content,local_course_banner_builder",
+            "contentformat": "1",
+            "targettype": "0",
+            "targetvalue": "[data-slideshow-label-layout-settings='1']",
+            "sortorder": "9",
+            "configdata": "{\"placement\":\"top\"}"
+        },
+        {
+            "title": "tour:slideshow:current:format:title,local_course_banner_builder",
+            "content": "tour:slideshow:current:format:content,local_course_banner_builder",
+            "contentformat": "1",
+            "targettype": "0",
+            "targetvalue": ".local-course-banner-builder-admin-format-button",
+            "sortorder": "10",
+            "configdata": "{\"placement\":\"bottom\"}"
+        },
+        {
+            "title": "tour:slideshow:current:save:title,local_course_banner_builder",
+            "content": "tour:slideshow:current:save:content,local_course_banner_builder",
+            "contentformat": "1",
+            "targettype": "0",
+            "targetvalue": "[data-action='local-course-banner-builder-save-all-slideshows']",
+            "sortorder": "11",
+            "configdata": "{\"placement\":\"top\"}"
+        }
+    ]
 }
