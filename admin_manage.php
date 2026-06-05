@@ -510,9 +510,21 @@ function local_course_banner_builder_render_title_settings_modal(
     $previewcoursesingle = trim((string)(preg_split('/\R/u', $previewcourse)[0] ?? $previewcoursesingle));
     $previewsitesingle = trim((string)(preg_split('/\R/u', $previewsite)[0] ?? $previewsitesingle));
     $previewactivitysingle = trim((string)(preg_split('/\R/u', $previewactivity)[0] ?? $previewactivitysingle));
-    $previewtitle = $context === 'site' ? $previewsitesingle : ($context === 'activity'
-        ? $previewactivity
-        : $previewcourse);
+    if ($context === 'site') {
+        $previewtitle = $previewsitesingle;
+    } else if ($context === 'activity' && ($values['activitytitlemode'] ?? 'activity') === 'both') {
+        $previewtitle = trim($previewcoursesingle . "\n" . $previewactivitysingle);
+    } else {
+        $previewtitle = $context === 'activity' ? $previewactivity : $previewcourse;
+    }
+    if ($context === 'activity') {
+        $previewtitleparts = preg_split('/\R/u', (string)$previewtitle);
+        $hascoursepreview = in_array($previewcoursesingle, $previewtitleparts, true);
+        $hasactivitypreview = in_array($previewactivitysingle, $previewtitleparts, true);
+        if ($hascoursepreview && $hasactivitypreview) {
+            $previewtitle = trim($previewcoursesingle . "\n" . $previewactivitysingle);
+        }
+    }
     $titlecontextlayers = array_values(array_filter(
         (array)($previewdefinition['contextlayers'] ?? []),
         static function($layer): bool {
@@ -12687,10 +12699,71 @@ function localCourseBannerBuilderGetInlineFrameGapEm(lineHeightPercent) {
     return Math.max(0.14, Math.min(2.1, 0.14 + (((lineHeight - 105) / 100) * 0.45)));
 }
 
+function localCourseBannerBuilderGetFirstTitlePreviewLine(text) {
+    var newline = String.fromCharCode(10);
+    return String(text || '')
+        .split(String.fromCharCode(13) + newline).join(newline)
+        .split(String.fromCharCode(13)).join(newline)
+        .split(' / ').join(newline)
+        .split(newline)[0]
+        .trim();
+}
+
+function localCourseBannerBuilderTitlePreviewContainsLine(lines, expected) {
+    expected = localCourseBannerBuilderGetFirstTitlePreviewLine(expected).toLowerCase();
+    if (!expected) {
+        return false;
+    }
+    return lines.some(function(line) {
+        return localCourseBannerBuilderGetFirstTitlePreviewLine(line).toLowerCase() === expected;
+    });
+}
+
+function localCourseBannerBuilderNormaliseCombinedActivityPreviewLines(lines, courseText, activityText) {
+    var courseFirstLine = localCourseBannerBuilderGetFirstTitlePreviewLine(courseText);
+    var activityFirstLine = localCourseBannerBuilderGetFirstTitlePreviewLine(activityText);
+    if (!courseFirstLine || !activityFirstLine) {
+        return lines;
+    }
+    if (localCourseBannerBuilderTitlePreviewContainsLine(lines, courseFirstLine) &&
+            localCourseBannerBuilderTitlePreviewContainsLine(lines, activityFirstLine)) {
+        return [courseFirstLine, activityFirstLine];
+    }
+    return lines;
+}
+
+function localCourseBannerBuilderReadActivityTitleMode(form) {
+    if (!form) {
+        return 'activity';
+    }
+    var select = form.querySelector('select[name=\"activitytitlemode\"]') ||
+        document.querySelector('.modal.show select[name=\"activitytitlemode\"]');
+    if (select && select.value) {
+        return select.value;
+    }
+    if (select && select.options && select.selectedIndex >= 0) {
+        var selectedText = String(select.options[select.selectedIndex].textContent || '').toLowerCase();
+        if ((selectedText.indexOf('course') !== -1 && selectedText.indexOf('activity') !== -1) ||
+                (selectedText.indexOf('cours') !== -1 && selectedText.indexOf('activ') !== -1)) {
+            return 'both';
+        }
+    }
+    return localCourseBannerBuilderReadTitleValue(form, 'activitytitlemode', 'activity');
+}
+
+function localCourseBannerBuilderIsActivityBothTitlePreview(form) {
+    return !!(form && (form.getAttribute('data-title-current-context') || '') === 'activity' &&
+        localCourseBannerBuilderReadActivityTitleMode(form) === 'both');
+}
+
 function localCourseBannerBuilderBuildTitlePreviewText(form, previewText, previewLabel) {
-    var mode = localCourseBannerBuilderReadTitleValue(form, 'activitytitlemode', 'activity');
+    var mode = localCourseBannerBuilderReadActivityTitleMode(form);
     var lineCount = String(previewText.getAttribute('data-title-preview-line-count') || '2');
     var isSingleLine = lineCount === '1';
+    var courseSingleText = previewText.getAttribute('data-title-preview-course-single') ||
+        previewText.getAttribute('data-title-preview-course') || '';
+    var activitySingleText = previewText.getAttribute('data-title-preview-activity-single') ||
+        previewText.getAttribute('data-title-preview-activity') || previewLabel.textContent;
     var courseText = previewText.getAttribute(isSingleLine ? 'data-title-preview-course-single' : 'data-title-preview-course') ||
         previewText.getAttribute('data-title-preview-course') || '';
     var activityText = previewText.getAttribute(isSingleLine ? 'data-title-preview-activity-single' : 'data-title-preview-activity') ||
@@ -12705,7 +12778,10 @@ function localCourseBannerBuilderBuildTitlePreviewText(form, previewText, previe
         return courseText;
     }
     if (mode === 'both') {
-        return isSingleLine ? [courseText, activityText].filter(Boolean).join(' ') : [courseText, activityText].filter(Boolean).join('\\n');
+        var courseFirstLine = localCourseBannerBuilderGetFirstTitlePreviewLine(courseSingleText || courseText);
+        var activityFirstLine = localCourseBannerBuilderGetFirstTitlePreviewLine(activitySingleText || activityText);
+        return isSingleLine ? [courseFirstLine, activityFirstLine].filter(Boolean).join(' ') :
+            [courseFirstLine, activityFirstLine].filter(Boolean).join(String.fromCharCode(10));
     }
     return activityText;
 }
@@ -12864,7 +12940,13 @@ function localCourseBannerBuilderUpdateTitlePreview(form) {
     var font = localCourseBannerBuilderReadTitleValue(form, 'fontfamily', '');
     var align = localCourseBannerBuilderReadTitleValue(form, 'align', 'center');
     var flexAlign = align === 'left' ? 'flex-start' : (align === 'right' ? 'flex-end' : 'center');
-    var mode = localCourseBannerBuilderReadTitleValue(form, 'activitytitlemode', 'activity');
+    var mode = localCourseBannerBuilderReadActivityTitleMode(form);
+    var courseSingleText = previewText.getAttribute('data-title-preview-course-single') ||
+        previewText.getAttribute('data-title-preview-course') || '';
+    var activitySingleText = previewText.getAttribute('data-title-preview-activity-single') ||
+        previewText.getAttribute('data-title-preview-activity') || previewLabel.textContent;
+    var courseText = previewText.getAttribute('data-title-preview-course') || courseSingleText;
+    var activityText = previewText.getAttribute('data-title-preview-activity') || activitySingleText;
     var titleText = localCourseBannerBuilderBuildTitlePreviewText(form, previewText, previewLabel);
     var highlightFrame = localCourseBannerBuilderReadTitleValue(form, 'frametype', 'box') === 'highlight';
     var aboveBorder = localCourseBannerBuilderReadTitleFlag(form, 'aboveborder', true);
@@ -12935,6 +13017,17 @@ function localCourseBannerBuilderUpdateTitlePreview(form) {
             .split(String.fromCharCode(13) + newline).join(newline)
             .split(String.fromCharCode(13)).join(newline)
             .split(newline);
+        lines = localCourseBannerBuilderNormaliseCombinedActivityPreviewLines(
+            lines,
+            courseSingleText || courseText,
+            activitySingleText || activityText
+        );
+        if (localCourseBannerBuilderIsActivityBothTitlePreview(form)) {
+            lines = [
+                localCourseBannerBuilderGetFirstTitlePreviewLine(courseSingleText || courseText),
+                localCourseBannerBuilderGetFirstTitlePreviewLine(activitySingleText || activityText)
+            ].filter(Boolean);
+        }
         if (String(previewText.getAttribute('data-title-preview-line-count') || '2') === '2' && lines.length === 1) {
             previewText.style.minHeight = 'calc((2 * 1em * ' + (lineHeight / 100).toFixed(4) +
                 ') + var(--local-course-banner-builder-inline-frame-gap, 0.14em))';
@@ -12955,8 +13048,35 @@ function localCourseBannerBuilderUpdateTitlePreview(form) {
             }
         });
     } else {
-        var directTextNode = localCourseBannerBuilderBuildScaledTitleTextNode(titleText, textScale, align);
+        var directLines = String(titleText || '')
+            .split(String.fromCharCode(13) + String.fromCharCode(10)).join(String.fromCharCode(10))
+            .split(String.fromCharCode(13)).join(String.fromCharCode(10))
+            .split(String.fromCharCode(10));
+        directLines = localCourseBannerBuilderNormaliseCombinedActivityPreviewLines(
+            directLines,
+            courseSingleText || courseText,
+            activitySingleText || activityText
+        );
+        var directTextNode = localCourseBannerBuilderBuildScaledTitleTextNode(
+            directLines.join(String.fromCharCode(10)),
+            textScale,
+            align
+        );
         previewText.insertBefore(directTextNode, firstControl || null);
+    }
+    if (localCourseBannerBuilderIsActivityBothTitlePreview(form)) {
+        Array.prototype.slice.call(previewText.querySelectorAll('[data-title-highlight-line=\"1\"]')).forEach(
+            function(lineNode, index) {
+                if (index > 1) {
+                    var previous = lineNode.previousSibling;
+                    if (previous && previous.getAttribute &&
+                            previous.getAttribute('data-title-highlight-break') === '1') {
+                        previous.remove();
+                    }
+                    lineNode.remove();
+                }
+            }
+        );
     }
     localCourseBannerBuilderApplyTextDecorationToTitleNodes(
         previewText,
@@ -13091,6 +13211,12 @@ function localCourseBannerBuilderSyncTitlePreviewLineToggle(form) {
         button.setAttribute('aria-hidden', 'true');
         return;
     }
+    if (localCourseBannerBuilderIsActivityBothTitlePreview(form)) {
+        previewText.setAttribute('data-title-preview-line-count', '2');
+        button.hidden = true;
+        button.setAttribute('aria-hidden', 'true');
+        return;
+    }
     button.hidden = false;
     button.setAttribute('aria-hidden', 'false');
     var lineCount = String(previewText.getAttribute('data-title-preview-line-count') || '2');
@@ -13113,6 +13239,12 @@ function localCourseBannerBuilderToggleTitlePreviewLineCount(form) {
     }
     var previewText = form.querySelector('[data-title-preview-text=\"1\"]');
     if (!previewText) {
+        return;
+    }
+    if (localCourseBannerBuilderIsActivityBothTitlePreview(form)) {
+        previewText.setAttribute('data-title-preview-line-count', '2');
+        localCourseBannerBuilderSyncTitlePreviewLineToggle(form);
+        localCourseBannerBuilderUpdateTitlePreview(form);
         return;
     }
     var current = String(previewText.getAttribute('data-title-preview-line-count') || '2');

@@ -1834,6 +1834,10 @@ JS;
         if ($json === false) {
             return '';
         }
+        $slideshowarialabel = json_encode(get_string('bannerslideshowarialabel', 'local_course_banner_builder'));
+        if ($slideshowarialabel === false) {
+            $slideshowarialabel = '""';
+        }
 
         return <<<JS
 (function() {
@@ -2013,7 +2017,7 @@ JS;
         root.className = 'local-course-banner-builder-slideshow';
         root.setAttribute('data-course-banner-builder-slideshow', '1');
         root.setAttribute('role', 'region');
-        root.setAttribute('aria-label', 'Banner slideshow');
+        root.setAttribute('aria-label', {$slideshowarialabel});
         root.dataset.slideshowIndex = '0';
         root.classList.toggle('is-empty-active', !!(payload.slides[0] && payload.slides[0].empty));
         target.classList.remove('local-course-banner-builder-slideshow-nonbanner-active');

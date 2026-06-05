@@ -31,6 +31,10 @@ $action = optional_param('action', '', PARAM_ALPHA);
 $replaceall = optional_param('replaceall', 0, PARAM_BOOL);
 $exportsections = optional_param_array('exportsections', [], PARAM_ALPHAEXT);
 $importsections = optional_param_array('importsections', [], PARAM_ALPHAEXT);
+$exportincludecategories = optional_param('exportincludecategories', 1, PARAM_BOOL);
+$exportincludecustomfields = optional_param('exportincludecustomfields', 1, PARAM_BOOL);
+$importcreatecategories = optional_param('importcreatecategories', 1, PARAM_BOOL);
+$importcreatecustomfields = optional_param('importcreatecustomfields', 1, PARAM_BOOL);
 
 $url = new moodle_url('/local/course_banner_builder/admin_transfer.php');
 require_login();
@@ -60,7 +64,10 @@ if (optional_param('deleteallpluginsettings', 0, PARAM_BOOL) && confirm_sesskey(
 }
 
 if ($action === 'export' && confirm_sesskey()) {
-    $archivepath = \local_course_banner_builder\manager::create_configuration_export_zip($exportsections);
+    $archivepath = \local_course_banner_builder\manager::create_configuration_export_zip($exportsections, [
+        \local_course_banner_builder\manager::EXPORT_OPTION_INCLUDE_CATEGORIES => (bool)$exportincludecategories,
+        \local_course_banner_builder\manager::EXPORT_OPTION_INCLUDE_CUSTOMFIELDS => (bool)$exportincludecustomfields,
+    ]);
     $filename = 'course_banner_builder_export_' . userdate(time(), '%Y%m%d_%H%M%S') . '.zip';
     header('Content-Type: application/zip');
     header('Content-Disposition: attachment; filename="' . $filename . '"');
@@ -80,7 +87,13 @@ if (optional_param('importconfig', 0, PARAM_BOOL) && confirm_sesskey()) {
                 \local_course_banner_builder\manager::import_configuration_archive(
                     $uploaded['tmp_name'],
                     (bool)$replaceall,
-                    $importsections
+                    $importsections,
+                    [
+                        \local_course_banner_builder\manager::IMPORT_OPTION_CREATE_CATEGORIES =>
+                            (bool)$importcreatecategories,
+                        \local_course_banner_builder\manager::IMPORT_OPTION_CREATE_CUSTOMFIELDS =>
+                            (bool)$importcreatecustomfields,
+                    ]
                 );
             } else {
                 throw new coding_exception('Invalid course banner builder archive.');
@@ -161,9 +174,7 @@ echo html_writer::div(
 echo $OUTPUT->heading(get_string('exportimport', 'local_course_banner_builder'));
 
 echo html_writer::tag('p', get_string('exportconfigdesc', 'local_course_banner_builder'));
-$exportoptionslabel = get_string_manager()->string_exists('exportoptions', 'local_course_banner_builder') ?
-    get_string('exportoptions', 'local_course_banner_builder') : 'Export options';
-echo $OUTPUT->heading($exportoptionslabel, 3);
+echo $OUTPUT->heading(get_string('exportoptions', 'local_course_banner_builder'), 3);
 echo html_writer::start_tag('form', ['method' => 'post', 'action' => $url->out(false), 'class' => 'mb-4']);
 echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]);
 echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'action', 'value' => 'export']);
@@ -174,6 +185,24 @@ foreach (\local_course_banner_builder\manager::get_export_section_options() as $
         'form-check mb-2'
     );
 }
+echo html_writer::div(
+    html_writer::checkbox(
+        'exportincludecategories',
+        1,
+        (bool)$exportincludecategories,
+        get_string('exportincludecategories', 'local_course_banner_builder')
+    ),
+    'form-check mb-2'
+);
+echo html_writer::div(
+    html_writer::checkbox(
+        'exportincludecustomfields',
+        1,
+        (bool)$exportincludecustomfields,
+        get_string('exportincludecustomfields', 'local_course_banner_builder')
+    ),
+    'form-check mb-2'
+);
 echo html_writer::empty_tag('input', [
     'type' => 'submit',
     'value' => get_string('exportconfig', 'local_course_banner_builder'),
@@ -183,8 +212,7 @@ echo html_writer::end_tag('form');
 
 echo $OUTPUT->heading(get_string('importconfig', 'local_course_banner_builder'), 3);
 echo html_writer::tag('p', get_string('importconfigdesc', 'local_course_banner_builder'));
-$archiveuploadlabel = get_string_manager()->string_exists('importarchive', 'local_course_banner_builder') ?
-    get_string('importarchive', 'local_course_banner_builder') : 'Import ZIP archive';
+$archiveuploadlabel = get_string('importarchive', 'local_course_banner_builder');
 echo html_writer::start_tag('form', [
     'method' => 'post',
     'action' => $url->out(false),
@@ -203,15 +231,31 @@ echo html_writer::empty_tag('input', [
 ]);
 echo html_writer::checkbox('replaceall', 1, (bool)$replaceall, get_string('importconfigreplaceall', 'local_course_banner_builder'));
 echo html_writer::div('', 'mb-3');
-$importoptionslabel = get_string_manager()->string_exists('importoptions', 'local_course_banner_builder') ?
-    get_string('importoptions', 'local_course_banner_builder') : 'Import options';
-echo $OUTPUT->heading($importoptionslabel, 4);
+echo $OUTPUT->heading(get_string('importoptions', 'local_course_banner_builder'), 4);
 foreach (\local_course_banner_builder\manager::get_export_section_options() as $section => $label) {
     echo html_writer::div(
         html_writer::checkbox('importsections[]', $section, true, $label),
         'form-check mb-2'
     );
 }
+echo html_writer::div(
+    html_writer::checkbox(
+        'importcreatecategories',
+        1,
+        (bool)$importcreatecategories,
+        get_string('importcreatecategories', 'local_course_banner_builder')
+    ),
+    'form-check mb-2'
+);
+echo html_writer::div(
+    html_writer::checkbox(
+        'importcreatecustomfields',
+        1,
+        (bool)$importcreatecustomfields,
+        get_string('importcreatecustomfields', 'local_course_banner_builder')
+    ),
+    'form-check mb-2'
+);
 echo html_writer::empty_tag('br');
 echo html_writer::empty_tag('input', [
     'type' => 'submit',

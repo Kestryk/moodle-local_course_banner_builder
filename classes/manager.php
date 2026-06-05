@@ -267,6 +267,14 @@ class manager {
     public const EXPORT_SECTION_SLIDESHOW = 'slideshow';
     /** @var string */
     public const EXPORT_SECTION_SITE_BANNERS = 'sitebanners';
+    /** @var string */
+    public const EXPORT_OPTION_INCLUDE_CATEGORIES = 'includecategories';
+    /** @var string */
+    public const EXPORT_OPTION_INCLUDE_CUSTOMFIELDS = 'includecustomfields';
+    /** @var string */
+    public const IMPORT_OPTION_CREATE_CATEGORIES = 'createcategories';
+    /** @var string */
+    public const IMPORT_OPTION_CREATE_CUSTOMFIELDS = 'createcustomfields';
 
     /** @var array */
     protected const HIERARCHY_ROW_CLASSES = [
@@ -9755,15 +9763,55 @@ class manager {
     }
 
     /**
+     * Normalise optional export behaviour flags.
+     *
+     * @param array $options
+     * @return array
+     */
+    public static function normalise_export_options(array $options = []): array {
+        return [
+            self::EXPORT_OPTION_INCLUDE_CATEGORIES => array_key_exists(
+                self::EXPORT_OPTION_INCLUDE_CATEGORIES,
+                $options
+            ) ? !empty($options[self::EXPORT_OPTION_INCLUDE_CATEGORIES]) : true,
+            self::EXPORT_OPTION_INCLUDE_CUSTOMFIELDS => array_key_exists(
+                self::EXPORT_OPTION_INCLUDE_CUSTOMFIELDS,
+                $options
+            ) ? !empty($options[self::EXPORT_OPTION_INCLUDE_CUSTOMFIELDS]) : true,
+        ];
+    }
+
+    /**
+     * Normalise optional import behaviour flags.
+     *
+     * @param array $options
+     * @return array
+     */
+    public static function normalise_import_options(array $options = []): array {
+        return [
+            self::IMPORT_OPTION_CREATE_CATEGORIES => array_key_exists(
+                self::IMPORT_OPTION_CREATE_CATEGORIES,
+                $options
+            ) ? !empty($options[self::IMPORT_OPTION_CREATE_CATEGORIES]) : true,
+            self::IMPORT_OPTION_CREATE_CUSTOMFIELDS => array_key_exists(
+                self::IMPORT_OPTION_CREATE_CUSTOMFIELDS,
+                $options
+            ) ? !empty($options[self::IMPORT_OPTION_CREATE_CUSTOMFIELDS]) : true,
+        ];
+    }
+
+    /**
      * Export current configuration as a versioned array.
      *
      * @param array $sections
+     * @param array $options
      * @return array
      */
-    public static function export_configuration(array $sections = []): array {
+    public static function export_configuration(array $sections = [], array $options = []): array {
         global $CFG;
 
         $sections = self::normalise_export_sections($sections);
+        $options = self::normalise_export_options($options);
         $export = [
             'schema' => self::CONFIG_EXPORT_VERSION,
             'archiveformat' => 'json-with-embedded-files',
@@ -9771,11 +9819,12 @@ class manager {
             'moodleversion' => $CFG->version,
             'exportedat' => time(),
             'selectedsections' => $sections,
+            'exportoptions' => $options,
             'sections' => [],
         ];
 
         if (in_array(self::EXPORT_SECTION_COURSE_BANNERS, $sections, true)) {
-            $coursebannerdata = self::export_course_banner_configuration();
+            $coursebannerdata = self::export_course_banner_configuration($options);
             $export['sections'][self::EXPORT_SECTION_COURSE_BANNERS] = $coursebannerdata;
             $export['categories'] = $coursebannerdata['legacycategories'];
         }
@@ -9796,9 +9845,10 @@ class manager {
      * Create a ZIP export containing a manifest and every referenced image file.
      *
      * @param array $sections
+     * @param array $options
      * @return string Absolute path to the temporary ZIP file.
      */
-    public static function create_configuration_export_zip(array $sections = []): string {
+    public static function create_configuration_export_zip(array $sections = [], array $options = []): string {
         global $CFG;
 
         if (!class_exists('\ZipArchive')) {
@@ -9813,7 +9863,7 @@ class manager {
         $zippath = $filepath . '.zip';
         @rename($filepath, $zippath);
 
-        $export = self::export_configuration($sections);
+        $export = self::export_configuration($sections, $options);
         $export['archiveformat'] = 'zip-with-manifest-and-files';
         $files = [];
         self::extract_embedded_export_files($export, $files);
@@ -9840,9 +9890,15 @@ class manager {
      * @param string $archivepath
      * @param bool $replaceall
      * @param array $sections
+     * @param array $options
      * @return array
      */
-    public static function import_configuration_archive(string $archivepath, bool $replaceall = false, array $sections = []): array {
+    public static function import_configuration_archive(
+        string $archivepath,
+        bool $replaceall = false,
+        array $sections = [],
+        array $options = []
+    ): array {
         if (!class_exists('\ZipArchive')) {
             throw new \coding_exception('The PHP ZipArchive extension is required to import banner settings with files.');
         }
@@ -9869,7 +9925,7 @@ class manager {
         self::hydrate_export_files_from_archive($data, $zip);
         $zip->close();
 
-        return self::import_configuration(json_encode($data), $replaceall, $sections);
+        return self::import_configuration(json_encode($data), $replaceall, $sections, $options);
     }
 
     /**
@@ -10182,11 +10238,13 @@ class manager {
     /**
      * Export every course banner source, rule and layer.
      *
+     * @param array $options
      * @return array
      */
-    protected static function export_course_banner_configuration(): array {
+    protected static function export_course_banner_configuration(array $options = []): array {
         global $DB;
 
+        $options = self::normalise_export_options($options);
         $settings = $DB->get_records('local_course_banner_order', null, 'id ASC');
         $elements = $DB->get_records('local_course_banner_elements', null, 'sortorder ASC, id ASC');
         $sourcekeys = [];
@@ -10205,7 +10263,7 @@ class manager {
             if ($source && self::is_site_source($source)) {
                 continue;
             }
-            $sourceexport = self::export_source_configuration($sourcekey, $source, $settings, $elements, 'coursebanners');
+            $sourceexport = self::export_source_configuration($sourcekey, $source, $settings, $elements, 'coursebanners', $options);
             if (!$sourceexport) {
                 continue;
             }
@@ -10235,9 +10293,10 @@ class manager {
                 'enabledcustomfields' => (string)get_config('local_course_banner_builder', 'enabledcustomfields'),
             ],
             'titleoverlays' => self::export_banner_title_configuration(['course', 'activity']),
-            'customfieldcategories' => self::export_course_customfield_definitions(array_keys($customfieldids)),
+            'customfieldcategories' => !empty($options[self::EXPORT_OPTION_INCLUDE_CUSTOMFIELDS]) ?
+                self::export_course_customfield_definitions(array_keys($customfieldids)) : [],
             'sources' => $sources,
-            'legacycategories' => $legacycategories,
+            'legacycategories' => !empty($options[self::EXPORT_OPTION_INCLUDE_CATEGORIES]) ? $legacycategories : [],
         ];
     }
 
@@ -10248,6 +10307,8 @@ class manager {
      * @param \stdClass|null $source
      * @param array $settingsrecords
      * @param array $elementrecords
+     * @param string $archiveprefix
+     * @param array $options
      * @return array|null
      */
     protected static function export_source_configuration(
@@ -10255,8 +10316,10 @@ class manager {
         ?\stdClass $source,
         array $settingsrecords,
         array $elementrecords,
-        string $archiveprefix = 'coursebanners'
+        string $archiveprefix = 'coursebanners',
+        array $options = []
     ): ?array {
+        $options = self::normalise_export_options($options);
         $settings = null;
         foreach ($settingsrecords as $record) {
             if (self::get_record_source_key($record) === $sourcekey) {
@@ -10284,7 +10347,8 @@ class manager {
             if ($parentsource) {
                 $settingsdata['sourceparent'] = self::export_source_reference(
                     (string)$settingsdata['sourceparentkey'],
-                    $parentsource
+                    $parentsource,
+                    $options
                 );
             }
         }
@@ -10304,7 +10368,8 @@ class manager {
             ];
         } else if ($sourcetype === self::SOURCE_TYPE_CATEGORY) {
             $categoryid = (int)($source->categoryid ?? $settings->categoryid ?? 0);
-            $export['category'] = self::export_course_category_identity($categoryid);
+            $export['category'] = !empty($options[self::EXPORT_OPTION_INCLUDE_CATEGORIES]) ?
+                self::export_course_category_identity($categoryid) : [];
         } else {
             $fieldid = (int)($source->customfieldid ?? $settings->coursecustomfieldid ?? $settings->customfieldid ?? 0);
             $export['customfield'] = self::export_customfield_identity($fieldid, (string)($source->customfieldvalue ?? $settings->customfieldvalue ?? ''));
@@ -10318,9 +10383,11 @@ class manager {
      *
      * @param string $sourcekey
      * @param \stdClass $source
+     * @param array $options
      * @return array
      */
-    protected static function export_source_reference(string $sourcekey, \stdClass $source): array {
+    protected static function export_source_reference(string $sourcekey, \stdClass $source, array $options = []): array {
+        $options = self::normalise_export_options($options);
         $reference = [
             'sourcekey' => $sourcekey,
             'sourcetype' => $source->type ?? self::SOURCE_TYPE_CATEGORY,
@@ -10343,7 +10410,8 @@ class manager {
             return $reference;
         }
 
-        $reference['category'] = self::export_course_category_identity((int)($source->categoryid ?? 0));
+        $reference['category'] = !empty($options[self::EXPORT_OPTION_INCLUDE_CATEGORIES]) ?
+            self::export_course_category_identity((int)($source->categoryid ?? 0)) : [];
         return $reference;
     }
 
@@ -10801,11 +10869,19 @@ class manager {
      *
      * @param string $json
      * @param bool $replaceall
+     * @param array $sections
+     * @param array $options
      * @return array
      */
-    public static function import_configuration(string $json, bool $replaceall = false, array $sections = []): array {
+    public static function import_configuration(
+        string $json,
+        bool $replaceall = false,
+        array $sections = [],
+        array $options = []
+    ): array {
         global $DB;
 
+        $options = self::normalise_import_options($options);
         $data = json_decode($json, true);
         if (!is_array($data) || empty($data['schema'])) {
             throw new \coding_exception('Invalid course banner builder import payload.');
@@ -10830,7 +10906,10 @@ class manager {
                     if ($replaceall) {
                         self::delete_all_configuration(false);
                     }
-                    $summary += self::import_course_banner_configuration($data['sections'][self::EXPORT_SECTION_COURSE_BANNERS]);
+                    $summary += self::import_course_banner_configuration(
+                        $data['sections'][self::EXPORT_SECTION_COURSE_BANNERS],
+                        $options
+                    );
                 }
                 if (in_array(self::EXPORT_SECTION_SLIDESHOW, $sections, true) &&
                         !empty($data['sections'][self::EXPORT_SECTION_SLIDESHOW])) {
@@ -10857,7 +10936,7 @@ class manager {
             if ($replaceall) {
                 self::delete_all_configuration(false);
             }
-            $summary = self::import_legacy_course_banner_configuration($data['categories']);
+            $summary = self::import_legacy_course_banner_configuration($data['categories'], $options);
             $transaction->allow_commit();
         } catch (\Throwable $e) {
             $transaction->rollback($e);
@@ -10925,10 +11004,15 @@ class manager {
      * Import the current full course banner export format.
      *
      * @param array $data
+     * @param array $options
      * @return array
      */
-    protected static function import_course_banner_configuration(array $data): array {
-        $fieldmap = self::import_course_customfield_definitions($data['customfieldcategories'] ?? []);
+    protected static function import_course_banner_configuration(array $data, array $options = []): array {
+        $options = self::normalise_import_options($options);
+        $fieldmap = self::import_course_customfield_definitions(
+            $data['customfieldcategories'] ?? [],
+            !empty($options[self::IMPORT_OPTION_CREATE_CUSTOMFIELDS])
+        );
         if (!empty($data['settings']) && is_array($data['settings'])) {
             if (array_key_exists('enabled', $data['settings'])) {
                 set_config('enabled', empty($data['settings']['enabled']) ? 0 : 1, 'local_course_banner_builder');
@@ -10986,7 +11070,11 @@ class manager {
         $resolvedsources = [];
         $sourcekeymap = [];
         foreach (($data['sources'] ?? []) as $sourcedata) {
-            $source = self::resolve_import_source($sourcedata, $fieldmap);
+            $source = self::resolve_import_source(
+                $sourcedata,
+                $fieldmap,
+                !empty($options[self::IMPORT_OPTION_CREATE_CATEGORIES])
+            );
             if (!$source) {
                 continue;
             }
@@ -10999,7 +11087,7 @@ class manager {
 
         $imported = 0;
         foreach ($resolvedsources as [$sourcedata, $source]) {
-            $parentkey = self::resolve_import_parent_key($sourcedata, $sourcekeymap, $fieldmap);
+            $parentkey = self::resolve_import_parent_key($sourcedata, $sourcekeymap, $fieldmap, $options);
 
             self::delete_source_content($source, false);
             self::save_source_settings(
@@ -11023,7 +11111,7 @@ class manager {
         }
 
         foreach ($resolvedsources as [$sourcedata, $source]) {
-            $parentkey = self::resolve_import_parent_key($sourcedata, $sourcekeymap, $fieldmap);
+            $parentkey = self::resolve_import_parent_key($sourcedata, $sourcekeymap, $fieldmap, $options);
             if ($parentkey === '') {
                 continue;
             }
@@ -11077,9 +11165,16 @@ class manager {
      * @param array $sourcedata
      * @param array $sourcekeymap
      * @param array $fieldmap
+     * @param array $options
      * @return string
      */
-    protected static function resolve_import_parent_key(array $sourcedata, array $sourcekeymap, array $fieldmap): string {
+    protected static function resolve_import_parent_key(
+        array $sourcedata,
+        array $sourcekeymap,
+        array $fieldmap,
+        array $options = []
+    ): string {
+        $options = self::normalise_import_options($options);
         if (!empty($sourcedata['settings']['sourceisroot'])) {
             return '';
         }
@@ -11094,7 +11189,11 @@ class manager {
         }
 
         if (!empty($sourcedata['settings']['sourceparent']) && is_array($sourcedata['settings']['sourceparent'])) {
-            $parentsource = self::resolve_import_source($sourcedata['settings']['sourceparent'], $fieldmap);
+            $parentsource = self::resolve_import_source(
+                $sourcedata['settings']['sourceparent'],
+                $fieldmap,
+                !empty($options[self::IMPORT_OPTION_CREATE_CATEGORIES])
+            );
             if ($parentsource) {
                 return (string)$parentsource->sourcekey;
             }
@@ -11222,9 +11321,10 @@ class manager {
      * Import Moodle custom field categories/fields and return legacy-id map.
      *
      * @param array $categories
+     * @param bool $createifmissing
      * @return array
      */
-    protected static function import_course_customfield_definitions(array $categories): array {
+    protected static function import_course_customfield_definitions(array $categories, bool $createifmissing = true): array {
         global $DB;
 
         $handler = \core_course\customfield\course_handler::create();
@@ -11243,6 +11343,9 @@ class manager {
                 'name' => $categoryname,
             ], '*', IGNORE_MISSING);
             if (!$category) {
+                if (!$createifmissing) {
+                    continue;
+                }
                 $category = (object)[
                     'name' => $categoryname,
                     'description' => (string)($categorydata['description'] ?? ''),
@@ -11269,6 +11372,9 @@ class manager {
                     'shortname' => $shortname,
                 ], '*', IGNORE_MISSING);
                 if (!$field) {
+                    if (!$createifmissing) {
+                        continue;
+                    }
                     $field = (object)[
                         'shortname' => $shortname,
                         'name' => (string)($fielddata['name'] ?? $shortname),
@@ -11304,9 +11410,14 @@ class manager {
      *
      * @param array $sourcedata
      * @param array $fieldmap
+     * @param bool $createcategories
      * @return \stdClass|null
      */
-    protected static function resolve_import_source(array $sourcedata, array $fieldmap): ?\stdClass {
+    protected static function resolve_import_source(
+        array $sourcedata,
+        array $fieldmap,
+        bool $createcategories = true
+    ): ?\stdClass {
         if (($sourcedata['sourcetype'] ?? '') === self::SOURCE_TYPE_SITE ||
                 (string)($sourcedata['sourcekey'] ?? '') === self::SITE_SOURCE_KEY) {
             return self::get_site_source();
@@ -11333,7 +11444,7 @@ class manager {
             ];
         }
 
-        $categoryid = self::resolve_import_category_id($sourcedata['category'] ?? []);
+        $categoryid = self::resolve_import_category_id($sourcedata['category'] ?? [], $createcategories);
         return $categoryid ? self::resolve_source(self::get_category_source_key($categoryid)) : null;
     }
 
@@ -11528,16 +11639,18 @@ class manager {
      * Import the legacy category-only export format.
      *
      * @param array $categories
+     * @param array $options
      * @return array
      */
-    protected static function import_legacy_course_banner_configuration(array $categories): array {
+    protected static function import_legacy_course_banner_configuration(array $categories, array $options = []): array {
+        $options = self::normalise_import_options($options);
         $imported = 0;
         foreach ($categories as $categorydata) {
             $source = self::resolve_import_source([
                 'sourcetype' => self::SOURCE_TYPE_CATEGORY,
                 'category' => $categorydata,
                 'settings' => $categorydata['settings'] ?? [],
-            ], []);
+            ], [], !empty($options[self::IMPORT_OPTION_CREATE_CATEGORIES]));
             if (!$source) {
                 continue;
             }
