@@ -2263,6 +2263,7 @@ function local_course_banner_builder_render_slideshow_banner_format_modal(
  * @param string $label
  * @param bool $checked
  * @param string $help
+ * @param bool $asbutton
  * @return string
  */
 function local_course_banner_builder_slideshow_toggle(
@@ -2326,6 +2327,7 @@ function local_course_banner_builder_slideshow_toggle(
  *
  * @param string $kind title|body
  * @param int $percent
+ * @param string $format
  * @return string
  */
 function local_course_banner_builder_slideshow_font_clamp(string $kind, int $percent, string $format = ''): string {
@@ -2407,6 +2409,7 @@ function local_course_banner_builder_render_slideshow_font_select(
  * Render overlay visual settings.
  *
  * @param array $config
+ * @param string $context
  * @return string
  */
 function local_course_banner_builder_render_slideshow_overlay_settings(array $config, string $context = ''): string {

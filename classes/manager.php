@@ -2101,6 +2101,8 @@ class manager {
      *
      * @param int $courseid
      * @param bool $issite
+     * @param bool $assiteannouncements
+     * @param int $siteannouncementdays
      * @return array
      */
     protected static function get_forum_slideshow_slides(
@@ -2623,6 +2625,7 @@ class manager {
     /**
      * Returns available fit mode options.
      *
+     * @param bool $includecustom
      * @return array
      */
     public static function get_fit_mode_options(bool $includecustom = false): array {
@@ -3169,6 +3172,8 @@ class manager {
      *
      * @param int $categoryid
      * @param string $compositionmode
+     * @param string $fitmode
+     * @param string $fitapplyscope
      * @return void
      */
     public static function save_category_settings(
@@ -3192,6 +3197,10 @@ class manager {
      * @param string $fitmode
      * @param string $fitapplyscope
      * @param string $customfieldpriority
+     * @param string $sourceparentkey
+     * @param bool $sourceisroot
+     * @param bool $sourceinheritchildren
+     * @param bool $sync
      * @return void
      */
     public static function save_source_settings(
@@ -3755,6 +3764,7 @@ class manager {
      *
      * @param \stdClass $source
      * @param int $excludeid
+     * @param bool $enabledonly
      * @return \stdClass|null
      */
     protected static function get_source_border_layer_record(
@@ -5254,6 +5264,7 @@ class manager {
      * Delete one banner element and its files.
      *
      * @param int $elementid
+     * @param bool $sync
      * @return void
      */
     public static function delete_banner_element(int $elementid, bool $sync = true): void {
@@ -5284,6 +5295,7 @@ class manager {
      * Delete all content and rules for a category.
      *
      * @param int $categoryid
+     * @param bool $sync
      * @return void
      */
     public static function delete_category_content(int $categoryid, bool $sync = true): void {
@@ -5304,6 +5316,7 @@ class manager {
      * Delete all content and rules for a source.
      *
      * @param \stdClass $source
+     * @param bool $sync
      * @return void
      */
     public static function delete_source_content(\stdClass $source, bool $sync = true): void {
@@ -5414,6 +5427,7 @@ class manager {
      *
      * @param \stdClass $source
      * @param int $elementid
+     * @param bool $includetitlepreviewoverlays
      * @return array
      */
     public static function export_modal_preview_definition(
@@ -6056,6 +6070,7 @@ class manager {
     /**
      * Filemanager options.
      *
+     * @param bool $allowmultiple
      * @return array
      */
     public static function get_filemanager_options(bool $allowmultiple = true): array {
@@ -8718,9 +8733,9 @@ class manager {
     }
 
     /**
-     * Determine effective fit mode for a layer category on a target course category.
+     * Determine effective fit mode for one layer record on a target course category.
      *
-     * @param int $layercategoryid
+     * @param \stdClass $record
      * @param int $targetcategoryid
      * @return string
      */
@@ -8742,6 +8757,7 @@ class manager {
      * Export select options for the layer fit override.
      *
      * @param string $selected
+     * @param string $sourcefitmode
      * @return array
      */
     protected static function export_fit_override_options(string $selected, string $sourcefitmode = ''): array {
@@ -8962,6 +8978,7 @@ class manager {
      * Build the effective preview layer list for one admin source.
      *
      * @param \stdClass $source
+     * @param bool $expandrandom
      * @return array
      */
     protected static function get_preview_layer_specs_for_source(\stdClass $source, bool $expandrandom = false): array {
@@ -9003,6 +9020,8 @@ class manager {
      * @param array $layerspec
      * @param bool $iscontext
      * @param bool $isinherited
+     * @param float|null $banneraspect
+     * @param bool $includealloverlays
      * @return array|null
      */
     protected static function export_modal_preview_layer(
@@ -9042,6 +9061,7 @@ class manager {
      * @param string $fitmode
      * @param bool $iscontext
      * @param bool $isinherited
+     * @param float|null $banneraspect
      * @return array|null
      */
     protected static function export_modal_preview_image_layer(
@@ -9162,6 +9182,7 @@ class manager {
      *
      * @param int $imagewidth
      * @param int $imageheight
+     * @param float|null $banneraspect
      * @return array{width:float,height:float}
      */
     protected static function get_contained_overlay_box_percentages(
@@ -9196,6 +9217,7 @@ class manager {
      * @param \stdClass $record
      * @param string $fitmode
      * @param \stored_file|null $file
+     * @param float|null $banneraspect
      * @return array{wrapperstyle:string,imagestyle:string}
      */
     protected static function build_modal_preview_image_layer_styles(
@@ -9320,6 +9342,7 @@ class manager {
      *
      * @param array $imagestyles
      * @param \stdClass $record
+     * @param bool $fillwrapper
      * @return void
      */
     protected static function append_image_crop_styles(
@@ -9571,6 +9594,7 @@ class manager {
      * Build the fallback label when a source has no image thumbnails to show.
      *
      * @param int $bordercount
+     * @param int $overlaycount
      * @return string
      */
     protected static function format_no_thumbnail_label(int $bordercount, int $overlaycount = 0): string {
@@ -9633,6 +9657,7 @@ class manager {
     /**
      * Delete all plugin configuration.
      *
+     * @param bool $sync
      * @return void
      */
     public static function delete_all_configuration(bool $sync = true): void {
@@ -10447,6 +10472,7 @@ class manager {
      * Export one layer, including image content when present.
      *
      * @param \stdClass $record
+     * @param string $archiveprefix
      * @return array
      */
     protected static function export_element_record(\stdClass $record, string $archiveprefix = 'coursebanners'): array {
@@ -10822,6 +10848,7 @@ class manager {
      * Resolve one exported category to a local category id.
      *
      * @param array $categorydata
+     * @param bool $createifmissing
      * @return int
      */
     protected static function resolve_import_category_id(array $categorydata, bool $createifmissing = true): int {
@@ -12236,6 +12263,7 @@ class manager {
      * @param \stdClass $record
      * @param \stored_file $file
      * @param string $fitmode
+     * @param float|null $banneraspect
      * @return array{wrapperstyle:string,imagestyle:string}
      */
     protected static function build_native_course_header_overlay_styles(
@@ -12863,7 +12891,9 @@ class manager {
      * @param int $height
      * @param int $layerwidth
      * @param int $layerheight
-     * @return void
+     * @param string $anchor
+     * @param \stdClass|null $record
+     * @return array
      */
     protected static function copy_layer_cover(
         $canvas,
@@ -13240,6 +13270,7 @@ class manager {
      * @param int $x
      * @param int $y
      * @param int $size
+     * @param int $innerradius
      * @param int $color
      * @param string $corner
      * @param float $fade
@@ -13300,6 +13331,7 @@ class manager {
      * @param int $x
      * @param int $y
      * @param int $size
+     * @param int $innerradius
      * @param int $color
      * @param string $corner
      * @param float $fade
@@ -13365,6 +13397,16 @@ class manager {
      * Draw one border side, optionally fading it from start to end.
      *
      * @param resource|\GdImage $canvas
+     * @param int $x1
+     * @param int $y1
+     * @param int $x2
+     * @param int $y2
+     * @param string $side
+     * @param string $style
+     * @param int $basecolor
+     * @param float $fade
+     * @param int $borderwidth
+     * @param array|null $dashspec
      * @return void
      */
     protected static function draw_border_line(

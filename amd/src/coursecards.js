@@ -429,7 +429,8 @@ define(['core/config'], function(Config) {
             'bottom-left'
         ].forEach(function(name) {
             const corner = document.createElement('div');
-            corner.className = 'local-course-banner-builder-fixed-border-corner local-course-banner-builder-fixed-border-corner-' + name;
+            corner.className = 'local-course-banner-builder-fixed-border-corner ' +
+                'local-course-banner-builder-fixed-border-corner-' + name;
             corner.setAttribute('aria-hidden', 'true');
             element.appendChild(corner);
         });
@@ -448,6 +449,7 @@ define(['core/config'], function(Config) {
      * @param {Element} target
      * @param {Array} overlays
      * @param {String|Number} courseId
+     * @param {Boolean} force
      * @param {?Object} border
      */
     const applyOverlaysToTarget = function(target, overlays, courseId, force, border) {
@@ -515,6 +517,7 @@ define(['core/config'], function(Config) {
                 document.querySelectorAll(HEADER_BANNER_TARGETS).forEach(function(target) {
                     applyOverlaysToTarget(target, overlays, courseId, true, border);
                 });
+                return null;
             })
             .catch(function() {
                 // The generated PNG remains a safe fallback if overlays cannot be loaded.
@@ -547,6 +550,7 @@ define(['core/config'], function(Config) {
     /**
      * Find the safest insertion point for a native Moodle course banner.
      *
+     * @param {String} format
      * @returns {Element|null}
      */
     const getNativeBannerInsertionPoint = function(format) {
@@ -681,6 +685,9 @@ define(['core/config'], function(Config) {
 
     /**
      * Initialise the course card enhancer.
+     *
+     * @param {String|Number} currentCourseId
+     * @param {Object} options
      */
     const init = function(currentCourseId, options) {
         options = options || {};

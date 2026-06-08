@@ -4,6 +4,16 @@
     @template local_course_banner_builder/banner
 
     Course banner image layers.
+
+    Example context (json):
+    {
+        "layers": [
+            {
+                "index": 1,
+                "url": "https://example.com/banner-layer.png"
+            }
+        ]
+    }
 }}
 <div class="local-course-banner-builder position-relative w-100 overflow-hidden" aria-hidden="true">
     {{#layers}}

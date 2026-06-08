@@ -84,6 +84,7 @@ function local_course_banner_builder_render_layer_modal(
  * @param string $context
  * @param string $title
  * @param string $formaction
+ * @param array|null $previewdefinition
  * @return string
  */
 function local_course_banner_builder_render_title_settings_modal(

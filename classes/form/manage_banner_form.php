@@ -194,8 +194,13 @@ class manage_banner_form extends \moodleform {
      * @param bool $showoverlay
      * @param bool $showmoodlepreview
      * @param array $previewdefinition
+     * @param string $formmode
      * @param string $borderconflictmessage
      * @param string $borderconflictmessageinline
+     * @param string $overlayconflictmessage
+     * @param string $overlayconflictmessageinline
+     * @param bool $iscreatewithoverlayconflict
+     * @param bool $currentisoverlaylayer
      * @return void
      */
     protected function add_advanced_options(

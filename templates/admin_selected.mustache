@@ -4,6 +4,16 @@
     @template local_course_banner_builder/admin_selected
 
     Selected banner source summary.
+
+    Example context (json):
+    {
+        "hasselection": true,
+        "categoryname": "Selected source",
+        "hasconfiguration": false,
+        "sesskey": "abc123",
+        "categoryid": 1,
+        "sourcekey": "category:1"
+    }
 }}
 {{#hasselection}}
     <div id="local-course-banner-builder-selected-source-content" data-selected-source-content="1">
