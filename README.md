@@ -4,7 +4,7 @@
 
 Current release: **0.6.22**
 
-Current plugin version: **2026060302**
+Current plugin version: **2026060800**
 
 Maturity: **Beta**
 
@@ -378,7 +378,7 @@ user data for its main feature set.
 - Directory: `local/course_banner_builder`
 - Minimum Moodle version: `2024100700` (Moodle 4.5)
 - Current release: `0.6.22`
-- Current plugin version: `2026060302`
+- Current plugin version: `2026060800`
 - Maturity: `MATURITY_BETA`
 - License: GNU GPL v3 or later
 
