@@ -784,13 +784,11 @@ class manage_banner_form extends \moodleform {
         ]);
         $mform->setDefault('borderinnerrounded', 0);
 
-        if ($iscreatewithborderconflict) {
-            if ($formmode !== 'editborder') {
-                $mform->updateElementAttr('borderenabled', [
-                    'disabled' => 'disabled',
-                    'aria-disabled' => 'true',
-                ]);
-            }
+        if ($iscreatewithborderconflict && $formmode !== 'editborder') {
+            $mform->updateElementAttr('borderenabled', [
+                'disabled' => 'disabled',
+                'aria-disabled' => 'true',
+            ]);
             $mform->updateElementAttr('bordercolor', ['disabled' => 'disabled']);
             $mform->updateElementAttr('borderwidth', ['disabled' => 'disabled']);
             $mform->updateElementAttr('borderopacity', ['disabled' => 'disabled']);
