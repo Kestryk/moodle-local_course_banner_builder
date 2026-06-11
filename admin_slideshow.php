@@ -44,6 +44,7 @@ try {
     $PAGE->set_heading(get_string('pluginname', 'local_course_banner_builder'));
 }
 
+$PAGE->requires->css('/local/course_banner_builder/styles.css');
 $PAGE->requires->js_call_amd('local_course_banner_builder/slideshow_admin', 'init');
 
 $deleteallpluginsettings = optional_param('deleteallpluginsettings', 0, PARAM_BOOL);

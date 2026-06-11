@@ -1932,6 +1932,7 @@ $PAGE->set_url($url);
 $PAGE->set_context(context_system::instance());
 $PAGE->set_title($adminpagetitle);
 $PAGE->set_heading($adminpagetitle);
+$PAGE->requires->css('/local/course_banner_builder/styles.css');
 $PAGE->requires->strings_for_js([
     'allowstretchpreviewimage',
     'applycropimage',
