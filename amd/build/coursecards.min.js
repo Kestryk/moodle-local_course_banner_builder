@@ -20,7 +20,7 @@
  * @copyright  2026
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['core/config'], function(Config) {
+define(['core/config'], function (Config) {
     const GENERATED_BANNER_MARKER = 'course_banner_builder_auto_';
     const COURSE_FILEAREA_MARKER = '/course/overviewfiles/';
     const PROCESSED_ATTRIBUTE = 'data-course-banner-builder-card-processed';
@@ -104,7 +104,7 @@ define(['core/config'], function(Config) {
      * @param {String} backgroundImage
      * @returns {String|null}
      */
-    const extractBackgroundUrl = function(backgroundImage) {
+    const extractBackgroundUrl = function (backgroundImage) {
         if (!backgroundImage || backgroundImage === 'none') {
             return null;
         }
@@ -119,7 +119,7 @@ define(['core/config'], function(Config) {
      * @param {String|null} url
      * @returns {Boolean}
      */
-    const isManagedBannerUrl = function(url) {
+    const isManagedBannerUrl = function (url) {
         return !!url &&
             url.indexOf(COURSE_FILEAREA_MARKER) !== -1 &&
             url.indexOf(GENERATED_BANNER_MARKER) !== -1;
@@ -131,7 +131,7 @@ define(['core/config'], function(Config) {
      * @param {Element} element
      * @returns {String|null}
      */
-    const getCourseId = function(element) {
+    const getCourseId = function (element) {
         return element.getAttribute('data-course-id') ||
             element.getAttribute('data-courseid') ||
             null;
@@ -144,7 +144,7 @@ define(['core/config'], function(Config) {
      * @param {Boolean} square
      * @returns {String}
      */
-    const getCardUrl = function(courseId, square) {
+    const getCardUrl = function (courseId, square) {
         const url = Config.wwwroot + '/local/course_banner_builder/card.php?courseid=' + encodeURIComponent(courseId);
         return square ? url + '&variant=square' : url;
     };
@@ -155,7 +155,7 @@ define(['core/config'], function(Config) {
      * @param {Element} target
      * @returns {Boolean}
      */
-    const isSquareCourseBoxTarget = function(target) {
+    const isSquareCourseBoxTarget = function (target) {
         const rect = target.getBoundingClientRect();
         if (rect.width > 0 && rect.height > 0) {
             const ratio = rect.width / rect.height;
@@ -182,7 +182,7 @@ define(['core/config'], function(Config) {
      * @param {String|Number} courseId
      * @returns {String}
      */
-    const getBannerUrl = function(courseId) {
+    const getBannerUrl = function (courseId) {
         return Config.wwwroot + '/local/course_banner_builder/banner.php?courseid=' + encodeURIComponent(courseId);
     };
 
@@ -192,7 +192,7 @@ define(['core/config'], function(Config) {
      * @param {String|Number} courseId
      * @returns {String}
      */
-    const getOverlaysUrl = function(courseId) {
+    const getOverlaysUrl = function (courseId) {
         return Config.wwwroot + '/local/course_banner_builder/overlays.php?courseid=' + encodeURIComponent(courseId);
     };
 
@@ -201,7 +201,7 @@ define(['core/config'], function(Config) {
      *
      * @returns {String|Number}
      */
-    const getCurrentCourseId = function() {
+    const getCurrentCourseId = function () {
         const bodyClass = document.body && document.body.className ?
             document.body.className.match(/(?:^|\s)course-(\d+)(?:\s|$)/) :
             null;
@@ -219,11 +219,11 @@ define(['core/config'], function(Config) {
      * @param {String} url
      * @param {Function} callback
      */
-    const applyWhenLoadable = function(url, callback) {
+    const applyWhenLoadable = function (url, callback) {
         const image = new Image();
         image.decoding = 'async';
         image.loading = 'lazy';
-        image.onload = function() {
+        image.onload = function () {
             callback(url);
         };
         image.src = url;
@@ -235,7 +235,7 @@ define(['core/config'], function(Config) {
      * @param {Element} target
      * @param {Function} callback
      */
-    const runWhenCardIsNearViewport = function(target, callback) {
+    const runWhenCardIsNearViewport = function (target, callback) {
         const rect = target.getBoundingClientRect();
         const margin = 700;
         if (!rect.width || !rect.height || (rect.bottom >= -margin && rect.top <= window.innerHeight + margin)) {
@@ -249,8 +249,8 @@ define(['core/config'], function(Config) {
         }
 
         if (!cardObserver) {
-            cardObserver = new IntersectionObserver(function(entries) {
-                entries.forEach(function(entry) {
+            cardObserver = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
                     if (!entry.isIntersecting && entry.intersectionRatio <= 0) {
                         return;
                     }
@@ -281,7 +281,7 @@ define(['core/config'], function(Config) {
      * @param {Element} target
      * @param {Element} root
      */
-    const markCardThumbnail = function(target, root) {
+    const markCardThumbnail = function (target, root) {
         target.classList.add(COURSE_CARD_THUMB_CLASS);
         if (root) {
             root.classList.add(COURSE_CARD_ROOT_CLASS);
@@ -294,7 +294,7 @@ define(['core/config'], function(Config) {
      * @param {Element} target
      * @param {String} courseId
      */
-    const replaceBackground = function(target, courseId) {
+    const replaceBackground = function (target, courseId) {
         if (target.getAttribute(PROCESSED_ATTRIBUTE) === courseId) {
             return;
         }
@@ -307,8 +307,8 @@ define(['core/config'], function(Config) {
 
         const cardUrl = getCardUrl(courseId, isSquareCourseBoxTarget(target));
         target.setAttribute(PROCESSED_ATTRIBUTE, courseId);
-        runWhenCardIsNearViewport(target, function() {
-            applyWhenLoadable(cardUrl, function(loadableUrl) {
+        runWhenCardIsNearViewport(target, function () {
+            applyWhenLoadable(cardUrl, function (loadableUrl) {
                 markCardThumbnail(target, target.closest(ROOT_SELECTORS));
                 target.style.backgroundImage = 'url("' + loadableUrl + '")';
                 target.style.backgroundPosition = 'center center';
@@ -324,15 +324,15 @@ define(['core/config'], function(Config) {
      * @param {HTMLImageElement} target
      * @param {String} courseId
      */
-    const replaceImageSource = function(target, courseId) {
+    const replaceImageSource = function (target, courseId) {
         if (target.getAttribute(PROCESSED_ATTRIBUTE) === courseId || !isManagedBannerUrl(target.src)) {
             return;
         }
 
         const cardUrl = getCardUrl(courseId, isSquareCourseBoxTarget(target));
         target.setAttribute(PROCESSED_ATTRIBUTE, courseId);
-        runWhenCardIsNearViewport(target, function() {
-            applyWhenLoadable(cardUrl, function(loadableUrl) {
+        runWhenCardIsNearViewport(target, function () {
+            applyWhenLoadable(cardUrl, function (loadableUrl) {
                 markCardThumbnail(target, target.closest(ROOT_SELECTORS));
                 target.loading = 'lazy';
                 target.decoding = 'async';
@@ -348,7 +348,7 @@ define(['core/config'], function(Config) {
      *
      * @param {Element} courseElement
      */
-    const processCourseElement = function(courseElement) {
+    const processCourseElement = function (courseElement) {
         const courseId = getCourseId(courseElement);
         if (!courseId) {
             return;
@@ -358,10 +358,10 @@ define(['core/config'], function(Config) {
         if (root.matches(BACKGROUND_TARGETS)) {
             replaceBackground(root, courseId);
         }
-        root.querySelectorAll(BACKGROUND_TARGETS).forEach(function(target) {
+        root.querySelectorAll(BACKGROUND_TARGETS).forEach(function (target) {
             replaceBackground(target, courseId);
         });
-        root.querySelectorAll('img').forEach(function(target) {
+        root.querySelectorAll('img').forEach(function (target) {
             replaceImageSource(target, courseId);
         });
     };
@@ -369,7 +369,7 @@ define(['core/config'], function(Config) {
     /**
      * Replace thumbnails currently present in the page.
      */
-    const scan = function() {
+    const scan = function () {
         scheduled = false;
         document.querySelectorAll('[data-course-id], [data-courseid]').forEach(processCourseElement);
     };
@@ -380,7 +380,7 @@ define(['core/config'], function(Config) {
      * @param {Object} overlay
      * @returns {HTMLDivElement}
      */
-    const buildOverlayImage = function(overlay) {
+    const buildOverlayImage = function (overlay) {
         const wrapper = document.createElement('div');
         wrapper.className = 'local-course-banner-builder-fixed-overlay';
         wrapper.setAttribute('aria-hidden', 'true');
@@ -403,7 +403,7 @@ define(['core/config'], function(Config) {
      * @param {Object} border
      * @returns {HTMLDivElement}
      */
-    const buildBorderOverlay = function(border) {
+    const buildBorderOverlay = function (border) {
         const element = document.createElement('div');
         element.className = 'local-course-banner-builder-fixed-border';
         element.setAttribute('aria-hidden', 'true');
@@ -414,7 +414,7 @@ define(['core/config'], function(Config) {
             ['right', 'local-course-banner-builder-fixed-border-side local-course-banner-builder-fixed-border-side-right'],
             ['bottom', 'local-course-banner-builder-fixed-border-side local-course-banner-builder-fixed-border-side-bottom'],
             ['left', 'local-course-banner-builder-fixed-border-side local-course-banner-builder-fixed-border-side-left'],
-        ].forEach(function(entry) {
+        ].forEach(function (entry) {
             const side = document.createElement('div');
             side.className = entry[1];
             side.setAttribute('aria-hidden', 'true');
@@ -427,7 +427,7 @@ define(['core/config'], function(Config) {
             'top-right',
             'bottom-right',
             'bottom-left'
-        ].forEach(function(name) {
+        ].forEach(function (name) {
             const corner = document.createElement('div');
             corner.className = 'local-course-banner-builder-fixed-border-corner ' +
                 'local-course-banner-builder-fixed-border-corner-' + name;
@@ -452,7 +452,7 @@ define(['core/config'], function(Config) {
      * @param {Boolean} force
      * @param {?Object} border
      */
-    const applyOverlaysToTarget = function(target, overlays, courseId, force, border) {
+    const applyOverlaysToTarget = function (target, overlays, courseId, force, border) {
         if (target.getAttribute(OVERLAY_PROCESSED_ATTRIBUTE) === String(courseId)) {
             return;
         }
@@ -487,7 +487,7 @@ define(['core/config'], function(Config) {
         if (force && border) {
             container.appendChild(buildBorderOverlay(border));
         }
-        overlays.forEach(function(overlay) {
+        overlays.forEach(function (overlay) {
             container.appendChild(buildOverlayImage(overlay));
         });
         target.setAttribute(OVERLAY_PROCESSED_ATTRIBUTE, String(courseId));
@@ -498,28 +498,27 @@ define(['core/config'], function(Config) {
      *
      * @param {String|Number} courseId
      */
-    const applyHeaderOverlays = function(courseId) {
+    const applyHeaderOverlays = function (courseId) {
         if (!courseId) {
             return;
         }
 
         fetch(getOverlaysUrl(courseId), {credentials: 'same-origin'})
-            .then(function(response) {
+            .then(function (response) {
                 return response.ok ? response.json() : null;
             })
-            .then(function(payload) {
+            .then(function (payload) {
                 const overlays = payload && Array.isArray(payload.overlays) ? payload.overlays : [];
                 const border = payload && payload.border ? payload.border : null;
                 if (!overlays.length && !border) {
                     return;
                 }
 
-                document.querySelectorAll(HEADER_BANNER_TARGETS).forEach(function(target) {
+                document.querySelectorAll(HEADER_BANNER_TARGETS).forEach(function (target) {
                     applyOverlaysToTarget(target, overlays, courseId, true, border);
                 });
-                return null;
             })
-            .catch(function() {
+            .catch(function () {
                 // The generated PNG remains a safe fallback if overlays cannot be loaded.
             });
     };
@@ -529,8 +528,8 @@ define(['core/config'], function(Config) {
      *
      * @returns {Boolean}
      */
-    const hasExistingThemeBanner = function() {
-        return Array.prototype.slice.call(document.querySelectorAll(EXISTING_THEME_BANNER_TARGETS)).some(function(target) {
+    const hasExistingThemeBanner = function () {
+        return Array.prototype.slice.call(document.querySelectorAll(EXISTING_THEME_BANNER_TARGETS)).some(function (target) {
             if (target.classList.contains(NATIVE_BANNER_CLASS)) {
                 return false;
             }
@@ -553,7 +552,7 @@ define(['core/config'], function(Config) {
      * @param {String} format
      * @returns {Element|null}
      */
-    const getNativeBannerInsertionPoint = function(format) {
+    const getNativeBannerInsertionPoint = function (format) {
         const courseHeader = document.querySelector('#course-header');
         if (courseHeader && format !== 'fullwidthtop' && format !== 'fullwidthtopcompact' &&
                 format !== 'fullwidthtopinset') {
@@ -591,7 +590,7 @@ define(['core/config'], function(Config) {
      * @param {String|Number} courseId
      * @param {Object} options
      */
-    const injectNativeCourseBanner = function(courseId, options) {
+    const injectNativeCourseBanner = function (courseId, options) {
         if (
             !courseId ||
             !options ||
@@ -624,7 +623,7 @@ define(['core/config'], function(Config) {
             return;
         }
 
-        const insertBanner = function(loadableUrl) {
+        const insertBanner = function (loadableUrl) {
             if (hasExistingThemeBanner() ||
                 (
                     insertion.element.getAttribute(NATIVE_BANNER_PROCESSED_ATTRIBUTE) === String(courseId) &&
@@ -658,7 +657,7 @@ define(['core/config'], function(Config) {
         }
 
         const bannerUrl = getBannerUrl(courseId);
-        applyWhenLoadable(bannerUrl, function(loadableUrl) {
+        applyWhenLoadable(bannerUrl, function (loadableUrl) {
             insertBanner(loadableUrl);
         });
     };
@@ -666,12 +665,12 @@ define(['core/config'], function(Config) {
     /**
      * Debounce scans caused by AJAX course-card rendering.
      */
-    const scheduleScan = function() {
+    const scheduleScan = function () {
         if (scheduled) {
             return;
         }
         scheduled = true;
-        window.setTimeout(function() {
+        window.setTimeout(function () {
             scan();
             if (currentCourseOptions.allowNativeBanner) {
                 injectNativeCourseBanner(currentCourseId, currentCourseOptions);
@@ -689,7 +688,7 @@ define(['core/config'], function(Config) {
      * @param {String|Number} currentCourseId
      * @param {Object} options
      */
-    const init = function(currentCourseId, options) {
+    const init = function (currentCourseId, options) {
         options = options || {};
         const courseId = currentCourseId || getCurrentCourseId();
         currentCourseOptions = options;

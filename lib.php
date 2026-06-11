@@ -76,8 +76,15 @@ function local_course_banner_builder_redirect_document_file_request(): void {
  * @param array $options
  * @return bool|void
  */
-function local_course_banner_builder_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload,
-        array $options = []) {
+function local_course_banner_builder_pluginfile(
+    $course,
+    $cm,
+    $context,
+    $filearea,
+    $args,
+    $forcedownload,
+    array $options = []
+) {
     if ($filearea === 'coursecard') {
         if ($context->contextlevel !== CONTEXT_COURSE) {
             return false;
