@@ -1,0 +1,18688 @@
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Initialise the banner management page interactions.
+ *
+ * @module     local_course_banner_builder/admin_manage
+ * @copyright  2026 Kevin Jarniac
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+define([], function () {
+
+var localCourseBannerBuilderOnReady = function (callback) {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', callback);
+        return;
+    }
+    callback();
+};
+
+document.addEventListener('change', function (e) {
+    var formatInput = e.target && e.target.closest ?
+        e.target.closest('.local-course-banner-builder-format-modal input[name="bannerformat"]') :
+        null;
+    if (!formatInput) {
+        return;
+    }
+    var modal = formatInput.closest('.local-course-banner-builder-format-modal');
+    if (!modal) {
+        return;
+    }
+    Array.prototype.slice.call(modal.querySelectorAll('.local-course-banner-builder-format-card')).forEach(function (card) {
+        card.classList.remove('is-selected');
+    });
+    var selectedCard = formatInput.closest('.local-course-banner-builder-format-card');
+    if (selectedCard) {
+        selectedCard.classList.add('is-selected');
+    }
+});
+
+document.addEventListener('click', function (e) {
+    var popoverTrigger = e.target && e.target.closest ?
+        e.target.closest('[data-toggle="popover"], [data-bs-toggle="popover"]') :
+        null;
+    if (!popoverTrigger) {
+        return;
+    }
+    localCourseBannerBuilderDismissOpenPopovers(popoverTrigger);
+    if (popoverTrigger.getAttribute('data-toggle') === 'popover' ||
+            popoverTrigger.getAttribute('data-bs-toggle') === 'popover') {
+        popoverTrigger.setAttribute('data-local-course-banner-builder-popover-toggle-suspended', '1');
+        var hadDataToggle = popoverTrigger.getAttribute('data-toggle') === 'popover';
+        var hadBsToggle = popoverTrigger.getAttribute('data-bs-toggle') === 'popover';
+        if (hadDataToggle) {
+            popoverTrigger.removeAttribute('data-toggle');
+        }
+        if (hadBsToggle) {
+            popoverTrigger.removeAttribute('data-bs-toggle');
+        }
+        window.setTimeout(function () {
+            if (popoverTrigger.getAttribute('data-local-course-banner-builder-popover-toggle-suspended') === '1') {
+                if (hadDataToggle) {
+                    popoverTrigger.setAttribute('data-toggle', 'popover');
+                }
+                if (hadBsToggle) {
+                    popoverTrigger.setAttribute('data-bs-toggle', 'popover');
+                }
+                popoverTrigger.removeAttribute('data-local-course-banner-builder-popover-toggle-suspended');
+            }
+            localCourseBannerBuilderDismissOpenPopovers(popoverTrigger);
+        }, 0);
+        window.setTimeout(function () {
+            localCourseBannerBuilderDismissOpenPopovers(popoverTrigger);
+        }, 80);
+    }
+}, true);
+
+document.addEventListener('focusin', function (e) {
+    var popoverTrigger = e.target && e.target.closest ?
+        e.target.closest('[data-toggle="popover"], [data-bs-toggle="popover"]') :
+        null;
+    if (popoverTrigger) {
+        localCourseBannerBuilderDismissOpenPopovers(popoverTrigger);
+    }
+}, true);
+
+document.addEventListener('click', function (e) {
+    var helpSummary = e.target && e.target.closest ?
+        e.target.closest('.local-course-banner-builder-help-bubble > summary') :
+        null;
+    if (!helpSummary) {
+        return;
+    }
+    e.preventDefault();
+    var details = helpSummary.closest('details');
+    if (details) {
+        details.open = true;
+    }
+}, true);
+
+document.addEventListener('keydown', function (e) {
+    var helpSummary = e.target && e.target.closest ?
+        e.target.closest('.local-course-banner-builder-help-bubble > summary') :
+        null;
+    if (!helpSummary || (e.key !== 'Enter' && e.key !== ' ')) {
+        return;
+    }
+    e.preventDefault();
+    var details = helpSummary.closest('details');
+    if (details) {
+        details.open = true;
+    }
+}, true);
+
+document.addEventListener('toggle', function (e) {
+    if (e.target && e.target.matches && e.target.matches('.local-course-banner-builder-help-bubble') && !e.target.open) {
+        e.target.open = true;
+    }
+}, true);
+
+document.addEventListener('click', function (e) {
+    var disabledFilemanagerViewButton = e.target && e.target.closest ? e.target.closest(
+        '#fitem_id_bannerimage_filemanager .fp-vb-details, #fitem_id_bannerimage_filemanager .fp-vb-tree'
+    ) : null;
+    if (!disabledFilemanagerViewButton) {
+        return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    if (typeof e.stopImmediatePropagation === 'function') {
+        e.stopImmediatePropagation();
+    }
+}, true);
+
+document.addEventListener('click', function (e) {
+    var aspectLockButton = e.target.closest('[data-action="local-course-banner-builder-toggle-preview-aspect-lock"]');
+    if (aspectLockButton) {
+        e.preventDefault();
+        e.stopPropagation();
+        localCourseBannerBuilderTogglePreviewAspectLock(aspectLockButton);
+        return;
+    }
+
+    var previewToolbarAction = e.target.closest('[data-action]');
+    if (localCourseBannerBuilderIsOneShotPreviewToolbarAction(previewToolbarAction)) {
+        localCourseBannerBuilderTriggerPreviewActionFeedback(previewToolbarAction);
+    }
+
+    var addLayerTrigger = e.target.closest(
+        '[data-target="#local-course-banner-builder-add-layer-modal"],' +
+        '[data-bs-target="#local-course-banner-builder-add-layer-modal"],' +
+        'a[href="#local-course-banner-builder-add-layer-modal"]'
+    );
+    if (addLayerTrigger) {
+        if (localCourseBannerBuilderLoadCreateLayerModal()) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (typeof e.stopImmediatePropagation === 'function') {
+                e.stopImmediatePropagation();
+            }
+            return;
+        }
+    }
+
+    var dismissmodal = e.target.closest('[data-dismiss="modal"], [data-bs-dismiss="modal"]');
+    if (dismissmodal) {
+        var modal = dismissmodal.closest('.modal');
+        if (modal) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (typeof e.stopImmediatePropagation === 'function') {
+                e.stopImmediatePropagation();
+            }
+            localCourseBannerBuilderHideModal(modal);
+            return;
+        }
+    }
+
+    if (e.target.closest('[data-action="local-course-banner-builder-summary-action"]')) {
+        e.stopPropagation();
+    }
+
+    var editlayerbutton = e.target.closest('[data-edit-layer-url]');
+    if (editlayerbutton) {
+        e.preventDefault();
+        localCourseBannerBuilderLoadLayerModal(editlayerbutton.getAttribute('data-edit-layer-url'));
+        return;
+    }
+
+    var editbutton = e.target.closest('[data-action="local-course-banner-builder-inline-edit"]');
+    if (editbutton) {
+        e.preventDefault();
+        var editrow = editbutton.closest('[data-inline-setting-row]');
+        if (editrow) {
+            localCourseBannerBuilderToggleInlineSetting(editrow, true);
+        }
+        return;
+    }
+
+    var cancelbutton = e.target.closest('[data-action="local-course-banner-builder-inline-cancel"]');
+    if (cancelbutton) {
+        e.preventDefault();
+        var cancelrow = cancelbutton.closest('[data-inline-setting-row]');
+        if (cancelrow) {
+            localCourseBannerBuilderToggleInlineSetting(cancelrow, false);
+        }
+        return;
+    }
+
+    var recenterbutton = e.target.closest('[data-action="local-course-banner-builder-recenter-preview-image"]');
+    if (recenterbutton) {
+        e.preventDefault();
+        localCourseBannerBuilderPushModalPreviewHistoryFromControl(recenterbutton);
+        localCourseBannerBuilderRecenterPreviewImage(recenterbutton.closest('form.mform, .mform, .modal'));
+        return;
+    }
+
+    var recenterSourcePreviewButton = e.target.closest('[data-action="local-course-banner-builder-recenter-source-preview-image"]');
+    if (recenterSourcePreviewButton) {
+        e.preventDefault();
+        localCourseBannerBuilderPushSourcePreviewHistoryFromControl(recenterSourcePreviewButton);
+        localCourseBannerBuilderRecenterSourcePreviewImage(recenterSourcePreviewButton);
+        return;
+    }
+
+    var recenterAllSourcePreviewButton = e.target.closest('[data-action="local-course-banner-builder-recenter-all-source-preview-images"]');
+    if (recenterAllSourcePreviewButton) {
+        e.preventDefault();
+        localCourseBannerBuilderPushSourcePreviewHistoryFromControl(recenterAllSourcePreviewButton);
+        localCourseBannerBuilderRecenterAllSourcePreviewImages(recenterAllSourcePreviewButton);
+        return;
+    }
+
+    var fitSourcePreviewButton = e.target.closest('[data-action="local-course-banner-builder-fit-source-preview-image"]');
+    if (fitSourcePreviewButton) {
+        e.preventDefault();
+        localCourseBannerBuilderPushSourcePreviewHistoryFromControl(fitSourcePreviewButton);
+        localCourseBannerBuilderFitSelectedSourcePreviewImageToFrame(fitSourcePreviewButton);
+        return;
+    }
+
+    var fillSourcePreviewButton = e.target.closest('[data-action="local-course-banner-builder-fill-source-preview-image"]');
+    if (fillSourcePreviewButton) {
+        e.preventDefault();
+        localCourseBannerBuilderPushSourcePreviewHistoryFromControl(fillSourcePreviewButton);
+        localCourseBannerBuilderFillSelectedSourcePreviewImageToBanner(fillSourcePreviewButton);
+        return;
+    }
+
+    var fitLayerPreviewButton = e.target.closest('[data-action="local-course-banner-builder-fit-layer-preview-image"]');
+    if (fitLayerPreviewButton) {
+        e.preventDefault();
+        localCourseBannerBuilderPushModalPreviewHistoryFromControl(fitLayerPreviewButton);
+        localCourseBannerBuilderFitSelectedLayerPreviewImageToFrame(fitLayerPreviewButton);
+        return;
+    }
+
+    var fillLayerPreviewButton = e.target.closest('[data-action="local-course-banner-builder-fill-layer-preview-image"]');
+    if (fillLayerPreviewButton) {
+        e.preventDefault();
+        localCourseBannerBuilderPushModalPreviewHistoryFromControl(fillLayerPreviewButton);
+        localCourseBannerBuilderFillSelectedLayerPreviewImageToBanner(fillLayerPreviewButton);
+        return;
+    }
+
+    var centerFixedSourceButton = e.target.closest('[data-action="local-course-banner-builder-toggle-source-preview-center-fixed"]');
+    if (centerFixedSourceButton) {
+        e.preventDefault();
+        localCourseBannerBuilderToggleSourcePreviewCenterFixed(centerFixedSourceButton);
+        return;
+    }
+
+    var centerFixedModalButton = e.target.closest('[data-action="local-course-banner-builder-toggle-modal-preview-center-fixed"]');
+    if (centerFixedModalButton) {
+        e.preventDefault();
+        localCourseBannerBuilderToggleModalPreviewCenterFixed(centerFixedModalButton);
+        return;
+    }
+
+    var pushModalLayerButton = e.target.closest(
+        '[data-action="local-course-banner-builder-push-modal-preview-layer-behind"]'
+    );
+    if (pushModalLayerButton) {
+        e.preventDefault();
+        localCourseBannerBuilderPushModalPreviewHistoryFromControl(pushModalLayerButton);
+        localCourseBannerBuilderMoveModalPreviewLayerDepth(pushModalLayerButton, -1);
+        return;
+    }
+
+    var pullModalLayerButton = e.target.closest(
+        '[data-action="local-course-banner-builder-pull-modal-preview-layer-forward"]'
+    );
+    if (pullModalLayerButton) {
+        e.preventDefault();
+        localCourseBannerBuilderPushModalPreviewHistoryFromControl(pullModalLayerButton);
+        localCourseBannerBuilderMoveModalPreviewLayerDepth(pullModalLayerButton, 1);
+        return;
+    }
+
+    var applyPreviewCropButton = e.target.closest('[data-action="local-course-banner-builder-apply-preview-crop"]');
+    if (applyPreviewCropButton) {
+        e.preventDefault();
+        e.stopPropagation();
+        var applySourceMode = !!applyPreviewCropButton.closest('[data-source-visual-editor="1"]');
+        localCourseBannerBuilderApplyCropEditor(applyPreviewCropButton, applySourceMode);
+        return;
+    }
+
+    var cancelPreviewCropButton = e.target.closest('[data-action="local-course-banner-builder-cancel-preview-crop"]');
+    if (cancelPreviewCropButton) {
+        e.preventDefault();
+        e.stopPropagation();
+        var cancelSourceMode = !!cancelPreviewCropButton.closest('[data-source-visual-editor="1"]');
+        localCourseBannerBuilderCancelCropEditor(cancelPreviewCropButton, cancelSourceMode);
+        return;
+    }
+
+    var sourceCropButton = e.target.closest('[data-action="local-course-banner-builder-toggle-source-preview-crop"]');
+    if (sourceCropButton) {
+        e.preventDefault();
+        if (sourceCropButton.disabled || sourceCropButton.getAttribute('aria-disabled') === 'true') {
+            return;
+        }
+        localCourseBannerBuilderToggleCropEditor(sourceCropButton, true);
+        return;
+    }
+
+    var applySourceCropButton = e.target.closest('[data-action="local-course-banner-builder-apply-source-preview-crop"]');
+    if (applySourceCropButton) {
+        e.preventDefault();
+        if (applySourceCropButton.disabled || applySourceCropButton.getAttribute('aria-disabled') === 'true') {
+            return;
+        }
+        localCourseBannerBuilderApplyCropEditor(applySourceCropButton, true);
+        return;
+    }
+
+    var modalCropButton = e.target.closest('[data-action="local-course-banner-builder-toggle-modal-preview-crop"]');
+    if (modalCropButton) {
+        e.preventDefault();
+        localCourseBannerBuilderToggleCropEditor(modalCropButton, false);
+        return;
+    }
+
+    var applyModalCropButton = e.target.closest('[data-action="local-course-banner-builder-apply-modal-preview-crop"]');
+    if (applyModalCropButton) {
+        e.preventDefault();
+        localCourseBannerBuilderApplyCropEditor(applyModalCropButton, false);
+        return;
+    }
+
+    var undoSourcePreviewButton = e.target.closest('[data-action="local-course-banner-builder-undo-source-preview-change"]');
+    if (undoSourcePreviewButton) {
+        e.preventDefault();
+        localCourseBannerBuilderUndoSourcePreviewChange(undoSourcePreviewButton);
+        return;
+    }
+
+    var redoSourcePreviewButton = e.target.closest('[data-action="local-course-banner-builder-redo-source-preview-change"]');
+    if (redoSourcePreviewButton) {
+        e.preventDefault();
+        localCourseBannerBuilderRedoSourcePreviewChange(redoSourcePreviewButton);
+        return;
+    }
+
+    var undoModalPreviewButton = e.target.closest('[data-action="local-course-banner-builder-undo-modal-preview-change"]');
+    if (undoModalPreviewButton) {
+        e.preventDefault();
+        localCourseBannerBuilderUndoModalPreviewChange(undoModalPreviewButton);
+        return;
+    }
+
+    var redoModalPreviewButton = e.target.closest('[data-action="local-course-banner-builder-redo-modal-preview-change"]');
+    if (redoModalPreviewButton) {
+        e.preventDefault();
+        localCourseBannerBuilderRedoModalPreviewChange(redoModalPreviewButton);
+        return;
+    }
+
+    var previewSnapButton = e.target.closest('[data-action="local-course-banner-builder-toggle-preview-snap"]');
+    if (previewSnapButton) {
+        e.preventDefault();
+        localCourseBannerBuilderTogglePreviewSnap(previewSnapButton);
+        return;
+    }
+
+    var titleContextToggleButton = e.target.closest(
+        '[data-action="local-course-banner-builder-toggle-title-context-layers"]'
+    );
+    if (titleContextToggleButton) {
+        e.preventDefault();
+        localCourseBannerBuilderToggleTitleContextLayers(titleContextToggleButton);
+        return;
+    }
+
+    var sourcePreviewFilmstripScrollButton = e.target.closest('[data-action="local-course-banner-builder-scroll-source-preview-filmstrip"]');
+    if (sourcePreviewFilmstripScrollButton) {
+        e.preventDefault();
+        localCourseBannerBuilderScrollSourcePreviewFilmstrip(sourcePreviewFilmstripScrollButton);
+        return;
+    }
+
+    var sourcePreviewVisibilityButton = e.target.closest('[data-action="local-course-banner-builder-toggle-source-preview-thumbnail-visibility"]');
+    if (sourcePreviewVisibilityButton) {
+        e.preventDefault();
+        e.stopPropagation();
+        localCourseBannerBuilderToggleSourcePreviewThumbnailVisibility(sourcePreviewVisibilityButton);
+        return;
+    }
+
+    var allSourcePreviewVisibilityButton = e.target.closest('[data-action="local-course-banner-builder-toggle-all-source-preview-images"]');
+    if (allSourcePreviewVisibilityButton) {
+        e.preventDefault();
+        localCourseBannerBuilderToggleAllSourcePreviewImageVisibility(allSourcePreviewVisibilityButton);
+        return;
+    }
+
+    var inheritedSourcePreviewButton = e.target.closest(
+        '[data-action="local-course-banner-builder-toggle-source-preview-inherited-layers"]'
+    );
+    if (inheritedSourcePreviewButton) {
+        e.preventDefault();
+        localCourseBannerBuilderToggleSourcePreviewInheritedLayers(inheritedSourcePreviewButton);
+        return;
+    }
+
+    var sourcePreviewThumbButton = e.target.closest('[data-action="local-course-banner-builder-select-source-preview-thumbnail"]');
+    if (sourcePreviewThumbButton) {
+        e.preventDefault();
+        localCourseBannerBuilderSelectSourcePreviewThumbnail(sourcePreviewThumbButton);
+        return;
+    }
+
+    var pushBehindButton = e.target.closest('[data-action="local-course-banner-builder-push-source-preview-layer-behind"]');
+    if (pushBehindButton) {
+        e.preventDefault();
+        localCourseBannerBuilderPushSourcePreviewHistoryFromControl(pushBehindButton);
+        localCourseBannerBuilderPushSelectedSourcePreviewLayerBehind(pushBehindButton);
+        return;
+    }
+
+    var pullForwardButton = e.target.closest('[data-action="local-course-banner-builder-pull-source-preview-layer-forward"]');
+    if (pullForwardButton) {
+        e.preventDefault();
+        localCourseBannerBuilderPushSourcePreviewHistoryFromControl(pullForwardButton);
+        localCourseBannerBuilderPullSelectedSourcePreviewLayerForward(pullForwardButton);
+        return;
+    }
+
+    var keepAspectButton = e.target.closest('[data-action="local-course-banner-builder-toggle-source-preview-keep-aspect"]');
+    if (keepAspectButton) {
+        e.preventDefault();
+        var keepAspectRoot = keepAspectButton.closest('[data-source-visual-editor="1"]');
+        var keepAspectLayer = keepAspectRoot ? localCourseBannerBuilderGetSelectedSourcePreviewLayer(keepAspectRoot) : null;
+        if (keepAspectRoot && keepAspectLayer) {
+            var keepAspectState = localCourseBannerBuilderGetSourcePreviewLayerState(keepAspectLayer);
+            if (keepAspectState) {
+                localCourseBannerBuilderPushSourcePreviewHistory(keepAspectRoot);
+                if (!keepAspectState.customsizekeepaspect &&
+                        localCourseBannerBuilderApplyClosestKeepAspectToSourcePreview(keepAspectRoot, keepAspectLayer)) {
+                    return;
+                }
+                keepAspectState.customsizekeepaspect = false;
+                localCourseBannerBuilderSetSourcePreviewLayerState(keepAspectLayer, keepAspectState);
+                localCourseBannerBuilderSyncSourcePreviewLayer(keepAspectRoot, keepAspectLayer);
+                localCourseBannerBuilderUpdateSourcePreviewRow(keepAspectRoot, keepAspectState);
+                localCourseBannerBuilderSyncSourcePreviewPayload(keepAspectRoot);
+                localCourseBannerBuilderSyncSourcePreviewKeepAspectButton(keepAspectRoot);
+            }
+        }
+        return;
+    }
+
+    var sourceOpacityButton = e.target.closest('[data-action="local-course-banner-builder-toggle-source-preview-opacity"]');
+    if (sourceOpacityButton) {
+        e.preventDefault();
+        var sourceOpacityRoot = sourceOpacityButton.closest('[data-source-visual-editor="1"]');
+        var sourceOpacityPanel = sourceOpacityRoot ?
+            sourceOpacityRoot.querySelector('[data-source-preview-opacity-panel="1"]') :
+            null;
+        if (sourceOpacityPanel) {
+            localCourseBannerBuilderToggleOpacityPanel(sourceOpacityPanel, sourceOpacityButton);
+            localCourseBannerBuilderSyncSourcePreviewOpacityButton(sourceOpacityRoot);
+        }
+        return;
+    }
+
+    var topLayerButton = e.target.closest('[data-action="local-course-banner-builder-toggle-source-preview-top-layer"]');
+    if (topLayerButton) {
+        e.preventDefault();
+        var topLayerRoot = topLayerButton.closest('[data-source-visual-editor="1"]');
+        var selectedLayer = topLayerRoot ? localCourseBannerBuilderGetSelectedSourcePreviewLayer(topLayerRoot) : null;
+        if (topLayerRoot && selectedLayer) {
+            var state = localCourseBannerBuilderGetSourcePreviewLayerState(selectedLayer);
+            if (state) {
+                localCourseBannerBuilderPushSourcePreviewHistory(topLayerRoot);
+                state.dynamicimagesizeenabled = !state.dynamicimagesizeenabled;
+                if (state.dynamicimagesizeenabled) {
+                    state.imageaboveinheritedenabled = false;
+                    state.imagebelowinheritedenabled = false;
+                }
+                localCourseBannerBuilderSetSourcePreviewLayerState(selectedLayer, state);
+                localCourseBannerBuilderUpdateSourcePreviewRow(topLayerRoot, state);
+                localCourseBannerBuilderMoveSourcePreviewLayerRowToTop(state.id);
+                localCourseBannerBuilderSyncSourcePreviewOrder(topLayerRoot);
+                localCourseBannerBuilderSyncSourcePreviewLayer(topLayerRoot, selectedLayer);
+                localCourseBannerBuilderSyncSourcePreviewPayload(topLayerRoot);
+                localCourseBannerBuilderSyncSourcePreviewTopLayerButton(topLayerRoot);
+                localCourseBannerBuilderSyncSourcePreviewAboveOverlayButton(topLayerRoot);
+                localCourseBannerBuilderSyncSourcePreviewOrderButtons(topLayerRoot);
+                localCourseBannerBuilderSyncSourcePreviewCenterFixedButton(topLayerRoot);
+                localCourseBannerBuilderSelectSourcePreviewLayer(topLayerRoot, selectedLayer);
+            }
+        }
+        return;
+    }
+
+    var aboveOverlayButton = e.target.closest('[data-action="local-course-banner-builder-toggle-source-preview-above-overlay"]');
+    if (aboveOverlayButton) {
+        e.preventDefault();
+        var aboveOverlayRoot = aboveOverlayButton.closest('[data-source-visual-editor="1"]');
+        var aboveOverlayLayer = aboveOverlayRoot ? localCourseBannerBuilderGetSelectedSourcePreviewLayer(aboveOverlayRoot) : null;
+        if (aboveOverlayRoot && aboveOverlayLayer && localCourseBannerBuilderPreviewHasOverlay(aboveOverlayRoot)) {
+            var aboveOverlayState = localCourseBannerBuilderGetSourcePreviewLayerState(aboveOverlayLayer);
+            if (aboveOverlayState) {
+                localCourseBannerBuilderPushSourcePreviewHistory(aboveOverlayRoot);
+                aboveOverlayState.imageaboveoverlayenabled = !aboveOverlayState.imageaboveoverlayenabled;
+                if (aboveOverlayState.imageaboveoverlayenabled) {
+                    aboveOverlayState.imageaboveinheritedenabled = false;
+                    aboveOverlayState.imagebelowinheritedenabled = false;
+                }
+                localCourseBannerBuilderSetSourcePreviewLayerState(aboveOverlayLayer, aboveOverlayState);
+                localCourseBannerBuilderUpdateSourcePreviewRow(aboveOverlayRoot, aboveOverlayState);
+                localCourseBannerBuilderMoveSourcePreviewLayerRowToTop(aboveOverlayState.id);
+                localCourseBannerBuilderSyncSourcePreviewOrder(aboveOverlayRoot);
+                localCourseBannerBuilderSyncSourcePreviewLayer(aboveOverlayRoot, aboveOverlayLayer);
+                localCourseBannerBuilderSyncSourcePreviewPayload(aboveOverlayRoot);
+                localCourseBannerBuilderSyncSourcePreviewAboveOverlayButton(aboveOverlayRoot);
+                localCourseBannerBuilderSyncSourcePreviewOrderButtons(aboveOverlayRoot);
+                localCourseBannerBuilderSelectSourcePreviewLayer(aboveOverlayRoot, aboveOverlayLayer);
+            }
+        }
+        return;
+    }
+
+    var belowInheritedButton = e.target.closest('[data-action="local-course-banner-builder-toggle-source-preview-below-inherited"]');
+    if (belowInheritedButton) {
+        e.preventDefault();
+        var belowInheritedRoot = belowInheritedButton.closest('[data-source-visual-editor="1"]');
+        var belowInheritedLayer = belowInheritedRoot ? localCourseBannerBuilderGetActionableSourcePreviewLayer(belowInheritedRoot) : null;
+        if (belowInheritedRoot && belowInheritedLayer) {
+            localCourseBannerBuilderSelectSourcePreviewLayer(belowInheritedRoot, belowInheritedLayer);
+            var belowInheritedState = localCourseBannerBuilderGetSourcePreviewLayerState(belowInheritedLayer);
+            if (belowInheritedState) {
+                localCourseBannerBuilderPushSourcePreviewHistory(belowInheritedRoot);
+                belowInheritedState.imagebelowinheritedenabled = !belowInheritedState.imagebelowinheritedenabled;
+                if (belowInheritedState.imagebelowinheritedenabled) {
+                    belowInheritedState.imageaboveinheritedenabled = false;
+                    belowInheritedState.dynamicimagesizeenabled = false;
+                    belowInheritedState.imageaboveoverlayenabled = false;
+                }
+                localCourseBannerBuilderSetSourcePreviewLayerState(belowInheritedLayer, belowInheritedState);
+                localCourseBannerBuilderUpdateSourcePreviewRow(belowInheritedRoot, belowInheritedState);
+                localCourseBannerBuilderSyncSourcePreviewOrder(belowInheritedRoot);
+                localCourseBannerBuilderSyncSourcePreviewLayer(belowInheritedRoot, belowInheritedLayer);
+                localCourseBannerBuilderSyncSourcePreviewPayload(belowInheritedRoot);
+                localCourseBannerBuilderSyncSourcePreviewTopLayerButton(belowInheritedRoot);
+                localCourseBannerBuilderSyncSourcePreviewAboveOverlayButton(belowInheritedRoot);
+                localCourseBannerBuilderSyncSourcePreviewInheritedDepthButtons(belowInheritedRoot);
+                localCourseBannerBuilderSyncSourcePreviewOrderButtons(belowInheritedRoot);
+                localCourseBannerBuilderSelectSourcePreviewLayer(belowInheritedRoot, belowInheritedLayer);
+            }
+        }
+        return;
+    }
+
+    var aboveInheritedButton = e.target.closest('[data-action="local-course-banner-builder-toggle-source-preview-above-inherited"]');
+    if (aboveInheritedButton) {
+        e.preventDefault();
+        var aboveInheritedRoot = aboveInheritedButton.closest('[data-source-visual-editor="1"]');
+        var aboveInheritedLayer = aboveInheritedRoot ? localCourseBannerBuilderGetActionableSourcePreviewLayer(aboveInheritedRoot) : null;
+        if (aboveInheritedRoot && aboveInheritedLayer) {
+            localCourseBannerBuilderSelectSourcePreviewLayer(aboveInheritedRoot, aboveInheritedLayer);
+            var aboveInheritedState = localCourseBannerBuilderGetSourcePreviewLayerState(aboveInheritedLayer);
+            if (aboveInheritedState) {
+                localCourseBannerBuilderPushSourcePreviewHistory(aboveInheritedRoot);
+                aboveInheritedState.imageaboveinheritedenabled = !aboveInheritedState.imageaboveinheritedenabled;
+                if (aboveInheritedState.imageaboveinheritedenabled) {
+                    aboveInheritedState.imagebelowinheritedenabled = false;
+                    aboveInheritedState.dynamicimagesizeenabled = false;
+                    aboveInheritedState.imageaboveoverlayenabled = false;
+                }
+                localCourseBannerBuilderSetSourcePreviewLayerState(aboveInheritedLayer, aboveInheritedState);
+                localCourseBannerBuilderUpdateSourcePreviewRow(aboveInheritedRoot, aboveInheritedState);
+                localCourseBannerBuilderSyncSourcePreviewOrder(aboveInheritedRoot);
+                localCourseBannerBuilderSyncSourcePreviewLayer(aboveInheritedRoot, aboveInheritedLayer);
+                localCourseBannerBuilderSyncSourcePreviewPayload(aboveInheritedRoot);
+                localCourseBannerBuilderSyncSourcePreviewTopLayerButton(aboveInheritedRoot);
+                localCourseBannerBuilderSyncSourcePreviewAboveOverlayButton(aboveInheritedRoot);
+                localCourseBannerBuilderSyncSourcePreviewInheritedDepthButtons(aboveInheritedRoot);
+                localCourseBannerBuilderSyncSourcePreviewOrderButtons(aboveInheritedRoot);
+                localCourseBannerBuilderSelectSourcePreviewLayer(aboveInheritedRoot, aboveInheritedLayer);
+            }
+        }
+        return;
+    }
+
+    var deleteSelectedPreviewButton = e.target.closest('[data-action="local-course-banner-builder-delete-selected-preview-layer"]');
+    if (deleteSelectedPreviewButton) {
+        e.preventDefault();
+        localCourseBannerBuilderDeleteSelectedPreviewLayer(deleteSelectedPreviewButton);
+        return;
+    }
+
+    var deleteSelectedDraftButton = e.target.closest('[data-action="local-course-banner-builder-delete-selected-draft-preview-layer"]');
+    if (deleteSelectedDraftButton) {
+        e.preventDefault();
+        localCourseBannerBuilderDeleteSelectedDraftPreviewLayer(deleteSelectedDraftButton);
+        return;
+    }
+
+    var rootSourceButton = e.target.closest('[data-action="local-course-banner-builder-toggle-root-source"]');
+    if (rootSourceButton) {
+        e.preventDefault();
+        localCourseBannerBuilderToggleRootSource(rootSourceButton);
+        return;
+    }
+
+    var chainToggle = e.target.closest('[data-action="local-course-banner-builder-toggle-source-chain"]');
+    if (chainToggle) {
+        e.preventDefault();
+        localCourseBannerBuilderToggleSourceChain(chainToggle);
+        return;
+    }
+
+    var allChainToggle = e.target.closest('[data-action="local-course-banner-builder-toggle-all-source-chains"]');
+    if (allChainToggle) {
+        e.preventDefault();
+        localCourseBannerBuilderToggleAllSourceChains(allChainToggle);
+        return;
+    }
+
+    var sourcePreviewButton = e.target.closest('[data-action="local-course-banner-builder-show-source-chain-preview"]');
+    if (sourcePreviewButton) {
+        e.preventDefault();
+        localCourseBannerBuilderDismissOpenPopovers(sourcePreviewButton);
+        localCourseBannerBuilderShowSourceChainPreview(sourcePreviewButton);
+        return;
+    }
+
+    var togglePreviewBorderButton = e.target.closest('[data-action="local-course-banner-builder-toggle-preview-border"]');
+    if (togglePreviewBorderButton) {
+        var previewPanel = togglePreviewBorderButton.closest('[data-source-visual-editor="1"]');
+        if (previewPanel) {
+            var isVisible = togglePreviewBorderButton.getAttribute('data-preview-border-visible') !== '0';
+            var nextVisible = !isVisible;
+            previewPanel.setAttribute('data-preview-border-hidden', nextVisible ? '0' : '1');
+            togglePreviewBorderButton.setAttribute('data-preview-border-visible', nextVisible ? '1' : '0');
+            togglePreviewBorderButton.setAttribute('aria-pressed', nextVisible ? 'true' : 'false');
+            Array.prototype.slice.call(previewPanel.querySelectorAll(
+                '.local-course-banner-builder-source-preview-border, ' +
+                '.local-course-banner-builder-source-preview-overlay, ' +
+                '.local-course-banner-builder-source-preview-title'
+            )).forEach(function (layer) {
+                if (nextVisible) {
+                    if (layer.getAttribute('data-preview-toggle-hidden') === '1') {
+                        layer.removeAttribute('hidden');
+                        layer.removeAttribute('data-preview-toggle-hidden');
+                    }
+                } else {
+                    layer.setAttribute('hidden', 'hidden');
+                    layer.setAttribute('data-preview-toggle-hidden', '1');
+                }
+            });
+            localCourseBannerBuilderSetActionButtonContent(
+                togglePreviewBorderButton,
+                nextVisible ? (togglePreviewBorderButton.getAttribute('data-hide-icon') || 'fa-eye-slash') : (togglePreviewBorderButton.getAttribute('data-show-icon') || 'fa-eye'),
+                nextVisible ?
+                    (togglePreviewBorderButton.getAttribute('data-hide-label') ||
+                        localCourseBannerBuilderGetJsString('hidepreviewborder', 'Hide border')) :
+                    (togglePreviewBorderButton.getAttribute('data-show-label') ||
+                        localCourseBannerBuilderGetJsString('showpreviewborder', 'Show border'))
+            );
+        }
+        return;
+    }
+
+    var deleteAllLayersButton = e.target.closest('[data-action="local-course-banner-builder-delete-all-layers"]');
+    if (deleteAllLayersButton) {
+        e.preventDefault();
+        localCourseBannerBuilderDeleteAllLayers(deleteAllLayersButton);
+        return;
+    }
+
+    var deleteSelectedLayersButton = e.target.closest(
+        '[data-action="local-course-banner-builder-delete-selected-layers"]'
+    );
+    if (deleteSelectedLayersButton) {
+        e.preventDefault();
+        localCourseBannerBuilderDeleteSelectedLayers(deleteSelectedLayersButton);
+        return;
+    }
+
+    var sourcePreviewRoot = e.target.closest('[data-source-visual-editor="1"]');
+    if (sourcePreviewRoot && !localCourseBannerBuilderIsSourcePreviewReadonly(sourcePreviewRoot)) {
+        var sourceLayer = localCourseBannerBuilderGetSourcePreviewEventLayer(sourcePreviewRoot, e);
+        if (sourceLayer) {
+            localCourseBannerBuilderSelectSourcePreviewLayer(sourcePreviewRoot, sourceLayer);
+        }
+    }
+
+    var clickedDraftLayer = e.target.closest('[data-preview-draft-layer="1"]');
+    if (clickedDraftLayer) {
+        e.preventDefault();
+        localCourseBannerBuilderSelectDraftPreviewLayer(
+            localCourseBannerBuilderGetLayerScope(clickedDraftLayer),
+            clickedDraftLayer.getAttribute('data-draft-index') || '0'
+        );
+        return;
+    }
+
+    var toggle = e.target.closest('[data-action="local-course-banner-builder-toggle-selection"]');
+    if (!toggle) {
+        if (localCourseBannerBuilderIsNativeAdmin() && e.target.classList && e.target.classList.contains('modal')) {
+            localCourseBannerBuilderHideModal(e.target);
+        }
+        return;
+    }
+    var checkboxes = Array.prototype.slice.call(document.querySelectorAll('.local-course-banner-builder-layer-select'));
+    if (!checkboxes.length) {
+        return;
+    }
+    var allChecked = checkboxes.every(function (checkbox) {
+        return checkbox.checked;
+    });
+    var shouldCheck = !allChecked;
+    checkboxes.forEach(function (checkbox) {
+        checkbox.checked = shouldCheck;
+    });
+    localCourseBannerBuilderSyncSelectionButton();
+});
+
+document.addEventListener('keydown', function (e) {
+    var key = e.key || e.keyCode;
+    if (key !== 'Escape' && key !== 'Esc' && key !== 27) {
+        return;
+    }
+    var modals = Array.prototype.slice.call(document.querySelectorAll('.modal'));
+    var modal = modals.reverse().find(function (node) {
+        return node && (
+            node.classList.contains('show') ||
+            node.getAttribute('aria-modal') === 'true' ||
+            node.style.display === 'block'
+        );
+    });
+    if (!modal) {
+        return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    if (typeof e.stopImmediatePropagation === 'function') {
+        e.stopImmediatePropagation();
+    }
+    localCourseBannerBuilderHideModal(modal);
+}, true);
+
+document.addEventListener('shown.bs.modal', function (e) {
+    var modal = e.target && e.target.closest ? e.target.closest('.modal') : null;
+    if (!modal || !modal.id || modal.id.indexOf('local-course-banner-builder-') !== 0) {
+        return;
+    }
+    var form = modal.querySelector('form.mform');
+    if (!form) {
+        return;
+    }
+    localCourseBannerBuilderUpgradeRanges();
+    localCourseBannerBuilderUpgradeNumberInputs();
+    localCourseBannerBuilderUpgradeColorPickers(modal);
+    localCourseBannerBuilderBindPercentSliders(form);
+    localCourseBannerBuilderSyncLayerInputModes(form);
+    localCourseBannerBuilderSyncBorderPreview(form);
+    localCourseBannerBuilderSyncLayerBannerPreview(form);
+    localCourseBannerBuilderEnhanceBinaryOptionButtons(form);
+    localCourseBannerBuilderEnhanceModalPreviewActions(form);
+    localCourseBannerBuilderEnhanceBorderSidePicker(form);
+    localCourseBannerBuilderSyncDetailsCollapseIcons(modal);
+    localCourseBannerBuilderPrimeHelpBubbles(modal);
+}, true);
+
+document.addEventListener('dblclick', function (e) {
+    var sourcePreviewRoot = e.target.closest('[data-source-visual-editor="1"]');
+    if (sourcePreviewRoot && localCourseBannerBuilderIsSourcePreviewReadonly(sourcePreviewRoot)) {
+        return;
+    }
+    var sourceLayer = sourcePreviewRoot ?
+        localCourseBannerBuilderGetSourcePreviewEventLayer(sourcePreviewRoot, e) :
+        null;
+    if (sourceLayer && sourcePreviewRoot) {
+        e.preventDefault();
+        localCourseBannerBuilderSelectSourcePreviewLayer(sourcePreviewRoot, sourceLayer);
+        return;
+    }
+
+    var draftLayer = e.target.closest('[data-preview-draft-layer="1"]');
+    if (draftLayer) {
+        e.preventDefault();
+        localCourseBannerBuilderSelectDraftPreviewLayer(
+            localCourseBannerBuilderGetLayerScope(draftLayer),
+            draftLayer.getAttribute('data-draft-index') || '0'
+        );
+    }
+});
+
+document.addEventListener('keydown', function (e) {
+    var sourceLayer = e.target.closest ? e.target.closest('[data-source-preview-layer="1"][data-source-preview-editable="1"]') : null;
+    if (!sourceLayer) {
+        return;
+    }
+    if (localCourseBannerBuilderIsSourcePreviewReadonly(sourceLayer.closest('[data-source-visual-editor="1"]'))) {
+        return;
+    }
+    if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        localCourseBannerBuilderSelectSourcePreviewLayer(
+            sourceLayer.closest('[data-source-visual-editor="1"]'),
+            sourceLayer
+        );
+    }
+});
+
+document.addEventListener('keydown', function (e) {
+    if (!localCourseBannerBuilderIsPreviewNudgeEvent(e)) {
+        return;
+    }
+    var keys = {
+        ArrowLeft: [-1, 0],
+        ArrowRight: [1, 0],
+        ArrowUp: [0, -1],
+        ArrowDown: [0, 1]
+    };
+    var delta = keys[e.key];
+    var step = e.shiftKey ? 10 : 1;
+    if (!localCourseBannerBuilderNudgeActivePreviewSelection(delta[0] * step, delta[1] * step, !e.repeat)) {
+        return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+}, true);
+
+document.addEventListener('change', function (e) {
+    if (e.target.closest('.local-course-banner-builder-layer-select')) {
+        localCourseBannerBuilderSyncSelectionButton();
+    }
+    if (e.target.name && e.target.name.indexOf('isenabled_inline[') === 0) {
+        localCourseBannerBuilderSyncSourcePreviewEnabledState(e.target);
+    }
+    if (e.target.name && e.target.name.indexOf('fitmodeoverride_inline[') === 0) {
+        localCourseBannerBuilderSyncSourcePreviewFitOverrideState(e.target);
+    }
+    if (e.target.matches('[data-layer-position-anchor="1"]')) {
+        localCourseBannerBuilderApplyLayerPositionAnchorChange(e.target);
+    }
+    if (e.target.matches('[data-preview-context-toggle="1"]')) {
+        var contextForm = localCourseBannerBuilderGetLayerScope(e.target);
+        localCourseBannerBuilderSyncContextPreviewVisibility(contextForm || e.target);
+        localCourseBannerBuilderSyncModalPreviewActionButtons(contextForm);
+    }
+    if (e.target.closest('form.mform') && e.target.closest('#local-course-banner-builder-add-layer-modal')) {
+        localCourseBannerBuilderSaveActiveDraftPreviewState(e.target.closest('form.mform'));
+    }
+});
+
+document.addEventListener('keydown', function (e) {
+    var select = e.target.closest('[data-inline-setting-select]');
+    if (!select) {
+        if (e.key === 'Escape' && localCourseBannerBuilderIsNativeAdmin()) {
+            var modal = localCourseBannerBuilderGetOpenModal();
+            if (modal) {
+                e.preventDefault();
+                localCourseBannerBuilderHideModal(modal);
+            }
+        }
+        return;
+    }
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        var form = select.closest('form');
+        if (form) {
+            form.requestSubmit();
+        }
+        return;
+    }
+    if (e.key === 'Escape') {
+        e.preventDefault();
+        var row = select.closest('[data-inline-setting-row]');
+        if (row) {
+            localCourseBannerBuilderToggleInlineSetting(row, false);
+        }
+    }
+});
+
+document.addEventListener('submit', function (e) {
+    var form = e.target && e.target.closest ? e.target.closest('form') : null;
+    if (!form || !form.closest('[class*="local-course-banner-builder"]')) {
+        return;
+    }
+    if (form.dataset.formSubmitting === '1') {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof e.stopImmediatePropagation === 'function') {
+            e.stopImmediatePropagation();
+        }
+        return;
+    }
+    form.dataset.formSubmitting = '1';
+    if (form.matches && form.matches('form.mform')) {
+        localCourseBannerBuilderPrepareLayerFormForSubmit(form);
+    }
+    Array.prototype.slice.call(form.querySelectorAll(
+        'input[type="submit"], button[type="submit"], [data-modal-preview-submit-proxy="1"]'
+    )).forEach(function (button) {
+        button.disabled = true;
+        button.classList.add('disabled');
+        button.setAttribute('aria-disabled', 'true');
+    });
+    Array.prototype.slice.call(document.querySelectorAll('form')).forEach(function (node) {
+        node.dataset.formSubmitted = 'true';
+        node.dataset.formDirty = 'false';
+    });
+}, true);
+
+document.addEventListener('pointerdown', function (e) {
+    if (localCourseBannerBuilderStartCropInteraction(e)) {
+        return;
+    }
+    if (e.target.closest('[data-action="local-course-banner-builder-toggle-preview-aspect-lock"]')) {
+        return;
+    }
+    var sourcePreviewRoot = e.target.closest('[data-source-visual-editor="1"]');
+    if (!sourcePreviewRoot || localCourseBannerBuilderIsSourcePreviewReadonly(sourcePreviewRoot)) {
+        return;
+    }
+    if (localCourseBannerBuilderGetActivePreviewCropLayer(sourcePreviewRoot)) {
+        return;
+    }
+    var resizeHandle = localCourseBannerBuilderGetSelectedSourcePreviewResizeHandleAtPoint(sourcePreviewRoot, e.clientX, e.clientY) ||
+        e.target.closest('[data-source-preview-layer="1"] [data-preview-resize-handle="1"]');
+    var targetLayer = resizeHandle ? resizeHandle.closest('[data-source-preview-layer="1"][data-source-preview-editable="1"]') : null;
+    targetLayer = targetLayer || localCourseBannerBuilderGetSourcePreviewEventLayer(sourcePreviewRoot, e);
+    if (!targetLayer || targetLayer.getAttribute('data-source-preview-editable') !== '1') {
+        return;
+    }
+    localCourseBannerBuilderSelectSourcePreviewLayer(sourcePreviewRoot, targetLayer);
+    localCourseBannerBuilderSuppressNextSourcePreviewClick();
+    var selectedLayer = targetLayer;
+    if (resizeHandle) {
+        e.preventDefault();
+        e.stopPropagation();
+        selectedLayer.setAttribute('data-preview-active-edge', resizeHandle.getAttribute('data-preview-resize-edge') || '');
+        localCourseBannerBuilderStartSourcePreviewInteraction(
+            e,
+            resizeHandle.getAttribute('data-preview-resize-mode') === 'edge' ? 'resize-edge' : 'resize',
+            selectedLayer
+        );
+        return;
+    }
+    var clickedImage = e.target.closest('[data-preview-image-tag="1"]');
+    if (selectedLayer.classList.contains('local-course-banner-builder-source-preview-layer--selected') &&
+            selectedLayer.contains(e.target)) {
+        e.preventDefault();
+        e.stopPropagation();
+        localCourseBannerBuilderStartSourcePreviewInteraction(e, 'drag', selectedLayer);
+        return;
+    }
+    if (clickedImage && selectedLayer.contains(clickedImage) &&
+            localCourseBannerBuilderIsSourcePreviewLayerOpaqueAtPoint(selectedLayer, e.clientX, e.clientY)) {
+        e.preventDefault();
+        e.stopPropagation();
+        localCourseBannerBuilderStartSourcePreviewInteraction(e, 'drag', selectedLayer);
+        return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+});
+
+document.addEventListener('pointerdown', function (e) {
+    localCourseBannerBuilderStartCropInteraction(e);
+}, true);
+
+document.addEventListener('dragstart', function (e) {
+    var row = e.target.closest('.local-course-banner-builder-layer-row[draggable="true"]');
+    if (!row) {
+        e.preventDefault();
+        return;
+    }
+    row.classList.add('local-course-banner-builder-layer-row-dragging');
+    if (e.dataTransfer) {
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', 'layer-row');
+        e.dataTransfer.setDragImage(row, 24, 24);
+    }
+});
+
+document.addEventListener('dragend', function (e) {
+    var row = e.target.closest('.local-course-banner-builder-layer-row');
+    if (row) {
+        row.classList.remove('local-course-banner-builder-layer-row-dragging');
+    }
+    localCourseBannerBuilderSyncLayerSortOrders();
+});
+
+document.addEventListener('dragover', function (e) {
+    var tbody = e.target.closest('.local-course-banner-builder-layer-sortable[data-layer-sortable="1"]');
+    if (!tbody) {
+        return;
+    }
+    var dragging = tbody.querySelector('.local-course-banner-builder-layer-row-dragging');
+    if (!dragging) {
+        return;
+    }
+    e.preventDefault();
+    var target = e.target.closest('.local-course-banner-builder-layer-row');
+    if (!target || target === dragging) {
+        return;
+    }
+    var rect = target.getBoundingClientRect();
+    var insertAfter = e.clientY > rect.top + (rect.height / 2);
+    tbody.insertBefore(dragging, insertAfter ? target.nextSibling : target);
+    localCourseBannerBuilderEnforceLockedLayerOrder(tbody);
+    localCourseBannerBuilderSyncLayerSortOrders();
+    localCourseBannerBuilderSyncLayerSortablePreviewOrder(tbody);
+});
+
+document.addEventListener('drop', function (e) {
+    var tbody = e.target.closest('.local-course-banner-builder-layer-sortable[data-layer-sortable="1"]');
+    if (!tbody) {
+        return;
+    }
+    e.preventDefault();
+    Array.prototype.slice.call(tbody.querySelectorAll('.local-course-banner-builder-layer-row-dragging')).forEach(function (row) {
+        row.classList.remove('local-course-banner-builder-layer-row-dragging');
+    });
+    localCourseBannerBuilderEnforceLockedLayerOrder(tbody);
+    localCourseBannerBuilderSyncLayerSortOrders();
+    localCourseBannerBuilderSyncLayerSortablePreviewOrder(tbody);
+});
+
+document.addEventListener('input', function (e) {
+    var sourceOpacityInput = e.target.closest('[data-source-preview-opacity-range], [data-source-preview-opacity-number]');
+    if (sourceOpacityInput) {
+        var sourceOpacityRoot = sourceOpacityInput.closest('[data-source-visual-editor="1"]');
+        var sourceOpacityLayer = sourceOpacityRoot ?
+            localCourseBannerBuilderGetSelectedSourcePreviewLayer(sourceOpacityRoot) :
+            null;
+        var sourceOpacityPanel = sourceOpacityInput.closest('[data-source-preview-opacity-panel="1"]');
+        if (sourceOpacityRoot && sourceOpacityLayer && sourceOpacityPanel) {
+            var sourceOpacityValue = localCourseBannerBuilderClampPercent(sourceOpacityInput.value, 100);
+            localCourseBannerBuilderSetOpacityPanelValue(sourceOpacityPanel, sourceOpacityValue);
+            var sourceOpacityState = localCourseBannerBuilderGetSourcePreviewLayerState(sourceOpacityLayer);
+            if (sourceOpacityState) {
+                sourceOpacityState.imageopacity = sourceOpacityValue;
+                localCourseBannerBuilderSetSourcePreviewLayerState(sourceOpacityLayer, sourceOpacityState);
+                localCourseBannerBuilderSyncSourcePreviewLayer(sourceOpacityRoot, sourceOpacityLayer);
+                localCourseBannerBuilderUpdateSourcePreviewRow(sourceOpacityRoot, sourceOpacityState);
+                localCourseBannerBuilderSyncSourcePreviewPayload(sourceOpacityRoot);
+            }
+        }
+        return;
+    }
+
+    var search = e.target.closest('[data-action="local-course-banner-builder-filter-sources"]');
+    if (!search) {
+        return;
+    }
+    var target = document.querySelector(search.getAttribute('data-target'));
+    if (!target) {
+        return;
+    }
+    var query = search.value.toLowerCase().trim();
+    var visibleCount = 0;
+    Array.prototype.slice.call(target.querySelectorAll('[data-source-option]')).forEach(function (option) {
+        var matches = !query || (option.getAttribute('data-search') || option.textContent).toLowerCase().indexOf(query) !== -1;
+        option.hidden = !matches;
+        if (matches) {
+            visibleCount++;
+        }
+    });
+    var counter = document.querySelector(search.getAttribute('data-counter'));
+    if (counter) {
+        counter.textContent = visibleCount;
+    }
+});
+
+document.addEventListener('click', function (e) {
+    if (e.target.closest('.local-course-banner-builder-source-dropdown-search')) {
+        e.stopPropagation();
+        return;
+    }
+
+    var option = e.target.closest('[data-source-option]');
+    if (!option || option.disabled) {
+        return;
+    }
+    var dropdown = option.closest('[data-source-dropdown]');
+    if (!dropdown) {
+        return;
+    }
+    var input = document.querySelector(dropdown.getAttribute('data-input'));
+    var label = dropdown.querySelector('[data-source-dropdown-label]');
+    if (input) {
+        input.value = option.getAttribute('data-value');
+    }
+    if (label) {
+        label.textContent = option.getAttribute('data-label') || option.textContent.trim();
+    }
+    if ((dropdown.getAttribute('data-source-dropdown') || '') === 'sourceparent') {
+        var rootInput = document.querySelector('#id_sourceisroot');
+        var rootButton = document.querySelector('[data-action="local-course-banner-builder-toggle-root-source"][data-input="#id_sourceisroot"]');
+        var hasParent = (option.getAttribute('data-value') || '') !== '';
+        if (rootInput) {
+            rootInput.value = hasParent ? '0' : '1';
+        }
+        if (rootButton) {
+            rootButton.classList.toggle('btn-primary', !hasParent);
+            rootButton.classList.toggle('btn-outline-secondary', hasParent);
+            rootButton.setAttribute('aria-pressed', hasParent ? 'false' : 'true');
+        }
+    }
+    localCourseBannerBuilderSyncSourceDropdownButton(dropdown);
+    localCourseBannerBuilderSyncSourceSubmit(dropdown);
+    Array.prototype.slice.call(dropdown.querySelectorAll('[data-source-option]')).forEach(function (item) {
+        item.classList.toggle('active', item === option);
+    });
+});
+
+function localCourseBannerBuilderSyncSourceDropdownButton(dropdown) {
+    if (!dropdown) {
+        return;
+    }
+    var input = document.querySelector(dropdown.getAttribute('data-input'));
+    var label = dropdown.querySelector('[data-source-dropdown-label]');
+    if (!input || !label) {
+        return;
+    }
+    var selectedValue = input.value || '';
+    var hasSelection = selectedValue !== '' && selectedValue !== '0';
+    var escapedValue = window.CSS && CSS.escape ? CSS.escape(selectedValue) : selectedValue.replace(/"/g, '\\"');
+    var selectedOption = dropdown.querySelector('[data-source-option][data-value="' + escapedValue + '"]');
+
+    if (selectedOption) {
+        label.textContent = selectedOption.getAttribute('data-label') || selectedOption.textContent.trim();
+    }
+
+    label.classList.toggle('active', hasSelection);
+    label.classList.toggle('is-selected', hasSelection);
+}
+
+function localCourseBannerBuilderToggleRootSource(button) {
+    var inputSelector = button ? button.getAttribute('data-input') : '';
+    var input = inputSelector ? document.querySelector(inputSelector) : null;
+    if (!input) {
+        return;
+    }
+    var enabled = input.value !== '1';
+    input.value = enabled ? '1' : '0';
+    if (enabled) {
+        var form = button.closest('form') || document;
+        var parentInput = form.querySelector('#id_sourceparentkey');
+        var parentDropdown = form.querySelector('[data-source-dropdown="sourceparent"]');
+        if (parentInput) {
+            parentInput.value = '';
+        }
+        if (parentDropdown) {
+            localCourseBannerBuilderSyncSourceDropdownButton(parentDropdown);
+            Array.prototype.slice.call(parentDropdown.querySelectorAll('[data-source-option]')).forEach(function (item) {
+                item.classList.toggle('active', (item.getAttribute('data-value') || '') === '');
+            });
+            localCourseBannerBuilderSyncSourceSubmit(parentDropdown);
+        }
+    }
+    button.classList.toggle('btn-primary', enabled);
+    button.classList.toggle('btn-outline-secondary', !enabled);
+    button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+}
+
+function localCourseBannerBuilderGetSourceChainDescendants(parentKey) {
+    var rows = Array.prototype.slice.call(document.querySelectorAll('[data-source-chain-row="1"]'));
+    var descendants = [];
+    var collect = function (key) {
+        rows.forEach(function (row) {
+            if ((row.getAttribute('data-source-chain-parent') || '') !== key) {
+                return;
+            }
+            descendants.push(row);
+            collect(row.getAttribute('data-source-chain-key') || '');
+        });
+    };
+    collect(parentKey);
+    return descendants;
+}
+
+function localCourseBannerBuilderGetSourceChainRowsByKey() {
+    var map = {};
+    Array.prototype.slice.call(document.querySelectorAll('[data-source-chain-row="1"]')).forEach(function (row) {
+        var key = row.getAttribute('data-source-chain-key') || '';
+        if (key) {
+            map[key] = row;
+        }
+    });
+    return map;
+}
+
+function localCourseBannerBuilderSyncSourceChainRowVisibility() {
+    var rowsByKey = localCourseBannerBuilderGetSourceChainRowsByKey();
+    Array.prototype.slice.call(document.querySelectorAll('[data-source-chain-row="1"]')).forEach(function (row) {
+        var parentKey = row.getAttribute('data-source-chain-parent') || '';
+        var isHidden = false;
+
+        while (parentKey) {
+            var parentRow = rowsByKey[parentKey];
+            if (!parentRow) {
+                break;
+            }
+            var parentToggle = parentRow.querySelector('[data-action="local-course-banner-builder-toggle-source-chain"]');
+            if (parentToggle && parentToggle.getAttribute('aria-expanded') === 'false') {
+                isHidden = true;
+                break;
+            }
+            parentKey = parentRow.getAttribute('data-source-chain-parent') || '';
+        }
+
+        row.hidden = isHidden;
+    });
+}
+
+function localCourseBannerBuilderToggleSourceChain(button, forceCollapsed) {
+    var key = button ? (button.getAttribute('data-source-chain-toggle') || '') : '';
+    if (!key) {
+        return;
+    }
+    var currentlyExpanded = button.getAttribute('aria-expanded') !== 'false';
+    var collapsed = typeof forceCollapsed === 'boolean' ? forceCollapsed : currentlyExpanded;
+    button.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    var icon = button.querySelector('.fa');
+    if (icon) {
+        icon.classList.toggle('fa-chevron-right', collapsed);
+        icon.classList.toggle('fa-chevron-down', !collapsed);
+    }
+    localCourseBannerBuilderSyncSourceChainRowVisibility();
+}
+
+function localCourseBannerBuilderToggleAllSourceChains(button) {
+    var rows = Array.prototype.slice.call(document.querySelectorAll('[data-source-chain-row="1"]'));
+    var anyExpanded = Array.prototype.slice.call(document.querySelectorAll(
+        '[data-action="local-course-banner-builder-toggle-source-chain"][aria-expanded="true"]'
+    )).length > 0;
+    var collapse = anyExpanded;
+    Array.prototype.slice.call(document.querySelectorAll('[data-action="local-course-banner-builder-toggle-source-chain"]')).forEach(function (toggle) {
+        localCourseBannerBuilderToggleSourceChain(toggle, collapse);
+    });
+    if (!collapse) {
+        rows.forEach(function (row) {
+            row.hidden = false;
+        });
+    } else {
+        localCourseBannerBuilderSyncSourceChainRowVisibility();
+    }
+    if (button) {
+        var icon = button.querySelector('.fa');
+        var label = button.querySelector('span');
+        if (icon) {
+            icon.classList.toggle('fa-compress', collapse);
+            icon.classList.toggle('fa-expand', !collapse);
+        }
+        if (label) {
+            label.textContent = collapse ?
+                (button.getAttribute('data-expand-label') || 'Expand all') :
+                (button.getAttribute('data-collapse-label') || 'Collapse all');
+        }
+    }
+}
+
+function localCourseBannerBuilderEnsureSourceChainPreviewModal() {
+    var modal = document.getElementById('local-course-banner-builder-source-chain-preview-modal');
+    if (modal) {
+        return modal;
+    }
+    modal = document.createElement('div');
+    modal.id = 'local-course-banner-builder-source-chain-preview-modal';
+    modal.className = 'modal fade local-course-banner-builder-source-chain-preview-modal';
+    modal.setAttribute('tabindex', '-1');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-hidden', 'true');
+    modal.innerHTML =
+        '<div class="modal-dialog modal-xl" role="document">' +
+            '<div class="modal-content">' +
+                '<div class="modal-header d-flex align-items-center">' +
+                    '<h5 class="modal-title flex-grow-1">Source preview</h5>' +
+                    '<button type="button" class="close ml-auto ms-auto" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close">' +
+                        '<span aria-hidden="true">&times;</span>' +
+                    '</button>' +
+                '</div>' +
+                '<div class="modal-body" data-source-chain-preview-modal-body="1"></div>' +
+            '</div>' +
+        '</div>';
+    document.body.appendChild(modal);
+    return modal;
+}
+
+function localCourseBannerBuilderShowSourceChainPreview(button) {
+    var url = button ? button.getAttribute('data-preview-url') : '';
+    var editUrl = button ? button.getAttribute('data-edit-url') : '';
+    var editLabel = button ? button.getAttribute('data-edit-label') : '';
+    if (!url) {
+        return;
+    }
+    var modal = localCourseBannerBuilderEnsureSourceChainPreviewModal();
+    var body = modal.querySelector('[data-source-chain-preview-modal-body="1"]');
+    if (body) {
+        body.innerHTML = '<div class="text-center p-4">' +
+            '<span class="loading-icon icon-no-margin">' +
+            '<i class="icon fa fa-spinner fa-spin fa-fw" aria-hidden="true"></i>' +
+            '</span></div>';
+    }
+    localCourseBannerBuilderShowModal(modal);
+    fetch(url, {
+        credentials: 'same-origin',
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    }).then(function (response) {
+        if (!response.ok) {
+            throw new Error(localCourseBannerBuilderGetJsString(
+                'unabletoloadsourcepreview',
+                'Unable to load source preview'
+            ));
+        }
+        return response.text();
+    }).then(function (html) {
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(html, 'text/html');
+        var panel = doc.querySelector('[data-source-visual-editor="1"]');
+        if (!body) {
+            return;
+        }
+        if (!panel) {
+            body.innerHTML = '<p class="text-muted mb-0">' +
+                localCourseBannerBuilderGetJsString('previewunavailable', 'Preview unavailable.') +
+                '</p>';
+            return;
+        }
+        Array.prototype.slice.call(panel.querySelectorAll(
+            '.local-course-banner-builder-source-preview-controls,' +
+            '.local-course-banner-builder-source-preview-primary-actions,' +
+            '.local-course-banner-builder-source-preview-bottom-row,' +
+            '.local-course-banner-builder-source-preview-filmstrip,' +
+            'form'
+        )).forEach(function (node) {
+            node.remove();
+        });
+        panel.setAttribute('data-source-preview-readonly', '1');
+        panel.classList.add('local-course-banner-builder-source-preview-readonly');
+        body.innerHTML = '';
+        body.appendChild(document.importNode(panel, true));
+        if (editUrl) {
+            var actionBar = document.createElement('div');
+            actionBar.className = 'local-course-banner-builder-source-chain-preview-actions';
+            var editButton = document.createElement('a');
+            editButton.className = 'btn btn-primary local-course-banner-builder-source-preview-button';
+            editButton.href = editUrl;
+            var editIcon = document.createElement('i');
+            editIcon.className = 'fa fa-pen me-2';
+            editIcon.setAttribute('aria-hidden', 'true');
+            var editText = document.createElement('span');
+            editText.textContent = editLabel || localCourseBannerBuilderGetJsString('editsourcebutton', 'Edit source');
+            editButton.appendChild(editIcon);
+            editButton.appendChild(editText);
+            actionBar.appendChild(editButton);
+            body.appendChild(actionBar);
+        }
+        localCourseBannerBuilderInitSourceVisualEditor(body);
+        localCourseBannerBuilderInitPopovers(body);
+    }).catch(function (error) {
+        if (body) {
+            body.innerHTML = '<p class="text-danger mb-0">' + (error.message ||
+                localCourseBannerBuilderGetJsString('unabletoloadsourcepreview', 'Unable to load source preview')) + '</p>';
+        }
+    });
+}
+
+function localCourseBannerBuilderSyncSourceSubmit(dropdown) {
+    if (!dropdown) {
+        return;
+    }
+    var form = dropdown.closest('form');
+    var input = document.querySelector(dropdown.getAttribute('data-input'));
+    var submit = form ? form.querySelector('[data-action="local-course-banner-builder-submit-source"]') : null;
+    if (!submit || !input) {
+        return;
+    }
+    var selectedValue = input.value || '';
+    var hasSelection = selectedValue !== '' && selectedValue !== '0';
+    submit.disabled = !hasSelection;
+    submit.classList.toggle('disabled', !hasSelection);
+    submit.setAttribute('aria-disabled', hasSelection ? 'false' : 'true');
+}
+
+function localCourseBannerBuilderSyncSelectionButton() {
+    var toggle = document.querySelector('[data-action="local-course-banner-builder-toggle-selection"]');
+    if (!toggle) {
+        return;
+    }
+    var checkboxes = Array.prototype.slice.call(document.querySelectorAll('.local-course-banner-builder-layer-select'));
+    var allChecked = checkboxes.length > 0 && checkboxes.every(function (checkbox) {
+        return checkbox.checked;
+    });
+    toggle.textContent = allChecked ? toggle.getAttribute('data-deselect-all-label') : toggle.getAttribute('data-select-all-label');
+}
+
+function localCourseBannerBuilderSyncSourcePreviewEnabledState(input) {
+    if (!input || !input.name) {
+        return;
+    }
+    var match = input.name.match(/^isenabled_inline\[(.+)\]$/);
+    if (!match) {
+        return;
+    }
+    var layerId = match[1];
+    var enabled = !!input.checked;
+    Array.prototype.slice.call(document.querySelectorAll('[data-source-visual-editor="1"]')).forEach(function (root) {
+        var layer = root.querySelector('[data-source-preview-layer="1"][data-source-preview-layer-id="' + layerId + '"]');
+        if (layer) {
+            layer.setAttribute('data-preview-enabled', enabled ? '1' : '0');
+            layer.classList.toggle('local-course-banner-builder-source-preview-layer--disabled', !enabled);
+            if (!enabled) {
+                layer.classList.remove('local-course-banner-builder-source-preview-layer--selected');
+                layer.removeAttribute('data-preview-current-layer');
+            }
+        }
+
+        var border = root.querySelector('[data-source-preview-border="1"][data-source-preview-border-id="' + layerId + '"]');
+        if (border) {
+            border.setAttribute('data-preview-enabled', enabled ? '1' : '0');
+            border.classList.toggle('local-course-banner-builder-source-preview-border--disabled', !enabled);
+        }
+
+        var overlay = root.querySelector('[data-source-preview-overlay="1"][data-source-preview-overlay-id="' + layerId + '"]');
+        if (overlay) {
+            overlay.setAttribute('data-preview-enabled', enabled ? '1' : '0');
+            overlay.classList.toggle('local-course-banner-builder-source-preview-overlay--disabled', !enabled);
+        }
+
+        if (layer && enabled && !root.querySelector('.local-course-banner-builder-source-preview-layer--selected')) {
+            localCourseBannerBuilderSelectSourcePreviewLayer(root, layer);
+        } else if (layer && !enabled) {
+            var next = localCourseBannerBuilderGetFirstEnabledSourcePreviewLayer(root);
+            if (next) {
+                localCourseBannerBuilderSelectSourcePreviewLayer(root, next);
+            }
+        }
+        localCourseBannerBuilderSyncSourcePreviewDeleteButton(root);
+        localCourseBannerBuilderSyncSourcePreviewFitButton(root);
+        localCourseBannerBuilderSyncSourcePreviewFillButton(root);
+        localCourseBannerBuilderSyncSourcePreviewKeepAspectButton(root);
+        localCourseBannerBuilderSyncSourcePreviewTopLayerButton(root);
+        localCourseBannerBuilderSyncSourcePreviewAboveOverlayButton(root);
+        localCourseBannerBuilderSyncSourcePreviewInheritedDepthButtons(root);
+        localCourseBannerBuilderSyncSourcePreviewCenterFixedButton(root);
+        localCourseBannerBuilderSyncSourcePreviewOverlayOrdering(root);
+        localCourseBannerBuilderSyncSourcePreviewThumbnails(root);
+        localCourseBannerBuilderSyncSourcePreviewPayload(root);
+    });
+}
+
+function localCourseBannerBuilderSyncSourcePreviewFitOverrideState(select) {
+    if (!select || !select.name) {
+        return;
+    }
+    var match = select.name.match(/^fitmodeoverride_inline[(.+)]$/);
+    if (!match) {
+        return;
+    }
+    var layerId = match[1];
+    Array.prototype.slice.call(document.querySelectorAll('[data-source-visual-editor="1"]')).forEach(function (root) {
+        var layer = root.querySelector(
+            '[data-source-preview-layer="1"][data-source-preview-layer-id="' + layerId + '"]'
+        );
+        if (!layer || localCourseBannerBuilderIsSourcePreviewReadonly(root)) {
+            return;
+        }
+        var state = localCourseBannerBuilderGetSourcePreviewLayerState(layer);
+        if (!state) {
+            return;
+        }
+        state.fitmodeoverride = select.value || '';
+        if (state.fitmodeoverride === 'cover' || state.fitmodeoverride === 'original') {
+            state.customsizekeepaspect = true;
+        } else if (state.fitmodeoverride === 'bannerfit' || state.fitmodeoverride === '') {
+            state.customsizekeepaspect = false;
+        }
+        localCourseBannerBuilderSetSourcePreviewLayerState(layer, state);
+        localCourseBannerBuilderSyncSourcePreviewLayer(root, layer);
+        localCourseBannerBuilderUpdateSourcePreviewRow(root, state);
+        localCourseBannerBuilderSyncSourcePreviewPayload(root);
+        localCourseBannerBuilderSyncSourcePreviewKeepAspectButton(root);
+        localCourseBannerBuilderSelectSourcePreviewLayer(root, layer);
+    });
+}
+
+function localCourseBannerBuilderSyncBulkFields() {
+    var filemanager = document.querySelector('#fitem_id_bannerimage_filemanager');
+    var namefield = document.querySelector('#id_name');
+    var sortfield = document.querySelector('#id_sortorder');
+    if (!filemanager || !namefield || !sortfield) {
+        return;
+    }
+
+    var files = filemanager.querySelectorAll('.fp-file:not(.fp-folder)');
+    var isBulkUpload = files.length > 1;
+    [namefield, sortfield].forEach(function (field) {
+        field.disabled = isBulkUpload;
+        field.classList.toggle('local-course-banner-builder-input-disabled', isBulkUpload);
+        if (isBulkUpload) {
+            field.setAttribute('aria-disabled', 'true');
+        } else {
+            field.removeAttribute('aria-disabled');
+        }
+    });
+}
+
+function localCourseBannerBuilderSyncLayerSortOrders() {
+    Array.prototype.slice.call(document.querySelectorAll('.local-course-banner-builder-layer-sortable')).forEach(function (tbody) {
+        localCourseBannerBuilderEnforceLockedLayerOrder(tbody);
+        var rows = Array.prototype.slice.call(tbody.querySelectorAll('.local-course-banner-builder-layer-row'));
+        rows.forEach(function (row, index) {
+            var input = row.querySelector('.local-course-banner-builder-sort-input');
+            var display = row.querySelector('[data-sort-display]');
+            var lockedOrder = localCourseBannerBuilderIsLayerRowOrderLocked(row);
+            if (input) {
+                input.value = index;
+            }
+            if (display) {
+                display.textContent = lockedOrder ? 'u2014' : index;
+            }
+        });
+    });
+    Array.prototype.slice.call(document.querySelectorAll('[data-source-visual-editor="1"]')).forEach(function (root) {
+        localCourseBannerBuilderSyncSourcePreviewOrder(root);
+        localCourseBannerBuilderSyncSourcePreviewDeleteButton(root);
+        localCourseBannerBuilderSyncSourcePreviewFitButton(root);
+        localCourseBannerBuilderSyncSourcePreviewFillButton(root);
+        localCourseBannerBuilderSyncSourcePreviewThumbnails(root);
+    });
+}
+
+function localCourseBannerBuilderGetLayerSortableForSource(root) {
+    var fallback = document.querySelector('.local-course-banner-builder-layer-sortable');
+    if (!root) {
+        return fallback;
+    }
+    var sourceKey = root.getAttribute('data-sourcekey') || '';
+    if (sourceKey) {
+        var sortables = Array.prototype.slice.call(
+            document.querySelectorAll('.local-course-banner-builder-layer-sortable')
+        );
+        for (var i = 0; i < sortables.length; i++) {
+            if ((sortables[i].getAttribute('data-layer-sortable-sourcekey') || '') === sourceKey) {
+                return sortables[i];
+            }
+        }
+    }
+    return fallback;
+}
+
+function localCourseBannerBuilderGetSourcePreviewRootForLayerSortable(tbody) {
+    if (!tbody) {
+        return document.querySelector('[data-source-visual-editor="1"]');
+    }
+    var sourceKey = tbody.getAttribute('data-layer-sortable-sourcekey') || '';
+    var roots = Array.prototype.slice.call(document.querySelectorAll('[data-source-visual-editor="1"]'));
+    if (sourceKey) {
+        for (var i = 0; i < roots.length; i++) {
+            if ((roots[i].getAttribute('data-sourcekey') || '') === sourceKey) {
+                return roots[i];
+            }
+        }
+    }
+    return roots[0] || null;
+}
+
+function localCourseBannerBuilderSyncLayerSortablePreviewOrder(tbody) {
+    var root = localCourseBannerBuilderGetSourcePreviewRootForLayerSortable(tbody);
+    if (root) {
+        localCourseBannerBuilderApplyLayerSortableOrderToSourcePreview(root, tbody);
+    }
+}
+
+function localCourseBannerBuilderApplyLayerSortableOrderToSourcePreview(root, tbody) {
+    if (!root || !tbody) {
+        return;
+    }
+    var overlayContext = localCourseBannerBuilderGetOverlayOrderingContext(root);
+    var frame = root.querySelector('[data-source-preview-frame="1"]') || root;
+    var orderedNodes = [];
+    Array.prototype.slice.call(tbody.querySelectorAll('.local-course-banner-builder-layer-row')).forEach(function (row, index) {
+        var checkbox = row.querySelector('.local-course-banner-builder-layer-select');
+        var layerId = checkbox ? (checkbox.value || '') : '';
+        var sortInput = row.querySelector('.local-course-banner-builder-sort-input');
+        var display = row.querySelector('[data-sort-display]');
+        var lockedOrder = localCourseBannerBuilderIsLayerRowOrderLocked(row);
+        if (sortInput) {
+            sortInput.value = String(index);
+        }
+        if (display) {
+            display.textContent = lockedOrder ? 'u2014' : index;
+        }
+        if (!layerId) {
+            return;
+        }
+        var previewLayer = root.querySelector('[data-source-preview-layer="1"][data-source-preview-layer-id="' + layerId + '"]');
+        if (previewLayer) {
+            var zindex = localCourseBannerBuilderGetPreviewImageZIndexBase(
+                previewLayer.getAttribute('data-preview-dynamic-image') === '1',
+                previewLayer.getAttribute('data-preview-above-overlay') === '1',
+                overlayContext,
+                previewLayer.getAttribute('data-preview-below-inherited') === '1',
+                previewLayer.getAttribute('data-preview-above-inherited') === '1'
+            ) + index + 1;
+            previewLayer.setAttribute('data-preview-sortorder', String(index));
+            previewLayer.setAttribute('data-preview-zindex', String(zindex));
+            previewLayer.style.zIndex = String(zindex);
+            localCourseBannerBuilderSyncSourcePreviewLayer(root, previewLayer);
+            orderedNodes.push(previewLayer);
+            return;
+        }
+        var previewBorder = root.querySelector('[data-source-preview-border="1"][data-source-preview-border-id="' + layerId + '"]') ||
+            (row.classList.contains('local-course-banner-builder-layer-row--border') ?
+                root.querySelector('[data-source-preview-border="1"]') :
+                null);
+        if (previewBorder) {
+            var borderZIndex = 1000 + index + 1;
+            previewBorder.setAttribute('data-preview-sortorder', String(index));
+            previewBorder.setAttribute('data-preview-zindex', String(borderZIndex));
+            previewBorder.style.zIndex = String(borderZIndex);
+            orderedNodes.push(previewBorder);
+        }
+        var previewOverlay = root.querySelector('[data-source-preview-overlay="1"][data-source-preview-overlay-id="' + layerId + '"]');
+        if (previewOverlay) {
+            var overlayZIndex = (previewOverlay.getAttribute('data-preview-overlay-border-above') === '1' ? 1000 : 3000) + index + 1;
+            previewOverlay.setAttribute('data-preview-sortorder', String(index));
+            previewOverlay.setAttribute('data-preview-zindex', String(overlayZIndex));
+            previewOverlay.style.zIndex = String(overlayZIndex);
+            orderedNodes.push(previewOverlay);
+        }
+    });
+    orderedNodes.sort(function (a, b) {
+        var aZ = parseInt(a.getAttribute('data-preview-zindex') || a.style.zIndex || '0', 10) || 0;
+        var bZ = parseInt(b.getAttribute('data-preview-zindex') || b.style.zIndex || '0', 10) || 0;
+        return aZ - bZ;
+    }).forEach(function (node) {
+        if (node.parentNode === frame) {
+            frame.appendChild(node);
+        }
+    });
+    localCourseBannerBuilderSyncSourcePreviewOverlayOrdering(root);
+    localCourseBannerBuilderSyncSourcePreviewPayload(root);
+    localCourseBannerBuilderSyncSourcePreviewThumbnails(root);
+    localCourseBannerBuilderSyncSourcePreviewOrderButtons(root);
+    localCourseBannerBuilderSyncSourcePreviewSelectionOutline(root);
+}
+
+function localCourseBannerBuilderEnforceLockedLayerOrder(tbody) {
+    if (!tbody) {
+        return;
+    }
+    var rows = Array.prototype.slice.call(tbody.querySelectorAll('.local-course-banner-builder-layer-row'));
+    var normalRows = rows.filter(function (row) {
+        return !localCourseBannerBuilderIsLayerRowOrderLocked(row);
+    });
+    var belowRows = rows.filter(function (row) {
+        return row.classList.contains('local-course-banner-builder-layer-row--below-inherited');
+    });
+    var lockedRows = rows.filter(function (row) {
+        return localCourseBannerBuilderIsLayerRowOrderLocked(row) &&
+            !row.classList.contains('local-course-banner-builder-layer-row--below-inherited');
+    });
+
+    belowRows.concat(normalRows, lockedRows).forEach(function (row) {
+        tbody.appendChild(row);
+    });
+}
+
+function localCourseBannerBuilderIsLayerRowOrderLocked(row) {
+    return !!(row && (
+        row.classList.contains('local-course-banner-builder-layer-row--order-locked') ||
+        row.classList.contains('local-course-banner-builder-layer-row--border')
+    ));
+}
+
+function localCourseBannerBuilderGetLayerScope(scope) {
+    if (scope && scope.matches && scope.matches('form.mform')) {
+        return scope;
+    }
+    if (scope && scope.closest) {
+        var parentForm = scope.closest('form.mform');
+        if (parentForm) {
+            return parentForm;
+        }
+    }
+    var visibleModalForm = document.querySelector('.modal.show form.mform');
+    if (visibleModalForm) {
+        return visibleModalForm;
+    }
+    return document.querySelector('#local-course-banner-builder-add-layer-modal form.mform, form.mform');
+}
+
+function localCourseBannerBuilderSyncBorderSideGroup(scope) {
+    var layerScope = localCourseBannerBuilderGetLayerScope(scope);
+    if (!layerScope) {
+        return;
+    }
+    var allToggle = layerScope.querySelector('[data-border-side-all="1"][type="checkbox"]');
+    var sideToggles = Array.prototype.slice.call(layerScope.querySelectorAll('[data-border-side][type="checkbox"]'));
+    if (!allToggle || !sideToggles.length) {
+        return;
+    }
+    var enabledSides = sideToggles.filter(function (input) {
+        return !input.disabled;
+    });
+    allToggle.checked = enabledSides.length > 0 && enabledSides.every(function (input) {
+        return input.checked;
+    });
+    localCourseBannerBuilderSyncBorderSidesValue(layerScope);
+}
+
+function localCourseBannerBuilderGetBorderSides(scope) {
+    var layerScope = localCourseBannerBuilderGetLayerScope(scope);
+    var sides = {};
+    ['top', 'right', 'bottom', 'left'].forEach(function (side) {
+        var input = layerScope ? layerScope.querySelector('[data-border-side="' + side + '"][type="checkbox"]') : null;
+        sides[side] = !!(input && input.checked && !input.disabled);
+    });
+    return sides;
+}
+
+function localCourseBannerBuilderSyncBorderSidesValue(scope) {
+    var layerScope = localCourseBannerBuilderGetLayerScope(scope);
+    var hiddenInput = layerScope ? layerScope.querySelector('#id_bordersidesvalue') : null;
+    if (!hiddenInput) {
+        return;
+    }
+    var selected = [];
+    ['top', 'right', 'bottom', 'left'].forEach(function (side) {
+        var input = layerScope.querySelector('[data-border-side="' + side + '"][type="checkbox"]');
+        if (input && input.checked) {
+            selected.push(side);
+        }
+    });
+    hiddenInput.value = selected.join(',');
+}
+
+function localCourseBannerBuilderApplyStoredBorderSides(scope) {
+    var layerScope = localCourseBannerBuilderGetLayerScope(scope);
+    var hiddenInput = layerScope ? layerScope.querySelector('#id_bordersidesvalue') : null;
+    if (!hiddenInput) {
+        return;
+    }
+    var raw = (hiddenInput.value || '').trim();
+    var wanted = raw ? raw.split(',').map(function (side) {
+        return side.trim();
+    }).filter(Boolean) : [];
+
+    Array.prototype.slice.call(layerScope.querySelectorAll('[data-border-side][type="checkbox"]')).forEach(function (input) {
+        var side = input.getAttribute('data-border-side');
+        input.checked = wanted.indexOf(side) !== -1;
+    });
+    var allToggle = layerScope.querySelector('[data-border-side-all="1"][type="checkbox"]');
+    if (allToggle) {
+        allToggle.checked = ['top', 'right', 'bottom', 'left'].every(function (side) {
+            return wanted.indexOf(side) !== -1;
+        });
+    }
+    localCourseBannerBuilderSyncBorderSidesValue(layerScope);
+    localCourseBannerBuilderSyncBorderSideGroup(layerScope);
+    localCourseBannerBuilderSyncBorderRoundedField(layerScope);
+}
+
+function localCourseBannerBuilderPopulateBorderSidesFromValue(rawValue, scope) {
+    var layerScope = localCourseBannerBuilderGetLayerScope(scope);
+    if (!layerScope) {
+        return;
+    }
+    var wanted = (rawValue || '').trim();
+    var sides = wanted ? wanted.split(',').map(function (side) {
+        return side.trim();
+    }).filter(Boolean) : [];
+
+    Array.prototype.slice.call(layerScope.querySelectorAll('[data-border-side][type="checkbox"]')).forEach(function (input) {
+        var side = input.getAttribute('data-border-side');
+        input.checked = sides.indexOf(side) !== -1;
+    });
+
+    var allToggle = layerScope.querySelector('[data-border-side-all="1"][type="checkbox"]');
+    if (allToggle) {
+        allToggle.checked = ['top', 'right', 'bottom', 'left'].every(function (side) {
+            return sides.indexOf(side) !== -1;
+        });
+    }
+
+    var hiddenInput = layerScope.querySelector('#id_bordersidesvalue');
+    if (hiddenInput) {
+        hiddenInput.value = sides.join(',');
+    }
+    localCourseBannerBuilderSyncBorderSideGroup(layerScope);
+    localCourseBannerBuilderSyncBorderRoundedField(layerScope);
+}
+
+function localCourseBannerBuilderExtractBorderSidesFromForm(form) {
+    if (!form) {
+        return [];
+    }
+    var sides = [];
+    ['top', 'right', 'bottom', 'left'].forEach(function (side) {
+        var selector = '[data-border-side="' + side + '"][type="checkbox"], input[type="checkbox"][name="bordersidesgroup[bordersides[' + side + ']]"]';
+        var input = form.querySelector(selector);
+        if (input && input.checked) {
+            sides.push(side);
+        }
+    });
+    return sides;
+}
+
+function localCourseBannerBuilderApplyStoredBorderStateDeferred(scope) {
+    var layerScope = localCourseBannerBuilderGetLayerScope(scope);
+    localCourseBannerBuilderApplyStoredBorderSides(layerScope);
+    window.setTimeout(function () {
+        localCourseBannerBuilderApplyStoredBorderSides(layerScope);
+    }, 0);
+    window.requestAnimationFrame(function () {
+        localCourseBannerBuilderApplyStoredBorderSides(layerScope);
+    });
+}
+
+function localCourseBannerBuilderSetBorderSidesFromAll(checked, scope) {
+    var layerScope = localCourseBannerBuilderGetLayerScope(scope);
+    Array.prototype.slice.call(layerScope.querySelectorAll('[data-border-side][type="checkbox"]')).forEach(function (input) {
+        if (!input.disabled) {
+            input.checked = checked;
+        }
+    });
+}
+
+function localCourseBannerBuilderSyncBorderRoundedField(scope) {
+    var layerScope = localCourseBannerBuilderGetLayerScope(scope);
+    var roundedInput = layerScope ? layerScope.querySelector('[data-border-inner-rounded="1"][type="checkbox"]') : null;
+    if (!roundedInput) {
+        return;
+    }
+    var wrapper = roundedInput.closest('.fitem, .form-group, .mb-3');
+    var sides = localCourseBannerBuilderGetBorderSides(layerScope);
+    var showRounded = (sides.top && sides.left) ||
+        (sides.top && sides.right) ||
+        (sides.bottom && sides.left) ||
+        (sides.bottom && sides.right);
+
+    roundedInput.disabled = !showRounded;
+    if (!showRounded) {
+        roundedInput.checked = false;
+    }
+    if (wrapper) {
+        wrapper.classList.toggle('local-course-banner-builder-option-disabled', !showRounded);
+        wrapper.setAttribute('aria-hidden', 'false');
+    }
+}
+
+function localCourseBannerBuilderSyncBorderAccordion(scope) {
+    var layerScope = localCourseBannerBuilderGetLayerScope(scope);
+    var borderAccordion = layerScope ? layerScope.querySelector('[data-border-accordion="1"]') : null;
+    var borderToggle = layerScope ? layerScope.querySelector('[data-border-toggle="1"][type="checkbox"]') : null;
+    if (!borderAccordion || !borderToggle) {
+        return;
+    }
+    if (borderToggle.checked) {
+        borderAccordion.open = true;
+    }
+}
+
+function localCourseBannerBuilderSetDisabledState(container, disabled, exceptSelector) {
+    if (!container) {
+        return;
+    }
+    container.classList.toggle('local-course-banner-builder-is-disabled', !!disabled);
+    container.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+}
+
+function localCourseBannerBuilderPlaceExistingBorderNote(layerForm, note, borderToggle) {
+    if (!layerForm || !note || !borderToggle || note.dataset.inlinePlaced === '1') {
+        return;
+    }
+    var toggleItem = borderToggle.closest('.fitem, .form-group, .mb-3, .row');
+    var target = toggleItem ? (toggleItem.querySelector('.felement, .col-md-9, .form-check') || toggleItem) : null;
+    if (!target) {
+        return;
+    }
+    target.appendChild(note);
+    note.dataset.inlinePlaced = '1';
+    var originalItem = layerForm.querySelector('#fitem_id_borderenabled_existing_notice');
+    if (originalItem) {
+        originalItem.hidden = true;
+    }
+}
+
+function localCourseBannerBuilderMoveLayerPreviewToTop(layerForm) {
+    if (!layerForm) {
+        return;
+    }
+    var previewItem = layerForm.querySelector('#fitem_id_layerpreview, #fitem_id_imagepreview, #fitem_id_borderpreview');
+    if (!previewItem || !previewItem.parentNode) {
+        return;
+    }
+    var layerTypeItem = layerForm.querySelector('#fitem_id_layertypechoice');
+    if (layerTypeItem && !layerTypeItem.hidden && layerTypeItem.offsetParent !== null &&
+            layerTypeItem.parentNode === previewItem.parentNode) {
+        var firstVisibleForType = Array.prototype.slice.call(layerForm.children).find(function (child) {
+            return child !== previewItem && child !== layerTypeItem && child.offsetParent !== null;
+        });
+        previewItem.parentNode.insertBefore(previewItem, firstVisibleForType || layerForm.firstChild);
+        localCourseBannerBuilderEnsureLayerTypeChoice(layerForm, previewItem);
+        localCourseBannerBuilderMoveLayerEssentialsUnderPreview(layerForm, previewItem);
+        return;
+    }
+    if (layerForm.dataset.previewMovedToTop === '1') {
+        localCourseBannerBuilderEnsureLayerTypeChoice(layerForm, previewItem);
+        return;
+    }
+    var firstVisible = Array.prototype.slice.call(layerForm.children).find(function (child) {
+        return child !== previewItem && child.offsetParent !== null;
+    });
+    previewItem.parentNode.insertBefore(previewItem, firstVisible || layerForm.firstChild);
+    layerForm.dataset.previewMovedToTop = '1';
+    localCourseBannerBuilderEnsureLayerTypeChoice(layerForm, previewItem);
+    localCourseBannerBuilderMoveLayerEssentialsUnderPreview(layerForm, previewItem);
+}
+
+function localCourseBannerBuilderCreateLayerTypeButton(label, icon, type) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'btn btn-outline-secondary';
+    button.setAttribute('data-layer-type-option', type);
+    button.setAttribute('aria-pressed', 'false');
+    button.innerHTML = '<i class="fa ' + icon + ' me-2" aria-hidden="true"></i><span>' + label + '</span>';
+    return button;
+}
+
+function localCourseBannerBuilderCreateLayerTypeChoice(layerForm, borderToggle) {
+    var item = document.createElement('div');
+    var target = document.createElement('div');
+    var choice = document.createElement('div');
+    var group = document.createElement('div');
+    var imageButton = localCourseBannerBuilderCreateLayerTypeButton(
+        localCourseBannerBuilderGetJsString('layertype:image', 'Image'),
+        'fa-image',
+        'image'
+    );
+    var borderButton = localCourseBannerBuilderCreateLayerTypeButton(
+        localCourseBannerBuilderGetJsString('layertype:border', 'Border'),
+        'fa-border-all',
+        'border'
+    );
+    var overlayButton = localCourseBannerBuilderCreateLayerTypeButton(
+        localCourseBannerBuilderGetJsString('layertype:overlay', 'Overlay'),
+        'fa-adjust',
+        'overlay'
+    );
+    var warning = document.createElement('span');
+    var overlayWarning = document.createElement('span');
+    item.id = 'fitem_id_layertypechoice';
+    item.className = 'mb-3 row fitem femptylabel local-course-banner-builder-layer-type-choice-fallback';
+    target.className = 'col-md-9 felement';
+    choice.className = 'local-course-banner-builder-layer-type-choice';
+    group.className = 'btn-group local-course-banner-builder-layer-type-toggle';
+    group.setAttribute('role', 'group');
+    group.setAttribute('data-layer-type-toggle', '1');
+    warning.className = 'local-course-banner-builder-layer-type-warning text-danger d-none';
+    warning.setAttribute('data-layer-type-border-warning', '1');
+    overlayWarning.className = 'local-course-banner-builder-layer-type-warning text-danger d-none';
+    overlayWarning.setAttribute('data-layer-type-overlay-warning', '1');
+    overlayWarning.textContent = localCourseBannerBuilderGetJsString(
+        'sourcealreadyhasoverlayinline',
+        'An overlay layer already exists in this source'
+    );
+    [imageButton, borderButton].forEach(function (button) {
+        button.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            localCourseBannerBuilderSelectLayerType(layerForm, button.getAttribute('data-layer-type-option'), true);
+        });
+        button.dataset.layerTypeBound = '1';
+        group.appendChild(button);
+    });
+    [overlayButton].forEach(function (button) {
+        button.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            localCourseBannerBuilderSelectLayerType(layerForm, 'overlay', true);
+        });
+        button.dataset.layerTypeBound = '1';
+        group.appendChild(button);
+    });
+    choice.appendChild(group);
+    choice.appendChild(warning);
+    choice.appendChild(overlayWarning);
+    target.appendChild(choice);
+    item.appendChild(target);
+    return item;
+}
+
+function localCourseBannerBuilderIsEditLayerForm(layerForm) {
+    var elementIdInput = layerForm ? layerForm.querySelector('#id_elementid') : null;
+    return !!(elementIdInput && parseInt(elementIdInput.value || '0', 10) > 0);
+}
+
+function localCourseBannerBuilderIsEditBorderForm(layerForm) {
+    var currentIsBorderLayerInput = layerForm ? layerForm.querySelector('#id_currentisborderlayer') : null;
+    return !!(localCourseBannerBuilderIsEditLayerForm(layerForm) &&
+        ((currentIsBorderLayerInput && parseInt(currentIsBorderLayerInput.value || '0', 10) > 0) ||
+        layerForm.getAttribute('data-edit-border-locked') === '1'));
+}
+
+function localCourseBannerBuilderIsEditOverlayForm(layerForm) {
+    var currentIsOverlayLayerInput = layerForm ? layerForm.querySelector('#id_currentisoverlaylayer') : null;
+    return !!(localCourseBannerBuilderIsEditLayerForm(layerForm) &&
+        currentIsOverlayLayerInput && parseInt(currentIsOverlayLayerInput.value || '0', 10) > 0);
+}
+
+function localCourseBannerBuilderIsEditImageForm(layerForm) {
+    return !!(localCourseBannerBuilderIsEditLayerForm(layerForm) &&
+        !localCourseBannerBuilderIsEditBorderForm(layerForm) &&
+        !localCourseBannerBuilderIsEditOverlayForm(layerForm));
+}
+
+function localCourseBannerBuilderGetOverlayToggle(layerForm) {
+    if (!layerForm) {
+        return null;
+    }
+    return layerForm.querySelector('#id_overlayenabled[type="checkbox"]') ||
+        layerForm.querySelector('input[name="overlayenabled"][type="checkbox"]') ||
+        layerForm.querySelector('[data-overlay-toggle="1"][type="checkbox"]') ||
+        layerForm.querySelector('#id_overlayenabled[type="hidden"]') ||
+        layerForm.querySelector('input[name="overlayenabled"][type="hidden"]') ||
+        layerForm.querySelector('[data-overlay-toggle="1"][type="hidden"]') ||
+        layerForm.querySelector('[data-overlay-toggle="1"]');
+}
+
+function localCourseBannerBuilderCreateOverlayFallbackField(container, label, input) {
+    var title = document.createElement('label');
+    title.className = 'local-course-banner-builder-slideshow-side-title';
+    title.textContent = label;
+    if (input.id) {
+        title.setAttribute('for', input.id);
+    }
+    container.appendChild(title);
+    container.appendChild(input);
+    return input;
+}
+
+function localCourseBannerBuilderIsSiteBannerLayerForm(layerForm, overlayAccordion) {
+    if (!layerForm) {
+        return false;
+    }
+    var sourceKeyInput = layerForm.querySelector('#id_sourcekey');
+    return !!(
+        (overlayAccordion && overlayAccordion.getAttribute('data-overlay-site-only') === '1') ||
+        (sourceKeyInput && sourceKeyInput.value === 'site:main') ||
+        (document.body && document.body.classList.contains('local-course-banner-builder-admin--site')) ||
+        document.querySelector('.local-course-banner-builder-admin--site')
+    );
+}
+
+function localCourseBannerBuilderSetSegmentedChoice(buttons, activeValue, attribute) {
+    buttons.forEach(function (button) {
+        var active = button.getAttribute(attribute) === activeValue;
+        button.classList.toggle('btn-primary', active);
+        button.classList.toggle('btn-outline-secondary', !active);
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+}
+
+function localCourseBannerBuilderCreateSegmentedChoice(options, activeValue, attribute, onSelect) {
+    var group = document.createElement('div');
+    group.className = 'btn-group local-course-banner-builder-overlay-segmented-choice';
+    group.setAttribute('role', 'group');
+    options.forEach(function (option) {
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'btn btn-sm btn-outline-secondary';
+        button.setAttribute(attribute, option.value);
+        button.textContent = option.label;
+        button.addEventListener('click', function (event) {
+            event.preventDefault();
+            onSelect(option.value);
+        });
+        group.appendChild(button);
+    });
+    localCourseBannerBuilderSetSegmentedChoice(
+        Array.prototype.slice.call(group.querySelectorAll('button')),
+        activeValue,
+        attribute
+    );
+    return group;
+}
+
+function localCourseBannerBuilderEnsureOverlayFallbackControls(layerForm) {
+    if (!layerForm || layerForm.querySelector('[data-overlay-section="1"]')) {
+        return;
+    }
+    var section = document.createElement('details');
+    var summary = document.createElement('summary');
+    var summaryTitle = document.createElement('span');
+    section.className = 'local-course-banner-builder-advanced-accordion local-course-banner-builder-overlay-accordion';
+    section.setAttribute('data-overlay-section', '1');
+    section.setAttribute('data-overlay-accordion', '1');
+    section.setAttribute('data-create-overlay-locked', '0');
+    section.setAttribute('data-overlay-site-only', localCourseBannerBuilderIsSiteBannerLayerForm(layerForm, null) ? '1' : '0');
+    section.setAttribute('data-overlay-inherit-color', '#000000');
+    section.setAttribute('data-overlay-inherit-opacity', '38');
+    section.hidden = true;
+    summaryTitle.className = 'local-course-banner-builder-border-summary-title';
+    summaryTitle.textContent = localCourseBannerBuilderGetJsString('overlaysettings', 'Overlay settings');
+    summary.appendChild(summaryTitle);
+    section.appendChild(summary);
+
+    if (!localCourseBannerBuilderGetOverlayToggle(layerForm)) {
+        var overlayEnabled = document.createElement('input');
+        overlayEnabled.type = 'hidden';
+        overlayEnabled.id = 'id_overlayenabled';
+        overlayEnabled.name = 'overlayenabled';
+        overlayEnabled.value = '0';
+        overlayEnabled.setAttribute('data-overlay-toggle', '1');
+        section.appendChild(overlayEnabled);
+    }
+
+    if (section.getAttribute('data-overlay-site-only') === '1') {
+        Array.prototype.slice.call(section.querySelectorAll(
+            '[data-overlay-target-title="1"], [data-overlay-target-choice="1"], ' +
+            'label[for="id_overlaytarget"], [id^="fitem_id_overlaytarget"]'
+        )).forEach(function (node) {
+            node.remove();
+        });
+    }
+
+    if (!layerForm.querySelector('#id_overlaytarget')) {
+        var target;
+        if (section.getAttribute('data-overlay-site-only') === '1') {
+            target = document.createElement('input');
+            target.type = 'hidden';
+            target.id = 'id_overlaytarget';
+            target.name = 'overlaytarget';
+            target.value = 'banner';
+            target.setAttribute('data-overlay-site-target', '1');
+            section.appendChild(target);
+        } else {
+            target = document.createElement('select');
+            target.id = 'id_overlaytarget';
+            target.name = 'overlaytarget';
+            target.className = 'form-control custom-select';
+            [
+                ['both', 'Banner and slideshow'],
+                ['banner', 'Banner only'],
+                ['slideshow', 'Slideshow only']
+            ].forEach(function (optionData) {
+                var option = document.createElement('option');
+                option.value = optionData[0];
+                option.textContent = optionData[1];
+                if (optionData[0] === 'both') {
+                    option.selected = true;
+                }
+                target.appendChild(option);
+            });
+            localCourseBannerBuilderCreateOverlayFallbackField(
+                section,
+                localCourseBannerBuilderGetJsString('overlaytarget', 'Overlay target'),
+                target
+            );
+        }
+    }
+
+    var heading = document.createElement('div');
+    heading.className = 'local-course-banner-builder-slideshow-side-title mt-2';
+    heading.textContent = localCourseBannerBuilderGetJsString('overlayappearance', 'Overlay appearance');
+    section.appendChild(heading);
+    if (!layerForm.querySelector('#id_overlaybannercolor')) {
+        var color = document.createElement('input');
+        color.type = 'text';
+        color.id = 'id_overlaybannercolor';
+        color.name = 'overlaybannercolor';
+        color.className = 'form-control';
+        color.value = '#000000';
+        color.setAttribute('data-overlay-color-text', 'overlaybanner');
+        localCourseBannerBuilderCreateOverlayFallbackField(
+            section,
+            localCourseBannerBuilderGetJsString('overlaycolor', 'Overlay color'),
+            color
+        );
+    }
+    if (!layerForm.querySelector('#id_overlaybanneropacity')) {
+        var opacity = document.createElement('input');
+        opacity.type = 'number';
+        opacity.id = 'id_overlaybanneropacity';
+        opacity.name = 'overlaybanneropacity';
+        opacity.className = 'form-control';
+        opacity.min = '0';
+        opacity.max = '100';
+        opacity.step = '1';
+        opacity.value = '25';
+        localCourseBannerBuilderCreateOverlayFallbackField(
+            section,
+            localCourseBannerBuilderGetJsString('overlayopacity', 'Overlay opacity'),
+            opacity
+        );
+    }
+    if (!layerForm.querySelector('#id_overlayslideshowcolor')) {
+        var slideshowColor = document.createElement('input');
+        slideshowColor.type = 'hidden';
+        slideshowColor.id = 'id_overlayslideshowcolor';
+        slideshowColor.name = 'overlayslideshowcolor';
+        slideshowColor.value = '#000000';
+        section.appendChild(slideshowColor);
+    }
+    if (!layerForm.querySelector('#id_overlayslideshowopacity')) {
+        var slideshowOpacity = document.createElement('input');
+        slideshowOpacity.type = 'hidden';
+        slideshowOpacity.id = 'id_overlayslideshowopacity';
+        slideshowOpacity.name = 'overlayslideshowopacity';
+        slideshowOpacity.value = '38';
+        section.appendChild(slideshowOpacity);
+    }
+
+    [
+        ['overlaytitleabove', localCourseBannerBuilderGetJsString('overlaytitleabove', 'Titles above overlay')],
+        ['overlayborderabove', localCourseBannerBuilderGetJsString('overlayborderabove', 'Borders above overlay')]
+    ].forEach(function (config) {
+        if (layerForm.querySelector('#id_' + config[0])) {
+            return;
+        }
+        var hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.name = config[0];
+        hidden.value = '0';
+        var wrapper = document.createElement('label');
+        var checkbox = document.createElement('input');
+        wrapper.className = 'form-check d-flex align-items-center gap-2 mb-2';
+        checkbox.type = 'checkbox';
+        checkbox.id = 'id_' + config[0];
+        checkbox.name = config[0];
+        checkbox.className = 'form-check-input';
+        checkbox.value = '1';
+        checkbox.checked = true;
+        wrapper.appendChild(checkbox);
+        wrapper.appendChild(document.createTextNode(config[1]));
+        section.appendChild(hidden);
+        section.appendChild(wrapper);
+    });
+
+    var host = layerForm.querySelector('[data-modal-preview-action-list="1"]');
+    if (host) {
+        host.appendChild(section);
+    } else {
+        layerForm.appendChild(section);
+    }
+}
+
+function localCourseBannerBuilderReadOverlayToggle(layerForm) {
+    if (layerForm && layerForm.dataset.selectedLayerType === 'overlay') {
+        return true;
+    }
+    var overlayToggle = localCourseBannerBuilderGetOverlayToggle(layerForm);
+    if (!overlayToggle) {
+        return false;
+    }
+    return overlayToggle.type === 'checkbox' ? overlayToggle.checked : overlayToggle.value === '1';
+}
+
+function localCourseBannerBuilderSetOverlayToggle(layerForm, checked) {
+    var overlayToggle = localCourseBannerBuilderGetOverlayToggle(layerForm);
+    if (!overlayToggle || overlayToggle.disabled) {
+        return false;
+    }
+    Array.prototype.slice.call(layerForm.querySelectorAll(
+        '#id_overlayenabled, input[name="overlayenabled"], [data-overlay-toggle="1"]'
+    )).forEach(function (input) {
+        if (!input || input.disabled) {
+            return;
+        }
+        if (input.type === 'checkbox') {
+            input.checked = !!checked;
+        } else if (typeof input.value !== 'undefined') {
+            input.value = checked ? '1' : '0';
+        }
+    });
+    overlayToggle.dispatchEvent(new Event('change', {bubbles: true}));
+    return true;
+}
+
+function localCourseBannerBuilderGetSelectedLayerType(layerForm) {
+    if (!layerForm) {
+        return 'image';
+    }
+    var currentIsOverlayLayerInput = layerForm.querySelector('#id_currentisoverlaylayer');
+    if (currentIsOverlayLayerInput && parseInt(currentIsOverlayLayerInput.value || '0', 10) > 0) {
+        layerForm.dataset.selectedLayerType = 'overlay';
+        return 'overlay';
+    }
+    var currentIsBorderLayerInput = layerForm.querySelector('#id_currentisborderlayer');
+    if (currentIsBorderLayerInput && parseInt(currentIsBorderLayerInput.value || '0', 10) > 0) {
+        layerForm.dataset.selectedLayerType = 'border';
+        return 'border';
+    }
+    if (layerForm.dataset.selectedLayerType) {
+        return layerForm.dataset.selectedLayerType;
+    }
+    var borderToggle = layerForm.querySelector('[data-border-toggle="1"][type="checkbox"]');
+    if (localCourseBannerBuilderReadOverlayToggle(layerForm)) {
+        layerForm.dataset.selectedLayerType = 'overlay';
+    } else if (borderToggle && borderToggle.checked) {
+        layerForm.dataset.selectedLayerType = 'border';
+    } else {
+        layerForm.dataset.selectedLayerType = 'image';
+    }
+    return layerForm.dataset.selectedLayerType;
+}
+
+function localCourseBannerBuilderSetSelectedLayerType(layerForm, type) {
+    if (!layerForm) {
+        return;
+    }
+    layerForm.dataset.selectedLayerType = ['image', 'border', 'overlay'].indexOf(type) === -1 ? 'image' : type;
+}
+
+function localCourseBannerBuilderOpenModalSidePanel(form, key) {
+    var host = form ? form.querySelector('[data-modal-preview-action-list="1"]') : null;
+    var panel = key ? form.querySelector('[data-modal-preview-side-panel-key="' + key + '"]') : null;
+    var button = key ? form.querySelector('[data-modal-preview-side-panel-target="' + key + '"]') : null;
+    if (!host || !panel || !button || button.hidden || button.disabled) {
+        return;
+    }
+    localCourseBannerBuilderCloseOtherModalSidePanels(host, panel);
+    localCourseBannerBuilderToggleOpacityPanel(panel, button, true);
+}
+
+function localCourseBannerBuilderOpenModalSidePanelOnce(form, key, flagName) {
+    if (!form || !flagName || form.dataset[flagName] === '1') {
+        return;
+    }
+    window.requestAnimationFrame(function () {
+        localCourseBannerBuilderOpenModalSidePanel(form, key);
+        form.dataset[flagName] = '1';
+    });
+}
+
+function localCourseBannerBuilderSelectLayerType(layerForm, nextType, openPanel) {
+    if (!layerForm) {
+        return;
+    }
+    if (nextType === 'overlay') {
+        localCourseBannerBuilderEnsureOverlayFallbackControls(layerForm);
+    }
+    var borderToggle = layerForm.querySelector('[data-border-toggle="1"][type="checkbox"]');
+    var overlayToggle = localCourseBannerBuilderGetOverlayToggle(layerForm);
+    if (!borderToggle) {
+        return;
+    }
+    if (nextType === 'border' && borderToggle.disabled) {
+        localCourseBannerBuilderSyncLayerTypeChoice(layerForm);
+        return;
+    }
+    if (nextType === 'overlay' && (!overlayToggle || overlayToggle.disabled)) {
+        localCourseBannerBuilderSyncLayerTypeChoice(layerForm);
+        return;
+    }
+    localCourseBannerBuilderSetSelectedLayerType(layerForm, nextType);
+    borderToggle.checked = nextType === 'border';
+    localCourseBannerBuilderSetOverlayToggle(layerForm, nextType === 'overlay');
+    borderToggle.dispatchEvent(new Event('change', {bubbles: true}));
+    if (nextType === 'border') {
+        var borderAccordion = layerForm.querySelector('[data-border-accordion="1"]');
+        if (borderAccordion && !borderAccordion.classList.contains('local-course-banner-builder-disabled')) {
+            borderAccordion.open = true;
+        }
+    } else if (nextType === 'overlay') {
+        var overlayAccordion = layerForm.querySelector('[data-overlay-accordion="1"]');
+        if (overlayAccordion && !overlayAccordion.classList.contains('local-course-banner-builder-disabled')) {
+            overlayAccordion.open = true;
+        }
+    }
+    localCourseBannerBuilderSyncLayerInputModes(layerForm);
+    localCourseBannerBuilderSyncModalPreviewActionButtons(layerForm);
+    if (openPanel && nextType === 'border') {
+        localCourseBannerBuilderOpenModalSidePanel(layerForm, 'borderstyle');
+    } else if (openPanel && nextType === 'overlay') {
+        localCourseBannerBuilderOpenModalSidePanel(layerForm, 'overlaystyle');
+    }
+}
+
+document.addEventListener('click', function (e) {
+    var button = e.target.closest('[data-layer-type-option]');
+    if (!button) {
+        return;
+    }
+    var layerForm = button.closest('form.mform');
+    if (!layerForm) {
+        return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    localCourseBannerBuilderSelectLayerType(
+        layerForm,
+        button.getAttribute('data-layer-type-option') || 'image',
+        true
+    );
+}, true);
+
+function localCourseBannerBuilderEnsureLayerTypeChoice(layerForm, previewItem) {
+    if (!layerForm || !previewItem || !previewItem.parentNode) {
+        return null;
+    }
+    var layerTypeItem = layerForm.querySelector('#fitem_id_layertypechoice');
+    var borderToggle = layerForm.querySelector('[data-border-toggle="1"][type="checkbox"]');
+    var choice = layerForm.querySelector('[data-layer-top-choice-row="1"]');
+    if (!choice) {
+        choice = document.createElement('div');
+        choice.className = 'local-course-banner-builder-layer-type-choice';
+        choice.setAttribute('data-layer-top-choice-row', '1');
+    }
+    var group = choice.querySelector('[data-layer-type-toggle="1"]');
+    if (!group && layerTypeItem) {
+        group = layerTypeItem.querySelector('[data-layer-type-toggle="1"]');
+    }
+    var warning = choice.querySelector('[data-layer-type-border-warning="1"]');
+    if (!warning && layerTypeItem) {
+        warning = layerTypeItem.querySelector('[data-layer-type-border-warning="1"]');
+    }
+    var overlayWarning = choice.querySelector('[data-layer-type-overlay-warning="1"]');
+    if (!overlayWarning && layerTypeItem) {
+        overlayWarning = layerTypeItem.querySelector('[data-layer-type-overlay-warning="1"]');
+    }
+    if (!group && borderToggle && !localCourseBannerBuilderIsEditLayerForm(layerForm)) {
+        var fallback = localCourseBannerBuilderCreateLayerTypeChoice(layerForm, borderToggle);
+        group = fallback.querySelector('[data-layer-type-toggle="1"]');
+        warning = fallback.querySelector('[data-layer-type-border-warning="1"]');
+    }
+    if (group && group.parentNode !== choice) {
+        choice.appendChild(group);
+    }
+    if (warning && warning.parentNode !== choice) {
+        choice.appendChild(warning);
+    }
+    if (overlayWarning && overlayWarning.parentNode !== choice) {
+        choice.appendChild(overlayWarning);
+    }
+    if (choice.parentNode !== previewItem.parentNode || choice.nextSibling !== previewItem) {
+        previewItem.parentNode.insertBefore(choice, previewItem);
+    }
+    if (layerTypeItem) {
+        layerTypeItem.hidden = true;
+        layerTypeItem.setAttribute('aria-hidden', 'true');
+    }
+    choice.classList.toggle('local-course-banner-builder-layer-type-choice--edit', localCourseBannerBuilderIsEditLayerForm(layerForm));
+    choice.classList.toggle('local-course-banner-builder-layer-type-choice--no-toggle', !group);
+    localCourseBannerBuilderSyncLayerTypeChoice(layerForm);
+    return choice;
+}
+
+function localCourseBannerBuilderEmbedLayerTypeChoiceInPreview(layerForm, previewItem) {
+    localCourseBannerBuilderEnsureLayerTypeChoice(layerForm, previewItem);
+}
+
+function localCourseBannerBuilderMoveLayerEssentialsUnderPreview(layerForm, previewItem) {
+    if (!layerForm || !previewItem || !previewItem.parentNode) {
+        return;
+    }
+    var parent = previewItem.parentNode;
+    var anchor = previewItem.nextSibling;
+    var identityRow = layerForm.querySelector('[data-layer-identity-row="1"]');
+    if (!identityRow) {
+        identityRow = document.createElement('div');
+        identityRow.className = 'local-course-banner-builder-layer-identity-row';
+        identityRow.setAttribute('data-layer-identity-row', '1');
+    }
+    ['#fitem_id_name', '#fitem_id_sortorder'].forEach(function (selector) {
+        var item = layerForm.querySelector(selector);
+        if (item && item.parentNode !== identityRow) {
+            identityRow.appendChild(item);
+        }
+    });
+    if (identityRow.children.length && (identityRow.parentNode !== parent || identityRow.nextSibling !== anchor)) {
+        parent.insertBefore(identityRow, anchor);
+    }
+    anchor = identityRow.parentNode === parent ? identityRow.nextSibling : anchor;
+    ['#fitem_id_bannerimage_filemanager'].forEach(function (selector) {
+        var item = layerForm.querySelector(selector);
+        if (item && item !== previewItem && (item.parentNode !== parent || item.nextSibling !== anchor)) {
+            parent.insertBefore(item, anchor);
+        }
+        if (item && item.parentNode === parent) {
+            anchor = item.nextSibling;
+        }
+    });
+    localCourseBannerBuilderEmbedEnabledToggleInLayerTypeChoice(layerForm);
+}
+
+function localCourseBannerBuilderEmbedEnabledToggleInLayerTypeChoice(form) {
+    var previewItem = form ? form.querySelector('#fitem_id_layerpreview, #fitem_id_imagepreview, #fitem_id_borderpreview') : null;
+    var choice = localCourseBannerBuilderEnsureLayerTypeChoice(form, previewItem);
+    var enabledInput = form ? form.querySelector('#id_isenabled') : null;
+    var enabledRow = enabledInput ? enabledInput.closest('.fitem, .form-group, .mb-3, .row') : null;
+    var enabledHost = form ? form.querySelector('[data-toggle-button-host-for="#id_isenabled"]') : null;
+    var enabledButton = enabledHost ? enabledHost.querySelector('[data-toggle-button-for="#id_isenabled"]') : null;
+    if (!choice || !enabledInput || !enabledHost || !enabledButton) {
+        return;
+    }
+    enabledButton.setAttribute('data-label-on', localCourseBannerBuilderGetJsString('enablelayer', 'Enable layer'));
+    enabledButton.setAttribute('data-label-off', localCourseBannerBuilderGetJsString('enablelayer', 'Enable layer'));
+    var help = localCourseBannerBuilderGetJsString(
+        'enablelayer_help',
+        'When enabled, this layer is included in previews and generated banners.'
+    );
+    enabledButton.setAttribute('data-toggle', 'popover');
+    enabledButton.setAttribute('data-trigger', 'hover');
+    enabledButton.setAttribute('data-placement', 'top');
+    enabledButton.setAttribute('data-html', 'true');
+    enabledButton.setAttribute('data-content', '<div class="no-overflow"><p>' + help + '</p></div>');
+    enabledButton.setAttribute('data-local-course-banner-builder-popover-label', help);
+    enabledButton.setAttribute('aria-label', help);
+    if (enabledHost.parentNode !== choice) {
+        choice.insertBefore(enabledHost, choice.firstChild);
+    }
+    var inputHost = choice.querySelector('[data-layer-enable-input-host="1"]');
+    if (!inputHost) {
+        inputHost = document.createElement('span');
+        inputHost.className = 'local-course-banner-builder-toggle-button-source';
+        inputHost.setAttribute('data-layer-enable-input-host', '1');
+        choice.insertBefore(inputHost, enabledHost.nextSibling);
+    }
+    var enabledInputs = [];
+    if (enabledRow) {
+        Array.prototype.slice.call(enabledRow.querySelectorAll('input[name="isenabled"]')).forEach(function (input) {
+            if (enabledInputs.indexOf(input) === -1) {
+                enabledInputs.push(input);
+            }
+        });
+    }
+    if (enabledInputs.indexOf(enabledInput) === -1) {
+        enabledInputs.push(enabledInput);
+    }
+    enabledInputs.sort(function (a, b) {
+        if (a.type === b.type) {
+            return 0;
+        }
+        return a.type === 'hidden' ? -1 : 1;
+    }).forEach(function (input) {
+        if (input.parentNode !== inputHost || inputHost.lastChild !== input) {
+            inputHost.appendChild(input);
+        }
+    });
+    if (typeof localCourseBannerBuilderInitPopovers === 'function') {
+        localCourseBannerBuilderInitPopovers(enabledButton);
+    }
+    choice.classList.add('local-course-banner-builder-layer-type-choice--with-enable');
+    if (enabledRow) {
+        enabledRow.classList.add('local-course-banner-builder-layer-enable-row-hidden');
+        enabledRow.setAttribute('aria-hidden', 'true');
+    }
+    choice.classList.toggle(
+        'local-course-banner-builder-layer-type-choice--no-toggle',
+        !choice.querySelector('[data-layer-type-toggle="1"]')
+    );
+    localCourseBannerBuilderSyncBinaryOptionButton(enabledInput);
+}
+
+function localCourseBannerBuilderSyncLayerTypeChoice(layerForm) {
+    if (!layerForm) {
+        return;
+    }
+    var borderToggle = layerForm.querySelector('[data-border-toggle="1"][type="checkbox"]');
+    var overlayToggle = localCourseBannerBuilderGetOverlayToggle(layerForm);
+    var layerTypeToggle = layerForm.querySelector('[data-layer-type-toggle="1"]');
+    if (!borderToggle || !layerTypeToggle) {
+        return;
+    }
+    var borderToggleItem = borderToggle.closest('.fitem, .form-group, .mb-3, .row');
+    if (borderToggleItem) {
+        borderToggleItem.hidden = true;
+        borderToggleItem.setAttribute('aria-hidden', 'true');
+    }
+    var selectedType = localCourseBannerBuilderGetSelectedLayerType(layerForm);
+    Array.prototype.slice.call(layerTypeToggle.querySelectorAll('[data-layer-type-option]')).forEach(function (button) {
+        var type = button.getAttribute('data-layer-type-option');
+        var active = type === selectedType;
+        button.classList.toggle('btn-primary', active);
+        button.classList.toggle('btn-outline-secondary', !active);
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+        if (type === 'border') {
+            button.disabled = !!borderToggle.disabled;
+            button.setAttribute('aria-disabled', borderToggle.disabled ? 'true' : 'false');
+        } else if (type === 'overlay' && overlayToggle) {
+            button.disabled = !!overlayToggle.disabled;
+            button.setAttribute('aria-disabled', overlayToggle.disabled ? 'true' : 'false');
+        }
+    });
+    var warning = layerForm.querySelector('[data-layer-type-border-warning="1"]');
+    if (warning) {
+        var borderSection = layerForm.querySelector('[data-border-section="1"]');
+        var sourceHasBorderLayerInput = layerForm.querySelector('#id_sourcehasborderlayer');
+        var currentIsBorderLayerInput = layerForm.querySelector('#id_currentisborderlayer');
+        var elementIdInput = layerForm.querySelector('#id_elementid');
+        var sourceHasBorderLayer = !!(sourceHasBorderLayerInput &&
+            parseInt(sourceHasBorderLayerInput.value || '0', 10) > 0);
+        var createBorderLocked = !!(borderSection &&
+            parseInt(borderSection.getAttribute('data-create-border-locked') || '0', 10) > 0);
+        var currentIsBorderLayer = !!(currentIsBorderLayerInput &&
+            parseInt(currentIsBorderLayerInput.value || '0', 10) > 0);
+        var hasExistingElement = !!(elementIdInput && parseInt(elementIdInput.value || '0', 10) > 0);
+        var sourceBlocksNewBorder = (sourceHasBorderLayer || createBorderLocked) &&
+            !(hasExistingElement && currentIsBorderLayer);
+        warning.classList.toggle('d-none', !sourceBlocksNewBorder || borderToggle.checked);
+    }
+    var overlayWarning = layerForm.querySelector('[data-layer-type-overlay-warning="1"]');
+    if (overlayWarning) {
+        var overlaySection = layerForm.querySelector('[data-overlay-section="1"]');
+        var sourceHasOverlayLayerInput = layerForm.querySelector('#id_sourcehasoverlaylayer');
+        var currentIsOverlayLayerInput = layerForm.querySelector('#id_currentisoverlaylayer');
+        var overlayElementIdInput = layerForm.querySelector('#id_elementid');
+        var sourceHasOverlayLayer = !!(sourceHasOverlayLayerInput &&
+            parseInt(sourceHasOverlayLayerInput.value || '0', 10) > 0);
+        var createOverlayLocked = !!(overlaySection &&
+            parseInt(overlaySection.getAttribute('data-create-overlay-locked') || '0', 10) > 0);
+        var currentIsOverlayLayer = !!(currentIsOverlayLayerInput &&
+            parseInt(currentIsOverlayLayerInput.value || '0', 10) > 0);
+        var hasOverlayElement = !!(overlayElementIdInput && parseInt(overlayElementIdInput.value || '0', 10) > 0);
+        var sourceBlocksNewOverlay = (sourceHasOverlayLayer || createOverlayLocked) &&
+            !(hasOverlayElement && currentIsOverlayLayer);
+        overlayWarning.classList.toggle('d-none', !sourceBlocksNewOverlay || selectedType === 'overlay');
+    }
+    var imageSection = layerForm.querySelector('[data-image-options-section="1"]');
+    if (imageSection) {
+        var imageOptionsButton = layerForm.querySelector('[data-modal-preview-side-panel-target="imageoptions"]');
+        var isImageType = selectedType === 'image';
+        if (imageSection.getAttribute('data-modal-preview-side-panel') === '1') {
+            if (!isImageType) {
+                imageSection.hidden = true;
+                imageSection.classList.add('is-collapsed');
+            }
+        } else {
+            imageSection.hidden = !isImageType;
+        }
+        if (imageOptionsButton) {
+            imageOptionsButton.hidden = !isImageType;
+            imageOptionsButton.disabled = false;
+            imageOptionsButton.classList.remove('disabled');
+            imageOptionsButton.setAttribute('aria-disabled', 'false');
+            if (!isImageType) {
+                imageOptionsButton.classList.remove('btn-primary', 'active');
+                imageOptionsButton.classList.add('btn-outline-secondary');
+                imageOptionsButton.setAttribute('aria-expanded', 'false');
+            }
+        }
+    }
+}
+
+function localCourseBannerBuilderSyncLayerInputModes(scope) {
+    var layerForm = localCourseBannerBuilderGetLayerScope(scope);
+    var filemanager = layerForm ? layerForm.querySelector('#fitem_id_bannerimage_filemanager') : null;
+    var filemanagerItem = filemanager;
+    var filemanagerNote = layerForm ? layerForm.querySelector('[data-border-filemanager-note="1"]') : null;
+    var filemanagerNoteItem = filemanagerNote ? filemanagerNote.closest('.fitem, .form-group, .mb-3') : null;
+    var existingBorderNote = layerForm ? layerForm.querySelector('[data-border-existing-note="1"]') : null;
+    var existingBorderNoteItem = existingBorderNote ? existingBorderNote.closest('.fitem, .form-group, .mb-3') : null;
+    var existingBorderInlineNote = layerForm ? layerForm.querySelector('[data-border-existing-note-inline="1"]') : null;
+    var borderToggle = layerForm ? layerForm.querySelector('[data-border-toggle="1"][type="checkbox"]') : null;
+    var overlayToggle = localCourseBannerBuilderGetOverlayToggle(layerForm);
+    var borderSection = layerForm ? layerForm.querySelector('[data-border-section="1"]') : null;
+    var overlaySection = layerForm ? layerForm.querySelector('[data-overlay-section="1"]') : null;
+    var borderSummary = borderSection ? borderSection.querySelector('summary') : null;
+    var advancedSection = layerForm ? layerForm.querySelector('[data-layer-advanced-section="1"]') : null;
+    var hasExistingImageInput = layerForm ? layerForm.querySelector('#id_hasexistingimage') : null;
+    var currentIsBorderLayerInput = layerForm ? layerForm.querySelector('#id_currentisborderlayer') : null;
+    var currentIsOverlayLayerInput = layerForm ? layerForm.querySelector('#id_currentisoverlaylayer') : null;
+    var sourceHasBorderLayerInput = layerForm ? layerForm.querySelector('#id_sourcehasborderlayer') : null;
+    var sourceHasOverlayLayerInput = layerForm ? layerForm.querySelector('#id_sourcehasoverlaylayer') : null;
+    var elementIdInput = layerForm ? layerForm.querySelector('#id_elementid') : null;
+    if (!filemanager || !borderToggle || !borderSection) {
+        return;
+    }
+
+    var hasFiles = localCourseBannerBuilderGetVisibleDraftFileItems(layerForm).length > 0;
+    var hasExistingImage = !!(hasExistingImageInput && parseInt(hasExistingImageInput.value || '0', 10) > 0);
+    var currentIsBorderLayer = !!(currentIsBorderLayerInput && parseInt(currentIsBorderLayerInput.value || '0', 10) > 0);
+    var currentIsOverlayLayer = !!(currentIsOverlayLayerInput && parseInt(currentIsOverlayLayerInput.value || '0', 10) > 0);
+    var sourceHasBorderLayer = !!(sourceHasBorderLayerInput && parseInt(sourceHasBorderLayerInput.value || '0', 10) > 0);
+    var sourceHasOverlayLayer = !!(sourceHasOverlayLayerInput && parseInt(sourceHasOverlayLayerInput.value || '0', 10) > 0);
+    var createBorderLocked = !!(borderSection && parseInt(borderSection.getAttribute('data-create-border-locked') || '0', 10) > 0);
+    var createOverlayLocked = !!(overlaySection && parseInt(overlaySection.getAttribute('data-create-overlay-locked') || '0', 10) > 0);
+    var editBorderLocked = !!(layerForm && layerForm.getAttribute('data-edit-border-locked') === '1');
+    var hasExistingElement = !!(elementIdInput && parseInt(elementIdInput.value || '0', 10) > 0);
+    var hasImage = hasFiles || hasExistingImage;
+    var selectedLayerType = localCourseBannerBuilderGetSelectedLayerType(layerForm);
+    var overlayChecked = selectedLayerType === 'overlay';
+    var isOverlayOnly = !!overlayChecked;
+    var isBorderOnly = selectedLayerType === 'border' && !hasImage && !isOverlayOnly;
+    var isExistingBorderLayer = hasExistingElement && (currentIsBorderLayer || editBorderLocked);
+    var isExistingOverlayLayer = hasExistingElement && currentIsOverlayLayer;
+    var sourceBlocksNewBorder = (sourceHasBorderLayer || createBorderLocked) && !isExistingBorderLayer;
+    var sourceBlocksNewOverlay = (sourceHasOverlayLayer || createOverlayLocked) && !isExistingOverlayLayer;
+    localCourseBannerBuilderPlaceExistingBorderNote(layerForm, existingBorderNote, borderToggle);
+
+    localCourseBannerBuilderSetDisabledState(filemanager, isBorderOnly || isOverlayOnly, '[data-banner-filemanager="1"]');
+    localCourseBannerBuilderSetDisabledState(borderSection, hasImage || isOverlayOnly, '[data-border-toggle="1"]');
+    localCourseBannerBuilderSetDisabledState(overlaySection, hasImage || isBorderOnly, '[data-overlay-toggle="1"]');
+    localCourseBannerBuilderSetDisabledState(advancedSection, borderToggle.checked || isOverlayOnly, '');
+    if (sourceBlocksNewBorder && borderToggle.checked) {
+        borderToggle.checked = false;
+        localCourseBannerBuilderSetSelectedLayerType(layerForm, 'image');
+    }
+    if (overlayToggle && sourceBlocksNewOverlay && overlayChecked) {
+        localCourseBannerBuilderSetSelectedLayerType(layerForm, 'image');
+        localCourseBannerBuilderSetOverlayToggle(layerForm, false);
+        isOverlayOnly = false;
+    }
+    borderToggle.disabled = hasImage || isExistingBorderLayer || sourceBlocksNewBorder;
+    borderToggle.setAttribute('aria-disabled', (hasImage || isExistingBorderLayer || sourceBlocksNewBorder) ? 'true' : 'false');
+    if (overlayToggle && overlayToggle.type === 'checkbox') {
+        overlayToggle.disabled = hasImage || isExistingOverlayLayer || sourceBlocksNewOverlay;
+        overlayToggle.setAttribute(
+            'aria-disabled',
+            (hasImage || isExistingOverlayLayer || sourceBlocksNewOverlay) ? 'true' : 'false'
+        );
+    }
+    if (isExistingOverlayLayer && overlayToggle) {
+        if (overlayToggle.type === 'checkbox') {
+            overlayToggle.checked = true;
+        } else {
+            overlayToggle.value = '1';
+        }
+    }
+    if (isExistingBorderLayer) {
+        borderToggle.checked = true;
+        var borderToggleWrapper = borderToggle.closest('.form-check, .fitem, .felement');
+        if (borderToggleWrapper) {
+            borderToggleWrapper.classList.add('local-course-banner-builder-option-disabled');
+        }
+    }
+    if (filemanagerItem) {
+        filemanagerItem.hidden = isBorderOnly || isOverlayOnly;
+    }
+    var sortOrderInput = layerForm.querySelector('#id_sortorder');
+    var sortOrderItem = sortOrderInput ? sortOrderInput.closest('.fitem, .form-group, .mb-3, .row') : null;
+    if (sortOrderInput) {
+        sortOrderInput.disabled = isBorderOnly || isOverlayOnly || isExistingBorderLayer || isExistingOverlayLayer;
+        sortOrderInput.setAttribute(
+            'aria-disabled',
+            sortOrderInput.disabled ? 'true' : 'false'
+        );
+    }
+    if (sortOrderItem) {
+        sortOrderItem.classList.toggle(
+            'local-course-banner-builder-option-disabled',
+            isBorderOnly || isOverlayOnly || isExistingBorderLayer || isExistingOverlayLayer
+        );
+    }
+    [
+        layerForm.querySelector('#id_fitmodeoverride'),
+        layerForm.querySelector('[data-layer-position-anchor="1"]')
+    ].forEach(function (input) {
+        var item = input ? input.closest('.fitem, .form-group, .mb-3, .row') : null;
+        if (item) {
+            item.hidden = isBorderOnly || isOverlayOnly;
+            item.setAttribute('aria-hidden', (isBorderOnly || isOverlayOnly) ? 'true' : 'false');
+        }
+    });
+    if (filemanagerNoteItem) {
+        filemanagerNoteItem.hidden = !isBorderOnly;
+    }
+    if (existingBorderNoteItem && (!existingBorderNote || existingBorderNote.dataset.inlinePlaced !== '1')) {
+        existingBorderNoteItem.hidden = !sourceBlocksNewBorder;
+    }
+    if (existingBorderNote) {
+        existingBorderNote.classList.toggle('d-none', !sourceBlocksNewBorder);
+    }
+    if (existingBorderInlineNote) {
+        existingBorderInlineNote.classList.toggle('d-none', !sourceBlocksNewBorder);
+    }
+    if (borderSection) {
+        borderSection.hidden = isOverlayOnly;
+        borderSection.setAttribute('aria-hidden', isOverlayOnly ? 'true' : 'false');
+        borderSection.classList.toggle('local-course-banner-builder-disabled', !!sourceBlocksNewBorder);
+        if (sourceBlocksNewBorder) {
+            borderSection.open = false;
+        }
+    }
+    if (overlaySection) {
+        overlaySection.hidden = isBorderOnly || (!isOverlayOnly && !isExistingOverlayLayer);
+        overlaySection.setAttribute('aria-hidden', overlaySection.hidden ? 'true' : 'false');
+        overlaySection.classList.toggle('local-course-banner-builder-disabled', !!sourceBlocksNewOverlay);
+        if (sourceBlocksNewOverlay) {
+            overlaySection.open = false;
+        }
+        if ((isOverlayOnly || isExistingOverlayLayer) &&
+                overlaySection.getAttribute('data-modal-preview-side-panel') !== '1') {
+            overlaySection.classList.remove('is-collapsed');
+            overlaySection.open = true;
+        }
+    }
+    if (borderSummary) {
+        borderSummary.setAttribute('aria-disabled', sourceBlocksNewBorder ? 'true' : 'false');
+        borderSummary.tabIndex = sourceBlocksNewBorder ? -1 : 0;
+    }
+    localCourseBannerBuilderSyncLayerTypeChoice(layerForm);
+    localCourseBannerBuilderSyncBorderAccordion(layerForm);
+    localCourseBannerBuilderSyncBorderPreview(layerForm);
+}
+
+function localCourseBannerBuilderSyncOffsetFields(scope) {
+    var layerForm = localCourseBannerBuilderGetLayerScope(scope);
+    var anchor = layerForm ? layerForm.querySelector('[data-layer-position-anchor="1"]') : null;
+    if (!anchor) {
+        return;
+    }
+    var borderToggle = layerForm.querySelector('[data-border-toggle="1"][type="checkbox"]');
+    var hasExistingImageInput = layerForm.querySelector('#id_hasexistingimage');
+    var hasExistingImage = !!(hasExistingImageInput && parseInt(hasExistingImageInput.value || '0', 10) > 0);
+    var filemanager = layerForm.querySelector('#fitem_id_bannerimage_filemanager');
+    var hasFiles = localCourseBannerBuilderGetVisibleDraftFileItems(layerForm).length > 0;
+    var isBorderOnly = !!(borderToggle && borderToggle.checked && !hasExistingImage && !hasFiles);
+    var fitOverride = layerForm.querySelector('#id_fitmodeoverride');
+    var previewRoot = layerForm.querySelector('[data-layer-banner-preview="1"]');
+    var defaultFitMode = previewRoot ? (previewRoot.getAttribute('data-default-fitmode') || 'bannerfit') : 'bannerfit';
+    var effectiveFitMode = fitOverride && fitOverride.value ? fitOverride.value : defaultFitMode;
+    var isBannerFill = effectiveFitMode === 'bannerfit';
+    var anchorWrapper = anchor.closest('.fitem, .form-group, .mb-3');
+    anchor.disabled = isBannerFill || isBorderOnly;
+    if (anchorWrapper) {
+        anchorWrapper.hidden = isBannerFill || isBorderOnly;
+    }
+    var offsetHelp = layerForm.querySelector('#fitem_id_layeroffsethelp, [id^="fitem_id_layeroffsethelp"]');
+    if (offsetHelp) {
+        offsetHelp.hidden = isBannerFill;
+    }
+    var visibleSidesByAnchor = {
+        'center': [],
+        'top': ['top'],
+        'bottom': ['bottom'],
+        'left': ['left'],
+        'right': ['right'],
+        'top-left': ['top', 'left'],
+        'top-right': ['top', 'right'],
+        'bottom-left': ['bottom', 'left'],
+        'bottom-right': ['bottom', 'right']
+    };
+    var visibleSides = visibleSidesByAnchor[anchor.value] || [];
+    Array.prototype.slice.call(layerForm.querySelectorAll('[data-offset-side]')).forEach(function (input) {
+        var side = input.getAttribute('data-offset-side');
+        var wrapper = input.closest('.fitem, .form-group, .mb-3');
+        var sliderWrapper = layerForm.querySelector('[data-percent-slider-wrapper-for="' + input.id + '"]');
+        var isVisible = !isBannerFill && !isBorderOnly && visibleSides.indexOf(side) !== -1;
+        input.disabled = !isVisible;
+        if (wrapper) {
+            wrapper.hidden = !isVisible;
+        }
+        if (sliderWrapper) {
+            sliderWrapper.hidden = !isVisible;
+        }
+    });
+}
+
+function localCourseBannerBuilderApplyLayerPositionAnchorChange(scope) {
+    var layerForm = localCourseBannerBuilderGetLayerScope(scope);
+    if (!layerForm) {
+        return;
+    }
+    var anchorInput = layerForm.querySelector('[data-layer-position-anchor="1"]');
+    var requestedAnchor = anchorInput ? (anchorInput.value || 'center') : 'center';
+    var currentLayer = localCourseBannerBuilderGetLayerFormPreviewImage(layerForm);
+    var frame = currentLayer ? currentLayer.closest('[data-banner-preview-frame="1"]') : null;
+    var isDraftSelection = !!(currentLayer && currentLayer.hasAttribute('data-preview-draft-selection-overlay'));
+    layerForm.dataset.previewUserChanged = '1';
+    if (!isDraftSelection && currentLayer && frame && !currentLayer.querySelector('[data-preview-crop-editor="1"]')) {
+        localCourseBannerBuilderEnsurePreviewDragMode(layerForm, currentLayer, frame);
+        if (anchorInput) {
+            anchorInput.value = requestedAnchor;
+        }
+    }
+    ['offsettoppercent', 'offsetrightpercent', 'offsetbottompercent', 'offsetleftpercent'].forEach(function (name) {
+        var field = layerForm.querySelector('#id_' + name);
+        if (!field) {
+            return;
+        }
+        field.value = '0';
+    });
+    localCourseBannerBuilderSyncOffsetFields(layerForm);
+    localCourseBannerBuilderSyncCurrentLayerDataFromForm(layerForm);
+    localCourseBannerBuilderSyncLayerBannerPreview(layerForm);
+    localCourseBannerBuilderSaveActiveDraftPreviewState(layerForm);
+}
+
+function localCourseBannerBuilderNormaliseNumericValue(value, fallback) {
+    if (value === null || value === undefined) {
+        return fallback;
+    }
+    var normalised = String(value).replace(',', '.').trim();
+    if (normalised === '') {
+        return fallback;
+    }
+    var parsed = parseFloat(normalised);
+    return isNaN(parsed) ? fallback : parsed;
+}
+
+function localCourseBannerBuilderClampPercent(value, fallback) {
+    var parsed = localCourseBannerBuilderNormaliseNumericValue(value, fallback);
+    return Math.max(0, Math.min(100, parsed));
+}
+
+function localCourseBannerBuilderClampCropSize(value) {
+    var parsed = localCourseBannerBuilderNormaliseNumericValue(value, 100);
+    return Math.max(1, Math.min(100, parsed));
+}
+
+function localCourseBannerBuilderNormaliseCropState(state) {
+    var cropEnabled = !!(state && (
+        state.imagecropenabled ||
+        state.enabled ||
+        state['imagecropenabled'] === '1' ||
+        state['enabled'] === '1'
+    ));
+    var cropLeft = state && typeof state.imagecropleftpercent !== 'undefined' ?
+        state.imagecropleftpercent :
+        (state ? state.left : 0);
+    var cropTop = state && typeof state.imagecroptoppercent !== 'undefined' ?
+        state.imagecroptoppercent :
+        (state ? state.top : 0);
+    var cropWidth = state && typeof state.imagecropwidthpercent !== 'undefined' ?
+        state.imagecropwidthpercent :
+        (state ? state.width : 100);
+    var cropHeight = state && typeof state.imagecropheightpercent !== 'undefined' ?
+        state.imagecropheightpercent :
+        (state ? state.height : 100);
+    var crop = {
+        enabled: cropEnabled,
+        left: localCourseBannerBuilderClampPercent(cropLeft, 0),
+        top: localCourseBannerBuilderClampPercent(cropTop, 0),
+        width: localCourseBannerBuilderClampCropSize(cropWidth),
+        height: localCourseBannerBuilderClampCropSize(cropHeight)
+    };
+    crop.left = Math.max(0, Math.min(100 - crop.width, crop.left));
+    crop.top = Math.max(0, Math.min(100 - crop.height, crop.top));
+    crop.enabled = crop.enabled && (crop.left > 0 || crop.top > 0 || crop.width < 100 || crop.height < 100);
+    return crop;
+}
+
+function localCourseBannerBuilderApplyCropToImageStyles(imageStyles, state, fillWrapper, cropEditing) {
+    var crop = localCourseBannerBuilderNormaliseCropState(state);
+    if (!crop.enabled || cropEditing) {
+        return;
+    }
+    imageStyles.push(
+        'position: absolute;',
+        'top: 0;',
+        'left: 0;',
+        'right: auto;',
+        'bottom: auto;',
+        'flex: 0 0 auto;',
+        'width: ' + (10000 / crop.width).toFixed(6) + '%;',
+        'height: ' + (10000 / crop.height).toFixed(6) + '%;',
+        'max-width: none;',
+        'object-fit: fill;',
+        'object-position: left top;',
+        'transform: translate(-' + crop.left.toFixed(6) + '%, -' + crop.top.toFixed(6) + '%);',
+        'transform-origin: top left;'
+    );
+}
+
+function localCourseBannerBuilderApplyCropToLayerImage(layer, state) {
+    var image = layer ? layer.querySelector('[data-preview-image-tag="1"]') : null;
+    if (!image) {
+        return;
+    }
+    image.style.removeProperty('clip-path');
+    image.style.removeProperty('-webkit-clip-path');
+}
+
+function localCourseBannerBuilderReadPreviewCropState(form, layer, preferStoredState) {
+    var enabledInput = localCourseBannerBuilderGetCropInput(form, 'imagecropenabled');
+    var leftInput = localCourseBannerBuilderGetCropInput(form, 'imagecropleftpercent');
+    var topInput = localCourseBannerBuilderGetCropInput(form, 'imagecroptoppercent');
+    var widthInput = localCourseBannerBuilderGetCropInput(form, 'imagecropwidthpercent');
+    var heightInput = localCourseBannerBuilderGetCropInput(form, 'imagecropheightpercent');
+    var layerHasCropState = !!(layer && (
+        layer.hasAttribute('data-preview-crop-enabled') ||
+        layer.hasAttribute('data-preview-crop-left') ||
+        layer.hasAttribute('data-preview-crop-top') ||
+        layer.hasAttribute('data-preview-crop-width') ||
+        layer.hasAttribute('data-preview-crop-height')
+    ));
+    var readFromLayer = preferStoredState || layerHasCropState;
+    var readCrop = function (attribute, input, fallback) {
+        if (readFromLayer) {
+            return layer ? (layer.getAttribute(attribute) || fallback) : fallback;
+        }
+        return input && input.value !== '' ? input.value : (layer ? (layer.getAttribute(attribute) || fallback) : fallback);
+    };
+    return {
+        imagecropenabled: readFromLayer ?
+            !!(layer && layer.getAttribute('data-preview-crop-enabled') === '1') :
+            !!(enabledInput && enabledInput.value === '1'),
+        imagecropleftpercent: readCrop('data-preview-crop-left', leftInput, '0'),
+        imagecroptoppercent: readCrop('data-preview-crop-top', topInput, '0'),
+        imagecropwidthpercent: readCrop('data-preview-crop-width', widthInput, '100'),
+        imagecropheightpercent: readCrop('data-preview-crop-height', heightInput, '100')
+    };
+}
+
+var localCourseBannerBuilderCropInteraction = null;
+
+function localCourseBannerBuilderGetCropInput(form, name) {
+    if (!form) {
+        return null;
+    }
+    return form.querySelector('#id_' + name) || form.querySelector('[name="' + name + '"]');
+}
+
+function localCourseBannerBuilderSetPreviewCropState(layer, state) {
+    if (!layer) {
+        return;
+    }
+    var crop = localCourseBannerBuilderNormaliseCropState(state);
+    layer.setAttribute('data-preview-crop-enabled', crop.enabled ? '1' : '0');
+    layer.setAttribute('data-preview-crop-left', String(localCourseBannerBuilderRoundPreviewPercent(crop.left)));
+    layer.setAttribute('data-preview-crop-top', String(localCourseBannerBuilderRoundPreviewPercent(crop.top)));
+    layer.setAttribute('data-preview-crop-width', String(localCourseBannerBuilderRoundPreviewPercent(crop.width)));
+    layer.setAttribute('data-preview-crop-height', String(localCourseBannerBuilderRoundPreviewPercent(crop.height)));
+    if (Number(state.imagecropsourcewidthpercent || 0) > 0 &&
+            Number(state.imagecropsourceheightpercent || 0) > 0) {
+        layer.setAttribute('data-preview-crop-source-left', String(state.imagecropsourceleftpercent || 0));
+        layer.setAttribute('data-preview-crop-source-top', String(state.imagecropsourcetoppercent || 0));
+        layer.setAttribute('data-preview-crop-source-width', String(state.imagecropsourcewidthpercent));
+        layer.setAttribute('data-preview-crop-source-height', String(state.imagecropsourceheightpercent));
+    }
+    localCourseBannerBuilderUpdateCropSelectionFrame(layer, crop);
+
+    var form = layer.closest ? layer.closest('form.mform') : null;
+    if (!form && !(layer.closest && layer.closest('[data-source-visual-editor="1"]'))) {
+        form = localCourseBannerBuilderGetLayerScope(layer);
+    }
+    if (form) {
+        var cropEditing = !!layer.querySelector('[data-preview-crop-editor="1"]');
+        var nextCropState = {
+            imagecropenabled: layer.getAttribute('data-preview-crop-enabled') === '1',
+            imagecropleftpercent: layer.getAttribute('data-preview-crop-left'),
+            imagecroptoppercent: layer.getAttribute('data-preview-crop-top'),
+            imagecropwidthpercent: layer.getAttribute('data-preview-crop-width'),
+            imagecropheightpercent: layer.getAttribute('data-preview-crop-height')
+        };
+        if (layer.hasAttribute('data-preview-draft-layer')) {
+            if (!cropEditing) {
+                localCourseBannerBuilderSaveDraftPreviewLayerState(form, layer, nextCropState);
+            }
+            if (!cropEditing) {
+                localCourseBannerBuilderApplyCropToLayerImage(layer, nextCropState);
+                localCourseBannerBuilderSyncStandalonePreviewLayer(
+                    layer.closest('[data-layer-banner-preview="1"]'),
+                    layer
+                );
+                localCourseBannerBuilderMirrorDraftSelectionVisual(form, layer);
+            }
+            if (!cropEditing) {
+                localCourseBannerBuilderSyncModalPreviewCropButtons(form);
+            }
+            return;
+        }
+        localCourseBannerBuilderWriteCropStateToForm(form, nextCropState);
+        localCourseBannerBuilderGetCropInput(form, 'imagecropenabled').value =
+            layer.getAttribute('data-preview-crop-enabled');
+        localCourseBannerBuilderGetCropInput(form, 'imagecropleftpercent').value =
+            layer.getAttribute('data-preview-crop-left');
+        localCourseBannerBuilderGetCropInput(form, 'imagecroptoppercent').value =
+            layer.getAttribute('data-preview-crop-top');
+        localCourseBannerBuilderGetCropInput(form, 'imagecropwidthpercent').value =
+            layer.getAttribute('data-preview-crop-width');
+        localCourseBannerBuilderGetCropInput(form, 'imagecropheightpercent').value =
+            layer.getAttribute('data-preview-crop-height');
+        form.dataset.previewUserChanged = '1';
+        if (!cropEditing) {
+            localCourseBannerBuilderApplyCropToLayerImage(layer, nextCropState);
+            localCourseBannerBuilderSyncCurrentImagePreview(form);
+            localCourseBannerBuilderSaveActiveDraftPreviewState(form);
+        }
+        localCourseBannerBuilderSyncModalPreviewCropButtons(form);
+        return;
+    }
+
+    var root = layer.closest('[data-source-visual-editor="1"]');
+    if (root) {
+        if (layer.querySelector('[data-preview-crop-editor="1"]')) {
+            localCourseBannerBuilderSyncSourcePreviewCropButtons(root);
+            return;
+        }
+        var sourceState = localCourseBannerBuilderGetSourcePreviewLayerState(layer);
+        if (sourceState) {
+            sourceState.imagecropenabled = layer.getAttribute('data-preview-crop-enabled') === '1';
+            sourceState.imagecropleftpercent = layer.getAttribute('data-preview-crop-left');
+            sourceState.imagecroptoppercent = layer.getAttribute('data-preview-crop-top');
+            sourceState.imagecropwidthpercent = layer.getAttribute('data-preview-crop-width');
+            sourceState.imagecropheightpercent = layer.getAttribute('data-preview-crop-height');
+            localCourseBannerBuilderSetSourcePreviewLayerState(layer, sourceState);
+            localCourseBannerBuilderSyncSourcePreviewLayer(root, layer);
+            localCourseBannerBuilderUpdateSourcePreviewRow(root, sourceState);
+            localCourseBannerBuilderSyncSourcePreviewPayload(root);
+            localCourseBannerBuilderSyncSourcePreviewCropButtons(root);
+        }
+    }
+}
+
+function localCourseBannerBuilderGetCropEditSourceState(layer) {
+    if (!layer) {
+        return null;
+    }
+    var frame = layer.closest(
+        '[data-banner-preview-frame="1"], [data-source-preview-frame="1"], [data-source-preview-frame-moodle="1"]'
+    );
+    if (!frame || !frame.getBoundingClientRect || !layer.getBoundingClientRect) {
+        return null;
+    }
+    var frameRect = frame.getBoundingClientRect();
+    var layerRect = layer.getBoundingClientRect();
+    if (!frameRect.width || !frameRect.height || !layerRect.width || !layerRect.height) {
+        return null;
+    }
+    return {
+        imagecropsourceleftpercent: localCourseBannerBuilderRoundPreviewPercent(
+            ((layerRect.left - frameRect.left) / frameRect.width) * 100
+        ),
+        imagecropsourcetoppercent: localCourseBannerBuilderRoundPreviewPercent(
+            ((layerRect.top - frameRect.top) / frameRect.height) * 100
+        ),
+        imagecropsourcewidthpercent: localCourseBannerBuilderRoundPreviewPercent(
+            (layerRect.width / frameRect.width) * 100
+        ),
+        imagecropsourceheightpercent: localCourseBannerBuilderRoundPreviewPercent(
+            (layerRect.height / frameRect.height) * 100
+        )
+    };
+}
+
+function localCourseBannerBuilderHasCropSourceState(state) {
+    return !!(state &&
+        Number(state.imagecropsourcewidthpercent || 0) > 0 &&
+        Number(state.imagecropsourceheightpercent || 0) > 0);
+}
+
+function localCourseBannerBuilderCopyCropSourceState(fromState, toState) {
+    if (!fromState || !toState) {
+        return toState;
+    }
+    [
+        'imagecropsourceleftpercent',
+        'imagecropsourcetoppercent',
+        'imagecropsourcewidthpercent',
+        'imagecropsourceheightpercent'
+    ].forEach(function (key) {
+        if (typeof fromState[key] !== 'undefined') {
+            toState[key] = fromState[key];
+        }
+    });
+    return toState;
+}
+
+function localCourseBannerBuilderPreserveCropSourceState(existingState, nextState) {
+    if (!nextState || !nextState.imagecropenabled ||
+            localCourseBannerBuilderHasCropSourceState(nextState) ||
+            !localCourseBannerBuilderHasCropSourceState(existingState)) {
+        return nextState;
+    }
+    return localCourseBannerBuilderCopyCropSourceState(existingState, nextState);
+}
+
+function localCourseBannerBuilderGetStoredCropEditSourceState(layer) {
+    if (!layer) {
+        return null;
+    }
+    var source = {
+        left: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-crop-source-left') || '0', 0),
+        top: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-crop-source-top') || '0', 0),
+        width: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-crop-source-width') || '0', 0),
+        height: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-crop-source-height') || '0', 0)
+    };
+    if (source.width > 0 && source.height > 0) {
+        return source;
+    }
+    if (layer.hasAttribute('data-preview-draft-layer')) {
+        var form = localCourseBannerBuilderGetLayerScope(layer);
+        var draftIndex = String(layer.getAttribute('data-draft-index') || '');
+        var settings = form && draftIndex !== '' ? localCourseBannerBuilderGetDraftPreviewSettings(form) : {};
+        var draftState = settings[draftIndex] || null;
+        if (localCourseBannerBuilderHasCropSourceState(draftState)) {
+            return {
+                left: localCourseBannerBuilderNormaliseNumericValue(draftState.imagecropsourceleftpercent || 0, 0),
+                top: localCourseBannerBuilderNormaliseNumericValue(draftState.imagecropsourcetoppercent || 0, 0),
+                width: localCourseBannerBuilderNormaliseNumericValue(draftState.imagecropsourcewidthpercent || 0, 0),
+                height: localCourseBannerBuilderNormaliseNumericValue(draftState.imagecropsourceheightpercent || 0, 0)
+            };
+        }
+        return null;
+    }
+    return null;
+}
+
+function localCourseBannerBuilderGetEditableCurrentPreviewImage(form) {
+    if (!form) {
+        return null;
+    }
+    return form.querySelector(
+        '[data-preview-current-image="1"][data-preview-current-layer="1"]:not([data-preview-context-layer="1"])'
+    ) || form.querySelector(
+        '[data-preview-current-image="1"]:not([data-preview-context-layer="1"])'
+    ) || form.querySelector('[data-preview-current-image="1"]');
+}
+
+function localCourseBannerBuilderGetLayerFormPreviewPanel(form) {
+    if (!form) {
+        return null;
+    }
+    var modalContent = form.closest ? form.closest('.modal-content') : null;
+    var modal = form.closest ? form.closest('.modal') : null;
+    return form.querySelector('.local-course-banner-builder-banner-preview-panel') ||
+        (modalContent ? modalContent.querySelector('.local-course-banner-builder-banner-preview-panel') : null) ||
+        (modal ? modal.querySelector('.local-course-banner-builder-banner-preview-panel') : null);
+}
+
+function localCourseBannerBuilderGetLayerFormPreviewImage(form) {
+    var panel = localCourseBannerBuilderGetLayerFormPreviewPanel(form);
+    if (panel) {
+        var panelLayer = panel.querySelector(
+            '[data-preview-current-image="1"][data-preview-current-layer="1"]:not([data-preview-context-layer="1"])'
+        ) || panel.querySelector(
+            '[data-preview-current-image="1"]:not([data-preview-context-layer="1"])'
+        ) || panel.querySelector('[data-preview-current-image="1"]');
+        if (panelLayer) {
+            return panelLayer;
+        }
+    }
+    return localCourseBannerBuilderGetEditableCurrentPreviewImage(form);
+}
+
+function localCourseBannerBuilderSyncLayerFormFromCurrentPreviewLayer(form) {
+    if (!form) {
+        return;
+    }
+    var currentLayer = localCourseBannerBuilderGetLayerFormPreviewImage(form);
+    if (!currentLayer || currentLayer.hidden) {
+        return;
+    }
+    var state = localCourseBannerBuilderReadLayerPreviewStateFromLayer(currentLayer);
+    if (!state) {
+        return;
+    }
+    localCourseBannerBuilderApplyLayerFormPreviewState(form, state);
+}
+
+function localCourseBannerBuilderMoveModalPreviewLayerDepth(control, direction) {
+    var form = localCourseBannerBuilderGetLayerScope(control);
+    var layer = localCourseBannerBuilderGetEditableCurrentPreviewImage(form);
+    if (!form || !layer || layer.hidden) {
+        return;
+    }
+    if (localCourseBannerBuilderIsPreviewImageLayerOrderLocked(layer)) {
+        localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+        return;
+    }
+    var state = localCourseBannerBuilderReadLayerPreviewStateFromLayer(layer);
+    if (!state) {
+        return;
+    }
+    var delta = direction > 0 ? 1 : -1;
+    var nextSortOrder = Math.max(0, (parseInt(state.sortorder || '0', 10) || 0) + delta);
+    var sortOrderInput = form.querySelector('#id_sortorder');
+    state.sortorder = nextSortOrder;
+    state.zindex = Math.max(1, (parseInt(state.zindex || '1', 10) || 1) + delta);
+    if (sortOrderInput) {
+        sortOrderInput.value = String(nextSortOrder);
+    }
+    localCourseBannerBuilderApplyLayerFormPreviewState(form, state);
+    localCourseBannerBuilderSyncLayerBannerPreview(form);
+    localCourseBannerBuilderSaveActiveDraftPreviewState(form);
+    localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+}
+
+function localCourseBannerBuilderWriteCropStateToForm(form, state) {
+    if (!form || !state) {
+        return;
+    }
+    var crop = localCourseBannerBuilderNormaliseCropState(state);
+    var values = {
+        imagecropenabled: crop.enabled ? '1' : '0',
+        imagecropleftpercent: String(localCourseBannerBuilderRoundPreviewPercent(crop.left)),
+        imagecroptoppercent: String(localCourseBannerBuilderRoundPreviewPercent(crop.top)),
+        imagecropwidthpercent: String(localCourseBannerBuilderRoundPreviewPercent(crop.width)),
+        imagecropheightpercent: String(localCourseBannerBuilderRoundPreviewPercent(crop.height))
+    };
+    Object.keys(values).forEach(function (name) {
+        var input = form.querySelector('[name="' + name + '"]');
+        if (!input) {
+            input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            form.appendChild(input);
+        }
+        input.value = values[name];
+    });
+    var payload = form.querySelector('[name="previewcropstate"]');
+    if (!payload) {
+        payload = document.createElement('input');
+        payload.type = 'hidden';
+        payload.name = 'previewcropstate';
+        form.appendChild(payload);
+    }
+    payload.value = JSON.stringify({
+        imagecropenabled: values.imagecropenabled === '1',
+        imagecropleftpercent: values.imagecropleftpercent,
+        imagecroptoppercent: values.imagecroptoppercent,
+        imagecropwidthpercent: values.imagecropwidthpercent,
+        imagecropheightpercent: values.imagecropheightpercent
+    });
+    form.dataset.previewCropState = payload.value;
+}
+
+function localCourseBannerBuilderPrepareLayerFormForSubmit(form) {
+    if (!form) {
+        return;
+    }
+    var selectedLayerType = localCourseBannerBuilderGetSelectedLayerType(form);
+    localCourseBannerBuilderSetOverlayToggle(form, selectedLayerType === 'overlay');
+    var borderToggle = form.querySelector('[data-border-toggle="1"][type="checkbox"]');
+    if (borderToggle) {
+        borderToggle.checked = selectedLayerType === 'border';
+    }
+    var currentLayer = localCourseBannerBuilderGetLayerFormPreviewImage(form);
+    var cropState = form.dataset.previewCropState ?
+        localCourseBannerBuilderReadJson(form.dataset.previewCropState, null) :
+        (currentLayer ? localCourseBannerBuilderReadLayerPreviewStateFromLayer(currentLayer) : null);
+    if (cropState) {
+        localCourseBannerBuilderWriteCropStateToForm(form, cropState);
+    }
+    localCourseBannerBuilderSaveActiveDraftPreviewState(form);
+}
+
+function localCourseBannerBuilderShouldConfirmChildBorderDisable(form) {
+    if (!form) {
+        return false;
+    }
+    var childBorderCountInput = form.querySelector('#id_activechildborderlayers');
+    var childBorderCount = childBorderCountInput ? parseInt(childBorderCountInput.value || '0', 10) : 0;
+    if (childBorderCount <= 0) {
+        return false;
+    }
+    var borderInput = form.querySelector('#id_borderenabled');
+    var enabledInput = form.querySelector('#id_isenabled');
+    var borderEnabled = !!(borderInput && (
+        borderInput.type === 'checkbox' ? borderInput.checked : borderInput.value === '1'
+    ));
+    var layerEnabled = !enabledInput || enabledInput.checked || enabledInput.value === '1';
+    return borderEnabled && layerEnabled;
+}
+
+function localCourseBannerBuilderGetChildBorderDisableConfirmMessage(form) {
+    var childBorderCountInput = form ? form.querySelector('#id_activechildborderlayers') : null;
+    var childBorderCount = childBorderCountInput ? parseInt(childBorderCountInput.value || '0', 10) : 0;
+    var message = localCourseBannerBuilderGetJsString(
+        'childborderlayersdisableconfirm',
+        'Active border layer(s) in child sources will be disabled before this parent border is saved.'
+    );
+    return message.replace('{$a}', String(Math.max(0, childBorderCount)));
+}
+
+function localCourseBannerBuilderShouldConfirmChildOverlayDisable(form) {
+    if (!form) {
+        return false;
+    }
+    var childOverlayCountInput = form.querySelector('#id_activechildoverlaylayers');
+    var childOverlayCount = childOverlayCountInput ? parseInt(childOverlayCountInput.value || '0', 10) : 0;
+    if (childOverlayCount <= 0) {
+        return false;
+    }
+    var overlayInput = form.querySelector('#id_overlayenabled');
+    var enabledInput = form.querySelector('#id_isenabled');
+    var overlayEnabled = !!(overlayInput && (
+        overlayInput.type === 'checkbox' ? overlayInput.checked : overlayInput.value === '1'
+    ));
+    var layerEnabled = !enabledInput || enabledInput.checked || enabledInput.value === '1';
+    return overlayEnabled && layerEnabled;
+}
+
+function localCourseBannerBuilderGetChildOverlayDisableConfirmMessage(form) {
+    var childOverlayCountInput = form ? form.querySelector('#id_activechildoverlaylayers') : null;
+    var childOverlayCount = childOverlayCountInput ? parseInt(childOverlayCountInput.value || '0', 10) : 0;
+    var message = localCourseBannerBuilderGetJsString(
+        'childoverlaylayersdisableconfirm',
+        'Active overlay layer(s) in child sources will be disabled before this parent overlay is saved.'
+    );
+    return message.replace('{$a}', String(Math.max(0, childOverlayCount)));
+}
+
+function localCourseBannerBuilderGetPreviewCropState(layer) {
+    if (!layer) {
+        return localCourseBannerBuilderNormaliseCropState(null);
+    }
+    return localCourseBannerBuilderNormaliseCropState({
+        imagecropenabled: layer.getAttribute('data-preview-crop-enabled') === '1',
+        imagecropleftpercent: layer.getAttribute('data-preview-crop-left') || '0',
+        imagecroptoppercent: layer.getAttribute('data-preview-crop-top') || '0',
+        imagecropwidthpercent: layer.getAttribute('data-preview-crop-width') || '100',
+        imagecropheightpercent: layer.getAttribute('data-preview-crop-height') || '100'
+    });
+}
+
+function localCourseBannerBuilderUpdateCropSelectionFrame(layer, crop) {
+    if (!layer) {
+        return;
+    }
+    var enabled = crop && crop.enabled;
+    var previewRoot = layer.closest(
+        '[data-layer-banner-preview="1"], [data-source-preview-frame="1"], [data-source-preview-frame-moodle="1"]'
+    );
+    var showFullSelection = enabled && !layer.querySelector('[data-preview-crop-editor="1"]');
+    var selection = showFullSelection ? {
+        left: 0,
+        top: 0,
+        width: 100,
+        height: 100
+    } : crop;
+    var right = enabled ? Math.max(0, 100 - selection.left - selection.width) : 0;
+    var bottom = enabled ? Math.max(0, 100 - selection.top - selection.height) : 0;
+    layer.style.setProperty('--local-course-banner-builder-crop-selection-left', (enabled ? selection.left : 0) + '%');
+    layer.style.setProperty('--local-course-banner-builder-crop-selection-top', (enabled ? selection.top : 0) + '%');
+    layer.style.setProperty('--local-course-banner-builder-crop-selection-right', right + '%');
+    layer.style.setProperty('--local-course-banner-builder-crop-selection-bottom', bottom + '%');
+    layer.style.setProperty('--local-course-banner-builder-crop-selection-width', (enabled ? selection.width : 100) + '%');
+    layer.style.setProperty('--local-course-banner-builder-crop-selection-height', (enabled ? selection.height : 100) + '%');
+    layer.style.setProperty(
+        '--local-course-banner-builder-crop-selection-center-x',
+        (enabled ? (selection.left + (selection.width / 2)) : 50) + '%'
+    );
+    layer.style.setProperty(
+        '--local-course-banner-builder-crop-selection-center-y',
+        (enabled ? (selection.top + (selection.height / 2)) : 50) + '%'
+    );
+}
+
+function localCourseBannerBuilderEnterCropEditLayout(layer) {
+    if (!layer || layer.dataset.previewCropEditLayout === '1') {
+        return;
+    }
+    var image = layer.querySelector('[data-preview-image-tag="1"]');
+    var frame = layer.closest(
+        '[data-banner-preview-frame="1"], [data-source-preview-frame="1"], [data-source-preview-frame-moodle="1"]'
+    );
+    if (!image || !frame || !frame.getBoundingClientRect) {
+        return;
+    }
+    var crop = localCourseBannerBuilderGetPreviewCropState(layer);
+    var frameRect = frame.getBoundingClientRect();
+    var form = localCourseBannerBuilderGetLayerScope(layer);
+    var visualLayer = form ? localCourseBannerBuilderGetDraftSelectionVisualLayer(form, layer) : null;
+    var measureLayer = visualLayer && !visualLayer.hidden ? visualLayer : layer;
+    var measureImage = measureLayer.querySelector('[data-preview-image-tag="1"]') || image;
+    var layerRect = measureLayer.getBoundingClientRect();
+    if (!frameRect.width || !frameRect.height || !layerRect.width || !layerRect.height) {
+        return;
+    }
+
+    layer.dataset.previewCropEditLayout = '1';
+    layer.dataset.previewCropEditLayerStyle = layer.style.cssText || '';
+    layer.dataset.previewCropEditImageStyle = image.style.cssText || '';
+
+    var storedSource = crop.enabled ? localCourseBannerBuilderGetStoredCropEditSourceState(layer) : null;
+    var imageRect = measureImage && measureImage.getBoundingClientRect ? measureImage.getBoundingClientRect() : null;
+    var hasRenderedCropImage = !storedSource && crop.enabled && imageRect && imageRect.width > 0 && imageRect.height > 0 &&
+        (imageRect.width > layerRect.width * 1.01 || imageRect.height > layerRect.height * 1.01);
+    var originalWidth = storedSource ? (storedSource.width * frameRect.width / 100) : (hasRenderedCropImage ? imageRect.width :
+        (crop.enabled ? (layerRect.width * 100 / Math.max(1, crop.width)) : layerRect.width));
+    var originalHeight = storedSource ? (storedSource.height * frameRect.height / 100) : (hasRenderedCropImage ? imageRect.height :
+        (crop.enabled ? (layerRect.height * 100 / Math.max(1, crop.height)) : layerRect.height));
+    var originalLeft = storedSource ? (storedSource.left * frameRect.width / 100) : (hasRenderedCropImage ? (imageRect.left - frameRect.left) :
+        ((layerRect.left - frameRect.left) - (crop.enabled ? (originalWidth * crop.left / 100) : 0)));
+    var originalTop = storedSource ? (storedSource.top * frameRect.height / 100) : (hasRenderedCropImage ? (imageRect.top - frameRect.top) :
+        ((layerRect.top - frameRect.top) - (crop.enabled ? (originalHeight * crop.top / 100) : 0)));
+    var zIndex = layer.style.zIndex || layer.getAttribute('data-preview-zindex') || '1';
+    var cropOverlayContext = localCourseBannerBuilderGetOverlayOrderingContext(
+        layer.closest('form.mform, [data-source-visual-editor="1"], [data-layer-banner-preview="1"]') || frame
+    );
+    var opacityMatch = (image.style.cssText || '').match(/opacity:s*([^;]+);?/i);
+    var opacity = opacityMatch ? opacityMatch[1] : '';
+
+    layer.style.cssText = [
+        'position: absolute;',
+        'display: flex;',
+        'align-items: stretch;',
+        'justify-content: stretch;',
+        'overflow: visible;',
+        'width: ' + localCourseBannerBuilderRoundPreviewPercent((originalWidth / frameRect.width) * 100) + '%;',
+        'height: ' + localCourseBannerBuilderRoundPreviewPercent((originalHeight / frameRect.height) * 100) + '%;',
+        'left: ' + localCourseBannerBuilderRoundPreviewPercent((originalLeft / frameRect.width) * 100) + '%;',
+        'top: ' + localCourseBannerBuilderRoundPreviewPercent((originalTop / frameRect.height) * 100) + '%;',
+        'right: auto;',
+        'bottom: auto;',
+        'transform: none;',
+        'z-index: ' + ((cropOverlayContext && cropOverlayContext.hasOverlay) ? '4500' : zIndex) + ';'
+    ].join(' ');
+    image.style.cssText = [
+        'display: block;',
+        'width: 100%;',
+        'height: 100%;',
+        'object-fit: fill;',
+        'object-position: left top;',
+        'max-width: none;',
+        opacity ? ('opacity: ' + opacity + ';') : ''
+    ].filter(Boolean).join(' ');
+}
+
+function localCourseBannerBuilderExitCropEditLayout(layer) {
+    if (!layer || layer.dataset.previewCropEditLayout !== '1') {
+        return;
+    }
+    var image = layer.querySelector('[data-preview-image-tag="1"]');
+    layer.style.cssText = layer.dataset.previewCropEditLayerStyle || '';
+    if (image) {
+        image.style.cssText = layer.dataset.previewCropEditImageStyle || '';
+    }
+    delete layer.dataset.previewCropEditLayout;
+    delete layer.dataset.previewCropEditLayerStyle;
+    delete layer.dataset.previewCropEditImageStyle;
+}
+
+function localCourseBannerBuilderEnsureCropEditor(layer) {
+    if (!layer) {
+        return null;
+    }
+    var image = layer.querySelector('[data-preview-image-tag="1"]');
+    if (!image || !(image.currentSrc || image.getAttribute('src'))) {
+        return null;
+    }
+    var editor = layer.querySelector('[data-preview-crop-editor="1"]');
+    if (!editor) {
+        editor = document.createElement('div');
+        editor.className = 'local-course-banner-builder-crop-editor';
+        editor.setAttribute('data-preview-crop-editor', '1');
+        editor.innerHTML =
+            '<div class="local-course-banner-builder-crop-actions" data-preview-crop-actions="1">' +
+            '<button type="button" class="btn btn-primary local-course-banner-builder-crop-apply" ' +
+            'data-action="local-course-banner-builder-apply-preview-crop" aria-label="' +
+            localCourseBannerBuilderGetJsString('applycropimage', 'Apply crop') + '">' +
+            '<i class="fa fa-check" aria-hidden="true"></i></button>' +
+            '<button type="button" class="btn btn-outline-secondary local-course-banner-builder-crop-cancel" ' +
+            'data-action="local-course-banner-builder-cancel-preview-crop" aria-label="' +
+            localCourseBannerBuilderGetJsString('cancel', 'Cancel') + '">' +
+            '<i class="fa fa-times" aria-hidden="true"></i></button>' +
+            '</div>' +
+            '<div class="local-course-banner-builder-crop-box" data-preview-crop-box="1">' +
+            '<span data-preview-crop-handle="n"></span><span data-preview-crop-handle="e"></span>' +
+            '<span data-preview-crop-handle="s"></span><span data-preview-crop-handle="w"></span>' +
+            '<span data-preview-crop-handle="nw"></span><span data-preview-crop-handle="ne"></span>' +
+            '<span data-preview-crop-handle="sw"></span><span data-preview-crop-handle="se"></span>' +
+            '</div>';
+        layer.appendChild(editor);
+    }
+    localCourseBannerBuilderEnterCropEditLayout(layer);
+    layer.classList.add('local-course-banner-builder-preview-image-layer--crop-editing');
+    localCourseBannerBuilderSyncPreviewCropFocusState(layer, true);
+    var form = localCourseBannerBuilderGetLayerScope(layer);
+    if (form) {
+        localCourseBannerBuilderSyncDraftSelectionShellState(form, layer);
+        localCourseBannerBuilderRefreshCropEditor(layer);
+        return editor;
+    }
+    var root = layer.closest('[data-source-visual-editor="1"]');
+    if (root) {
+        localCourseBannerBuilderRefreshCropEditor(layer);
+        return editor;
+    }
+    localCourseBannerBuilderRefreshCropEditor(layer);
+    return editor;
+}
+
+function localCourseBannerBuilderRefreshCropEditor(layer) {
+    var editor = layer ? layer.querySelector('[data-preview-crop-editor="1"]') : null;
+    var box = editor ? editor.querySelector('[data-preview-crop-box="1"]') : null;
+    if (!box) {
+        return;
+    }
+    var crop = localCourseBannerBuilderGetPreviewCropState(layer);
+    box.style.left = crop.left + '%';
+    box.style.top = crop.top + '%';
+    box.style.width = crop.width + '%';
+    box.style.height = crop.height + '%';
+
+    var actions = editor.querySelector('[data-preview-crop-actions="1"]');
+    if (!actions) {
+        return;
+    }
+    var gap = 8;
+    var actionWidth = 32;
+    var actionHeight = 68;
+    var frame = layer.closest(
+        '[data-banner-preview-frame="1"], [data-source-preview-frame="1"], [data-source-preview-frame-moodle="1"]'
+    );
+    var editorRect = editor.getBoundingClientRect();
+    var frameRect = frame ? frame.getBoundingClientRect() : editorRect;
+    if (!editorRect.width || !editorRect.height || !frameRect.width || !frameRect.height) {
+        return;
+    }
+    var boxLeft = editorRect.width * (crop.left / 100);
+    var boxTop = editorRect.height * (crop.top / 100);
+    var boxWidth = editorRect.width * (crop.width / 100);
+    var boxHeight = editorRect.height * (crop.height / 100);
+    var minLeft = Math.max(0, frameRect.left - editorRect.left + gap);
+    var maxLeft = Math.min(editorRect.width - actionWidth, frameRect.right - editorRect.left - actionWidth - gap);
+    var minTop = Math.max(0, frameRect.top - editorRect.top + gap);
+    var maxTop = Math.min(editorRect.height - actionHeight, frameRect.bottom - editorRect.top - actionHeight - gap);
+    var centerTop = boxTop + (boxHeight / 2) - (actionHeight / 2);
+    var actionsLeft = boxLeft + boxWidth + gap;
+    var actionsTop = centerTop;
+
+    if (actionsLeft > maxLeft) {
+        actionsLeft = boxLeft - actionWidth - gap;
+    }
+    if (actionsLeft < minLeft || actionsLeft > maxLeft) {
+        actionsLeft = boxLeft + (boxWidth / 2) - (actionWidth / 2);
+        actionsTop = boxTop - actionHeight - gap;
+        if (actionsTop < minTop) {
+            actionsTop = boxTop + boxHeight + gap;
+        }
+    }
+    actionsLeft = Math.max(minLeft, Math.min(maxLeft, actionsLeft));
+    actionsTop = Math.max(minTop, Math.min(maxTop, actionsTop));
+    editor.style.setProperty('--local-course-banner-builder-crop-actions-left', actionsLeft + 'px');
+    editor.style.setProperty('--local-course-banner-builder-crop-actions-top', actionsTop + 'px');
+}
+
+function localCourseBannerBuilderRemoveCropEditor(layer) {
+    var editor = layer ? layer.querySelector('[data-preview-crop-editor="1"]') : null;
+    if (editor) {
+        editor.remove();
+    }
+    if (layer) {
+        localCourseBannerBuilderExitCropEditLayout(layer);
+        layer.classList.remove('local-course-banner-builder-preview-image-layer--crop-editing');
+        localCourseBannerBuilderSyncPreviewCropFocusState(layer, false);
+        var form = localCourseBannerBuilderGetLayerScope(layer);
+        if (form) {
+            localCourseBannerBuilderSyncDraftSelectionShellState(form, layer);
+        }
+    }
+}
+
+function localCourseBannerBuilderSyncPreviewCropFocusState(layer, enabled) {
+    if (!layer) {
+        return;
+    }
+    var frame = layer.closest('[data-banner-preview-frame="1"], [data-source-preview-frame="1"], [data-source-preview-frame-moodle="1"], [data-border-preview-frame="1"]');
+    if (!frame) {
+        return;
+    }
+    var activeLayer = enabled ? layer : frame.querySelector(
+        '.local-course-banner-builder-preview-image-layer--crop-editing, ' +
+        '.local-course-banner-builder-source-preview-layer--selected.local-course-banner-builder-preview-image-layer--crop-editing'
+    );
+    frame.classList.toggle('local-course-banner-builder-crop-focus-active', !!activeLayer);
+    Array.prototype.slice.call(frame.querySelectorAll(
+        '.local-course-banner-builder-preview-image-layer, ' +
+        '.local-course-banner-builder-source-preview-layer'
+    )).forEach(function (candidate) {
+        candidate.classList.toggle('local-course-banner-builder-crop-focus-layer', !!activeLayer && candidate === activeLayer);
+    });
+}
+
+function localCourseBannerBuilderToggleCropEditor(control, sourceMode) {
+    var layer = null;
+    if (sourceMode) {
+        var root = control.closest('[data-source-visual-editor="1"]');
+        layer = root ? localCourseBannerBuilderGetCurrentSourcePreviewCropLayer(root) : null;
+        if (root && layer) {
+            localCourseBannerBuilderSelectSourcePreviewLayer(root, layer);
+        }
+        if (root) {
+            localCourseBannerBuilderPushSourcePreviewHistory(root);
+        }
+    } else {
+        var form = localCourseBannerBuilderGetLayerScope(control);
+        layer = localCourseBannerBuilderGetLayerFormPreviewImage(form);
+        localCourseBannerBuilderPushModalPreviewHistoryFromControl(control);
+    }
+    if (!layer || (!sourceMode && !localCourseBannerBuilderIsLayerPreviewInteractionVisible(form, layer)) ||
+            (sourceMode && layer.hidden)) {
+        return;
+    }
+    if (sourceMode && !localCourseBannerBuilderIsSourcePreviewLayerSelectable(layer)) {
+        return;
+    }
+    var active = !!layer.querySelector('[data-preview-crop-editor="1"]');
+    if (active) {
+        localCourseBannerBuilderCancelCropEditor(control, sourceMode);
+    } else {
+        var preferLayerCropState = !sourceMode && layer.hasAttribute('data-preview-draft-layer');
+        var crop = sourceMode ?
+            localCourseBannerBuilderGetPreviewCropState(layer) :
+            localCourseBannerBuilderNormaliseCropState(
+                localCourseBannerBuilderReadPreviewCropState(form, layer, preferLayerCropState)
+            );
+        var beforeState = localCourseBannerBuilderReadLayerPreviewStateFromLayer(layer) || {};
+        beforeState.imagecropenabled = crop.enabled;
+        beforeState.imagecropleftpercent = crop.left;
+        beforeState.imagecroptoppercent = crop.top;
+        beforeState.imagecropwidthpercent = crop.width;
+        beforeState.imagecropheightpercent = crop.height;
+        layer.dataset.previewCropBefore = JSON.stringify(beforeState);
+        layer.setAttribute('data-preview-crop-enabled', '1');
+        layer.setAttribute('data-preview-crop-left', String(localCourseBannerBuilderRoundPreviewPercent(crop.left)));
+        layer.setAttribute('data-preview-crop-top', String(localCourseBannerBuilderRoundPreviewPercent(crop.top)));
+        layer.setAttribute('data-preview-crop-width', String(localCourseBannerBuilderRoundPreviewPercent(crop.width)));
+        layer.setAttribute('data-preview-crop-height', String(localCourseBannerBuilderRoundPreviewPercent(crop.height)));
+        localCourseBannerBuilderEnsureCropEditor(layer);
+    }
+    if (sourceMode) {
+        localCourseBannerBuilderSyncSourcePreviewCropButtons(control.closest('[data-source-visual-editor="1"]'));
+    } else {
+        localCourseBannerBuilderSyncModalPreviewCropButtons(localCourseBannerBuilderGetLayerScope(control));
+    }
+}
+
+function localCourseBannerBuilderGetCropControlLayer(control, sourceMode) {
+    if (!control || !control.closest) {
+        return null;
+    }
+    var directLayer = sourceMode ?
+        control.closest('[data-source-preview-layer="1"]') :
+        control.closest('[data-preview-current-image="1"]');
+    if (directLayer) {
+        return directLayer;
+    }
+    if (sourceMode) {
+        var root = control.closest('[data-source-visual-editor="1"]');
+        return root ? localCourseBannerBuilderGetCurrentSourcePreviewCropLayer(root) : null;
+    }
+    var form = localCourseBannerBuilderGetLayerScope(control);
+    return localCourseBannerBuilderGetLayerFormPreviewImage(form);
+}
+
+function localCourseBannerBuilderGetCropSelectionCustomState(layer) {
+    var box = layer ? layer.querySelector('[data-preview-crop-box="1"]') : null;
+    var frame = layer ? layer.closest(
+        '[data-banner-preview-frame="1"], [data-source-preview-frame="1"], [data-source-preview-frame-moodle="1"]'
+    ) : null;
+    if (!box || !frame || !box.getBoundingClientRect || !frame.getBoundingClientRect) {
+        return null;
+    }
+    var boxRect = box.getBoundingClientRect();
+    var frameRect = frame.getBoundingClientRect();
+    if (!boxRect.width || !boxRect.height || !frameRect.width || !frameRect.height) {
+        return null;
+    }
+    var widthPercent = (boxRect.width / frameRect.width) * 100;
+    var heightPercent = (boxRect.height / frameRect.height) * 100;
+    var centerLeft = ((boxRect.left - frameRect.left) / frameRect.width) * 100 + (widthPercent / 2);
+    var centerTop = ((boxRect.top - frameRect.top) / frameRect.height) * 100 + (heightPercent / 2);
+    var keepAspect = layer.getAttribute('data-preview-keep-aspect') === '1';
+    var proportionalBox = {
+        width: widthPercent,
+        height: heightPercent
+    };
+    if (keepAspect) {
+        var imageAspect = localCourseBannerBuilderGetLayerEffectiveImageAspect(layer);
+        if (!imageAspect) {
+            imageAspect = boxRect.width / Math.max(1, boxRect.height);
+        }
+        proportionalBox = localCourseBannerBuilderGetClosestAspectPreviewBox(
+            widthPercent,
+            heightPercent,
+            frameRect.width / frameRect.height,
+            imageAspect
+        );
+    }
+    var finalWidth = Math.max(1, Math.min(localCourseBannerBuilderCustomSizePercentMax, proportionalBox.width));
+    var finalHeight = Math.max(1, Math.min(localCourseBannerBuilderCustomSizePercentMax, proportionalBox.height));
+
+    return {
+        fitmodeoverride: 'custom',
+        positionanchor: 'top-left',
+        customsizekeepaspect: keepAspect,
+        customwidthpercent: localCourseBannerBuilderRoundPreviewPercent(finalWidth),
+        customheightpercent: localCourseBannerBuilderRoundPreviewPercent(finalHeight),
+        offsetleftpercent: localCourseBannerBuilderRoundPreviewPercent(centerLeft - (finalWidth / 2)),
+        offsettoppercent: localCourseBannerBuilderRoundPreviewPercent(centerTop - (finalHeight / 2)),
+        offsetrightpercent: 0,
+        offsetbottompercent: 0
+    };
+}
+
+function localCourseBannerBuilderApplyCropSelectionCustomStateToForm(form, state) {
+    if (!form || !state) {
+        return;
+    }
+    var fitOverride = form.querySelector('#id_fitmodeoverride');
+    var anchorInput = form.querySelector('[data-layer-position-anchor="1"]');
+    var widthInput = form.querySelector('#id_customwidthpercent');
+    var heightInput = form.querySelector('#id_customheightpercent');
+    var keepAspectInput = form.querySelector('[data-custom-size-keep-aspect="1"][type="checkbox"]');
+    var centerFixedInput = form.querySelector('#id_imagecenterfixed');
+    var offsetTopInput = form.querySelector('#id_offsettoppercent');
+    var offsetRightInput = form.querySelector('#id_offsetrightpercent');
+    var offsetBottomInput = form.querySelector('#id_offsetbottompercent');
+    var offsetLeftInput = form.querySelector('#id_offsetleftpercent');
+
+    if (fitOverride) {
+        fitOverride.value = state.fitmodeoverride;
+    }
+    if (anchorInput) {
+        anchorInput.value = state.positionanchor;
+    }
+    if (widthInput) {
+        widthInput.value = String(state.customwidthpercent);
+    }
+    if (heightInput) {
+        heightInput.value = String(state.customheightpercent);
+    }
+    if (keepAspectInput) {
+        keepAspectInput.checked = !!state.customsizekeepaspect;
+    }
+    if (offsetTopInput) {
+        offsetTopInput.value = String(state.offsettoppercent);
+    }
+    if (offsetRightInput) {
+        offsetRightInput.value = String(state.offsetrightpercent);
+    }
+    if (offsetBottomInput) {
+        offsetBottomInput.value = String(state.offsetbottompercent);
+    }
+    if (offsetLeftInput) {
+        offsetLeftInput.value = String(state.offsetleftpercent);
+    }
+}
+
+function localCourseBannerBuilderSaveDraftPreviewLayerState(form, layer, patch) {
+    if (!form || !layer || !layer.hasAttribute('data-preview-draft-layer')) {
+        return;
+    }
+    var draftIndex = String(layer.getAttribute('data-draft-index') || '');
+    if (!draftIndex) {
+        return;
+    }
+    var settings = localCourseBannerBuilderGetDraftPreviewSettings(form);
+    var existingState = settings[draftIndex] || {};
+    var nextState = Object.assign(
+        {},
+        existingState,
+        localCourseBannerBuilderReadLayerPreviewStateFromLayer(layer) || {},
+        patch || {}
+    );
+    settings[draftIndex] = localCourseBannerBuilderPreserveCropSourceState(existingState, nextState);
+    localCourseBannerBuilderSetDraftPreviewSettings(form, settings);
+}
+
+function localCourseBannerBuilderApplyModalCropPreviewState(form, layer, cropState, placementState, cropSourceState) {
+    if (!form || !layer) {
+        return;
+    }
+    var currentState = localCourseBannerBuilderReadLayerPreviewStateFromLayer(layer) || {};
+    var nextState = Object.assign({}, currentState, placementState || {}, {
+        imagecropenabled: cropState.enabled,
+        imagecropleftpercent: cropState.left,
+        imagecroptoppercent: cropState.top,
+        imagecropwidthpercent: cropState.width,
+        imagecropheightpercent: cropState.height
+    });
+    var sourceState = cropSourceState || localCourseBannerBuilderGetCropEditSourceState(layer);
+    if (sourceState) {
+        Object.assign(nextState, sourceState);
+    }
+    localCourseBannerBuilderWriteCropStateToForm(form, nextState);
+    localCourseBannerBuilderApplyCropSelectionCustomStateToForm(form, nextState);
+    localCourseBannerBuilderSetSourcePreviewLayerState(layer, nextState);
+    if (typeof nextState.sortorder !== 'undefined') {
+        layer.setAttribute('data-preview-sortorder', String(nextState.sortorder));
+    }
+    if (typeof nextState.zindex !== 'undefined') {
+        layer.setAttribute('data-preview-zindex', String(nextState.zindex));
+    }
+    var previewRoot = layer.closest('[data-layer-banner-preview="1"]');
+    localCourseBannerBuilderSyncStandalonePreviewLayer(previewRoot, layer);
+    localCourseBannerBuilderMirrorDraftSelectionVisual(form, layer);
+    form.dataset.previewUserChanged = '1';
+    localCourseBannerBuilderSyncCustomSizeFields(form);
+    localCourseBannerBuilderSyncOffsetFields(form);
+    localCourseBannerBuilderBindPercentSliders(form);
+    if (layer.hasAttribute('data-preview-draft-layer')) {
+        localCourseBannerBuilderSaveDraftPreviewLayerState(form, layer, nextState);
+    }
+    localCourseBannerBuilderSaveActiveDraftPreviewState(form);
+    localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+    localCourseBannerBuilderSyncModalPreviewSelectionOutline(form);
+}
+
+function localCourseBannerBuilderApplyCropEditor(control, sourceMode) {
+    var root = null;
+    var form = null;
+    var layer = localCourseBannerBuilderGetCropControlLayer(control, sourceMode);
+    if (sourceMode) {
+        root = control.closest('[data-source-visual-editor="1"]');
+    } else {
+        form = localCourseBannerBuilderGetLayerScope(control);
+    }
+    if (!layer) {
+        return;
+    }
+    var crop = localCourseBannerBuilderGetPreviewCropState(layer);
+    var cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState(layer);
+    var cropSourceState = sourceMode ? null : localCourseBannerBuilderGetCropEditSourceState(layer);
+    localCourseBannerBuilderSetPreviewCropState(layer, {
+        imagecropenabled: crop.enabled,
+        imagecropleftpercent: crop.left,
+        imagecroptoppercent: crop.top,
+        imagecropwidthpercent: crop.width,
+        imagecropheightpercent: crop.height
+    });
+    delete layer.dataset.previewCropBefore;
+    localCourseBannerBuilderRemoveCropEditor(layer);
+    localCourseBannerBuilderUpdateCropSelectionFrame(layer, crop);
+    if (sourceMode) {
+        if (root) {
+            var sourceState = localCourseBannerBuilderGetSourcePreviewLayerState(layer);
+            if (sourceState && cropSelectionState) {
+                Object.assign(sourceState, cropSelectionState);
+                sourceState.imagecropenabled = crop.enabled;
+                sourceState.imagecropleftpercent = crop.left;
+                sourceState.imagecroptoppercent = crop.top;
+                sourceState.imagecropwidthpercent = crop.width;
+                sourceState.imagecropheightpercent = crop.height;
+                localCourseBannerBuilderSetSourcePreviewLayerState(layer, sourceState);
+                localCourseBannerBuilderUpdateSourcePreviewRow(root, sourceState);
+            }
+            localCourseBannerBuilderSyncSourcePreviewLayer(root, layer);
+            localCourseBannerBuilderSyncSourcePreviewPayload(root);
+            localCourseBannerBuilderSyncSourcePreviewCropButtons(root);
+        }
+    } else {
+        if (form) {
+            form.dataset.previewApplyingInteraction = '1';
+            localCourseBannerBuilderApplyModalCropPreviewState(form, layer, crop, cropSelectionState, cropSourceState);
+            localCourseBannerBuilderSyncModalPreviewCropButtons(form);
+            form.dataset.previewApplyingInteraction = '0';
+        }
+    }
+}
+
+function localCourseBannerBuilderCancelCropEditor(control, sourceMode) {
+    var layer = localCourseBannerBuilderGetCropControlLayer(control, sourceMode);
+    if (sourceMode) {
+        var root = control.closest('[data-source-visual-editor="1"]');
+    } else {
+        var form = localCourseBannerBuilderGetLayerScope(control);
+    }
+    if (!layer) {
+        return;
+    }
+    var previous = localCourseBannerBuilderReadJson(layer.dataset.previewCropBefore || '{}', {});
+    if (Object.keys(previous).length) {
+        localCourseBannerBuilderSetPreviewCropState(layer, previous);
+    }
+    delete layer.dataset.previewCropBefore;
+    localCourseBannerBuilderRemoveCropEditor(layer);
+    localCourseBannerBuilderUpdateCropSelectionFrame(layer, localCourseBannerBuilderGetPreviewCropState(layer));
+    if (sourceMode) {
+        if (root) {
+            localCourseBannerBuilderSyncSourcePreviewLayer(root, layer);
+            localCourseBannerBuilderSyncSourcePreviewPayload(root);
+            localCourseBannerBuilderSyncSourcePreviewCropButtons(root);
+        }
+    } else {
+        if (form) {
+            localCourseBannerBuilderSyncCurrentImagePreview(form);
+            localCourseBannerBuilderSaveActiveDraftPreviewState(form);
+            localCourseBannerBuilderSyncModalPreviewCropButtons(form);
+        }
+    }
+}
+
+function localCourseBannerBuilderStartCropInteraction(event) {
+    var cropActionButton = event.target.closest('[data-action="local-course-banner-builder-apply-preview-crop"], ' +
+        '[data-action="local-course-banner-builder-cancel-preview-crop"]');
+    if (cropActionButton) {
+        event.preventDefault();
+        event.stopPropagation();
+        var sourceMode = !!cropActionButton.closest('[data-source-visual-editor="1"]');
+        if (cropActionButton.getAttribute('data-action') === 'local-course-banner-builder-apply-preview-crop') {
+            localCourseBannerBuilderApplyCropEditor(cropActionButton, sourceMode);
+        } else {
+            localCourseBannerBuilderCancelCropEditor(cropActionButton, sourceMode);
+        }
+        return true;
+    }
+    var box = event.target.closest('[data-preview-crop-box="1"]');
+    var handle = event.target.closest('[data-preview-crop-handle]');
+    if (!box && !handle) {
+        return false;
+    }
+    var layer = event.target.closest('[data-preview-current-image="1"], [data-source-preview-layer="1"]');
+    if (!layer) {
+        return false;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    if (typeof event.stopImmediatePropagation === 'function') {
+        event.stopImmediatePropagation();
+    }
+    var crop = localCourseBannerBuilderGetPreviewCropState(layer);
+    localCourseBannerBuilderCropInteraction = {
+        layer: layer,
+        mode: handle ? (handle.getAttribute('data-preview-crop-handle') || 'se') : 'move',
+        startX: event.clientX,
+        startY: event.clientY,
+        startCrop: crop,
+        rect: layer.getBoundingClientRect(),
+        aspectRatio: Math.max(0.01, (crop.width * layer.getBoundingClientRect().width) /
+            Math.max(1, crop.height * layer.getBoundingClientRect().height))
+    };
+    return true;
+}
+
+function localCourseBannerBuilderGetActivePreviewCropLayer(scope) {
+    if (!scope || !scope.querySelector) {
+        return null;
+    }
+    return scope.querySelector(
+        '[data-preview-current-image="1"].local-course-banner-builder-preview-image-layer--crop-editing, ' +
+        '[data-source-preview-layer="1"].local-course-banner-builder-preview-image-layer--crop-editing'
+    );
+}
+
+function localCourseBannerBuilderConstrainCropResize(crop, interaction) {
+    var rect = interaction.rect;
+    var mode = interaction.mode;
+    if (['n', 's', 'e', 'w'].indexOf(mode) !== -1) {
+        return crop;
+    }
+    var aspect = interaction.aspectRatio || 1;
+    var start = interaction.startCrop;
+    var centerX = start.left + (start.width / 2);
+    var centerY = start.top + (start.height / 2);
+    var widthFromHeight = function (height) {
+        return (height * aspect * rect.height) / Math.max(1, rect.width);
+    };
+    var heightFromWidth = function (width) {
+        return (width * rect.width) / Math.max(0.01, aspect * rect.height);
+    };
+
+    if (mode === 'n' || mode === 's') {
+        crop.width = widthFromHeight(crop.height);
+        crop.left = centerX - (crop.width / 2);
+    } else if (mode === 'e' || mode === 'w') {
+        crop.height = heightFromWidth(crop.width);
+        crop.top = centerY - (crop.height / 2);
+    } else if (mode !== 'move') {
+        var proposedHeight = heightFromWidth(crop.width);
+        if (proposedHeight > 100 || proposedHeight > crop.height * 1.5) {
+            crop.width = widthFromHeight(crop.height);
+        } else {
+            crop.height = proposedHeight;
+        }
+        if (mode.indexOf('n') !== -1) {
+            crop.top = start.top + start.height - crop.height;
+        }
+        if (mode.indexOf('w') !== -1) {
+            crop.left = start.left + start.width - crop.width;
+        }
+    }
+    return crop;
+}
+
+function localCourseBannerBuilderHandleCropPointerMove(event) {
+    var interaction = localCourseBannerBuilderCropInteraction;
+    if (!interaction) {
+        return;
+    }
+    event.preventDefault();
+    var rect = interaction.rect;
+    if (!rect.width || !rect.height) {
+        return;
+    }
+    var deltaX = ((event.clientX - interaction.startX) / rect.width) * 100;
+    var deltaY = ((event.clientY - interaction.startY) / rect.height) * 100;
+    var crop = Object.assign({}, interaction.startCrop);
+    if (interaction.mode === 'move') {
+        crop.left += deltaX;
+        crop.top += deltaY;
+    } else {
+        if (interaction.mode.indexOf('w') !== -1) {
+            crop.left += deltaX;
+            crop.width -= deltaX;
+        }
+        if (interaction.mode.indexOf('e') !== -1) {
+            crop.width += deltaX;
+        }
+        if (interaction.mode.indexOf('n') !== -1) {
+            crop.top += deltaY;
+            crop.height -= deltaY;
+        }
+        if (interaction.mode.indexOf('s') !== -1) {
+            crop.height += deltaY;
+        }
+        crop = localCourseBannerBuilderConstrainCropResize(crop, interaction);
+    }
+    crop.imagecropenabled = true;
+    crop.imagecropleftpercent = crop.left;
+    crop.imagecroptoppercent = crop.top;
+    crop.imagecropwidthpercent = crop.width;
+    crop.imagecropheightpercent = crop.height;
+    localCourseBannerBuilderSetPreviewCropState(interaction.layer, crop);
+    localCourseBannerBuilderRefreshCropEditor(interaction.layer);
+}
+
+function localCourseBannerBuilderStopCropInteraction() {
+    localCourseBannerBuilderCropInteraction = null;
+}
+
+function localCourseBannerBuilderSyncCustomSizeFields(scope) {
+    var layerForm = localCourseBannerBuilderGetLayerScope(scope);
+    var fitOverride = layerForm ? layerForm.querySelector('#id_fitmodeoverride') : null;
+    var widthInput = layerForm ? layerForm.querySelector('#id_customwidthpercent') : null;
+    var heightInput = layerForm ? layerForm.querySelector('#id_customheightpercent') : null;
+    var keepAspect = layerForm ? layerForm.querySelector('[data-custom-size-keep-aspect="1"][type="checkbox"]') : null;
+    if (!fitOverride || !widthInput || !heightInput || !keepAspect) {
+        return;
+    }
+
+    var isCustom = fitOverride.value === 'custom';
+    var widthWrapper = widthInput.closest('.fitem, .form-group, .mb-3');
+    var heightWrapper = heightInput.closest('.fitem, .form-group, .mb-3');
+    var keepAspectWrapper = keepAspect.closest('.fitem, .form-group, .mb-3');
+    var widthSliderWrapper = layerForm.querySelector('[data-percent-slider-wrapper-for="id_customwidthpercent"]');
+    var heightSliderWrapper = layerForm.querySelector('[data-percent-slider-wrapper-for="id_customheightpercent"]');
+    var widthSlider = layerForm.querySelector('[data-percent-slider-for="id_customwidthpercent"]');
+    var heightSlider = layerForm.querySelector('[data-percent-slider-for="id_customheightpercent"]');
+
+    widthInput.disabled = !isCustom;
+    keepAspect.disabled = !isCustom;
+    heightInput.disabled = !isCustom || keepAspect.checked;
+    var isPreviewInteractionPreparing = layerForm.dataset.previewInteractionStarting === '1' ||
+        layerForm.dataset.previewApplyingInteraction === '1';
+    if (isCustom && keepAspect.checked && heightInput.value !== widthInput.value && !isPreviewInteractionPreparing) {
+        heightInput.value = widthInput.value;
+        if (heightSlider) {
+            heightSlider.value = widthInput.value;
+        }
+        var heightOutput = layerForm.querySelector('[data-percent-slider-output-for="id_customheightpercent"]');
+        if (heightOutput) {
+            heightOutput.textContent = widthInput.value + '%';
+        }
+    }
+
+    [widthWrapper, heightWrapper, keepAspectWrapper].forEach(function (wrapper) {
+        if (wrapper) {
+            wrapper.hidden = !isCustom;
+        }
+    });
+    if (widthSliderWrapper) {
+        widthSliderWrapper.hidden = !isCustom;
+    }
+    if (heightSliderWrapper) {
+        heightSliderWrapper.hidden = !isCustom;
+    }
+    if (widthSlider) {
+        widthSlider.disabled = widthInput.disabled;
+    }
+    if (heightSlider) {
+        heightSlider.disabled = heightInput.disabled;
+    }
+}
+
+function localCourseBannerBuilderBindPercentSliders(scope) {
+    var layerForm = localCourseBannerBuilderGetLayerScope(scope);
+    if (!layerForm) {
+        return;
+    }
+
+    Array.prototype.slice.call(layerForm.querySelectorAll('[data-percent-slider-for]')).forEach(function (slider) {
+        var targetSelector = '#' + slider.getAttribute('data-percent-slider-for');
+        var targetInput = layerForm.querySelector(targetSelector);
+        var output = layerForm.querySelector(
+            '[data-percent-slider-output-for="' + slider.getAttribute('data-percent-slider-for') + '"]'
+        );
+        if (!targetInput) {
+            return;
+        }
+
+        var syncFromInput = function () {
+            if (targetInput.dataset.percentSliderSyncingFromSlider === '1') {
+                return;
+            }
+            var fallbackValue = localCourseBannerBuilderNormaliseNumericValue(
+                targetInput.getAttribute('data-number-min') || slider.min || '0',
+                0
+            );
+            var value = localCourseBannerBuilderNormaliseNumericValue(targetInput.value, fallbackValue);
+            slider.value = String(value);
+            if (output) {
+                output.textContent = String(value) + (slider.getAttribute('data-range-suffix') || '%');
+            }
+        };
+
+        if (slider.dataset.percentSliderEventsBound === '1') {
+            syncFromInput();
+            return;
+        }
+
+        var syncFromSlider = function (commit) {
+            targetInput.value = slider.value;
+            if (targetInput.id === 'id_customwidthpercent' || targetInput.id === 'id_customheightpercent') {
+                localCourseBannerBuilderSyncLinkedCustomSizeInputs(layerForm, targetInput);
+            }
+            if (output) {
+                output.textContent = slider.value + (slider.getAttribute('data-range-suffix') || '%');
+            }
+            targetInput.dataset.percentSliderSyncingFromSlider = '1';
+            try {
+                targetInput.dispatchEvent(new Event(commit ? 'change' : 'input', {bubbles: true}));
+            } finally {
+                delete targetInput.dataset.percentSliderSyncingFromSlider;
+            }
+        };
+
+        slider.addEventListener('input', function () {
+            syncFromSlider(false);
+        });
+        slider.addEventListener('change', function () {
+            syncFromSlider(true);
+        });
+        targetInput.addEventListener('input', syncFromInput);
+        targetInput.addEventListener('change', syncFromInput);
+        syncFromInput();
+        slider.dataset.percentSliderEventsBound = '1';
+        slider.dataset.percentSliderBound = '1';
+    });
+}
+
+function localCourseBannerBuilderSyncPercentSliderValues(scope) {
+    var layerForm = localCourseBannerBuilderGetLayerScope(scope);
+    if (!layerForm) {
+        return;
+    }
+    Array.prototype.slice.call(layerForm.querySelectorAll('[data-percent-slider-for]')).forEach(function (slider) {
+        var targetid = slider.getAttribute('data-percent-slider-for');
+        var targetInput = targetid ? layerForm.querySelector('#' + localCourseBannerBuilderEscapeSelectorId(targetid)) : null;
+        var output = targetid ? layerForm.querySelector('[data-percent-slider-output-for="' + targetid + '"]') : null;
+        if (!targetInput) {
+            return;
+        }
+        var fallbackValue = localCourseBannerBuilderNormaliseNumericValue(
+            targetInput.getAttribute('data-number-min') || slider.min || '0',
+            0
+        );
+        var value = localCourseBannerBuilderNormaliseNumericValue(targetInput.value, fallbackValue);
+        slider.value = String(value);
+        if (output) {
+            output.textContent = String(value) + (slider.getAttribute('data-range-suffix') || '%');
+        }
+    });
+}
+
+function localCourseBannerBuilderSyncLinkedCustomSizeInputs(scope, sourceInput) {
+    var layerForm = localCourseBannerBuilderGetLayerScope(scope || sourceInput);
+    if (!layerForm || !sourceInput) {
+        return;
+    }
+    if (layerForm.dataset.previewApplyingInteraction === '1' ||
+            layerForm.dataset.previewInteractionStarting === '1') {
+        return;
+    }
+
+    var keepAspectInput = layerForm.querySelector('[data-custom-size-keep-aspect="1"][type="checkbox"]');
+    if (!keepAspectInput || !keepAspectInput.checked) {
+        return;
+    }
+
+    var widthInput = layerForm.querySelector('#id_customwidthpercent');
+    var heightInput = layerForm.querySelector('#id_customheightpercent');
+    if (!widthInput || !heightInput) {
+        return;
+    }
+
+    var counterpart = sourceInput === widthInput ? heightInput : (sourceInput === heightInput ? widthInput : null);
+    if (!counterpart || counterpart.value === sourceInput.value) {
+        return;
+    }
+
+    counterpart.value = sourceInput.value;
+    counterpart.dispatchEvent(new Event('input', {bubbles: true}));
+    counterpart.dispatchEvent(new Event('change', {bubbles: true}));
+}
+
+function localCourseBannerBuilderUpgradeRanges() {
+    Array.prototype.slice.call(document.querySelectorAll('input[data-range-upgrade="1"]')).forEach(function (input) {
+        input.type = 'range';
+        input.min = input.getAttribute('data-range-min') || '0';
+        input.max = input.getAttribute('data-range-max') || '1';
+        input.step = input.getAttribute('data-range-step') || '0.01';
+        input.classList.add('local-course-banner-builder-range');
+        input.classList.add('theme-easyedu-range');
+        var describedby = input.getAttribute('aria-describedby');
+        var output = input.nextElementSibling &&
+            input.nextElementSibling.classList &&
+            input.nextElementSibling.classList.contains('local-course-banner-builder-range-output') ?
+            input.nextElementSibling :
+            null;
+        if (!output) {
+            output = document.createElement('span');
+            output.className = 'local-course-banner-builder-range-output theme-easyedu-range-output';
+            output.setAttribute('aria-live', 'polite');
+            input.insertAdjacentElement('afterend', output);
+        }
+        if (describedby) {
+            input.setAttribute('aria-describedby', describedby);
+        }
+        var sync = function () {
+            output.textContent = input.value + (input.getAttribute('data-range-suffix') || '');
+        };
+        if (input.dataset.rangeReady !== '1') {
+            input.addEventListener('input', sync);
+            input.dataset.rangeReady = '1';
+        }
+        sync();
+    });
+}
+
+function localCourseBannerBuilderUpgradeNumberInputs() {
+    Array.prototype.slice.call(document.querySelectorAll('input[data-upgrade-number="1"]')).forEach(function (input) {
+        if (input.dataset.numberReady === '1') {
+            return;
+        }
+        input.type = 'number';
+        input.min = input.getAttribute('data-number-min') || '0';
+        input.max = input.getAttribute('data-number-max') || '';
+        input.step = input.getAttribute('data-number-step') || '1';
+        var suffix = input.getAttribute('data-field-suffix');
+        if (suffix && input.parentElement && !input.parentElement.querySelector('.local-course-banner-builder-field-suffix')) {
+            var suffixNode = document.createElement('span');
+            suffixNode.className = 'local-course-banner-builder-field-suffix';
+            suffixNode.textContent = suffix;
+            input.insertAdjacentElement('afterend', suffixNode);
+        }
+        var normalise = function () {
+            if (input.value === '') {
+                return;
+            }
+            var value = localCourseBannerBuilderNormaliseNumericValue(input.value, 0);
+            var min = input.min !== '' ? localCourseBannerBuilderNormaliseNumericValue(input.min, value) : value;
+            var max = input.max !== '' ? localCourseBannerBuilderNormaliseNumericValue(input.max, value) : value;
+            if (input.min !== '') {
+                value = Math.max(min, value);
+            }
+            if (input.max !== '') {
+                value = Math.min(max, value);
+            }
+            input.value = String(value);
+        };
+        input.addEventListener('change', normalise);
+        input.addEventListener('blur', normalise);
+        input.dataset.numberReady = '1';
+    });
+}
+
+function localCourseBannerBuilderNormaliseHexColor(value, fallback) {
+    var color = (value || '').trim();
+    if (/^#([0-9a-f]{3})$/i.test(color)) {
+        return ('#' + color.slice(1).split('').map(function (part) {
+            return part + part;
+        }).join('')).toUpperCase();
+    }
+    if (/^#([0-9a-f]{6})$/i.test(color)) {
+        return color.toUpperCase();
+    }
+    return (fallback || '#56B9C0').toUpperCase();
+}
+
+function localCourseBannerBuilderUpgradeColorPickers(scope) {
+    Array.prototype.slice.call((scope || document).querySelectorAll('form.mform')).forEach(function (form) {
+        var textInput = form.querySelector('#id_bordercolor');
+        var pickerInput = form.querySelector('[data-border-color-picker="1"]');
+        if (textInput && pickerInput) {
+            var syncPickerFromText = function () {
+                pickerInput.value = localCourseBannerBuilderNormaliseHexColor(textInput.value, pickerInput.value || '#56B9C0');
+                pickerInput.disabled = !!textInput.disabled;
+                localCourseBannerBuilderSyncColourInput(pickerInput);
+            };
+            if (!textInput.dataset.colorPickerBound) {
+                textInput.addEventListener('input', syncPickerFromText);
+                textInput.addEventListener('change', syncPickerFromText);
+                textInput.dataset.colorPickerBound = '1';
+            }
+            if (!pickerInput.dataset.colorPickerBound) {
+                pickerInput.addEventListener('input', function () {
+                    textInput.value = pickerInput.value.toUpperCase();
+                    localCourseBannerBuilderSyncColourInput(pickerInput);
+                    textInput.dispatchEvent(new Event('input', {bubbles: true}));
+                });
+                pickerInput.addEventListener('change', function () {
+                    textInput.value = pickerInput.value.toUpperCase();
+                    localCourseBannerBuilderSyncColourInput(pickerInput);
+                    textInput.dispatchEvent(new Event('change', {bubbles: true}));
+                });
+                pickerInput.dataset.colorPickerBound = '1';
+            }
+            syncPickerFromText();
+        }
+
+        Array.prototype.slice.call(form.querySelectorAll('[data-overlay-color-text]')).forEach(function (overlayTextInput) {
+            var key = overlayTextInput.getAttribute('data-overlay-color-text');
+            var overlayPickerInput = key ? form.querySelector('[data-overlay-color-picker="' + key + '"]') : null;
+            if (!overlayPickerInput) {
+                return;
+            }
+            var syncOverlayPickerFromText = function () {
+                overlayPickerInput.value = localCourseBannerBuilderNormaliseHexColor(
+                    overlayTextInput.value,
+                    overlayPickerInput.value || '#000000'
+                );
+                overlayPickerInput.disabled = !!overlayTextInput.disabled;
+                localCourseBannerBuilderSyncColourInput(overlayPickerInput);
+            };
+            if (!overlayTextInput.dataset.overlayColorPickerBound) {
+                overlayTextInput.addEventListener('input', syncOverlayPickerFromText);
+                overlayTextInput.addEventListener('change', syncOverlayPickerFromText);
+                overlayTextInput.dataset.overlayColorPickerBound = '1';
+            }
+            if (!overlayPickerInput.dataset.overlayColorPickerBound) {
+                overlayPickerInput.addEventListener('input', function () {
+                    overlayTextInput.value = overlayPickerInput.value.toUpperCase();
+                    localCourseBannerBuilderSyncColourInput(overlayPickerInput);
+                });
+                overlayPickerInput.addEventListener('change', function () {
+                    overlayTextInput.value = overlayPickerInput.value.toUpperCase();
+                    localCourseBannerBuilderSyncColourInput(overlayPickerInput);
+                });
+                overlayPickerInput.dataset.overlayColorPickerBound = '1';
+            }
+            syncOverlayPickerFromText();
+        });
+    });
+}
+
+function localCourseBannerBuilderParseColor(value, fallbackAlpha) {
+    var color = (value || '').trim();
+    var fallback = {
+        red: 255,
+        green: 255,
+        blue: 255,
+        alpha: fallbackAlpha
+    };
+    var shortHex = /^#([0-9a-f]{3})$/i.exec(color);
+    if (shortHex) {
+        return {
+            red: parseInt(shortHex[1][0] + shortHex[1][0], 16),
+            green: parseInt(shortHex[1][1] + shortHex[1][1], 16),
+            blue: parseInt(shortHex[1][2] + shortHex[1][2], 16),
+            alpha: fallbackAlpha
+        };
+    }
+    var hex = /^#([0-9a-f]{6})$/i.exec(color);
+    if (hex) {
+        return {
+            red: parseInt(hex[1].slice(0, 2), 16),
+            green: parseInt(hex[1].slice(2, 4), 16),
+            blue: parseInt(hex[1].slice(4, 6), 16),
+            alpha: fallbackAlpha
+        };
+    }
+    var rgba = /^rgba?(([^)]+))$/i.exec(color);
+    if (rgba) {
+        var parts = rgba[1].split(',').map(function (part) {
+            return part.trim();
+        });
+        if (parts.length >= 3) {
+            return {
+                red: parseInt(parts[0], 10) || 255,
+                green: parseInt(parts[1], 10) || 255,
+                blue: parseInt(parts[2], 10) || 255,
+                alpha: parts.length >= 4 ? Math.max(0, Math.min(1, localCourseBannerBuilderNormaliseNumericValue(parts[3], 0))) * fallbackAlpha : fallbackAlpha
+            };
+        }
+    }
+    return fallback;
+}
+
+function localCourseBannerBuilderIsBorderPreviewControl(target) {
+    return !!(target && target.matches && target.matches([
+        '#id_bordercolor',
+        '#id_borderwidth',
+        '#id_borderopacity',
+        '#id_borderfade',
+        '#id_borderstyle',
+        '[data-border-dash-length="1"]',
+        '[data-border-inner-rounded="1"][type="checkbox"]',
+        '[data-border-side][type="checkbox"]',
+        '[data-border-side-all="1"][type="checkbox"]'
+    ].join(',')));
+}
+
+function localCourseBannerBuilderScheduleBorderPreviewSync(scope, commit) {
+    var layerScope = localCourseBannerBuilderGetLayerScope(scope);
+    if (!layerScope) {
+        return;
+    }
+    if (commit) {
+        if (layerScope._localCourseBannerBuilderBorderPreviewFrame) {
+            window.cancelAnimationFrame(layerScope._localCourseBannerBuilderBorderPreviewFrame);
+            layerScope._localCourseBannerBuilderBorderPreviewFrame = null;
+        }
+        localCourseBannerBuilderSyncDashedControls(layerScope);
+        localCourseBannerBuilderSyncBorderStyleChoice(layerScope);
+        localCourseBannerBuilderSyncBorderPreview(layerScope, {useCachedMetrics: false});
+        return;
+    }
+    if (layerScope._localCourseBannerBuilderBorderPreviewFrame) {
+        return;
+    }
+    layerScope._localCourseBannerBuilderBorderPreviewFrame = window.requestAnimationFrame(function () {
+        layerScope._localCourseBannerBuilderBorderPreviewFrame = null;
+        localCourseBannerBuilderSyncBorderPreview(layerScope, {useCachedMetrics: true});
+    });
+}
+
+function localCourseBannerBuilderSyncBorderPreview(scope, options) {
+    var layerScope = localCourseBannerBuilderGetLayerScope(scope);
+    var frames = Array.prototype.slice.call(layerScope ? layerScope.querySelectorAll('[data-border-preview-frame="1"]') : []);
+    if (!frames.length) {
+        return;
+    }
+
+    var colorInput = layerScope.querySelector('#id_bordercolor');
+    var widthInput = layerScope.querySelector('#id_borderwidth');
+    var transparencyInput = layerScope.querySelector('#id_borderopacity');
+    var fadeInput = layerScope.querySelector('#id_borderfade');
+    var styleInput = layerScope.querySelector('#id_borderstyle');
+    var dashLengthInput = layerScope.querySelector('[data-border-dash-length="1"]');
+    var roundedInput = layerScope.querySelector('[data-border-inner-rounded="1"][type="checkbox"]');
+    var borderToggleCheckbox = layerScope.querySelector('[data-border-toggle="1"][type="checkbox"]');
+    var borderToggleHidden = layerScope.querySelector('[data-border-toggle="1"][type="hidden"]');
+    var currentIsBorderLayerInput = layerScope.querySelector('#id_currentisborderlayer');
+    var currentIsBorderLayer = !!(
+        currentIsBorderLayerInput && parseInt(currentIsBorderLayerInput.value || '0', 10) > 0
+    );
+    var showCurrentBorder = !!(borderToggleCheckbox && borderToggleCheckbox.checked) ||
+        !!(borderToggleHidden && borderToggleHidden.value === '1') ||
+        currentIsBorderLayer ||
+        localCourseBannerBuilderGetSelectedLayerType(layerScope) === 'border';
+    var sides = localCourseBannerBuilderGetBorderSides(layerScope);
+    var widthPercent = Math.max(0, Math.min(100, localCourseBannerBuilderNormaliseNumericValue(widthInput && widthInput.value ? widthInput.value : '0', 0)));
+    var transparency = Math.max(0, Math.min(100, localCourseBannerBuilderNormaliseNumericValue(transparencyInput && transparencyInput.value ? transparencyInput.value : '0', 0)));
+    var opacity = 1 - (transparency / 100);
+    var fade = Math.max(0, Math.min(100, localCourseBannerBuilderNormaliseNumericValue(fadeInput && fadeInput.value ? fadeInput.value : '0', 0)));
+    var color = colorInput && colorInput.value ? colorInput.value : '#FFFFFF';
+    var colorInfo = localCourseBannerBuilderParseColor(color, opacity);
+    var solid = 'rgba(' + colorInfo.red + ', ' + colorInfo.green + ', ' + colorInfo.blue + ', ' + colorInfo.alpha + ')';
+    var transparent = 'rgba(' + colorInfo.red + ', ' + colorInfo.green + ', ' + colorInfo.blue + ', 0)';
+    var fadeStop = Math.max(0, 100 - fade) + '%';
+    var isDashed = !!(styleInput && styleInput.value === 'dashed');
+    var dashLength = Math.max(4, Math.min(80, localCourseBannerBuilderNormaliseNumericValue(dashLengthInput && dashLengthInput.value ? dashLengthInput.value : '24', 24)));
+    var dashGap = Math.max(2, Math.round(dashLength * 0.7));
+    var rounded = !!(roundedInput && roundedInput.checked);
+    var useCachedMetrics = !!(options && options.useCachedMetrics);
+
+    frames.forEach(function (frame) {
+        var currentBorderLayers = Array.prototype.slice.call(frame.querySelectorAll('[data-preview-current-border="1"]'));
+        currentBorderLayers.forEach(function (borderLayer) {
+            borderLayer.hidden = !showCurrentBorder;
+        });
+        if (!showCurrentBorder) {
+            return;
+        }
+        var frameRect = useCachedMetrics ? frame._localCourseBannerBuilderBorderPreviewRect : null;
+        if (!frameRect) {
+            var measuredFrameRect = frame.getBoundingClientRect();
+            frameRect = {
+                width: measuredFrameRect.width || 0,
+                height: measuredFrameRect.height || 0
+            };
+            frame._localCourseBannerBuilderBorderPreviewRect = frameRect;
+        }
+        var previewReference = Math.max(0, Math.min(frameRect.width || 0, frameRect.height || 0));
+        var previewWidth = widthPercent > 0 && previewReference > 0
+            ? Math.max(1, Math.round(previewReference * widthPercent / 100))
+            : 0;
+        var topWidth = sides.top ? previewWidth : 0;
+        var rightWidth = sides.right ? previewWidth : 0;
+        var bottomWidth = sides.bottom ? previewWidth : 0;
+        var leftWidth = sides.left ? previewWidth : 0;
+        var horizontalRadiusLimit = Math.max(0, ((frameRect.width || 0) - leftWidth - rightWidth) / 2);
+        var verticalRadiusLimit = Math.max(0, ((frameRect.height || 0) - topWidth - bottomWidth) / 2);
+        var radiusPixels = rounded ? Math.max(0, Math.min(Math.max(8, previewWidth), horizontalRadiusLimit, verticalRadiusLimit)) : 0;
+        var radiusValue = radiusPixels + 'px';
+        var cutoutValue = (previewWidth + radiusPixels) + 'px';
+        var variableTargets = [frame].concat(currentBorderLayers);
+        var setPreviewVariable = function (name, value) {
+            variableTargets.forEach(function (target) {
+                target.style.setProperty(name, value);
+            });
+        };
+        setPreviewVariable('--local-course-banner-builder-preview-top-width', sides.top ? (previewWidth + 'px') : '0px');
+        setPreviewVariable('--local-course-banner-builder-preview-right-width', sides.right ? (previewWidth + 'px') : '0px');
+        setPreviewVariable('--local-course-banner-builder-preview-bottom-width', sides.bottom ? (previewWidth + 'px') : '0px');
+        setPreviewVariable('--local-course-banner-builder-preview-left-width', sides.left ? (previewWidth + 'px') : '0px');
+        setPreviewVariable('--local-course-banner-builder-preview-top-left-radius', (rounded && sides.top && sides.left) ? radiusValue : '0px');
+        setPreviewVariable('--local-course-banner-builder-preview-top-right-radius', (rounded && sides.top && sides.right) ? radiusValue : '0px');
+        setPreviewVariable('--local-course-banner-builder-preview-bottom-right-radius', (rounded && sides.bottom && sides.right) ? radiusValue : '0px');
+        setPreviewVariable('--local-course-banner-builder-preview-bottom-left-radius', (rounded && sides.bottom && sides.left) ? radiusValue : '0px');
+        setPreviewVariable('--local-course-banner-builder-preview-top-left-offset', (sides.top && sides.left) ? (rounded ? cutoutValue : (previewWidth + 'px')) : '0px');
+        setPreviewVariable('--local-course-banner-builder-preview-top-right-offset', (sides.top && sides.right) ? (rounded ? cutoutValue : (previewWidth + 'px')) : '0px');
+        setPreviewVariable('--local-course-banner-builder-preview-bottom-left-offset', (sides.bottom && sides.left) ? (rounded ? cutoutValue : (previewWidth + 'px')) : '0px');
+        setPreviewVariable('--local-course-banner-builder-preview-bottom-right-offset', (sides.bottom && sides.right) ? (rounded ? cutoutValue : (previewWidth + 'px')) : '0px');
+        setPreviewVariable('--local-course-banner-builder-preview-right-top-offset', (sides.top && sides.right) ? (rounded ? cutoutValue : (previewWidth + 'px')) : '0px');
+        setPreviewVariable('--local-course-banner-builder-preview-right-bottom-offset', (sides.bottom && sides.right) ? (rounded ? cutoutValue : (previewWidth + 'px')) : '0px');
+        setPreviewVariable('--local-course-banner-builder-preview-left-top-offset', (sides.top && sides.left) ? (rounded ? cutoutValue : (previewWidth + 'px')) : '0px');
+        setPreviewVariable('--local-course-banner-builder-preview-left-bottom-offset', (sides.bottom && sides.left) ? (rounded ? cutoutValue : (previewWidth + 'px')) : '0px');
+        setPreviewVariable('--local-course-banner-builder-preview-top-left-corner-size', (sides.top && sides.left) ? (rounded ? cutoutValue : (previewWidth + 'px')) : '0px');
+        setPreviewVariable('--local-course-banner-builder-preview-top-right-corner-size', (sides.top && sides.right) ? (rounded ? cutoutValue : (previewWidth + 'px')) : '0px');
+        setPreviewVariable(
+            '--local-course-banner-builder-preview-bottom-right-corner-size',
+            (sides.bottom && sides.right) ? (rounded ? cutoutValue : (previewWidth + 'px')) : '0px'
+        );
+        setPreviewVariable('--local-course-banner-builder-preview-bottom-left-corner-size', (sides.bottom && sides.left) ? (rounded ? cutoutValue : (previewWidth + 'px')) : '0px');
+        setPreviewVariable('--local-course-banner-builder-preview-top-left-fade-start', (radiusPixels + (previewWidth * (fade / 100))) + 'px');
+        setPreviewVariable('--local-course-banner-builder-preview-top-right-fade-start', (radiusPixels + (previewWidth * (fade / 100))) + 'px');
+        setPreviewVariable('--local-course-banner-builder-preview-bottom-right-fade-start', (radiusPixels + (previewWidth * (fade / 100))) + 'px');
+        setPreviewVariable('--local-course-banner-builder-preview-bottom-left-fade-start', (radiusPixels + (previewWidth * (fade / 100))) + 'px');
+        setPreviewVariable('--local-course-banner-builder-preview-color-solid', solid);
+        setPreviewVariable('--local-course-banner-builder-preview-color-transparent', transparent);
+        setPreviewVariable('--local-course-banner-builder-preview-fade-stop', fadeStop);
+
+        Array.prototype.slice.call(frame.querySelectorAll('[data-border-preview-side]')).forEach(function (sideElement) {
+            var side = sideElement.getAttribute('data-border-preview-side');
+            var direction = {
+                top: 'to bottom',
+                right: 'to left',
+                bottom: 'to top',
+                left: 'to right'
+            }[side];
+
+            if (isDashed) {
+                sideElement.style.backgroundImage = (side === 'top' || side === 'bottom')
+                    ? 'repeating-linear-gradient(to right, ' + solid + ' 0 ' + dashLength + 'px, transparent ' + dashLength + 'px ' + (dashLength + dashGap) + 'px)'
+                    : 'repeating-linear-gradient(to bottom, ' + solid + ' 0 ' + dashLength + 'px, transparent ' + dashLength + 'px ' + (dashLength + dashGap) + 'px)';
+                sideElement.style.webkitMaskImage = 'linear-gradient(' + direction + ', #000 0%, #000 ' + fadeStop + ', transparent 100%)';
+                sideElement.style.maskImage = 'linear-gradient(' + direction + ', #000 0%, #000 ' + fadeStop + ', transparent 100%)';
+            } else {
+                sideElement.style.backgroundImage = 'linear-gradient(' + direction + ', ' + solid + ' 0%, ' + solid + ' ' + fadeStop + ', ' + transparent + ' 100%)';
+                sideElement.style.webkitMaskImage = '';
+                sideElement.style.maskImage = '';
+            }
+        });
+    });
+}
+
+function localCourseBannerBuilderGetPreviewObjectPosition(anchor) {
+    switch (anchor) {
+        case 'top':
+            return 'center top';
+        case 'bottom':
+            return 'center bottom';
+        case 'left':
+            return 'left center';
+        case 'right':
+            return 'right center';
+        case 'top-left':
+            return 'left top';
+        case 'top-right':
+            return 'right top';
+        case 'bottom-left':
+            return 'left bottom';
+        case 'bottom-right':
+            return 'right bottom';
+        default:
+            return 'center center';
+    }
+}
+
+function localCourseBannerBuilderGetPreviewZIndex(sortOrder, storedZIndex) {
+    return localCourseBannerBuilderGetPreviewZIndexBand(storedZIndex) + sortOrder + 1;
+}
+
+function localCourseBannerBuilderIsLayerPreviewInteractionVisible(form, layer) {
+    if (!layer) {
+        return false;
+    }
+    if (!layer.hidden) {
+        return true;
+    }
+    var visualLayer = form ? localCourseBannerBuilderGetDraftSelectionVisualLayer(form, layer) : null;
+    return !!(visualLayer && !visualLayer.hidden);
+}
+
+function localCourseBannerBuilderGetPreviewZIndexBand(storedZIndex) {
+    storedZIndex = parseInt(storedZIndex || '0', 10) || 0;
+    if (storedZIndex < 0) {
+        return -1000;
+    }
+    if (storedZIndex >= 4000) {
+        return 4000;
+    }
+    if (storedZIndex >= 3000) {
+        return 3000;
+    }
+    if (storedZIndex >= 2500) {
+        return 2500;
+    }
+    if (storedZIndex >= 2000) {
+        return 2000;
+    }
+    if (storedZIndex >= 1500) {
+        return 1500;
+    }
+    if (storedZIndex >= 1000) {
+        return 1000;
+    }
+    if (storedZIndex >= 900) {
+        return 900;
+    }
+    return 0;
+}
+
+function localCourseBannerBuilderGetOverlayOrderingContext(scope) {
+    var root = scope && scope.querySelector ? scope : document;
+    var form = localCourseBannerBuilderGetLayerScope(scope);
+    var borderAboveInput = form ? form.querySelector('#id_overlayborderabove') : null;
+    if (borderAboveInput && localCourseBannerBuilderGetSelectedLayerType(form) === 'overlay') {
+        return {
+            hasOverlay: true,
+            borderAbove: !!borderAboveInput.checked
+        };
+    }
+    var overlayLayers = Array.prototype.slice.call(root.querySelectorAll(
+        [
+            '[data-layer-overlay-preview="1"]',
+            '[data-source-preview-overlay="1"]',
+            '[data-preview-current-overlay="1"]',
+            '.local-course-banner-builder-preview-overlay-layer--context'
+        ].join(',')
+    )).filter(function (layer) {
+        return layer &&
+            !layer.hidden &&
+            layer.getAttribute('data-preview-enabled') !== '0' &&
+            !layer.classList.contains('local-course-banner-builder-source-preview-overlay--hidden-inherited') &&
+            !layer.classList.contains('local-course-banner-builder-source-preview-overlay--disabled');
+    });
+    if (!overlayLayers.length) {
+        return {
+            hasOverlay: false,
+            borderAbove: false
+        };
+    }
+    return {
+        hasOverlay: true,
+        borderAbove: overlayLayers[0].getAttribute('data-preview-overlay-border-above') === '1'
+    };
+}
+
+function localCourseBannerBuilderPreviewHasOverlay(scope) {
+    var root = scope && scope.querySelector ? scope : document;
+    return Array.prototype.slice.call(root.querySelectorAll([
+        '[data-layer-overlay-preview="1"]',
+        '[data-source-preview-overlay="1"]',
+        '[data-preview-current-overlay="1"]',
+        '.local-course-banner-builder-preview-overlay-layer--context'
+    ].join(','))).some(function (layer) {
+        var hiddenPlaceholder = layer && layer.hidden &&
+            !layer.hasAttribute('data-preview-context-layer') &&
+            !layer.hasAttribute('data-source-preview-overlay') &&
+            !layer.hasAttribute('data-preview-current-overlay');
+        return layer &&
+            !hiddenPlaceholder &&
+            layer.getAttribute('data-preview-enabled') !== '0' &&
+            !layer.classList.contains('local-course-banner-builder-source-preview-overlay--hidden-inherited') &&
+            !layer.classList.contains('local-course-banner-builder-source-preview-overlay--disabled');
+    });
+}
+
+function localCourseBannerBuilderGetPreviewImageZIndexBase(aboveBorder, aboveOverlay, overlayContext, belowInherited, aboveInherited) {
+    if (belowInherited) {
+        return -1000;
+    }
+    var hasOverlay = !!(overlayContext && overlayContext.hasOverlay);
+    var overlayBorderAbove = !!(overlayContext && overlayContext.borderAbove);
+    if (aboveOverlay && hasOverlay) {
+        if (overlayBorderAbove) {
+            return 1500;
+        }
+        return 4000;
+    }
+    if (aboveBorder) {
+        return 2500;
+    }
+    if (aboveInherited) {
+        return 900;
+    }
+    return 0;
+}
+
+function localCourseBannerBuilderGetOverlayTitleZIndex(titleAbove, overlayBorderAbove) {
+    if (overlayBorderAbove) {
+        return titleAbove ? 1500 : 900;
+    }
+    return titleAbove ? 3010 : 2500;
+}
+
+function localCourseBannerBuilderGetDraftPreviewZIndex(index) {
+    var draftIndex = parseInt(index, 10);
+    if (isNaN(draftIndex)) {
+        draftIndex = 0;
+    }
+    return draftIndex + 1;
+}
+
+function localCourseBannerBuilderGetSelectionPercent(layer, name, fallback) {
+    if (!layer || !window.getComputedStyle) {
+        return fallback;
+    }
+    var value = window.getComputedStyle(layer).getPropertyValue(name);
+    var parsed = parseFloat(value);
+    return isNaN(parsed) ? fallback : parsed;
+}
+
+function localCourseBannerBuilderSyncPreviewSelectionOutline(frame, layer) {
+    if (!frame) {
+        return;
+    }
+    var outline = Array.prototype.slice.call(frame.children).find(function (child) {
+        return child.getAttribute && child.getAttribute('data-preview-selection-outline') === '1';
+    });
+    if (!outline) {
+        outline = document.createElement('div');
+        outline.className = 'local-course-banner-builder-preview-selection-outline';
+        outline.setAttribute('data-preview-selection-outline', '1');
+        frame.appendChild(outline);
+    }
+    if (!layer || layer.hidden || !layer.getClientRects || !layer.getClientRects().length) {
+        outline.hidden = true;
+        return;
+    }
+    var frameRect = frame.getBoundingClientRect();
+    var layerRect = layer.getBoundingClientRect();
+    if (!frameRect.width || !frameRect.height || !layerRect.width || !layerRect.height) {
+        outline.hidden = true;
+        return;
+    }
+    var cropLeft = localCourseBannerBuilderGetSelectionPercent(
+        layer,
+        '--local-course-banner-builder-crop-selection-left',
+        0
+    );
+    var cropTop = localCourseBannerBuilderGetSelectionPercent(
+        layer,
+        '--local-course-banner-builder-crop-selection-top',
+        0
+    );
+    var cropRight = localCourseBannerBuilderGetSelectionPercent(
+        layer,
+        '--local-course-banner-builder-crop-selection-right',
+        0
+    );
+    var cropBottom = localCourseBannerBuilderGetSelectionPercent(
+        layer,
+        '--local-course-banner-builder-crop-selection-bottom',
+        0
+    );
+    var left = (layerRect.left - frameRect.left) + (layerRect.width * cropLeft / 100);
+    var top = (layerRect.top - frameRect.top) + (layerRect.height * cropTop / 100);
+    var width = layerRect.width * Math.max(0, 100 - cropLeft - cropRight) / 100;
+    var height = layerRect.height * Math.max(0, 100 - cropTop - cropBottom) / 100;
+    outline.hidden = false;
+    outline.style.left = left + 'px';
+    outline.style.top = top + 'px';
+    outline.style.width = width + 'px';
+    outline.style.height = height + 'px';
+}
+
+function localCourseBannerBuilderSyncModalPreviewSelectionOutline(scope) {
+    var form = localCourseBannerBuilderGetLayerScope(scope);
+    if (!form) {
+        return;
+    }
+    Array.prototype.slice.call(form.querySelectorAll('[data-banner-preview-frame="1"]')).forEach(function (frame) {
+        var layer = frame.querySelector(
+            '[data-preview-current-image="1"][data-preview-current-layer="1"]:not([hidden])'
+        ) || frame.querySelector(
+            '[data-preview-current-image="1"]:not([data-preview-context-layer="1"]):not([hidden])'
+        );
+        localCourseBannerBuilderSyncPreviewSelectionOutline(frame, layer);
+    });
+}
+
+function localCourseBannerBuilderSyncSourcePreviewSelectionOutline(root) {
+    if (!root) {
+        return;
+    }
+    var frame = root.querySelector('[data-source-preview-frame="1"]');
+    if (!frame) {
+        return;
+    }
+    var layer = root.querySelector(
+        '.local-course-banner-builder-source-preview-layer--selected:not(.local-course-banner-builder-source-preview-layer--hidden-in-preview)'
+    );
+    localCourseBannerBuilderSyncPreviewSelectionOutline(frame, layer);
+}
+
+function localCourseBannerBuilderBuildDynamicPreviewImageStyle(options) {
+    var styles = [
+        'position: absolute;',
+        'display: block;',
+        'max-width: none;',
+        'pointer-events: none;'
+    ];
+    var anchor = options.anchor || 'center';
+    var fitMode = options.fitMode || 'bannerfit';
+    var objectPosition = localCourseBannerBuilderGetPreviewObjectPosition(anchor);
+
+    styles.push('aspect-ratio: ' + Math.max(1, options.naturalWidth || 1) + ' / ' + Math.max(1, options.naturalHeight || 1) + ';');
+
+    if (fitMode === 'bannerfit') {
+        styles.push('width: 100%;', 'height: 100%;');
+    } else if (fitMode === 'cover') {
+        styles.push('width: 100%;', 'height: 100%;', 'object-fit: contain;', 'object-position: ' + objectPosition + ';');
+    } else if (fitMode === 'custom') {
+        var customBox = localCourseBannerBuilderGetCustomPreviewBox(
+            options.customWidth,
+            options.customHeight,
+            options.naturalWidth || 0,
+            options.naturalHeight || 0,
+            options.keepAspect,
+            options.previewAspect || 0
+        );
+        localCourseBannerBuilderAppendPreviewBoxStyles(styles, customBox);
+        styles.push('object-fit: ' + (options.keepAspect ? 'contain' : 'fill') + ';');
+        styles.push('object-position: ' + objectPosition + ';');
+    } else {
+        var originalBox = localCourseBannerBuilderGetOriginalPreviewBox(
+            options.naturalWidth || 0,
+            options.naturalHeight || 0,
+            options.previewAspect || 0
+        );
+        styles.push('width: ' + originalBox.width + '%;', 'height: ' + originalBox.height + '%;');
+        styles.push('object-fit: fill;', 'object-position: ' + objectPosition + ';');
+    }
+
+    if (fitMode !== 'bannerfit') {
+        localCourseBannerBuilderAppendPreviewPositionStyles(styles, anchor, options.offsets);
+    } else {
+        styles.push('left: 0;', 'top: 0;');
+    }
+    return styles.join(' ');
+}
+
+function localCourseBannerBuilderAppendPreviewPositionStyles(styles, anchor, offsets) {
+    styles.push('left: auto;', 'right: auto;', 'top: auto;', 'bottom: auto;', 'transform: none;');
+    switch (anchor) {
+        case 'top':
+            styles.push('left: 50%;', 'top: ' + offsets.top + ';', 'transform: translateX(-50%);');
+            break;
+        case 'bottom':
+            styles.push('left: 50%;', 'bottom: ' + offsets.bottom + ';', 'transform: translateX(-50%);');
+            break;
+        case 'left':
+            styles.push('left: ' + offsets.left + ';', 'top: 50%;', 'transform: translateY(-50%);');
+            break;
+        case 'right':
+            styles.push('right: ' + offsets.right + ';', 'top: 50%;', 'transform: translateY(-50%);');
+            break;
+        case 'top-left':
+            styles.push('left: ' + offsets.left + ';', 'top: ' + offsets.top + ';');
+            break;
+        case 'top-right':
+            styles.push('right: ' + offsets.right + ';', 'top: ' + offsets.top + ';');
+            break;
+        case 'bottom-left':
+            styles.push('left: ' + offsets.left + ';', 'bottom: ' + offsets.bottom + ';');
+            break;
+        case 'bottom-right':
+            styles.push('right: ' + offsets.right + ';', 'bottom: ' + offsets.bottom + ';');
+            break;
+        default:
+            styles.push('left: 50%;', 'top: 50%;', 'transform: translate(-50%, -50%);');
+            break;
+    }
+}
+
+function localCourseBannerBuilderGetPreviewLayerCentre(anchor, offsets, box) {
+    var width = box && isFinite(box.width) ? box.width : 0;
+    var height = box && isFinite(box.height) ? box.height : 0;
+    var top = localCourseBannerBuilderNormaliseNumericValue(String(offsets.top || '0').replace('%', ''), 0);
+    var right = localCourseBannerBuilderNormaliseNumericValue(String(offsets.right || '0').replace('%', ''), 0);
+    var bottom = localCourseBannerBuilderNormaliseNumericValue(String(offsets.bottom || '0').replace('%', ''), 0);
+    var left = localCourseBannerBuilderNormaliseNumericValue(String(offsets.left || '0').replace('%', ''), 0);
+    var halfWidth = width / 2;
+    var halfHeight = height / 2;
+    switch (anchor) {
+        case 'top':
+            return {x: 50, y: top + halfHeight};
+        case 'bottom':
+            return {x: 50, y: 100 - bottom - halfHeight};
+        case 'left':
+            return {x: left + halfWidth, y: 50};
+        case 'right':
+            return {x: 100 - right - halfWidth, y: 50};
+        case 'top-left':
+            return {x: left + halfWidth, y: top + halfHeight};
+        case 'top-right':
+            return {x: 100 - right - halfWidth, y: top + halfHeight};
+        case 'bottom-left':
+            return {x: left + halfWidth, y: 100 - bottom - halfHeight};
+        case 'bottom-right':
+            return {x: 100 - right - halfWidth, y: 100 - bottom - halfHeight};
+        default:
+            return {x: 50, y: 50};
+    }
+}
+
+function localCourseBannerBuilderAppendPreviewLayerPositionStyles(styles, anchor, offsets, box, centerFixed) {
+    if (!centerFixed) {
+        localCourseBannerBuilderAppendPreviewPositionStyles(styles, anchor, offsets);
+        return;
+    }
+    var centre = localCourseBannerBuilderGetPreviewLayerCentre(anchor, offsets, box);
+    styles.push(
+        'left: ' + centre.x + '%;',
+        'right: auto;',
+        'top: ' + centre.y + '%;',
+        'bottom: auto;',
+        'transform: translate(-50%, -50%);'
+    );
+}
+
+function localCourseBannerBuilderCancelActivePreviewCropInScope(scope, keepLayer) {
+    if (!scope || !scope.querySelector) {
+        return false;
+    }
+    var activeLayer = localCourseBannerBuilderGetActivePreviewCropLayer(scope);
+    if (!activeLayer || activeLayer === keepLayer) {
+        return false;
+    }
+    var previous = localCourseBannerBuilderReadJson(activeLayer.dataset.previewCropBefore || '{}', {});
+    if (Object.keys(previous).length) {
+        localCourseBannerBuilderSetPreviewCropState(activeLayer, previous);
+    }
+    delete activeLayer.dataset.previewCropBefore;
+    localCourseBannerBuilderRemoveCropEditor(activeLayer);
+    localCourseBannerBuilderUpdateCropSelectionFrame(
+        activeLayer,
+        localCourseBannerBuilderGetPreviewCropState(activeLayer)
+    );
+    var root = activeLayer.closest('[data-source-visual-editor="1"]');
+    if (root) {
+        localCourseBannerBuilderSyncSourcePreviewLayer(root, activeLayer);
+        localCourseBannerBuilderSyncSourcePreviewPayload(root);
+        localCourseBannerBuilderSyncSourcePreviewCropButtons(root);
+        return true;
+    }
+    var form = localCourseBannerBuilderGetLayerScope(activeLayer);
+    if (form) {
+        localCourseBannerBuilderSyncCurrentImagePreview(form);
+        localCourseBannerBuilderSaveActiveDraftPreviewState(form);
+        localCourseBannerBuilderSyncModalPreviewCropButtons(form);
+        return true;
+    }
+    return false;
+}
+
+function localCourseBannerBuilderGetCustomPreviewBox(
+    customWidth,
+    customHeight,
+    naturalWidth,
+    naturalHeight,
+    keepAspect,
+    previewAspect
+) {
+    if (keepAspect && naturalWidth > 0 && naturalHeight > 0) {
+        var imageAspect = Math.max(0.0001, naturalWidth / Math.max(1, naturalHeight));
+        var frameAspect = previewAspect > 0 ? previewAspect : (1600 / 400);
+        return {
+            width: customWidth,
+            height: customWidth * (frameAspect / imageAspect),
+            widthCss: customWidth + '%',
+            heightCss: 'auto',
+            aspectRatio: Math.max(1, naturalWidth) + ' / ' + Math.max(1, naturalHeight)
+        };
+    }
+
+    return {
+        width: customWidth,
+        height: customHeight,
+        widthCss: customWidth + '%',
+        heightCss: customHeight + '%'
+    };
+}
+
+function localCourseBannerBuilderGetEffectivePreviewImageDimensions(naturalWidth, naturalHeight, cropState, ignoreCrop) {
+    var width = Math.max(0, localCourseBannerBuilderNormaliseNumericValue(naturalWidth, 0));
+    var height = Math.max(0, localCourseBannerBuilderNormaliseNumericValue(naturalHeight, 0));
+    if (ignoreCrop) {
+        return {
+            width: width,
+            height: height
+        };
+    }
+    var crop = localCourseBannerBuilderNormaliseCropState(cropState);
+    if (!crop.enabled) {
+        return {
+            width: width,
+            height: height
+        };
+    }
+    return {
+        width: width * (crop.width / 100),
+        height: height * (crop.height / 100)
+    };
+}
+
+function localCourseBannerBuilderGetLayerEffectiveImageAspect(layer) {
+    if (!layer) {
+        return 0;
+    }
+    var naturalWidth = localCourseBannerBuilderNormaliseNumericValue(
+        layer.getAttribute('data-preview-natural-width') || '0',
+        0
+    );
+    var naturalHeight = localCourseBannerBuilderNormaliseNumericValue(
+        layer.getAttribute('data-preview-natural-height') || '0',
+        0
+    );
+    var image = layer.querySelector('[data-preview-image-tag="1"]');
+    if ((naturalWidth <= 0 || naturalHeight <= 0) && image) {
+        naturalWidth = image.naturalWidth || 0;
+        naturalHeight = image.naturalHeight || 0;
+    }
+    if (naturalWidth <= 0 || naturalHeight <= 0) {
+        return 0;
+    }
+    var crop = localCourseBannerBuilderNormaliseCropState({
+        imagecropenabled: layer.getAttribute('data-preview-crop-enabled') === '1',
+        imagecropleftpercent: layer.getAttribute('data-preview-crop-left') || '0',
+        imagecroptoppercent: layer.getAttribute('data-preview-crop-top') || '0',
+        imagecropwidthpercent: layer.getAttribute('data-preview-crop-width') || '100',
+        imagecropheightpercent: layer.getAttribute('data-preview-crop-height') || '100'
+    });
+    var effectiveDimensions = localCourseBannerBuilderGetEffectivePreviewImageDimensions(
+        naturalWidth,
+        naturalHeight,
+        crop,
+        false
+    );
+    return effectiveDimensions.width / Math.max(1, effectiveDimensions.height);
+}
+
+function localCourseBannerBuilderGetClosestAspectPreviewBox(widthPercent, heightPercent, frameAspect, imageAspect) {
+    if (widthPercent <= 0 || heightPercent <= 0 || frameAspect <= 0 || imageAspect <= 0) {
+        return {
+            width: widthPercent,
+            height: heightPercent
+        };
+    }
+    var heightForWidth = (widthPercent * frameAspect) / imageAspect;
+    var widthForHeight = (heightPercent * imageAspect) / frameAspect;
+    var keepWidthDelta = Math.abs(heightForWidth - heightPercent);
+    var keepHeightDelta = Math.abs(widthForHeight - widthPercent);
+    if (keepWidthDelta <= keepHeightDelta) {
+        return {
+            width: widthPercent,
+            height: heightForWidth
+        };
+    }
+    return {
+        width: widthForHeight,
+        height: heightPercent
+    };
+}
+
+function localCourseBannerBuilderApplyClosestKeepAspectToLayerForm(form, layer) {
+    if (!form || !layer) {
+        return false;
+    }
+    var frame = layer.closest('[data-banner-preview-frame="1"]');
+    var fitOverride = form.querySelector('#id_fitmodeoverride');
+    var anchorInput = form.querySelector('[data-layer-position-anchor="1"]');
+    var widthInput = form.querySelector('#id_customwidthpercent');
+    var heightInput = form.querySelector('#id_customheightpercent');
+    var offsetTopInput = form.querySelector('#id_offsettoppercent');
+    var offsetLeftInput = form.querySelector('#id_offsetleftpercent');
+    var keepAspectInput = form.querySelector('[data-custom-size-keep-aspect="1"][type="checkbox"]');
+    if (!frame || !fitOverride || !anchorInput || !widthInput || !heightInput ||
+            !offsetTopInput || !offsetLeftInput || !keepAspectInput) {
+        return false;
+    }
+    var frameRect = frame.getBoundingClientRect();
+    var visualLayer = localCourseBannerBuilderGetDraftSelectionVisualLayer(form, layer);
+    var layerRect = (visualLayer || layer).getBoundingClientRect();
+    if (!frameRect.width || !frameRect.height || !layerRect.width || !layerRect.height) {
+        return false;
+    }
+    var currentWidth = (layerRect.width / frameRect.width) * 100;
+    var currentHeight = (layerRect.height / frameRect.height) * 100;
+    var imageAspect = localCourseBannerBuilderGetLayerEffectiveImageAspect(layer) ||
+        (layerRect.width / Math.max(1, layerRect.height));
+    var box = localCourseBannerBuilderGetClosestAspectPreviewBox(
+        currentWidth,
+        currentHeight,
+        frameRect.width / frameRect.height,
+        imageAspect
+    );
+    var centerLeft = ((layerRect.left - frameRect.left) / frameRect.width) * 100 + (currentWidth / 2);
+    var centerTop = ((layerRect.top - frameRect.top) / frameRect.height) * 100 + (currentHeight / 2);
+    var widthValue = Math.max(1, Math.min(localCourseBannerBuilderCustomSizePercentMax, box.width));
+    var heightValue = Math.max(1, Math.min(localCourseBannerBuilderCustomSizePercentMax, box.height));
+
+    form.dataset.previewApplyingInteraction = '1';
+    try {
+        keepAspectInput.checked = true;
+        fitOverride.value = 'custom';
+        anchorInput.value = 'top-left';
+        widthInput.value = String(localCourseBannerBuilderRoundPreviewPercent(widthValue));
+        heightInput.value = String(localCourseBannerBuilderRoundPreviewPercent(heightValue));
+        offsetLeftInput.value = String(localCourseBannerBuilderRoundPreviewPercent(centerLeft - (widthValue / 2)));
+        offsetTopInput.value = String(localCourseBannerBuilderRoundPreviewPercent(centerTop - (heightValue / 2)));
+        form.dataset.previewUserChanged = '1';
+        localCourseBannerBuilderSyncCurrentLayerDataFromForm(form);
+        localCourseBannerBuilderSyncCustomSizeFields(form);
+        localCourseBannerBuilderSyncOffsetFields(form);
+        localCourseBannerBuilderBindPercentSliders(form);
+        localCourseBannerBuilderSyncLayerBannerPreview(form);
+    } finally {
+        form.dataset.previewApplyingInteraction = '0';
+    }
+    return true;
+}
+
+function localCourseBannerBuilderApplyClosestKeepAspectToSourcePreview(root, layer) {
+    if (!root || !layer) {
+        return false;
+    }
+    var frame = root.querySelector('[data-source-preview-frame="1"]');
+    var state = localCourseBannerBuilderGetSourcePreviewLayerState(layer);
+    if (!frame || !state) {
+        return false;
+    }
+    var frameRect = frame.getBoundingClientRect();
+    var layerRect = layer.getBoundingClientRect();
+    if (!frameRect.width || !frameRect.height || !layerRect.width || !layerRect.height) {
+        return false;
+    }
+
+    var currentWidth = (layerRect.width / frameRect.width) * 100;
+    var currentHeight = (layerRect.height / frameRect.height) * 100;
+    var imageAspect = localCourseBannerBuilderGetLayerEffectiveImageAspect(layer) ||
+        (layerRect.width / Math.max(1, layerRect.height));
+    var box = localCourseBannerBuilderGetClosestAspectPreviewBox(
+        currentWidth,
+        currentHeight,
+        frameRect.width / frameRect.height,
+        imageAspect
+    );
+    var centerLeft = ((layerRect.left - frameRect.left) / frameRect.width) * 100 + (currentWidth / 2);
+    var centerTop = ((layerRect.top - frameRect.top) / frameRect.height) * 100 + (currentHeight / 2);
+    var widthValue = Math.max(1, Math.min(localCourseBannerBuilderCustomSizePercentMax, box.width));
+    var heightValue = Math.max(1, Math.min(localCourseBannerBuilderCustomSizePercentMax, box.height));
+
+    state.fitmodeoverride = 'custom';
+    state.positionanchor = 'top-left';
+    state.customsizekeepaspect = true;
+    state.customwidthpercent = localCourseBannerBuilderRoundPreviewPercent(widthValue);
+    state.customheightpercent = localCourseBannerBuilderRoundPreviewPercent(heightValue);
+    state.offsetleftpercent = localCourseBannerBuilderRoundPreviewPercent(centerLeft - (widthValue / 2));
+    state.offsettoppercent = localCourseBannerBuilderRoundPreviewPercent(centerTop - (heightValue / 2));
+    state.offsetrightpercent = 0;
+    state.offsetbottompercent = 0;
+    localCourseBannerBuilderSetSourcePreviewLayerState(layer, state);
+    localCourseBannerBuilderSyncSourcePreviewLayer(root, layer);
+    localCourseBannerBuilderUpdateSourcePreviewRow(root, state);
+    localCourseBannerBuilderSyncSourcePreviewPayload(root);
+    localCourseBannerBuilderSyncSourcePreviewKeepAspectButton(root);
+    localCourseBannerBuilderSelectSourcePreviewLayer(root, layer);
+    return true;
+}
+
+function localCourseBannerBuilderAppendPreviewBoxStyles(styles, box) {
+    styles.push('width: ' + (box.widthCss || (box.width + '%')) + ';');
+    styles.push('height: ' + (box.heightCss || (box.height + '%')) + ';');
+    if (box.aspectRatio) {
+        styles.push('aspect-ratio: ' + box.aspectRatio + ';');
+    }
+}
+
+function localCourseBannerBuilderGetPreviewFrameAspect(previewRoot) {
+    if (!previewRoot) {
+        return 1600 / 400;
+    }
+    var frame = previewRoot.matches && (
+        previewRoot.matches('[data-banner-preview-frame="1"]') ||
+        previewRoot.matches('[data-source-preview-frame="1"]')
+    ) ? previewRoot : previewRoot.querySelector('[data-banner-preview-frame="1"], [data-source-preview-frame="1"]');
+    frame = frame || previewRoot;
+    var rect = frame.getBoundingClientRect ? frame.getBoundingClientRect() : null;
+    if (rect && rect.width > 0 && rect.height > 0) {
+        return rect.width / rect.height;
+    }
+    var className = frame.className ? String(frame.className) : '';
+    if (className.indexOf('--format-fullwidthtopcompact') !== -1) {
+        return 8;
+    }
+    if (className.indexOf('--format-fullwidthtopinset') !== -1) {
+        return 6.1;
+    }
+    if (className.indexOf('--format-contentwide') !== -1 || className.indexOf('--format-fullwidthtop') !== -1) {
+        return 5;
+    }
+    return 1600 / 400;
+}
+
+function localCourseBannerBuilderGetContainedPreviewBox(naturalWidth, naturalHeight, previewAspect) {
+    if (naturalWidth <= 0 || naturalHeight <= 0) {
+        return {width: 100, height: 100};
+    }
+    var imageAspect = naturalWidth / naturalHeight;
+    var bannerAspect = previewAspect && previewAspect > 0 ? previewAspect : (1600 / 400);
+    if (imageAspect >= bannerAspect) {
+        return {
+            width: 100,
+            height: 100 * (bannerAspect / imageAspect)
+        };
+    }
+    return {
+        width: 100 * (imageAspect / bannerAspect),
+        height: 100
+    };
+}
+
+function localCourseBannerBuilderGetOriginalPreviewBox(naturalWidth, naturalHeight, previewAspect) {
+    var bannerAspect = previewAspect && previewAspect > 0 ? previewAspect : (1600 / 400);
+    var baseWidth = 1600;
+    var baseHeight = baseWidth / bannerAspect;
+    return {
+        width: naturalWidth > 0 ? Math.max(0, (naturalWidth / baseWidth) * 100) : 100,
+        height: naturalHeight > 0 ? Math.max(0, (naturalHeight / baseHeight) * 100) : 100
+    };
+}
+
+function localCourseBannerBuilderNormaliseDraftPreviewUrl(url) {
+    if (!url) {
+        return '';
+    }
+    var parts = String(url).split('?');
+    if (parts.length < 2) {
+        return String(url);
+    }
+    var params = new URLSearchParams(parts.slice(1).join('?'));
+    params.delete('preview');
+    params.delete('thumb');
+    params.delete('oid');
+    var query = params.toString();
+    return parts[0] + (query ? '?' + query : '');
+}
+
+function localCourseBannerBuilderGetDraftPreviewFileIdentity(url, fallback) {
+    var identity = localCourseBannerBuilderNormaliseDraftPreviewUrl(url || '');
+    return identity || String(fallback || '');
+}
+
+function localCourseBannerBuilderGetDraftPreviewIndexMap(form) {
+    return localCourseBannerBuilderReadJson(
+        form && form.dataset ? (form.dataset.draftPreviewIndexMap || '{}') : '{}',
+        {}
+    );
+}
+
+function localCourseBannerBuilderSetDraftPreviewIndexMap(form, map) {
+    if (!form || !form.dataset) {
+        return;
+    }
+    form.dataset.draftPreviewIndexMap = JSON.stringify(map || {});
+}
+
+function localCourseBannerBuilderGetStableDraftPreviewIndex(form, url, fallback) {
+    if (!form || !form.dataset) {
+        return String(fallback || 0);
+    }
+    var identity = localCourseBannerBuilderGetDraftPreviewFileIdentity(url, fallback);
+    var map = localCourseBannerBuilderGetDraftPreviewIndexMap(form);
+    if (identity && typeof map[identity] !== 'undefined') {
+        return String(map[identity]);
+    }
+    var next = parseInt(form.dataset.draftPreviewNextStableIndex || '0', 10) || 0;
+    Object.keys(map).forEach(function (key) {
+        var mappedIndex = parseInt(map[key], 10);
+        if (!isNaN(mappedIndex) && mappedIndex >= next) {
+            next = mappedIndex + 1;
+        }
+    });
+    map[identity] = String(next);
+    form.dataset.draftPreviewNextStableIndex = String(next + 1);
+    localCourseBannerBuilderSetDraftPreviewIndexMap(form, map);
+    return String(next);
+}
+
+function localCourseBannerBuilderIsDraftFilemanagerBusy(form) {
+    var filemanager = form ? form.querySelector('#fitem_id_bannerimage_filemanager') : null;
+    if (!filemanager) {
+        return false;
+    }
+    var container = filemanager.querySelector('.filemanager, .filemanager-container') || filemanager;
+    if (container.classList && (
+            container.classList.contains('fm-updating') ||
+            container.classList.contains('fm-loading') ||
+            container.classList.contains('fm-uploading'))) {
+        return true;
+    }
+    return Array.prototype.slice.call(filemanager.querySelectorAll(
+        '.fp-img-downloading,' +
+        '.dndupload-progressbars,' +
+        '.dndupload-progress-outer,' +
+        '.dndupload-progress-inner'
+    )).some(function (node) {
+        var style = window.getComputedStyle ? window.getComputedStyle(node) : null;
+        return !node.hidden &&
+            (!style || (style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0')) &&
+            (node.offsetParent !== null || node.getClientRects().length > 0);
+    });
+}
+
+function localCourseBannerBuilderGetVisibleDraftFileItems(form) {
+    var filemanager = form ? form.querySelector('#fitem_id_bannerimage_filemanager') : null;
+    if (!filemanager) {
+        return [];
+    }
+    return Array.prototype.slice.call(filemanager.querySelectorAll('.fp-file:not(.fp-folder)')).filter(function (item) {
+        return item.dataset.previewDeleted !== '1' && !item.hidden && item.getAttribute('aria-hidden') !== 'true';
+    });
+}
+
+function localCourseBannerBuilderGetDraftPreviewFilesFromCache(form) {
+    var cached = localCourseBannerBuilderReadJson(
+        form && form.dataset ? (form.dataset.draftPreviewAjaxFiles || '[]') : '[]',
+        []
+    );
+    if (!Array.isArray(cached)) {
+        return [];
+    }
+    return cached.filter(function (file) {
+        return file && file.url && !localCourseBannerBuilderIsDraftPreviewUrlSuppressed(form, file.url);
+    }).map(function (file, order) {
+        var stableIndex = localCourseBannerBuilderGetStableDraftPreviewIndex(form, file.url, order);
+        return Object.assign({}, file, {
+            index: parseInt(stableIndex, 10),
+            fileorder: order
+        });
+    });
+}
+
+function localCourseBannerBuilderSetDraftPreviewFilesCache(form, files) {
+    if (!form || !form.dataset) {
+        return;
+    }
+    form.dataset.draftPreviewAjaxFiles = JSON.stringify(files || []);
+}
+
+function localCourseBannerBuilderDisableDraftFilemanagerAlternateViews(form) {
+    var filemanager = form ? form.querySelector('#fitem_id_bannerimage_filemanager') : null;
+    if (!filemanager) {
+        return;
+    }
+    var iconView = filemanager.querySelector('.fp-vb-icons');
+    if (iconView && !iconView.classList.contains('checked') && !iconView.classList.contains('active')) {
+        iconView.click();
+    }
+    Array.prototype.slice.call(filemanager.querySelectorAll('.fp-vb-details, .fp-vb-tree')).forEach(function (button) {
+        button.classList.add('disabled', 'local-course-banner-builder-filemanager-view-disabled');
+        button.setAttribute('aria-disabled', 'true');
+        button.setAttribute('tabindex', '-1');
+    });
+}
+
+function localCourseBannerBuilderClearDraftPreviewFilesCache(form) {
+    if (!form || !form.dataset) {
+        return;
+    }
+    delete form.dataset.draftPreviewAjaxFiles;
+}
+
+function localCourseBannerBuilderRefreshDraftPreviewFileList(form) {
+    var itemIdInput = form ? form.querySelector('#id_bannerimage_filemanager') : null;
+    if (!form || !itemIdInput || !itemIdInput.value || form.dataset.draftPreviewAjaxLoading === '1' ||
+            !(window.M && M.cfg && M.cfg.wwwroot)) {
+        return;
+    }
+    form.dataset.draftPreviewAjaxLoading = '1';
+    var body = new URLSearchParams();
+    body.set('sesskey', (M.cfg && M.cfg.sesskey) ? M.cfg.sesskey : '');
+    body.set('itemid', itemIdInput.value);
+    body.set('filepath', '/');
+    fetch(M.cfg.wwwroot + '/repository/draftfiles_ajax.php?action=list', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
+        body: body.toString()
+    }).then(function (response) {
+        return response.ok ? response.json() : null;
+    }).then(function (data) {
+        var list = data && Array.isArray(data.list) ? data.list : [];
+        var files = [];
+        list.forEach(function (file) {
+            if (!file || file.type === 'folder' || file.children) {
+                return;
+            }
+            var url = file.url || file.source || file.thumbnail || '';
+            url = localCourseBannerBuilderNormaliseDraftPreviewUrl(url);
+            if (!url || url.indexOf('/theme/image.php') !== -1) {
+                return;
+            }
+            files.push({
+                index: files.length,
+                url: url,
+                name: file.fullname || file.filename || file.title || ('Layer ' + (files.length + 1)),
+                item: null,
+                deleted: false,
+                width: file.thumbnail_width || 0,
+                height: file.thumbnail_height || 0
+            });
+        });
+        localCourseBannerBuilderSetDraftPreviewFilesCache(form, files);
+        form.dataset.draftPreviewSignature = '';
+        form.dataset.draftPreviewRenderedActive = '';
+        localCourseBannerBuilderSyncDraftUploadPreview(form);
+        localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+    }).catch(function () {
+        localCourseBannerBuilderSetDraftPreviewFilesCache(form, []);
+    }).finally(function () {
+        form.dataset.draftPreviewAjaxLoading = '0';
+    });
+}
+
+function localCourseBannerBuilderClampPreviewOffset(value) {
+    return Math.max(-1000, Math.min(1000, value));
+}
+
+function localCourseBannerBuilderIsPersistedImageLayerEdit(form) {
+    if (!form) {
+        return false;
+    }
+    var existingImageInput = form.querySelector('#id_hasexistingimage');
+    var elementIdInput = form.querySelector('#id_elementid');
+    var currentIsBorderLayerInput = form.querySelector('#id_currentisborderlayer');
+    var hasExistingImage = !!(existingImageInput && parseInt(existingImageInput.value || '0', 10) > 0);
+    var hasElement = !!(elementIdInput && parseInt(elementIdInput.value || '0', 10) > 0);
+    var isBorderLayer = !!(
+        currentIsBorderLayerInput &&
+        parseInt(currentIsBorderLayerInput.value || '0', 10) > 0
+    );
+
+    return hasExistingImage || (hasElement && !isBorderLayer);
+}
+
+function localCourseBannerBuilderRememberCurrentPreviewImageUrl(form, url) {
+    if (!form || !url) {
+        return;
+    }
+    form.dataset.currentPreviewImageUrl = String(url);
+}
+
+function localCourseBannerBuilderForgetCurrentPreviewImageUrl(form) {
+    if (!form) {
+        return;
+    }
+    delete form.dataset.currentPreviewImageUrl;
+}
+
+function localCourseBannerBuilderDraftFilemanagerHasVisibleContent(form) {
+    var filemanager = form ? form.querySelector('#fitem_id_bannerimage_filemanager') : null;
+    if (!filemanager) {
+        return false;
+    }
+    var container = filemanager.querySelector('.filemanager, .filemanager-container') || filemanager;
+    if (container.classList && (
+            container.classList.contains('fm-noitems') ||
+            container.classList.contains('fm-nofiles'))) {
+        return false;
+    }
+    return !!filemanager.querySelector(
+        '.fp-file:not(.fp-folder):not([hidden]):not([aria-hidden="true"]),' +
+        '.fp-filename-icon,' +
+        '.fp-tableview tbody tr,' +
+        '.fp-treeview .ygtvitem'
+    );
+}
+
+function localCourseBannerBuilderGetPreviewImageUrl(form, layer) {
+    if (!form || !layer) {
+        return '';
+    }
+    var filemanager = form.querySelector('#fitem_id_bannerimage_filemanager');
+    if (filemanager) {
+        var draftFiles = localCourseBannerBuilderIsDraftFilemanagerBusy(form) ?
+            null :
+            localCourseBannerBuilderGetDraftPreviewFiles(form);
+        if (typeof form.dataset.activeDraftIndex !== 'undefined' && form.dataset.activeDraftIndex !== '') {
+            var files = draftFiles || [];
+            var activeFile = files.find(function (file) {
+                return String(file.index) === String(form.dataset.activeDraftIndex);
+            });
+            if (activeFile && activeFile.url) {
+                return activeFile.url;
+            }
+        }
+        var link = filemanager.matches && filemanager.matches('a[href*="/draftfile.php/"], a[href*="/pluginfile.php/"]') ?
+            filemanager : filemanager.querySelector('a[href*="/draftfile.php/"], a[href*="/pluginfile.php/"]');
+        if (link && link.getAttribute('href')) {
+            return localCourseBannerBuilderNormaliseDraftPreviewUrl(link.getAttribute('href'));
+        }
+        var image = filemanager.querySelector('img[src*="/draftfile.php/"], img[src*="/pluginfile.php/"]');
+        if (image && image.getAttribute('src')) {
+            return localCourseBannerBuilderNormaliseDraftPreviewUrl(image.getAttribute('src'));
+        }
+        if (!localCourseBannerBuilderIsPersistedImageLayerEdit(form) &&
+                draftFiles !== null &&
+                !draftFiles.length &&
+                !localCourseBannerBuilderDraftFilemanagerHasVisibleContent(form)) {
+            localCourseBannerBuilderForgetCurrentPreviewImageUrl(form);
+            return '';
+        }
+    }
+    var image = layer.querySelector('[data-preview-image-tag="1"]');
+    var fallbackUrl = layer.getAttribute('data-preview-current-url') ||
+        (image ? (image.getAttribute('src') || '') : '') ||
+        form.dataset.currentPreviewImageUrl ||
+        '';
+    if (fallbackUrl) {
+        localCourseBannerBuilderRememberCurrentPreviewImageUrl(form, fallbackUrl);
+    }
+    return fallbackUrl;
+}
+
+function localCourseBannerBuilderGetPreviewContextToggle(preview, layerScope) {
+    var hosts = [];
+    if (preview && preview.closest) {
+        hosts.push(preview.closest('.local-course-banner-builder-banner-preview-panel'));
+        hosts.push(preview.closest('form.mform'));
+        hosts.push(preview.closest('.modal'));
+    }
+    if (preview && preview.parentElement) {
+        hosts.push(preview.parentElement);
+    }
+    if (layerScope) {
+        hosts.push(layerScope);
+    }
+
+    for (var i = 0; i < hosts.length; i++) {
+        if (!hosts[i] || !hosts[i].querySelector) {
+            continue;
+        }
+        var toggle = hosts[i].querySelector('[data-preview-context-toggle="1"]');
+        if (toggle) {
+            return toggle;
+        }
+    }
+    return null;
+}
+
+function localCourseBannerBuilderEnsurePreviewContextTitle(preview) {
+    if (!preview) {
+        return null;
+    }
+    var rawDefinition = preview.getAttribute('data-preview-title-context-definition') || '';
+    var definition = localCourseBannerBuilderReadJson(rawDefinition, null);
+    if (!definition || !definition.text) {
+        return preview.querySelector('[data-preview-title-context-layer="1"]');
+    }
+    var previewFrame = preview.querySelector('[data-banner-preview-frame="1"], [data-border-preview-frame="1"]') || preview;
+    if (!previewFrame) {
+        return null;
+    }
+    localCourseBannerBuilderSyncPreviewTitleSafeArea(previewFrame);
+    var titleLayer = previewFrame.querySelector('[data-preview-title-context-layer="1"]');
+    if (!titleLayer) {
+        titleLayer = document.createElement('div');
+        titleLayer.className = 'local-course-banner-builder-banner-title-overlay ' +
+            'local-course-banner-builder-preview-title-layer ' +
+            'local-course-banner-builder-preview-title-layer--context';
+        titleLayer.setAttribute('data-preview-context-layer', '1');
+        titleLayer.setAttribute('data-preview-title-context-layer', '1');
+        titleLayer.setAttribute('aria-hidden', 'true');
+        previewFrame.appendChild(titleLayer);
+    }
+    if (titleLayer.getAttribute('data-preview-title-context-signature') === rawDefinition) {
+        return titleLayer;
+    }
+    var lines = String(definition.text || '').split(/\r?\n/);
+    var isHighlight = String(definition.frametype || 'box') === 'highlight';
+    var textScale = Math.max(0.25, Math.min(4.8, parseFloat(definition.textscale || '1') || 1));
+    var align = ['left', 'center', 'right'].indexOf(definition.align || '') !== -1 ? definition.align : 'center';
+    titleLayer.classList.toggle('local-course-banner-builder-banner-title-overlay--highlight-frame', isHighlight);
+    titleLayer.innerHTML = '';
+    if (isHighlight && definition.framestyle) {
+        lines.forEach(function (line, index) {
+            var span = document.createElement('span');
+            span.setAttribute('data-title-highlight-line', '1');
+            span.appendChild(localCourseBannerBuilderBuildScaledTitleTextNode(line === '' ? ' ' : line, textScale, align));
+            span.setAttribute('style', String(definition.framestyle || ''));
+            titleLayer.appendChild(span);
+            if (index < lines.length - 1) {
+                titleLayer.appendChild(document.createElement('br'));
+            }
+        });
+    } else {
+        titleLayer.appendChild(localCourseBannerBuilderBuildScaledTitleTextNode(String(definition.text || ''), textScale, align));
+    }
+    titleLayer.setAttribute('style', String(definition.style || ''));
+    titleLayer.setAttribute('data-preview-zindex', String(definition.zindex || 3010));
+    titleLayer.setAttribute('data-preview-title-context-signature', rawDefinition);
+    return titleLayer;
+}
+
+function localCourseBannerBuilderSyncPreviewTitleSafeArea(frame) {
+    if (!frame || !frame.querySelector || !window.getComputedStyle) {
+        return;
+    }
+    var border = Array.prototype.slice.call(frame.querySelectorAll(
+        '[data-source-preview-border="1"], [data-preview-current-border="1"], ' +
+        '.local-course-banner-builder-preview-border-layer--context'
+    )).find(function (candidate) {
+        return !candidate.hidden && candidate.getAttribute('data-preview-enabled') !== '0';
+    });
+    ['top', 'right', 'bottom', 'left'].forEach(function (side) {
+        var property = '--local-course-banner-builder-preview-' + side + '-width';
+        var value = border ? window.getComputedStyle(border).getPropertyValue(property).trim() : '';
+        frame.style.setProperty(property, value || '0px');
+    });
+}
+
+function localCourseBannerBuilderSyncContextPreviewVisibility(scope) {
+    var layerScope = localCourseBannerBuilderGetLayerScope(scope);
+    if (!layerScope) {
+        return;
+    }
+    Array.prototype.slice.call(layerScope.querySelectorAll('[data-layer-banner-preview="1"]')).forEach(function (preview) {
+        var previewFrame = preview.querySelector('[data-banner-preview-frame="1"], [data-border-preview-frame="1"]') || preview;
+        localCourseBannerBuilderSyncPreviewTitleSafeArea(previewFrame);
+        var toggle = localCourseBannerBuilderGetPreviewContextToggle(preview, layerScope);
+        var showContext = !toggle || toggle.checked;
+        var target = layerScope.querySelector('#id_overlaytarget');
+        var hideContextTitleForSlideshow = localCourseBannerBuilderGetSelectedLayerType(layerScope) === 'overlay' &&
+            !!(target && target.value === 'slideshow');
+        localCourseBannerBuilderEnsurePreviewContextTitle(preview);
+        Array.prototype.slice.call(preview.querySelectorAll('[data-preview-context-layer="1"]')).forEach(function (layer) {
+            var isTitleContext = layer.matches && layer.matches('[data-preview-title-context-layer="1"]');
+            layer.hidden = !showContext || (hideContextTitleForSlideshow && isTitleContext);
+        });
+    });
+}
+
+function localCourseBannerBuilderUpdatePreviewAspectLockButton(layer) {
+    if (!layer) {
+        return;
+    }
+    var button = layer.querySelector('[data-preview-aspect-lock="1"]');
+    if (!button) {
+        return;
+    }
+    var enabled = layer.getAttribute('data-preview-keep-aspect') === '1';
+    var icon = button.querySelector('.fa');
+    if (icon) {
+        icon.classList.toggle('fa-expand', enabled);
+        icon.classList.toggle('fa-link', !enabled);
+    }
+    var label = enabled ?
+        localCourseBannerBuilderGetJsString('allowstretchpreviewimage', '') :
+        localCourseBannerBuilderGetJsString('keepaspectpreviewimage', '');
+    button.setAttribute('aria-label', label);
+    button.setAttribute('data-local-course-banner-builder-hover-popover', '1');
+    button.setAttribute('data-placement', 'top');
+    button.setAttribute('data-html', 'true');
+    button.setAttribute('data-local-course-banner-builder-popover-label', label);
+    button.setAttribute('data-content', '<div class=no-overflow><p>' + label + '</p></div>');
+    button.setAttribute('title', '');
+    button.removeAttribute('data-toggle');
+    button.removeAttribute('data-bs-toggle');
+    button.removeAttribute('data-trigger');
+    button.removeAttribute('data-bs-trigger');
+    button.removeAttribute('data-original-title');
+    button.removeAttribute('data-bs-original-title');
+    button.classList.toggle('local-course-banner-builder-preview-aspect-lock--locked', enabled);
+    if (typeof localCourseBannerBuilderInitPopovers === 'function') {
+        localCourseBannerBuilderInitPopovers(button);
+    }
+    Array.prototype.slice.call(layer.querySelectorAll('[data-preview-resize-handle="1"]')).forEach(function (handle) {
+        handle.setAttribute(
+            'onpointerdown',
+            'return window.localCourseBannerBuilderHandleModalResizeHandlePointerDown(event, this);'
+        );
+    });
+    window.requestAnimationFrame(function () {
+        var rect = layer.getBoundingClientRect();
+        var hidden = !rect.width || !rect.height || rect.width < 42 || rect.height < 42;
+        layer.classList.toggle('local-course-banner-builder-preview-image-layer--aspect-lock-hidden', hidden);
+    });
+}
+
+function localCourseBannerBuilderTogglePreviewAspectLock(button) {
+    if (!button) {
+        return;
+    }
+    var sourceRoot = button.closest('[data-source-visual-editor="1"]');
+    if (sourceRoot) {
+        if (localCourseBannerBuilderIsSourcePreviewReadonly(sourceRoot)) {
+            return;
+        }
+        var sourceLayer = button.closest('[data-source-preview-layer="1"][data-source-preview-editable="1"]') ||
+            localCourseBannerBuilderGetSelectedSourcePreviewLayer(sourceRoot);
+        if (!sourceLayer) {
+            return;
+        }
+        localCourseBannerBuilderSelectSourcePreviewLayer(sourceRoot, sourceLayer);
+        var sourceState = localCourseBannerBuilderGetSourcePreviewLayerState(sourceLayer);
+        if (!sourceState) {
+            return;
+        }
+        localCourseBannerBuilderPushSourcePreviewHistory(sourceRoot);
+        if (!sourceState.customsizekeepaspect &&
+                localCourseBannerBuilderApplyClosestKeepAspectToSourcePreview(sourceRoot, sourceLayer)) {
+            return;
+        }
+        sourceState.customsizekeepaspect = false;
+        localCourseBannerBuilderSetSourcePreviewLayerState(sourceLayer, sourceState);
+        localCourseBannerBuilderSyncSourcePreviewLayer(sourceRoot, sourceLayer);
+        localCourseBannerBuilderUpdateSourcePreviewRow(sourceRoot, sourceState);
+        localCourseBannerBuilderSyncSourcePreviewPayload(sourceRoot);
+        localCourseBannerBuilderSyncSourcePreviewKeepAspectButton(sourceRoot);
+        return;
+    }
+
+    var form = localCourseBannerBuilderGetLayerScope(button);
+    if (!form) {
+        return;
+    }
+    var draftLayer = button.closest('[data-preview-draft-layer="1"]');
+    if (draftLayer) {
+        var draftIndex = draftLayer.getAttribute('data-draft-index');
+        if (draftIndex !== null) {
+            localCourseBannerBuilderSelectDraftPreviewLayer(form, draftIndex);
+        }
+    }
+    var currentLayer = form.querySelector('[data-preview-current-layer="1"]');
+    var keepAspectInput = form.querySelector('[data-custom-size-keep-aspect="1"][type="checkbox"]');
+    if (!currentLayer || !keepAspectInput) {
+        return;
+    }
+    if (!keepAspectInput.checked &&
+            localCourseBannerBuilderApplyClosestKeepAspectToLayerForm(form, currentLayer)) {
+        currentLayer.setAttribute('data-preview-keep-aspect', '1');
+        localCourseBannerBuilderUpdatePreviewAspectLockButton(currentLayer);
+        localCourseBannerBuilderSyncDraftUploadPreview(form);
+        localCourseBannerBuilderSaveActiveDraftPreviewState(form);
+        localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+        return;
+    }
+    keepAspectInput.checked = !keepAspectInput.checked;
+    keepAspectInput.dispatchEvent(new Event('change', {bubbles: true}));
+    form.dataset.previewUserChanged = '1';
+    currentLayer.setAttribute('data-preview-keep-aspect', keepAspectInput.checked ? '1' : '0');
+    localCourseBannerBuilderUpdatePreviewAspectLockButton(currentLayer);
+    localCourseBannerBuilderSyncCurrentLayerDataFromForm(form);
+    localCourseBannerBuilderSyncLayerBannerPreview(form);
+    localCourseBannerBuilderSyncDraftUploadPreview(form);
+}
+
+function localCourseBannerBuilderSyncCurrentImagePreview(scope) {
+    var form = localCourseBannerBuilderGetLayerScope(scope);
+    if (!form) {
+        return;
+    }
+
+    var currentLayers = Array.prototype.slice.call(form.querySelectorAll('[data-preview-current-image="1"]'));
+    if (!currentLayers.length) {
+        return;
+    }
+
+    var fitOverride = form.querySelector('#id_fitmodeoverride');
+    var sortOrderInput = form.querySelector('#id_sortorder');
+    var widthInput = form.querySelector('#id_customwidthpercent');
+    var heightInput = form.querySelector('#id_customheightpercent');
+    var keepAspectInput = form.querySelector('[data-custom-size-keep-aspect="1"][type="checkbox"]');
+    var centerFixedInput = form.querySelector('#id_imagecenterfixed');
+    var anchorInput = form.querySelector('[data-layer-position-anchor="1"]');
+    var offsetTopInput = form.querySelector('#id_offsettoppercent');
+    var offsetRightInput = form.querySelector('#id_offsetrightpercent');
+    var offsetBottomInput = form.querySelector('#id_offsetbottompercent');
+    var offsetLeftInput = form.querySelector('#id_offsetleftpercent');
+    var preferStoredState = form.dataset.previewUserChanged !== '1';
+
+    currentLayers.forEach(function (layer) {
+        var previewRoot = layer.closest('[data-layer-banner-preview="1"]');
+        var image = layer.querySelector('[data-preview-image-tag="1"]');
+        if (!previewRoot || !image) {
+            return;
+        }
+
+        var defaultFitMode = previewRoot.getAttribute('data-default-fitmode') || 'bannerfit';
+        var storedFitMode = layer.getAttribute('data-preview-fitmode') || '';
+        var fitMode = preferStoredState ? (storedFitMode || defaultFitMode) :
+            (fitOverride && fitOverride.value ? fitOverride.value : (storedFitMode || defaultFitMode));
+        var anchor = preferStoredState ? (layer.getAttribute('data-preview-anchor') || 'center') :
+            (anchorInput && anchorInput.value ? anchorInput.value : (layer.getAttribute('data-preview-anchor') || 'center'));
+        var readPreviewNumber = function (attribute, input, fallback) {
+            var value = preferStoredState ?
+                (layer.getAttribute(attribute) || fallback) :
+                (input && input.value ? input.value : (layer.getAttribute(attribute) || fallback));
+            return localCourseBannerBuilderNormaliseNumericValue(value, Number(fallback) || 0);
+        };
+        var offsets = {
+            top: String(readPreviewNumber('data-preview-offset-top', offsetTopInput, '0')) + '%',
+            right: String(readPreviewNumber('data-preview-offset-right', offsetRightInput, '0')) + '%',
+            bottom: String(readPreviewNumber('data-preview-offset-bottom', offsetBottomInput, '0')) + '%',
+            left: String(readPreviewNumber('data-preview-offset-left', offsetLeftInput, '0')) + '%'
+        };
+        var customWidth = Math.max(
+            0,
+            Math.min(localCourseBannerBuilderCustomSizePercentMax, readPreviewNumber(
+                'data-preview-custom-width',
+                widthInput,
+                '100'
+            ))
+        );
+        var customHeight = Math.max(
+            0,
+            Math.min(localCourseBannerBuilderCustomSizePercentMax, readPreviewNumber(
+                'data-preview-custom-height',
+                heightInput,
+                '100'
+            ))
+        );
+        var keepAspect = preferStoredState ? (layer.getAttribute('data-preview-keep-aspect') === '1') :
+            (keepAspectInput ? keepAspectInput.checked : (layer.getAttribute('data-preview-keep-aspect') === '1'));
+        var centerFixed = preferStoredState ? (layer.getAttribute('data-preview-center-fixed') === '1') :
+            (centerFixedInput ? centerFixedInput.checked : (layer.getAttribute('data-preview-center-fixed') === '1'));
+        var imageOpacityInput = form.querySelector('#id_imageopacity');
+        var imageOpacity = preferStoredState ?
+            localCourseBannerBuilderClampPercent(layer.getAttribute('data-preview-image-opacity') || '100', 100) :
+            localCourseBannerBuilderClampPercent(
+                imageOpacityInput && imageOpacityInput.value !== '' ?
+                    imageOpacityInput.value :
+                    (layer.getAttribute('data-preview-image-opacity') || '100'),
+                100
+            );
+        var cropState = localCourseBannerBuilderReadPreviewCropState(form, layer, preferStoredState);
+        var cropEditing = !!layer.querySelector('[data-preview-crop-editor="1"]');
+        var naturalWidth = localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-natural-width') || image.naturalWidth || '0', 0);
+        var naturalHeight = localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-natural-height') || image.naturalHeight || '0', 0);
+        if ((naturalWidth <= 0 || naturalHeight <= 0) && image.complete && image.naturalWidth && image.naturalHeight) {
+            naturalWidth = image.naturalWidth;
+            naturalHeight = image.naturalHeight;
+            layer.setAttribute('data-preview-natural-width', String(naturalWidth));
+            layer.setAttribute('data-preview-natural-height', String(naturalHeight));
+            if (layer.hasAttribute('data-preview-draft-layer')) {
+                var draftSettings = localCourseBannerBuilderGetDraftPreviewSettings(form);
+                var draftIndex = layer.getAttribute('data-draft-index');
+                if (draftIndex !== null && draftSettings[draftIndex]) {
+                    draftSettings[draftIndex].imagewidth = naturalWidth;
+                    draftSettings[draftIndex].imageheight = naturalHeight;
+                    localCourseBannerBuilderSetDraftPreviewSettings(form, draftSettings);
+                }
+            }
+        }
+        var effectiveDimensions = localCourseBannerBuilderGetEffectivePreviewImageDimensions(
+            naturalWidth,
+            naturalHeight,
+            cropState,
+            fitMode === 'bannerfit' || cropEditing
+        );
+        var renderKeepAspect = keepAspect;
+        var placementWidth = effectiveDimensions.width;
+        var placementHeight = effectiveDimensions.height;
+        var aboveBorder = layer.getAttribute('data-preview-dynamic-image') === '1';
+        var aboveOverlay = layer.getAttribute('data-preview-above-overlay') === '1';
+        var belowInherited = layer.getAttribute('data-preview-below-inherited') === '1';
+        var aboveInherited = layer.getAttribute('data-preview-above-inherited') === '1';
+        var overlayContext = localCourseBannerBuilderGetOverlayOrderingContext(
+            layer.closest('form.mform, [data-source-visual-editor="1"], [data-layer-banner-preview="1"]') || previewRoot
+        );
+        var dynamicImage = false;
+        var imageUrl = localCourseBannerBuilderGetPreviewImageUrl(form, layer);
+        var draftLayerIndex = layer.hasAttribute('data-preview-draft-layer') ?
+            parseInt(layer.getAttribute('data-draft-index') || layer.getAttribute('data-preview-sortorder') || '0', 10) : NaN;
+        var activeDraftIndex = typeof form.dataset.activeDraftIndex !== 'undefined' ? String(form.dataset.activeDraftIndex) : '';
+        var useSortOrderInput = !!(sortOrderInput && sortOrderInput.value !== '' &&
+            (isNaN(draftLayerIndex) || String(draftLayerIndex) === activeDraftIndex ||
+                layer.hasAttribute('data-preview-draft-selection-overlay')));
+        var sortOrder = useSortOrderInput ?
+            Math.max(0, parseInt(sortOrderInput.value, 10) || 0) :
+            (isNaN(draftLayerIndex) ?
+                Math.max(0, parseInt(layer.getAttribute('data-preview-sortorder') || '0', 10) || 0) :
+                Math.max(0, draftLayerIndex));
+        var storedZIndex = parseInt(
+            layer.getAttribute('data-preview-zindex') ||
+            (isNaN(draftLayerIndex) ? '0' : String(localCourseBannerBuilderGetDraftPreviewZIndex(draftLayerIndex))),
+            10
+        );
+        storedZIndex = isNaN(storedZIndex) ? 0 : storedZIndex;
+        if (aboveBorder || aboveOverlay || belowInherited || aboveInherited) {
+            storedZIndex = localCourseBannerBuilderGetPreviewImageZIndexBase(
+                aboveBorder,
+                aboveOverlay,
+                overlayContext,
+                belowInherited,
+                aboveInherited
+            );
+        } else if (storedZIndex >= 1000) {
+            storedZIndex = 0;
+        }
+        var effectiveZIndex = !isNaN(draftLayerIndex) && !aboveBorder ?
+            localCourseBannerBuilderGetPreviewZIndex(sortOrder, storedZIndex) :
+            localCourseBannerBuilderGetPreviewZIndex(sortOrder, storedZIndex);
+        layer.setAttribute('data-preview-sortorder', String(sortOrder));
+        layer.setAttribute('data-preview-zindex', String(effectiveZIndex));
+        var objectPosition = localCourseBannerBuilderGetPreviewObjectPosition(anchor);
+        var layerStyles = [
+            'position: absolute;',
+            'display: flex;',
+            'align-items: stretch;',
+            'justify-content: stretch;',
+            'overflow: hidden;',
+            'z-index: ' + effectiveZIndex + ';'
+        ];
+        var imageStyles = [
+            'display: block;',
+            'width: 100%;',
+            'height: 100%;'
+        ];
+
+        if (dynamicImage) {
+            if (fitMode === 'custom') {
+                var dynamicCustomBox = localCourseBannerBuilderGetCustomPreviewBox(
+                    customWidth,
+                    customHeight,
+                    placementWidth,
+                    placementHeight,
+                    renderKeepAspect,
+                    localCourseBannerBuilderGetPreviewFrameAspect(previewRoot)
+                );
+                layerStyles = [
+                    'position: absolute;',
+                    'display: flex;',
+                    'align-items: stretch;',
+                    'justify-content: stretch;',
+                    'overflow: hidden;',
+                    'z-index: ' + effectiveZIndex + ';'
+                ];
+                localCourseBannerBuilderAppendPreviewBoxStyles(layerStyles, dynamicCustomBox);
+                localCourseBannerBuilderAppendPreviewLayerPositionStyles(
+                    layerStyles,
+                    anchor,
+                    offsets,
+                    dynamicCustomBox,
+                    centerFixed
+                );
+                imageStyles = [
+                    'display: block;',
+                    'width: 100%;',
+                    'height: 100%;',
+                    'object-fit: ' + (renderKeepAspect ? 'contain' : 'fill') + ';',
+                    'object-position: ' + objectPosition + ';'
+                ];
+            } else {
+                if ((fitMode === 'cover' || fitMode === 'original') && placementWidth > 0 && placementHeight > 0) {
+                    var dynamicVisibleBox = fitMode === 'cover' ?
+                        localCourseBannerBuilderGetContainedPreviewBox(
+                            placementWidth,
+                            placementHeight,
+                            localCourseBannerBuilderGetPreviewFrameAspect(previewRoot)
+                        ) :
+                        localCourseBannerBuilderGetOriginalPreviewBox(
+                            placementWidth,
+                            placementHeight,
+                            localCourseBannerBuilderGetPreviewFrameAspect(previewRoot)
+                        );
+                    layerStyles = [
+                        'position: absolute;',
+                        'display: flex;',
+                        'align-items: stretch;',
+                        'justify-content: stretch;',
+                        'overflow: hidden;',
+                        'width: ' + dynamicVisibleBox.width + '%;',
+                        'height: ' + dynamicVisibleBox.height + '%;',
+                        'z-index: ' + effectiveZIndex + ';'
+                    ];
+                    localCourseBannerBuilderAppendPreviewLayerPositionStyles(
+                        layerStyles,
+                        anchor,
+                        offsets,
+                        dynamicVisibleBox,
+                        centerFixed
+                    );
+                    imageStyles = [
+                        'display: block;',
+                        'width: 100%;',
+                        'height: 100%;',
+                        'object-fit: fill;',
+                        'object-position: ' + objectPosition + ';'
+                    ];
+                } else {
+                    layerStyles = [
+                        'position: absolute;',
+                        'inset: 0;',
+                        'overflow: hidden;',
+                        'z-index: ' + effectiveZIndex + ';'
+                    ];
+                    imageStyles = [localCourseBannerBuilderBuildDynamicPreviewImageStyle({
+                        anchor: anchor,
+                        fitMode: fitMode,
+                        customWidth: customWidth,
+                        customHeight: customHeight,
+                        keepAspect: renderKeepAspect,
+                        naturalWidth: placementWidth,
+                        naturalHeight: placementHeight,
+                        previewAspect: localCourseBannerBuilderGetPreviewFrameAspect(previewRoot),
+                        offsets: offsets
+                    })];
+                }
+            }
+        } else if (fitMode === 'bannerfit') {
+            layerStyles.push('inset: 0;');
+            imageStyles.push('object-fit: fill;');
+        } else if (fitMode === 'cover') {
+            if (placementWidth > 0 && placementHeight > 0) {
+                var containedBox = localCourseBannerBuilderGetContainedPreviewBox(
+                    placementWidth,
+                    placementHeight,
+                    localCourseBannerBuilderGetPreviewFrameAspect(previewRoot)
+                );
+                layerStyles.push('width: ' + containedBox.width + '%;', 'height: ' + containedBox.height + '%;');
+                localCourseBannerBuilderAppendPreviewLayerPositionStyles(
+                    layerStyles,
+                    anchor,
+                    offsets,
+                    containedBox,
+                    centerFixed
+                );
+                imageStyles.push('object-fit: fill;', 'object-position: ' + objectPosition + ';');
+            } else {
+                layerStyles.push('inset: 0;');
+                imageStyles.push('object-fit: contain;', 'object-position: ' + objectPosition + ';');
+            }
+        } else if (fitMode === 'custom') {
+            var customBox = localCourseBannerBuilderGetCustomPreviewBox(
+                customWidth,
+                customHeight,
+                placementWidth,
+                placementHeight,
+                renderKeepAspect,
+                localCourseBannerBuilderGetPreviewFrameAspect(previewRoot)
+            );
+            localCourseBannerBuilderAppendPreviewBoxStyles(layerStyles, customBox);
+            localCourseBannerBuilderAppendPreviewLayerPositionStyles(layerStyles, anchor, offsets, customBox, centerFixed);
+            imageStyles.push('object-fit: ' + (renderKeepAspect ? 'contain' : 'fill') + ';', 'object-position: ' + objectPosition + ';');
+        } else {
+            var originalPreviewBox = localCourseBannerBuilderGetOriginalPreviewBox(
+                placementWidth,
+                placementHeight,
+                localCourseBannerBuilderGetPreviewFrameAspect(previewRoot)
+            );
+            layerStyles.push('width: ' + originalPreviewBox.width + '%;', 'height: ' + originalPreviewBox.height + '%;');
+            localCourseBannerBuilderAppendPreviewLayerPositionStyles(
+                layerStyles,
+                anchor,
+                offsets,
+                originalPreviewBox,
+                centerFixed
+            );
+            imageStyles.push('object-fit: fill;', 'object-position: ' + objectPosition + ';');
+        }
+
+        imageStyles.push('opacity: ' + (imageOpacity / 100).toFixed(3) + ';');
+        localCourseBannerBuilderApplyCropToImageStyles(imageStyles, cropState, fitMode === 'bannerfit', cropEditing);
+        if (form.dataset.draftPreviewSwitching === '1' && layer.hasAttribute('data-preview-draft-selection-overlay')) {
+            layerStyles.push('visibility: hidden;');
+        }
+        layer.style.cssText = layerStyles.join(' ');
+        localCourseBannerBuilderUpdateCropSelectionFrame(layer, localCourseBannerBuilderNormaliseCropState(cropState));
+        image.style.cssText = imageStyles.join(' ');
+        localCourseBannerBuilderApplyCropToLayerImage(layer, cropState);
+        layer.setAttribute('data-preview-keep-aspect', keepAspect ? '1' : '0');
+        localCourseBannerBuilderUpdatePreviewAspectLockButton(layer);
+        localCourseBannerBuilderMirrorDraftSelectionVisual(form, layer);
+        if (!image.dataset.previewLoadBound) {
+            image.addEventListener('load', function () {
+                layer.setAttribute('data-preview-natural-width', String(image.naturalWidth || 0));
+                layer.setAttribute('data-preview-natural-height', String(image.naturalHeight || 0));
+                localCourseBannerBuilderSyncCurrentImagePreview(form);
+                localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+            });
+            image.dataset.previewLoadBound = '1';
+        }
+        if (imageUrl) {
+            if (image.getAttribute('src') !== imageUrl) {
+                image.setAttribute('src', imageUrl);
+            }
+            image.hidden = false;
+            layer.hidden = false;
+            layer.setAttribute('data-preview-current-url', imageUrl);
+            layer.setAttribute('data-preview-current-layer', '1');
+            localCourseBannerBuilderRememberCurrentPreviewImageUrl(form, imageUrl);
+        } else if (localCourseBannerBuilderIsPersistedImageLayerEdit(form)) {
+            layer.hidden = false;
+            layer.setAttribute('data-preview-current-layer', '1');
+        } else {
+            layer.hidden = true;
+            layer.removeAttribute('data-preview-current-layer');
+        }
+    });
+}
+
+function localCourseBannerBuilderRefreshCurrentPreviewLayer(form) {
+    if (!form) {
+        return;
+    }
+    var currentLayer = localCourseBannerBuilderGetEditableCurrentPreviewImage(form);
+    var image = currentLayer ? currentLayer.querySelector('[data-preview-image-tag="1"]') : null;
+    if (!currentLayer || !image) {
+        return;
+    }
+    if (image.complete) {
+        currentLayer.setAttribute('data-preview-natural-width', String(image.naturalWidth || 0));
+        currentLayer.setAttribute('data-preview-natural-height', String(image.naturalHeight || 0));
+    }
+    localCourseBannerBuilderSyncCurrentImagePreview(form);
+}
+
+function localCourseBannerBuilderSyncLayerBannerPreview(scope) {
+    var layerScope = localCourseBannerBuilderGetLayerScope(scope);
+    if (!layerScope) {
+        return;
+    }
+    var sortOrderInput = layerScope.querySelector('#id_sortorder');
+    var currentBorder = layerScope.querySelector('[data-preview-current-border="1"]');
+    if (currentBorder) {
+        var sortOrderValue = sortOrderInput && sortOrderInput.value ?
+            sortOrderInput.value :
+            (currentBorder.getAttribute('data-preview-sortorder') || '0');
+        var sortOrder = Math.max(0, parseInt(sortOrderValue, 10) || 0);
+        var storedZIndex = parseInt(currentBorder.getAttribute('data-preview-zindex') || '0', 10) || 0;
+        currentBorder.style.zIndex = String(localCourseBannerBuilderGetPreviewZIndex(sortOrder, storedZIndex));
+    }
+    localCourseBannerBuilderSyncContextPreviewVisibility(layerScope);
+    localCourseBannerBuilderSyncCurrentImagePreview(layerScope);
+    if (layerScope.dataset.previewApplyingInteraction !== '1' &&
+            layerScope.dataset.previewInteractionStarting !== '1') {
+        localCourseBannerBuilderSyncDraftUploadPreview(layerScope);
+    }
+    localCourseBannerBuilderSyncModalPreviewActionButtons(layerScope);
+    localCourseBannerBuilderSyncBorderSidePicker(layerScope);
+    localCourseBannerBuilderSyncModalPreviewSelectionOutline(layerScope);
+}
+
+var localCourseBannerBuilderPreviewInteraction = null;
+var localCourseBannerBuilderPendingPreviewInteraction = null;
+var localCourseBannerBuilderLayerPreviewBoundForms = new WeakSet();
+var localCourseBannerBuilderModalResizeInteraction = null;
+var localCourseBannerBuilderModalResizeFrame = 0;
+var localCourseBannerBuilderPreviewInteractionFrame = 0;
+
+function localCourseBannerBuilderDebugInteractionCost(label, callback) {
+    if (!(window.localCourseBannerBuilderDebugPreviewLag && window.performance && performance.now)) {
+        return callback();
+    }
+    var start = performance.now();
+    var result = callback();
+    var elapsed = performance.now() - start;
+    var threshold = Number(window.localCourseBannerBuilderDebugPreviewLagThreshold || 2);
+    if (elapsed > threshold && window.console && console.warn) {
+        console.warn('[course_banner_builder preview lag]', label, Math.round(elapsed * 10) / 10 + 'ms');
+    }
+    return result;
+}
+
+var localCourseBannerBuilderPreviewGuideLastUpdate = 0;
+
+function localCourseBannerBuilderMaybeUpdateInteractionGuides(state, force) {
+    if (!state || !state.frame || !state.layer) {
+        return;
+    }
+    if (!localCourseBannerBuilderIsPreviewSnapEnabled(state.form)) {
+        localCourseBannerBuilderClearPreviewGuides(state.frame);
+        return;
+    }
+    var now = window.performance && performance.now ? performance.now() : Date.now();
+    if (!force && now - localCourseBannerBuilderPreviewGuideLastUpdate < 70) {
+        return;
+    }
+    localCourseBannerBuilderPreviewGuideLastUpdate = now;
+    localCourseBannerBuilderDebugInteractionCost('update guides', function () {
+        localCourseBannerBuilderUpdatePreviewGuides(
+            state.frame,
+            state.layer,
+            '[data-preview-image-tag="1"]',
+            {limitPeers: true}
+        );
+    });
+}
+
+function localCourseBannerBuilderRoundPreviewPercent(value) {
+    return Math.round(value * 10) / 10;
+}
+
+function localCourseBannerBuilderSetPreviewFieldValue(field, value) {
+    if (!field) {
+        return;
+    }
+    var form = field.closest ? field.closest('form.mform') : null;
+    var isPreviewInteraction = !!(form && form.dataset.previewApplyingInteraction === '1');
+    field.value = String(localCourseBannerBuilderRoundPreviewPercent(value));
+    if (isPreviewInteraction) {
+        localCourseBannerBuilderSyncPercentSliderValues(form);
+        return;
+    }
+    field.dispatchEvent(new Event('input', {bubbles: true}));
+    field.dispatchEvent(new Event('change', {bubbles: true}));
+}
+
+function localCourseBannerBuilderRunPreviewInteractionFieldBatch(state, callback) {
+    var form = state ? state.form : null;
+    if (form) {
+        form.dataset.previewApplyingInteraction = '1';
+    }
+    try {
+        callback();
+    } finally {
+        if (form) {
+            localCourseBannerBuilderSyncCurrentLayerDataFromForm(form);
+            var currentLayer = state && state.layer ? state.layer : localCourseBannerBuilderGetEditableCurrentPreviewImage(form);
+            var previewRoot = currentLayer ? currentLayer.closest('[data-layer-banner-preview="1"]') : null;
+            localCourseBannerBuilderDebugInteractionCost('sync layer style', function () {
+                localCourseBannerBuilderSyncStandalonePreviewLayer(previewRoot, currentLayer);
+                localCourseBannerBuilderMirrorDraftSelectionVisual(form, currentLayer);
+                if (state && state.frame) {
+                    localCourseBannerBuilderSyncPreviewSelectionOutline(state.frame, currentLayer);
+                }
+            });
+            localCourseBannerBuilderDebugInteractionCost('sync sliders', function () {
+                localCourseBannerBuilderSyncPercentSliderValues(form);
+            });
+            form.dataset.previewApplyingInteraction = '0';
+        }
+    }
+}
+
+function localCourseBannerBuilderRecenterPreviewImage(scope) {
+    var form = localCourseBannerBuilderGetLayerScope(scope);
+    if (!form) {
+        return;
+    }
+    var currentLayer = localCourseBannerBuilderGetLayerFormPreviewImage(form);
+    var frame = currentLayer ? currentLayer.closest('[data-banner-preview-frame="1"]') : null;
+    var anchorInput = form.querySelector('[data-layer-position-anchor="1"]');
+    var offsetTopInput = form.querySelector('#id_offsettoppercent');
+    var offsetRightInput = form.querySelector('#id_offsetrightpercent');
+    var offsetBottomInput = form.querySelector('#id_offsetbottompercent');
+    var offsetLeftInput = form.querySelector('#id_offsetleftpercent');
+    form.dataset.previewApplyingInteraction = '1';
+    try {
+        if (currentLayer && frame && !currentLayer.querySelector('[data-preview-crop-editor="1"]')) {
+            localCourseBannerBuilderEnsurePreviewDragMode(form, currentLayer, frame);
+        }
+        if (anchorInput) {
+            anchorInput.value = 'center';
+        }
+        [offsetTopInput, offsetRightInput, offsetBottomInput, offsetLeftInput].forEach(function (field) {
+            if (field) {
+                field.value = '0';
+            }
+        });
+        localCourseBannerBuilderSyncCurrentLayerDataFromForm(form);
+        localCourseBannerBuilderSyncLayerBannerPreview(form);
+        localCourseBannerBuilderSaveActiveDraftPreviewState(form);
+    } finally {
+        form.dataset.previewApplyingInteraction = '0';
+    }
+}
+
+function localCourseBannerBuilderRecenterAllLayerPreviewImages(scope) {
+    var form = localCourseBannerBuilderGetLayerScope(scope);
+    if (!form) {
+        return;
+    }
+    var settings = localCourseBannerBuilderGetDraftPreviewSettings(form);
+    Object.keys(settings).forEach(function (index) {
+        settings[index].positionanchor = 'center';
+        settings[index].offsettoppercent = 0;
+        settings[index].offsetrightpercent = 0;
+        settings[index].offsetbottompercent = 0;
+        settings[index].offsetleftpercent = 0;
+    });
+    localCourseBannerBuilderSetDraftPreviewSettings(form, settings);
+
+    var activeIndex = typeof form.dataset.activeDraftIndex !== 'undefined' ? String(form.dataset.activeDraftIndex) : '';
+    if (activeIndex !== '' && settings[activeIndex]) {
+        localCourseBannerBuilderRenderDraftUploadPreview(form);
+        return;
+    }
+
+    localCourseBannerBuilderRecenterPreviewImage(form);
+    localCourseBannerBuilderSyncLayerBannerPreview(form);
+}
+
+function localCourseBannerBuilderRecenterSourcePreviewImage(scope) {
+    var root = scope && scope.closest ? scope.closest('[data-source-visual-editor="1"]') : null;
+    if (!root) {
+        return;
+    }
+    var layer = localCourseBannerBuilderGetActionableSourcePreviewLayer(root);
+    if (!layer) {
+        return;
+    }
+    var state = localCourseBannerBuilderGetSourcePreviewLayerState(layer);
+    if (!state) {
+        return;
+    }
+    state.positionanchor = 'center';
+    state.offsettoppercent = 0;
+    state.offsetrightpercent = 0;
+    state.offsetbottompercent = 0;
+    state.offsetleftpercent = 0;
+    localCourseBannerBuilderSetSourcePreviewLayerState(layer, state);
+    localCourseBannerBuilderSyncSourcePreviewLayer(root, layer);
+    localCourseBannerBuilderUpdateSourcePreviewRow(root, state);
+    localCourseBannerBuilderSyncSourcePreviewPayload(root);
+}
+
+function localCourseBannerBuilderRecenterAllSourcePreviewImages(scope) {
+    var root = scope && scope.closest ? scope.closest('[data-source-visual-editor="1"]') : null;
+    if (!root) {
+        return;
+    }
+    Array.prototype.slice.call(root.querySelectorAll('[data-source-preview-layer="1"][data-source-preview-editable="1"]')).forEach(function (layer) {
+        var state = localCourseBannerBuilderGetSourcePreviewLayerState(layer);
+        if (!state) {
+            return;
+        }
+        state.positionanchor = 'center';
+        state.offsettoppercent = 0;
+        state.offsetrightpercent = 0;
+        state.offsetbottompercent = 0;
+        state.offsetleftpercent = 0;
+        localCourseBannerBuilderSetSourcePreviewLayerState(layer, state);
+        localCourseBannerBuilderSyncSourcePreviewLayer(root, layer);
+        localCourseBannerBuilderUpdateSourcePreviewRow(root, state);
+    });
+    localCourseBannerBuilderSyncSourcePreviewPayload(root);
+}
+
+function localCourseBannerBuilderApplyFitToLayerFormPreview(form) {
+    if (!form) {
+        return;
+    }
+    var currentLayer = localCourseBannerBuilderGetEditableCurrentPreviewImage(form);
+    var fitOverride = form.querySelector('#id_fitmodeoverride');
+    var anchorInput = form.querySelector('[data-layer-position-anchor="1"]');
+    var widthInput = form.querySelector('#id_customwidthpercent');
+    var heightInput = form.querySelector('#id_customheightpercent');
+    var keepAspectInput = form.querySelector('[data-custom-size-keep-aspect="1"][type="checkbox"]');
+    var offsetTopInput = form.querySelector('#id_offsettoppercent');
+    var offsetRightInput = form.querySelector('#id_offsetrightpercent');
+    var offsetBottomInput = form.querySelector('#id_offsetbottompercent');
+    var offsetLeftInput = form.querySelector('#id_offsetleftpercent');
+    if (fitOverride) {
+        fitOverride.value = 'cover';
+    }
+    if (anchorInput) {
+        anchorInput.value = 'center';
+    }
+    if (widthInput) {
+        widthInput.value = '100';
+    }
+    if (heightInput) {
+        heightInput.value = '100';
+    }
+    if (keepAspectInput) {
+        keepAspectInput.checked = true;
+    }
+    [offsetTopInput, offsetRightInput, offsetBottomInput, offsetLeftInput].forEach(function (field) {
+        if (field) {
+            field.value = '0';
+        }
+    });
+    if (currentLayer) {
+        localCourseBannerBuilderClearLayerPreviewCropState(form, currentLayer);
+    }
+    form.dataset.previewUserChanged = '1';
+    localCourseBannerBuilderSyncCurrentLayerDataFromForm(form);
+    localCourseBannerBuilderSyncCustomSizeFields(form);
+    localCourseBannerBuilderSyncOffsetFields(form);
+    localCourseBannerBuilderBindPercentSliders(form);
+    localCourseBannerBuilderSyncLayerBannerPreview(form);
+    localCourseBannerBuilderSaveActiveDraftPreviewState(form);
+}
+
+function localCourseBannerBuilderApplyFillBannerToLayerFormPreview(form) {
+    if (!form) {
+        return;
+    }
+    var fitOverride = form.querySelector('#id_fitmodeoverride');
+    var anchorInput = form.querySelector('[data-layer-position-anchor="1"]');
+    var widthInput = form.querySelector('#id_customwidthpercent');
+    var heightInput = form.querySelector('#id_customheightpercent');
+    var keepAspectInput = form.querySelector('[data-custom-size-keep-aspect="1"][type="checkbox"]');
+    var offsetTopInput = form.querySelector('#id_offsettoppercent');
+    var offsetRightInput = form.querySelector('#id_offsetrightpercent');
+    var offsetBottomInput = form.querySelector('#id_offsetbottompercent');
+    var offsetLeftInput = form.querySelector('#id_offsetleftpercent');
+    var previewRoot = form.querySelector('[data-layer-banner-preview="1"], [data-source-preview-frame="1"], .local-course-banner-builder-border-preview-frame');
+    var defaultFitMode = previewRoot ? (previewRoot.getAttribute('data-default-fitmode') || '') : '';
+    if (fitOverride) {
+        fitOverride.value = defaultFitMode === 'bannerfit' ? '' : 'bannerfit';
+    }
+    if (anchorInput) {
+        anchorInput.value = 'center';
+    }
+    if (widthInput) {
+        widthInput.value = '100';
+    }
+    if (heightInput) {
+        heightInput.value = '100';
+    }
+    if (keepAspectInput) {
+        keepAspectInput.checked = false;
+    }
+    [offsetTopInput, offsetRightInput, offsetBottomInput, offsetLeftInput].forEach(function (field) {
+        if (field) {
+            field.value = '0';
+        }
+    });
+    form.dataset.previewUserChanged = '1';
+    localCourseBannerBuilderSyncCurrentLayerDataFromForm(form);
+    localCourseBannerBuilderSyncCustomSizeFields(form);
+    localCourseBannerBuilderSyncOffsetFields(form);
+    localCourseBannerBuilderBindPercentSliders(form);
+    localCourseBannerBuilderSyncLayerBannerPreview(form);
+    localCourseBannerBuilderSaveActiveDraftPreviewState(form);
+}
+
+function localCourseBannerBuilderFitSelectedLayerPreviewImageToFrame(scope) {
+    var form = localCourseBannerBuilderGetLayerScope(scope);
+    if (!form) {
+        return;
+    }
+    var currentLayer = localCourseBannerBuilderGetEditableCurrentPreviewImage(form);
+    if (!currentLayer || currentLayer.hidden) {
+        return;
+    }
+    localCourseBannerBuilderApplyFitToLayerFormPreview(form);
+}
+
+function localCourseBannerBuilderFillSelectedLayerPreviewImageToBanner(scope) {
+    var form = localCourseBannerBuilderGetLayerScope(scope);
+    if (!form) {
+        return;
+    }
+    var currentLayer = localCourseBannerBuilderGetEditableCurrentPreviewImage(form);
+    if (!currentLayer || currentLayer.hidden) {
+        return;
+    }
+    localCourseBannerBuilderApplyFillBannerToLayerFormPreview(form);
+}
+
+function localCourseBannerBuilderFitSelectedSourcePreviewImageToFrame(scope) {
+    var root = scope && scope.closest ? scope.closest('[data-source-visual-editor="1"]') : null;
+    if (!root) {
+        return;
+    }
+    var layer = localCourseBannerBuilderGetSelectedSourcePreviewLayer(root);
+    if (!layer) {
+        return;
+    }
+    var state = localCourseBannerBuilderGetSourcePreviewLayerState(layer);
+    if (!state) {
+        return;
+    }
+    state.fitmodeoverride = 'cover';
+    state.positionanchor = 'center';
+    state.customwidthpercent = 100;
+    state.customheightpercent = 100;
+    state.customsizekeepaspect = true;
+    state.offsettoppercent = 0;
+    state.offsetrightpercent = 0;
+    state.offsetbottompercent = 0;
+    state.offsetleftpercent = 0;
+    localCourseBannerBuilderSetSourcePreviewLayerState(layer, state);
+    localCourseBannerBuilderSyncSourcePreviewLayer(root, layer);
+    localCourseBannerBuilderUpdateSourcePreviewRow(root, state);
+    localCourseBannerBuilderSyncSourcePreviewPayload(root);
+    localCourseBannerBuilderSyncSourcePreviewKeepAspectButton(root);
+    localCourseBannerBuilderSyncSourcePreviewFitButton(root);
+    localCourseBannerBuilderSyncSourcePreviewFillButton(root);
+    localCourseBannerBuilderSelectSourcePreviewLayer(root, layer);
+}
+
+function localCourseBannerBuilderFillSelectedSourcePreviewImageToBanner(scope) {
+    var root = scope && scope.closest ? scope.closest('[data-source-visual-editor="1"]') : null;
+    if (!root) {
+        return;
+    }
+    var layer = localCourseBannerBuilderGetSelectedSourcePreviewLayer(root);
+    if (!layer) {
+        return;
+    }
+    var state = localCourseBannerBuilderGetSourcePreviewLayerState(layer);
+    if (!state) {
+        return;
+    }
+    var frame = root.querySelector('[data-source-preview-frame="1"]');
+    var defaultFitMode = frame ? (frame.getAttribute('data-default-fitmode') || '') : '';
+    state.fitmodeoverride = defaultFitMode === 'bannerfit' ? '' : 'bannerfit';
+    state.positionanchor = 'center';
+    state.customwidthpercent = 100;
+    state.customheightpercent = 100;
+    state.customsizekeepaspect = false;
+    state.offsettoppercent = 0;
+    state.offsetrightpercent = 0;
+    state.offsetbottompercent = 0;
+    state.offsetleftpercent = 0;
+    localCourseBannerBuilderSetSourcePreviewLayerState(layer, state);
+    localCourseBannerBuilderSyncSourcePreviewLayer(root, layer);
+    localCourseBannerBuilderUpdateSourcePreviewRow(root, state);
+    localCourseBannerBuilderSyncSourcePreviewPayload(root);
+    localCourseBannerBuilderSyncSourcePreviewKeepAspectButton(root);
+    localCourseBannerBuilderSyncSourcePreviewFitButton(root);
+    localCourseBannerBuilderSyncSourcePreviewFillButton(root);
+    localCourseBannerBuilderSelectSourcePreviewLayer(root, layer);
+}
+
+function localCourseBannerBuilderPushSelectedSourcePreviewLayerBehind(scope) {
+    var root = scope && scope.closest ? scope.closest('[data-source-visual-editor="1"]') : null;
+    if (!root) {
+        return;
+    }
+    var layer = localCourseBannerBuilderGetSelectedSourcePreviewLayer(root);
+    if (!layer) {
+        return;
+    }
+    if (localCourseBannerBuilderIsPreviewImageLayerOrderLocked(layer)) {
+        localCourseBannerBuilderSyncSourcePreviewOrderButtons(root);
+        return;
+    }
+    var layerId = layer.getAttribute('data-source-preview-layer-id') || '';
+    if (!layerId) {
+        return;
+    }
+    var tbody = localCourseBannerBuilderGetLayerSortableForSource(root);
+    if (!tbody) {
+        return;
+    }
+    var rows = Array.prototype.slice.call(tbody.querySelectorAll('.local-course-banner-builder-layer-row'));
+    var currentRow = rows.find(function (row) {
+        var checkbox = row.querySelector('.local-course-banner-builder-layer-select');
+        return checkbox && checkbox.value === layerId;
+    });
+    if (!currentRow) {
+        return;
+    }
+    var movableRows = rows.filter(function (row) {
+        return !localCourseBannerBuilderIsLayerRowOrderLocked(row);
+    });
+    var currentIndex = movableRows.indexOf(currentRow);
+    if (currentIndex <= 0) {
+        return;
+    }
+    var previousRow = movableRows[currentIndex - 1];
+    if (!previousRow) {
+        return;
+    }
+    tbody.insertBefore(currentRow, previousRow);
+    localCourseBannerBuilderEnforceLockedLayerOrder(tbody);
+    localCourseBannerBuilderSyncLayerSortOrders();
+    localCourseBannerBuilderApplyLayerSortableOrderToSourcePreview(root, tbody);
+    localCourseBannerBuilderSelectSourcePreviewLayer(root, layer);
+}
+
+function localCourseBannerBuilderPullSelectedSourcePreviewLayerForward(scope) {
+    var root = scope && scope.closest ? scope.closest('[data-source-visual-editor="1"]') : null;
+    if (!root) {
+        return;
+    }
+    var layer = localCourseBannerBuilderGetSelectedSourcePreviewLayer(root);
+    if (!layer) {
+        return;
+    }
+    if (localCourseBannerBuilderIsPreviewImageLayerOrderLocked(layer)) {
+        localCourseBannerBuilderSyncSourcePreviewOrderButtons(root);
+        return;
+    }
+    var layerId = layer.getAttribute('data-source-preview-layer-id') || '';
+    if (!layerId) {
+        return;
+    }
+    var tbody = localCourseBannerBuilderGetLayerSortableForSource(root);
+    if (!tbody) {
+        return;
+    }
+    var rows = Array.prototype.slice.call(tbody.querySelectorAll('.local-course-banner-builder-layer-row'));
+    var currentRow = rows.find(function (row) {
+        var checkbox = row.querySelector('.local-course-banner-builder-layer-select');
+        return checkbox && checkbox.value === layerId;
+    });
+    if (!currentRow) {
+        return;
+    }
+    var movableRows = rows.filter(function (row) {
+        return !localCourseBannerBuilderIsLayerRowOrderLocked(row);
+    });
+    var currentIndex = movableRows.indexOf(currentRow);
+    if (currentIndex === -1 || currentIndex >= movableRows.length - 1) {
+        return;
+    }
+    var nextRow = movableRows[currentIndex + 1];
+    if (!nextRow) {
+        return;
+    }
+    tbody.insertBefore(nextRow, currentRow);
+    localCourseBannerBuilderEnforceLockedLayerOrder(tbody);
+    localCourseBannerBuilderSyncLayerSortOrders();
+    localCourseBannerBuilderApplyLayerSortableOrderToSourcePreview(root, tbody);
+    localCourseBannerBuilderSelectSourcePreviewLayer(root, layer);
+}
+
+function localCourseBannerBuilderSyncSourcePreviewTopLayerButton(root) {
+    if (!root) {
+        return;
+    }
+    var button = root.querySelector('[data-action="local-course-banner-builder-toggle-source-preview-top-layer"]');
+    if (!button) {
+        return;
+    }
+    var layer = localCourseBannerBuilderGetSelectedSourcePreviewLayer(root);
+    var enabled = !!(layer && layer.getAttribute('data-preview-dynamic-image') === '1');
+    button.setAttribute('data-top-layer-enabled', enabled ? '1' : '0');
+    button.classList.toggle('btn-primary', enabled);
+    button.classList.toggle('btn-outline-secondary', !enabled);
+    button.classList.toggle('local-course-banner-builder-source-preview-button--active', enabled);
+    localCourseBannerBuilderSetActionButtonContent(
+        button,
+        enabled ? (button.getAttribute('data-on-icon') || 'fa-level-down') : (button.getAttribute('data-off-icon') || 'fa-level-up'),
+        enabled ? (button.getAttribute('data-on-label') || 'Keep below border') : (button.getAttribute('data-off-label') || 'Push above border')
+    );
+}
+
+function localCourseBannerBuilderSyncSourcePreviewAboveOverlayButton(root) {
+    if (!root) {
+        return;
+    }
+    var button = root.querySelector('[data-action="local-course-banner-builder-toggle-source-preview-above-overlay"]');
+    if (!button) {
+        return;
+    }
+    var hasOverlay = localCourseBannerBuilderPreviewHasOverlay(root);
+    var layer = localCourseBannerBuilderGetSelectedSourcePreviewLayer(root);
+    var canToggle = !!(hasOverlay && layer && layer.getAttribute('data-source-preview-editable') === '1' &&
+        localCourseBannerBuilderIsSourcePreviewLayerEnabled(layer));
+    var enabled = !!(canToggle && layer.getAttribute('data-preview-above-overlay') === '1');
+    button.hidden = !hasOverlay;
+    button.disabled = !canToggle;
+    button.classList.toggle('disabled', !canToggle);
+    button.setAttribute('aria-disabled', canToggle ? 'false' : 'true');
+    button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+    button.setAttribute('data-above-overlay-enabled', enabled ? '1' : '0');
+    button.classList.toggle('btn-primary', enabled);
+    button.classList.toggle('btn-outline-secondary', !enabled);
+    button.classList.toggle('local-course-banner-builder-source-preview-button--active', enabled);
+    localCourseBannerBuilderSetActionButtonContent(
+        button,
+        enabled ? (button.getAttribute('data-on-icon') || 'fa-clone') : (button.getAttribute('data-off-icon') || 'fa-layer-group'),
+        enabled ? (button.getAttribute('data-on-label') || 'Image below overlay') : (button.getAttribute('data-off-label') || 'Push above overlay')
+    );
+}
+
+function localCourseBannerBuilderSourceHasDirectDecorativeLayer(root) {
+    return !!(root && (
+        root.getAttribute('data-source-has-direct-border') === '1' ||
+        root.getAttribute('data-source-has-direct-overlay') === '1' ||
+        root.querySelector('[data-source-preview-border="1"]:not([data-preview-context-layer="1"])') ||
+        root.querySelector('[data-source-preview-overlay="1"]:not([data-preview-context-layer="1"])')
+    ));
+}
+
+function localCourseBannerBuilderSyncSourcePreviewInheritedDepthButtons(root) {
+    if (!root) {
+        return;
+    }
+    var layer = localCourseBannerBuilderGetActionableSourcePreviewLayer(root);
+    var canToggle = !!(layer && layer.getAttribute('data-source-preview-editable') === '1' &&
+        localCourseBannerBuilderIsSourcePreviewLayerEnabled(layer));
+    var belowButton = root.querySelector('[data-action="local-course-banner-builder-toggle-source-preview-below-inherited"]');
+    if (belowButton) {
+        var belowEnabled = !!(canToggle && layer.getAttribute('data-preview-below-inherited') === '1');
+        belowButton.disabled = !canToggle;
+        belowButton.classList.toggle('disabled', !canToggle);
+        belowButton.setAttribute('aria-disabled', canToggle ? 'false' : 'true');
+        belowButton.setAttribute('aria-pressed', belowEnabled ? 'true' : 'false');
+        belowButton.setAttribute('data-below-inherited-enabled', belowEnabled ? '1' : '0');
+        belowButton.classList.toggle('btn-primary', belowEnabled);
+        belowButton.classList.toggle('btn-outline-secondary', !belowEnabled);
+        belowButton.classList.toggle('local-course-banner-builder-source-preview-button--active', belowEnabled);
+        localCourseBannerBuilderSetActionButtonContent(
+            belowButton,
+            belowEnabled ? (belowButton.getAttribute('data-on-icon') || 'fa-level-up') :
+                (belowButton.getAttribute('data-off-icon') || 'fa-level-down'),
+            belowEnabled ? (belowButton.getAttribute('data-on-label') || 'Use inherited order') :
+                (belowButton.getAttribute('data-off-label') || 'Push below inherited layers')
+        );
+    }
+    var aboveButton = root.querySelector('[data-action="local-course-banner-builder-toggle-source-preview-above-inherited"]');
+    if (aboveButton) {
+        var hasDirectDecorativeLayer = localCourseBannerBuilderSourceHasDirectDecorativeLayer(root);
+        var canToggleAbove = canToggle && !hasDirectDecorativeLayer;
+        var aboveEnabled = !!(canToggleAbove && layer.getAttribute('data-preview-above-inherited') === '1');
+        aboveButton.hidden = hasDirectDecorativeLayer;
+        aboveButton.disabled = !canToggleAbove;
+        aboveButton.classList.toggle('disabled', !canToggleAbove);
+        aboveButton.setAttribute('aria-disabled', canToggleAbove ? 'false' : 'true');
+        aboveButton.setAttribute('aria-pressed', aboveEnabled ? 'true' : 'false');
+        aboveButton.setAttribute('data-above-inherited-enabled', aboveEnabled ? '1' : '0');
+        aboveButton.classList.toggle('btn-primary', aboveEnabled);
+        aboveButton.classList.toggle('btn-outline-secondary', !aboveEnabled);
+        aboveButton.classList.toggle('local-course-banner-builder-source-preview-button--active', aboveEnabled);
+        localCourseBannerBuilderSetActionButtonContent(
+            aboveButton,
+            aboveEnabled ? (aboveButton.getAttribute('data-on-icon') || 'fa-level-down') :
+                (aboveButton.getAttribute('data-off-icon') || 'fa-layer-group'),
+            aboveEnabled ? (aboveButton.getAttribute('data-on-label') || 'Use inherited order') :
+                (aboveButton.getAttribute('data-off-label') || 'Push above inherited layers')
+        );
+    }
+}
+
+function localCourseBannerBuilderSyncSourcePreviewCenterFixedButton(root) {
+    if (!root) {
+        return;
+    }
+    var button = root.querySelector('[data-action="local-course-banner-builder-toggle-source-preview-center-fixed"]');
+    if (!button) {
+        return;
+    }
+    var layer = localCourseBannerBuilderGetSelectedSourcePreviewLayer(root);
+    var canToggle = !!(layer && layer.getAttribute('data-source-preview-editable') === '1');
+    var enabled = !!(canToggle && layer.getAttribute('data-preview-center-fixed') === '1');
+    localCourseBannerBuilderConfigurePreviewIconButton(
+        button,
+        'fa-thumb-tack',
+        enabled ?
+            localCourseBannerBuilderGetJsString('imagecenterfixedon', 'Fixed center') :
+            localCourseBannerBuilderGetJsString('imagecenterfixedoff', 'Free placement')
+    );
+    button.disabled = !canToggle;
+    button.classList.toggle('disabled', !canToggle);
+    button.setAttribute('aria-disabled', canToggle ? 'false' : 'true');
+    button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+    button.classList.remove('btn-primary');
+    button.classList.remove('active');
+    button.classList.remove('local-course-banner-builder-source-preview-button--active');
+    button.classList.add('btn-outline-secondary');
+    button.classList.toggle('local-course-banner-builder-preview-snap-disabled', !enabled);
+}
+
+function localCourseBannerBuilderToggleSourcePreviewCenterFixed(button) {
+    var root = button ? button.closest('[data-source-visual-editor="1"]') : null;
+    var layer = root ? localCourseBannerBuilderGetSelectedSourcePreviewLayer(root) : null;
+    if (!root || !layer || layer.getAttribute('data-source-preview-editable') !== '1') {
+        return;
+    }
+    var state = localCourseBannerBuilderGetSourcePreviewLayerState(layer);
+    if (!state) {
+        return;
+    }
+    localCourseBannerBuilderPushSourcePreviewHistory(root);
+    state.imagecenterfixed = !state.imagecenterfixed;
+    localCourseBannerBuilderSetSourcePreviewLayerState(layer, state);
+    localCourseBannerBuilderSyncSourcePreviewLayer(root, layer);
+    localCourseBannerBuilderUpdateSourcePreviewRow(root, state);
+    localCourseBannerBuilderSyncSourcePreviewPayload(root);
+    Array.prototype.slice.call(root.querySelectorAll(
+        '[data-action="local-course-banner-builder-toggle-source-preview-center-fixed"]'
+    )).forEach(function (item) {
+        item.classList.remove('local-course-banner-builder-preview-snap-pulse');
+        void item.offsetWidth;
+        item.classList.add('local-course-banner-builder-preview-snap-pulse');
+        localCourseBannerBuilderTriggerPreviewActionFeedback(item);
+    });
+    localCourseBannerBuilderSyncSourcePreviewCenterFixedButton(root);
+    localCourseBannerBuilderSelectSourcePreviewLayer(root, layer);
+}
+
+function localCourseBannerBuilderToggleModalPreviewCenterFixed(button) {
+    var form = button ? button.closest('form.mform, .mform') : null;
+    if (!form && button) {
+        var modal = button.closest('.modal, .modal-content');
+        form = modal ? modal.querySelector('form.mform, .mform') : null;
+    }
+    if (!form) {
+        return;
+    }
+    var input = form.querySelector('#id_imagecenterfixed');
+    var layer = localCourseBannerBuilderGetLayerFormPreviewImage(form);
+    if (!layer && !input) {
+        return;
+    }
+    localCourseBannerBuilderPushModalPreviewHistory(form);
+    if (input) {
+        input.checked = !input.checked;
+        input.dispatchEvent(new Event('change', {bubbles: true}));
+    }
+    var state = localCourseBannerBuilderReadLayerFormPreviewState(form) ||
+        localCourseBannerBuilderReadLayerPreviewStateFromLayer(layer);
+    if (!state) {
+        localCourseBannerBuilderSyncModalPreviewCenterFixedButton(form);
+        localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+        return;
+    }
+    state.imagecenterfixed = input ? !!input.checked : !(layer && layer.getAttribute('data-preview-center-fixed') === '1');
+    localCourseBannerBuilderApplyLayerFormPreviewState(form, state);
+    localCourseBannerBuilderSyncCurrentLayerDataFromForm(form);
+    localCourseBannerBuilderSyncLayerBannerPreview(form);
+    localCourseBannerBuilderSaveActiveDraftPreviewState(form);
+    Array.prototype.slice.call(form.querySelectorAll(
+        '[data-action="local-course-banner-builder-toggle-modal-preview-center-fixed"]'
+    )).forEach(function (item) {
+        item.classList.remove('local-course-banner-builder-preview-snap-pulse');
+        void item.offsetWidth;
+        item.classList.add('local-course-banner-builder-preview-snap-pulse');
+        localCourseBannerBuilderTriggerPreviewActionFeedback(item);
+    });
+    localCourseBannerBuilderSyncModalPreviewCenterFixedButton(form);
+    localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+}
+
+function localCourseBannerBuilderSyncSourcePreviewKeepAspectButton(root) {
+    if (!root) {
+        return;
+    }
+    var button = root.querySelector('[data-action="local-course-banner-builder-toggle-source-preview-keep-aspect"]');
+    if (!button) {
+        return;
+    }
+    var layer = localCourseBannerBuilderGetSelectedSourcePreviewLayer(root);
+    var enabled = !!(layer && layer.getAttribute('data-preview-keep-aspect') === '1');
+    button.setAttribute('data-keep-aspect-enabled', enabled ? '1' : '0');
+    localCourseBannerBuilderSetActionButtonContent(
+        button,
+        enabled ? (button.getAttribute('data-on-icon') || 'fa-expand') : (button.getAttribute('data-off-icon') || 'fa-link'),
+        enabled ?
+            (button.getAttribute('data-on-label') ||
+                localCourseBannerBuilderGetJsString('allowstretchpreviewimage', '')) :
+            (button.getAttribute('data-off-label') ||
+                localCourseBannerBuilderGetJsString('keepaspectpreviewimage', ''))
+    );
+}
+
+function localCourseBannerBuilderSyncSourcePreviewOpacityButton(root) {
+    if (!root) {
+        return;
+    }
+    var button = root.querySelector('[data-action="local-course-banner-builder-toggle-source-preview-opacity"]');
+    var panel = root.querySelector('[data-source-preview-opacity-panel="1"]');
+    var layer = localCourseBannerBuilderGetSelectedSourcePreviewLayer(root);
+    var enabled = !!(layer && layer.getAttribute('data-source-preview-editable') === '1');
+    if (button) {
+        button.disabled = !enabled;
+        button.classList.toggle('disabled', !enabled);
+        button.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+        if (panel) {
+            var panelOpen = enabled && !panel.hidden;
+            button.classList.toggle('btn-primary', panelOpen);
+            button.classList.toggle('btn-outline-secondary', !panelOpen);
+            button.classList.toggle('active', panelOpen);
+            button.classList.toggle('local-course-banner-builder-source-preview-button--active', panelOpen);
+            button.setAttribute('aria-expanded', panelOpen ? 'true' : 'false');
+        }
+    }
+    if (panel) {
+        if (!enabled) {
+            panel.hidden = true;
+            if (button) {
+                button.setAttribute('aria-expanded', 'false');
+                button.classList.remove('btn-primary', 'active');
+                button.classList.remove('local-course-banner-builder-source-preview-button--active');
+                button.classList.add('btn-outline-secondary');
+            }
+            return;
+        }
+        localCourseBannerBuilderSetOpacityPanelValue(
+            panel,
+            layer.getAttribute('data-preview-image-opacity') || '100'
+        );
+    }
+}
+
+function localCourseBannerBuilderSyncSourcePreviewFitButton(root) {
+    if (!root) {
+        return;
+    }
+    var button = root.querySelector('[data-action="local-course-banner-builder-fit-source-preview-image"]');
+    if (!button) {
+        return;
+    }
+    var layer = localCourseBannerBuilderGetSelectedSourcePreviewLayer(root);
+    var enabled = !!(layer && layer.getAttribute('data-source-preview-editable') === '1');
+    button.disabled = !enabled;
+    button.classList.toggle('disabled', !enabled);
+    button.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+}
+
+function localCourseBannerBuilderSyncSourcePreviewFillButton(root) {
+    if (!root) {
+        return;
+    }
+    var button = root.querySelector('[data-action="local-course-banner-builder-fill-source-preview-image"]');
+    if (!button) {
+        return;
+    }
+    var layer = localCourseBannerBuilderGetSelectedSourcePreviewLayer(root);
+    var enabled = !!(layer && layer.getAttribute('data-source-preview-editable') === '1');
+    button.disabled = !enabled;
+    button.classList.toggle('disabled', !enabled);
+    button.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+}
+
+function localCourseBannerBuilderSyncSourcePreviewCropButtons(root) {
+    if (!root) {
+        return;
+    }
+    var layer = localCourseBannerBuilderGetCurrentSourcePreviewCropLayer(root);
+    var enabled = !!(layer && layer.getAttribute('data-source-preview-editable') === '1' &&
+        !localCourseBannerBuilderIsSourcePreviewLayerHiddenInPreview(layer));
+    var active = !!(enabled && layer.querySelector('[data-preview-crop-editor="1"]'));
+    var toggle = root.querySelector('[data-action="local-course-banner-builder-toggle-source-preview-crop"]');
+    var apply = root.querySelector('[data-action="local-course-banner-builder-apply-source-preview-crop"]');
+    if (toggle) {
+        toggle.disabled = !enabled;
+        toggle.classList.toggle('disabled', !enabled);
+        toggle.classList.toggle('btn-primary', active);
+        toggle.classList.toggle('btn-outline-secondary', !active);
+        toggle.classList.toggle('active', active);
+        toggle.classList.remove(
+            'local-course-banner-builder-crop-applied',
+            'local-course-banner-builder-preview-toolbar-button--active'
+        );
+        toggle.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+        toggle.setAttribute('aria-pressed', active ? 'true' : 'false');
+    }
+    if (apply) {
+        apply.hidden = !active;
+        apply.disabled = !active;
+        apply.setAttribute('aria-disabled', active ? 'false' : 'true');
+    }
+}
+
+function localCourseBannerBuilderSyncSourcePreviewOrderButtons(root) {
+    if (!root) {
+        return;
+    }
+    var layer = localCourseBannerBuilderGetSelectedSourcePreviewLayer(root);
+    var enabled = !!(layer && layer.getAttribute('data-source-preview-editable') === '1' &&
+        !localCourseBannerBuilderIsPreviewImageLayerOrderLocked(layer));
+    Array.prototype.slice.call(root.querySelectorAll([
+        '[data-action="local-course-banner-builder-push-source-preview-layer-behind"]',
+        '[data-action="local-course-banner-builder-pull-source-preview-layer-forward"]'
+    ].join(','))).forEach(function (button) {
+        button.disabled = !enabled;
+        button.classList.toggle('disabled', !enabled);
+        button.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+    });
+}
+
+function localCourseBannerBuilderSyncSourcePreviewDeleteButton(root) {
+    if (!root) {
+        return;
+    }
+    var button = root.querySelector('[data-action="local-course-banner-builder-delete-selected-preview-layer"]');
+    if (!button) {
+        return;
+    }
+    var layer = root.querySelector('.local-course-banner-builder-source-preview-layer--selected');
+    if (!localCourseBannerBuilderIsSourcePreviewLayerEnabled(layer)) {
+        layer = null;
+    }
+    var hasLayer = !!(layer && layer.getAttribute('data-source-preview-layer-id'));
+    button.hidden = !hasLayer;
+    if (hasLayer) {
+        button.setAttribute('data-layer-id', layer.getAttribute('data-source-preview-layer-id') || '');
+    } else {
+        button.removeAttribute('data-layer-id');
+    }
+}
+
+function localCourseBannerBuilderGetSourcePreviewThumbnailSignature(layers) {
+    return (layers || []).map(function (layer) {
+        var image = layer.querySelector('[data-preview-image-tag="1"]');
+        return [
+            layer.getAttribute('data-source-preview-layer-id') || '',
+            image ? (image.currentSrc || image.getAttribute('src') || '') : '',
+            localCourseBannerBuilderIsSourcePreviewLayerEnabled(layer) ? '1' : '0'
+        ].join(':');
+    }).join('|');
+}
+
+function localCourseBannerBuilderUpdateSourcePreviewThumbnailSelection(root) {
+    if (!root) {
+        return;
+    }
+    var filmstrip = root.querySelector('[data-source-preview-filmstrip="1"]');
+    var track = filmstrip ? filmstrip.querySelector('[data-source-preview-filmstrip-track="1"]') : null;
+    if (!filmstrip || !track) {
+        return;
+    }
+    var selected = root.querySelector('.local-course-banner-builder-source-preview-layer--selected');
+    var selectedId = selected ? (selected.getAttribute('data-source-preview-layer-id') || '') : '';
+    var activeButton = null;
+    Array.prototype.slice.call(track.querySelectorAll('[data-source-preview-thumbnail-id]')).forEach(function (button) {
+        var isActive = selectedId !== '' && button.getAttribute('data-source-preview-thumbnail-id') === selectedId &&
+            !button.classList.contains('is-disabled');
+        var layerId = button.getAttribute('data-source-preview-thumbnail-id') || '';
+        var layer = layerId ? root.querySelector('[data-source-preview-layer="1"][data-source-preview-layer-id="' + layerId + '"]') : null;
+        var isHiddenInPreview = !!(layer && localCourseBannerBuilderIsSourcePreviewLayerHiddenInPreview(layer));
+        button.classList.toggle('is-active', isActive);
+        button.classList.toggle('is-hidden-in-preview', isHiddenInPreview);
+        localCourseBannerBuilderSyncSourcePreviewThumbnailVisibilityButton(button, !isHiddenInPreview);
+        if (isActive) {
+            activeButton = button;
+        }
+    });
+    if (activeButton && activeButton.scrollIntoView) {
+        activeButton.scrollIntoView({behavior: 'smooth', inline: 'center', block: 'nearest'});
+    }
+    localCourseBannerBuilderUpdateSourcePreviewFilmstripNav(filmstrip);
+    localCourseBannerBuilderUpdateSourcePreviewVisibilityToggle(root);
+}
+
+function localCourseBannerBuilderIsSourcePreviewLayerHiddenInPreview(layer) {
+    return !!(layer && layer.classList &&
+        layer.classList.contains('local-course-banner-builder-source-preview-layer--hidden-in-preview'));
+}
+
+function localCourseBannerBuilderSetSourcePreviewLayerVisibleInPreview(root, layer, visible) {
+    if (!root || !layer) {
+        return;
+    }
+    if (!visible) {
+        localCourseBannerBuilderRemoveCropEditor(layer);
+    }
+    layer.classList.toggle('local-course-banner-builder-source-preview-layer--hidden-in-preview', !visible);
+    layer.setAttribute('data-source-preview-hidden-in-preview', visible ? '0' : '1');
+    if (!visible) {
+        layer.classList.remove('local-course-banner-builder-source-preview-layer--selected');
+        layer.removeAttribute('data-preview-current-layer');
+        layer.removeAttribute('data-preview-active-edge');
+    }
+}
+
+function localCourseBannerBuilderSyncSourcePreviewThumbnailVisibilityButton(thumbnail, visible) {
+    var button = thumbnail ? thumbnail.querySelector('[data-source-preview-thumbnail-visibility]') : null;
+    if (!button) {
+        return;
+    }
+    button.setAttribute('aria-pressed', visible ? 'false' : 'true');
+    button.setAttribute(
+        'aria-label',
+        visible ?
+            localCourseBannerBuilderGetJsString('hideimageinpreview', 'Hide image in preview') :
+            localCourseBannerBuilderGetJsString('showimageinpreview', 'Show image in preview')
+    );
+    button.innerHTML = visible ?
+        '<i class="fa fa-eye" aria-hidden="true"></i>' :
+        '<i class="fa fa-eye-slash" aria-hidden="true"></i>';
+}
+
+function localCourseBannerBuilderUpdateSourcePreviewVisibilityToggle(root) {
+    if (!root) {
+        return;
+    }
+    var row = root.querySelector('[data-source-preview-visibility-toggle-row="1"]');
+    var button = row ? row.querySelector('[data-action="local-course-banner-builder-toggle-all-source-preview-images"]') : null;
+    if (!row || !button) {
+        return;
+    }
+    var layers = Array.prototype.slice.call(root.querySelectorAll('[data-source-preview-layer="1"][data-source-preview-editable="1"]')).filter(function (layer) {
+        var image = layer.querySelector('[data-preview-image-tag="1"]');
+        return !!(image && (image.currentSrc || image.getAttribute('src')));
+    });
+    row.hidden = !layers.length;
+    button.hidden = !layers.length;
+    if (!layers.length) {
+        return;
+    }
+    var anyVisible = layers.some(function (layer) {
+        return !localCourseBannerBuilderIsSourcePreviewLayerHiddenInPreview(layer);
+    });
+    button.setAttribute('aria-pressed', anyVisible ? 'false' : 'true');
+    var toggleLabel = localCourseBannerBuilderGetJsString('showhideallimages', 'Show / hide all images');
+    button.innerHTML = anyVisible ?
+        '<i class="fa fa-eye-slash" aria-hidden="true"></i><span class="sr-only">' + toggleLabel + '</span>' :
+        '<i class="fa fa-eye" aria-hidden="true"></i><span class="sr-only">' + toggleLabel + '</span>';
+}
+
+function localCourseBannerBuilderToggleSourcePreviewThumbnailVisibility(button) {
+    var thumbnail = button ? button.closest('[data-source-preview-thumbnail-id]') : null;
+    var root = button ? button.closest('[data-source-visual-editor="1"]') : null;
+    var layerId = thumbnail ? (thumbnail.getAttribute('data-source-preview-thumbnail-id') || '') : '';
+    var layer = root && layerId ? root.querySelector('[data-source-preview-layer="1"][data-source-preview-layer-id="' + layerId + '"]') : null;
+    if (!root || !thumbnail || !layer) {
+        return;
+    }
+    var visible = localCourseBannerBuilderIsSourcePreviewLayerHiddenInPreview(layer);
+    localCourseBannerBuilderSetSourcePreviewLayerVisibleInPreview(root, layer, visible);
+    thumbnail.classList.toggle('is-hidden-in-preview', !visible);
+    localCourseBannerBuilderSyncSourcePreviewThumbnailVisibilityButton(thumbnail, visible);
+    localCourseBannerBuilderSyncSourcePreviewTopLayerButton(root);
+    localCourseBannerBuilderSyncSourcePreviewAboveOverlayButton(root);
+    localCourseBannerBuilderSyncSourcePreviewInheritedDepthButtons(root);
+    localCourseBannerBuilderSyncSourcePreviewCenterFixedButton(root);
+    localCourseBannerBuilderSyncSourcePreviewKeepAspectButton(root);
+    localCourseBannerBuilderSyncSourcePreviewOpacityButton(root);
+    localCourseBannerBuilderSyncSourcePreviewFitButton(root);
+    localCourseBannerBuilderSyncSourcePreviewFillButton(root);
+    localCourseBannerBuilderSyncSourcePreviewCropButtons(root);
+    localCourseBannerBuilderSyncSourcePreviewOrderButtons(root);
+    localCourseBannerBuilderSyncSourcePreviewDeleteButton(root);
+    localCourseBannerBuilderUpdateSourcePreviewVisibilityToggle(root);
+}
+
+function localCourseBannerBuilderToggleAllSourcePreviewImageVisibility(button) {
+    var root = button ? button.closest('[data-source-visual-editor="1"]') : null;
+    if (!root) {
+        return;
+    }
+    var layers = Array.prototype.slice.call(root.querySelectorAll('[data-source-preview-layer="1"][data-source-preview-editable="1"]')).filter(function (layer) {
+        var image = layer.querySelector('[data-preview-image-tag="1"]');
+        return !!(image && (image.currentSrc || image.getAttribute('src')));
+    });
+    if (!layers.length) {
+        return;
+    }
+    var shouldHide = layers.some(function (layer) {
+        return !localCourseBannerBuilderIsSourcePreviewLayerHiddenInPreview(layer);
+    });
+    layers.forEach(function (layer) {
+        localCourseBannerBuilderSetSourcePreviewLayerVisibleInPreview(root, layer, !shouldHide);
+    });
+    localCourseBannerBuilderUpdateSourcePreviewThumbnailSelection(root);
+    localCourseBannerBuilderSyncSourcePreviewTopLayerButton(root);
+    localCourseBannerBuilderSyncSourcePreviewAboveOverlayButton(root);
+    localCourseBannerBuilderSyncSourcePreviewInheritedDepthButtons(root);
+    localCourseBannerBuilderSyncSourcePreviewCenterFixedButton(root);
+    localCourseBannerBuilderSyncSourcePreviewKeepAspectButton(root);
+    localCourseBannerBuilderSyncSourcePreviewOpacityButton(root);
+    localCourseBannerBuilderSyncSourcePreviewFitButton(root);
+    localCourseBannerBuilderSyncSourcePreviewFillButton(root);
+    localCourseBannerBuilderSyncSourcePreviewCropButtons(root);
+    localCourseBannerBuilderSyncSourcePreviewDeleteButton(root);
+}
+
+function localCourseBannerBuilderSetSourcePreviewInheritedLayersVisible(root, visible) {
+    if (!root) {
+        return;
+    }
+    root.setAttribute('data-source-preview-inherited-visible', visible ? '1' : '0');
+    Array.prototype.slice.call(root.querySelectorAll('[data-source-preview-inherited="1"]')).forEach(function (layer) {
+        layer.classList.toggle('local-course-banner-builder-source-preview-layer--hidden-inherited', !visible);
+        layer.classList.toggle('local-course-banner-builder-source-preview-border--hidden-inherited', !visible);
+        layer.classList.toggle('local-course-banner-builder-source-preview-overlay--hidden-inherited', !visible);
+        layer.setAttribute('aria-hidden', visible ? 'false' : 'true');
+        if (!visible && layer.classList.contains('local-course-banner-builder-source-preview-layer--selected')) {
+            layer.classList.remove('local-course-banner-builder-source-preview-layer--selected');
+            layer.removeAttribute('data-preview-current-layer');
+            layer.removeAttribute('data-preview-active-edge');
+        }
+    });
+    localCourseBannerBuilderSyncSourcePreviewInheritedLayersButton(root);
+}
+
+function localCourseBannerBuilderSyncSourcePreviewInheritedLayersButton(root) {
+    if (!root) {
+        return;
+    }
+    var button = root.querySelector(
+        '[data-action="local-course-banner-builder-toggle-source-preview-inherited-layers"]'
+    );
+    if (!button) {
+        return;
+    }
+    var hasInherited = !!root.querySelector('[data-source-preview-inherited="1"]');
+    button.hidden = !hasInherited;
+    button.disabled = !hasInherited;
+    button.classList.toggle('disabled', !hasInherited);
+    button.setAttribute('aria-disabled', hasInherited ? 'false' : 'true');
+    if (!hasInherited) {
+        return;
+    }
+    var visible = root.getAttribute('data-source-preview-inherited-visible') === '1';
+    button.setAttribute('data-inherited-visible', visible ? '1' : '0');
+    button.setAttribute('aria-pressed', visible ? 'true' : 'false');
+    localCourseBannerBuilderSetActionButtonContent(
+        button,
+        visible ? (button.getAttribute('data-hide-icon') || 'fa-eye-slash') :
+            (button.getAttribute('data-show-icon') || 'fa-eye'),
+        visible ? (button.getAttribute('data-hide-label') || '') :
+            (button.getAttribute('data-show-label') || '')
+    );
+}
+
+function localCourseBannerBuilderToggleSourcePreviewInheritedLayers(button) {
+    var root = button ? button.closest('[data-source-visual-editor="1"]') : null;
+    if (!root) {
+        return;
+    }
+    var visible = root.getAttribute('data-source-preview-inherited-visible') === '1';
+    localCourseBannerBuilderSetSourcePreviewInheritedLayersVisible(root, !visible);
+}
+
+function localCourseBannerBuilderSyncSourcePreviewThumbnails(root) {
+    if (!root) {
+        return;
+    }
+    var filmstrip = root.querySelector('[data-source-preview-filmstrip="1"]');
+    if (!filmstrip) {
+        return;
+    }
+    var layers = Array.prototype.slice.call(root.querySelectorAll('[data-source-preview-layer="1"][data-source-preview-editable="1"]')).filter(function (layer) {
+        var image = layer.querySelector('[data-preview-image-tag="1"]');
+        return !!(image && (image.currentSrc || image.getAttribute('src')));
+    });
+    var selected = root.querySelector('.local-course-banner-builder-source-preview-layer--selected');
+    var signature = localCourseBannerBuilderGetSourcePreviewThumbnailSignature(layers);
+    if (filmstrip.dataset.sourcePreviewFilmstripSignature === signature &&
+            filmstrip.querySelector('[data-source-preview-filmstrip-track="1"]')) {
+        filmstrip.hidden = !layers.length;
+        localCourseBannerBuilderUpdateSourcePreviewThumbnailSelection(root);
+        return;
+    }
+    filmstrip.innerHTML = '';
+    filmstrip.hidden = !layers.length;
+    filmstrip.dataset.sourcePreviewFilmstripSignature = signature;
+    if (!layers.length) {
+        return;
+    }
+    var previousButton = document.createElement('button');
+    previousButton.type = 'button';
+    previousButton.className = 'btn btn-link local-course-banner-builder-source-preview-filmstrip-nav local-course-banner-builder-source-preview-filmstrip-nav--previous';
+    previousButton.setAttribute('data-action', 'local-course-banner-builder-scroll-source-preview-filmstrip');
+    previousButton.setAttribute('data-source-preview-filmstrip-direction', '-1');
+    previousButton.setAttribute('aria-label', localCourseBannerBuilderGetJsString('previousimages', ''));
+    previousButton.innerHTML = '<i class="icon fa fa-chevron-left fa-fw" aria-hidden="true"></i>';
+    var track = document.createElement('div');
+    track.className = 'local-course-banner-builder-source-preview-filmstrip-track';
+    track.setAttribute('data-source-preview-filmstrip-track', '1');
+    var nextButton = document.createElement('button');
+    nextButton.type = 'button';
+    nextButton.className = 'btn btn-link local-course-banner-builder-source-preview-filmstrip-nav local-course-banner-builder-source-preview-filmstrip-nav--next';
+    nextButton.setAttribute('data-action', 'local-course-banner-builder-scroll-source-preview-filmstrip');
+    nextButton.setAttribute('data-source-preview-filmstrip-direction', '1');
+    nextButton.setAttribute('aria-label', localCourseBannerBuilderGetJsString('nextimages', ''));
+    nextButton.innerHTML = '<i class="icon fa fa-chevron-right fa-fw" aria-hidden="true"></i>';
+    filmstrip.appendChild(previousButton);
+    filmstrip.appendChild(track);
+    filmstrip.appendChild(nextButton);
+    layers.forEach(function (layer, index) {
+        var image = layer.querySelector('[data-preview-image-tag="1"]');
+        var layerId = layer.getAttribute('data-source-preview-layer-id') || '';
+        var isDisabled = !localCourseBannerBuilderIsSourcePreviewLayerEnabled(layer);
+        var disabledLabel = localCourseBannerBuilderGetJsString('disabledlayerthumbnail', '');
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'local-course-banner-builder-source-preview-thumbnail';
+        button.setAttribute('data-action', 'local-course-banner-builder-select-source-preview-thumbnail');
+        button.setAttribute('data-source-preview-thumbnail-id', layerId);
+        button.setAttribute(
+            'aria-label',
+            localCourseBannerBuilderGetJsString('selectlayer', '') + ' ' + (index + 1)
+        );
+        button.classList.toggle('is-active', layer === selected && !isDisabled);
+        button.classList.toggle('is-disabled', isDisabled);
+        button.classList.toggle('is-hidden-in-preview', localCourseBannerBuilderIsSourcePreviewLayerHiddenInPreview(layer));
+        var thumb = document.createElement('img');
+        thumb.src = image.currentSrc || image.getAttribute('src') || '';
+        thumb.alt = '';
+        button.appendChild(thumb);
+        var visibilityButton = document.createElement('span');
+        visibilityButton.setAttribute('role', 'button');
+        visibilityButton.setAttribute('tabindex', '0');
+        visibilityButton.className = 'local-course-banner-builder-source-preview-thumbnail-visibility';
+        visibilityButton.setAttribute('data-action', 'local-course-banner-builder-toggle-source-preview-thumbnail-visibility');
+        visibilityButton.setAttribute('data-source-preview-thumbnail-visibility', '1');
+        visibilityButton.setAttribute('aria-pressed',
+            localCourseBannerBuilderIsSourcePreviewLayerHiddenInPreview(layer) ? 'true' : 'false');
+        visibilityButton.setAttribute('aria-label',
+            localCourseBannerBuilderIsSourcePreviewLayerHiddenInPreview(layer) ?
+                localCourseBannerBuilderGetJsString('showimageinpreview', '') :
+                localCourseBannerBuilderGetJsString('hideimageinpreview', ''));
+        visibilityButton.innerHTML = localCourseBannerBuilderIsSourcePreviewLayerHiddenInPreview(layer) ?
+            '<i class="fa fa-eye-slash" aria-hidden="true"></i>' :
+            '<i class="fa fa-eye" aria-hidden="true"></i>';
+        button.appendChild(visibilityButton);
+        if (isDisabled) {
+            button.setAttribute('data-toggle', 'popover');
+            button.setAttribute('data-placement', 'top');
+            button.setAttribute('data-html', 'true');
+            button.setAttribute('data-trigger', 'hover');
+            button.setAttribute('data-content', '<div class="no-overflow"><p>' + disabledLabel + '</p></div>');
+            button.setAttribute('aria-label', disabledLabel);
+            var badge = document.createElement('span');
+            badge.className = 'local-course-banner-builder-source-preview-thumbnail-disabled-badge';
+            badge.textContent = 'D';
+            button.appendChild(badge);
+        }
+        track.appendChild(button);
+    });
+    var addButton = document.createElement('button');
+    addButton.type = 'button';
+    addButton.className = 'local-course-banner-builder-source-preview-thumbnail ' +
+        'local-course-banner-builder-source-preview-thumbnail--add';
+    addButton.setAttribute('aria-label', localCourseBannerBuilderGetJsString('addlayer', 'Add one or more layer(s)'));
+    if (root.getAttribute('data-has-source-settings') === '0') {
+        addButton.disabled = true;
+        addButton.setAttribute('aria-disabled', 'true');
+    } else {
+        addButton.setAttribute('data-toggle', 'modal');
+        addButton.setAttribute('data-target', '#local-course-banner-builder-add-layer-modal');
+        addButton.setAttribute('data-bs-toggle', 'modal');
+        addButton.setAttribute('data-bs-target', '#local-course-banner-builder-add-layer-modal');
+    }
+    addButton.innerHTML = '<i class="fa fa-plus" aria-hidden="true"></i>';
+    track.appendChild(addButton);
+    track.addEventListener('scroll', function () {
+        localCourseBannerBuilderUpdateSourcePreviewFilmstripNav(filmstrip);
+    }, {passive: true});
+    window.requestAnimationFrame(function () {
+        var active = track.querySelector('.local-course-banner-builder-source-preview-thumbnail.is-active');
+        if (active && active.scrollIntoView) {
+            active.scrollIntoView({behavior: 'smooth', inline: 'center', block: 'nearest'});
+        }
+        localCourseBannerBuilderUpdateSourcePreviewFilmstripNav(filmstrip);
+    });
+    localCourseBannerBuilderInitPopovers(filmstrip);
+    localCourseBannerBuilderUpdateSourcePreviewVisibilityToggle(root);
+}
+
+function localCourseBannerBuilderUpdateSourcePreviewFilmstripNav(filmstrip) {
+    if (!filmstrip) {
+        return;
+    }
+    var track = filmstrip.querySelector('[data-source-preview-filmstrip-track="1"]');
+    var previousButton = filmstrip.querySelector('[data-source-preview-filmstrip-direction="-1"]');
+    var nextButton = filmstrip.querySelector('[data-source-preview-filmstrip-direction="1"]');
+    if (!track || !previousButton || !nextButton) {
+        return;
+    }
+    var isOverflowing = track.scrollWidth > track.clientWidth + 2;
+    filmstrip.classList.toggle('is-overflowing', isOverflowing);
+    previousButton.classList.remove('is-hidden');
+    nextButton.classList.remove('is-hidden');
+    previousButton.setAttribute('aria-hidden', 'false');
+    nextButton.setAttribute('aria-hidden', 'false');
+    previousButton.disabled = !isOverflowing || track.scrollLeft <= 1;
+    nextButton.disabled = !isOverflowing || (track.scrollLeft + track.clientWidth >= track.scrollWidth - 1);
+}
+
+function localCourseBannerBuilderScrollSourcePreviewFilmstrip(button) {
+    var filmstrip = button ? button.closest('[data-source-preview-filmstrip="1"]') : null;
+    var track = filmstrip ? filmstrip.querySelector('[data-source-preview-filmstrip-track="1"]') : null;
+    if (!filmstrip || !track) {
+        return;
+    }
+    var direction = parseInt(button.getAttribute('data-source-preview-filmstrip-direction') || '1', 10) || 1;
+    var scrollAmount = Math.max(120, Math.round(track.clientWidth * 0.72));
+    var maxScrollLeft = Math.max(0, track.scrollWidth - track.clientWidth);
+    var targetScrollLeft = Math.max(0, Math.min(maxScrollLeft, track.scrollLeft + (direction * scrollAmount)));
+    if (direction < 0 && targetScrollLeft < scrollAmount * 0.45) {
+        targetScrollLeft = 0;
+    }
+    if (direction > 0 && (maxScrollLeft - targetScrollLeft) < scrollAmount * 0.45) {
+        targetScrollLeft = maxScrollLeft;
+    }
+    track.scrollTo({
+        left: targetScrollLeft,
+        behavior: 'smooth'
+    });
+    window.setTimeout(function () {
+        localCourseBannerBuilderUpdateSourcePreviewFilmstripNav(filmstrip);
+    }, 280);
+}
+
+function localCourseBannerBuilderSelectSourcePreviewThumbnail(button) {
+    var root = button ? button.closest('[data-source-visual-editor="1"]') : null;
+    if (!root) {
+        return;
+    }
+    if (button.classList && button.classList.contains('is-disabled')) {
+        return;
+    }
+    var layerId = button.getAttribute('data-source-preview-thumbnail-id') || '';
+    var layer = layerId ? root.querySelector('[data-source-preview-layer="1"][data-source-preview-layer-id="' + layerId + '"]') : null;
+    if (layer && localCourseBannerBuilderIsSourcePreviewLayerEnabled(layer)) {
+        localCourseBannerBuilderSelectSourcePreviewLayer(root, layer);
+        localCourseBannerBuilderUpdateSourcePreviewThumbnailSelection(root);
+    }
+}
+
+function localCourseBannerBuilderDeleteSelectedPreviewLayer(button) {
+    var root = button ? button.closest('[data-source-visual-editor="1"]') : null;
+    var layer = root ? root.querySelector('.local-course-banner-builder-source-preview-layer--selected') : null;
+    var layerId = layer ? (layer.getAttribute('data-source-preview-layer-id') || '') : '';
+    if (!root || !layerId) {
+        return;
+    }
+    var message = button.getAttribute('data-confirm-message') ||
+        localCourseBannerBuilderGetJsString('areyousure', 'Are you sure?');
+    if (!window.confirm(message)) {
+        return;
+    }
+    var formData = new FormData();
+    formData.append('sesskey', M.cfg.sesskey || '');
+    formData.append('sourcekey', root.getAttribute('data-sourcekey') || '');
+    formData.append('deletepreviewlayerajax', layerId);
+    fetch(window.location.href, {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin',
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    }).then(function (response) {
+        if (!response.ok) {
+            throw new Error(localCourseBannerBuilderGetJsString(
+                'unabletodeleteselectedlayer',
+                'Unable to delete selected layer'
+            ));
+        }
+        return response.json();
+    }).then(function (data) {
+        if (!data || !data.success || typeof data.html !== 'string') {
+            throw new Error(localCourseBannerBuilderGetJsString(
+                'invaliddeleteselectedlayerresponse',
+                'Invalid delete-selected-layer response'
+            ));
+        }
+        var host = document.querySelector('[data-selected-source-content="1"]');
+        if (!host) {
+            return;
+        }
+        host.innerHTML = data.html;
+        var replacement = host.querySelector('[data-selected-source-content="1"]');
+        if (replacement) {
+            host.replaceWith(replacement);
+            host = replacement;
+        }
+        localCourseBannerBuilderRehydrateSelectedSourceContent(host);
+        localCourseBannerBuilderRemoveLayerFromLayerModals(layerId);
+    }).catch(function (error) {
+        window.console.error(error);
+        window.alert(error.message || localCourseBannerBuilderGetJsString(
+            'unabletodeleteselectedlayer',
+            'Unable to delete selected layer'
+        ));
+    });
+}
+
+function localCourseBannerBuilderReadLayerFormPreviewState(form) {
+    if (!form) {
+        return null;
+    }
+    var fitOverride = form.querySelector('#id_fitmodeoverride');
+    var anchorInput = form.querySelector('[data-layer-position-anchor="1"]');
+    var widthInput = form.querySelector('#id_customwidthpercent');
+    var heightInput = form.querySelector('#id_customheightpercent');
+    var keepAspectInput = form.querySelector('[data-custom-size-keep-aspect="1"][type="checkbox"]');
+    var dynamicInput = form.querySelector('#id_dynamicimagesizeenabled');
+    var aboveOverlayInput = form.querySelector('#id_imageaboveoverlayenabled');
+    var belowInheritedInput = form.querySelector('#id_imagebelowinheritedenabled');
+    var aboveInheritedInput = form.querySelector('#id_imageaboveinheritedenabled');
+    var centerFixedInput = form.querySelector('#id_imagecenterfixed');
+    var imageOpacityInput = form.querySelector('#id_imageopacity');
+    var cropEnabledInput = form.querySelector('#id_imagecropenabled');
+    var cropLeftInput = form.querySelector('#id_imagecropleftpercent');
+    var cropTopInput = form.querySelector('#id_imagecroptoppercent');
+    var cropWidthInput = form.querySelector('#id_imagecropwidthpercent');
+    var cropHeightInput = form.querySelector('#id_imagecropheightpercent');
+    if (imageOpacityInput && imageOpacityInput.value === '') {
+        imageOpacityInput.value = '100';
+    }
+    var offsetTopInput = form.querySelector('#id_offsettoppercent');
+    var offsetRightInput = form.querySelector('#id_offsetrightpercent');
+    var offsetBottomInput = form.querySelector('#id_offsetbottompercent');
+    var offsetLeftInput = form.querySelector('#id_offsetleftpercent');
+    var overlayContext = localCourseBannerBuilderGetOverlayOrderingContext(form);
+    var currentLayer = localCourseBannerBuilderGetEditableCurrentPreviewImage(form);
+    var image = currentLayer ? currentLayer.querySelector('[data-preview-image-tag="1"]') : null;
+    var dynamicEnabled = !!(dynamicInput && dynamicInput.checked);
+    var aboveOverlayEnabled = !!(aboveOverlayInput && aboveOverlayInput.checked);
+    var belowInheritedEnabled = !!(belowInheritedInput && belowInheritedInput.checked);
+    var aboveInheritedEnabled = !!(aboveInheritedInput && aboveInheritedInput.checked);
+    if (belowInheritedEnabled) {
+        dynamicEnabled = false;
+        aboveOverlayEnabled = false;
+        aboveInheritedEnabled = false;
+        if (dynamicInput) {
+            dynamicInput.checked = false;
+        }
+        if (aboveOverlayInput) {
+            aboveOverlayInput.checked = false;
+        }
+        if (aboveInheritedInput) {
+            aboveInheritedInput.checked = false;
+        }
+    } else if (aboveInheritedEnabled) {
+        dynamicEnabled = false;
+        aboveOverlayEnabled = false;
+        if (dynamicInput) {
+            dynamicInput.checked = false;
+        }
+        if (aboveOverlayInput) {
+            aboveOverlayInput.checked = false;
+        }
+    }
+    if (dynamicEnabled && overlayContext.hasOverlay && overlayContext.borderAbove) {
+        aboveOverlayEnabled = true;
+        if (aboveOverlayInput) {
+            aboveOverlayInput.checked = true;
+        }
+    }
+
+    return {
+        fitmodeoverride: fitOverride ? (fitOverride.value || '') : '',
+        positionanchor: anchorInput ? (anchorInput.value || 'center') : 'center',
+        customwidthpercent: localCourseBannerBuilderNormaliseNumericValue(widthInput ? widthInput.value : '100', 100),
+        customheightpercent: localCourseBannerBuilderNormaliseNumericValue(heightInput ? heightInput.value : '100', 100),
+        customsizekeepaspect: !!(keepAspectInput && keepAspectInput.checked),
+        dynamicimagesizeenabled: dynamicEnabled,
+        imageaboveoverlayenabled: aboveOverlayEnabled,
+        imagebelowinheritedenabled: belowInheritedEnabled,
+        imageaboveinheritedenabled: aboveInheritedEnabled,
+        imagecenterfixed: !!(centerFixedInput && centerFixedInput.checked),
+        imageopacity: localCourseBannerBuilderClampPercent(imageOpacityInput ? imageOpacityInput.value : '100', 100),
+        imagecropenabled: cropEnabledInput ?
+            cropEnabledInput.value === '1' :
+            !!(currentLayer && currentLayer.getAttribute('data-preview-crop-enabled') === '1'),
+        imagecropleftpercent: localCourseBannerBuilderClampPercent(
+            cropLeftInput ? cropLeftInput.value : (currentLayer ? currentLayer.getAttribute('data-preview-crop-left') : '0'),
+            0
+        ),
+        imagecroptoppercent: localCourseBannerBuilderClampPercent(
+            cropTopInput ? cropTopInput.value : (currentLayer ? currentLayer.getAttribute('data-preview-crop-top') : '0'),
+            0
+        ),
+        imagecropwidthpercent: localCourseBannerBuilderClampCropSize(
+            cropWidthInput ? cropWidthInput.value : (currentLayer ? currentLayer.getAttribute('data-preview-crop-width') : '100')
+        ),
+        imagecropheightpercent: localCourseBannerBuilderClampCropSize(
+            cropHeightInput ? cropHeightInput.value : (currentLayer ? currentLayer.getAttribute('data-preview-crop-height') : '100')
+        ),
+        imagecropsourceleftpercent: localCourseBannerBuilderNormaliseNumericValue(
+            currentLayer ? currentLayer.getAttribute('data-preview-crop-source-left') : '0',
+            0
+        ),
+        imagecropsourcetoppercent: localCourseBannerBuilderNormaliseNumericValue(
+            currentLayer ? currentLayer.getAttribute('data-preview-crop-source-top') : '0',
+            0
+        ),
+        imagecropsourcewidthpercent: localCourseBannerBuilderNormaliseNumericValue(
+            currentLayer ? currentLayer.getAttribute('data-preview-crop-source-width') : '0',
+            0
+        ),
+        imagecropsourceheightpercent: localCourseBannerBuilderNormaliseNumericValue(
+            currentLayer ? currentLayer.getAttribute('data-preview-crop-source-height') : '0',
+            0
+        ),
+        offsettoppercent: localCourseBannerBuilderNormaliseNumericValue(offsetTopInput ? offsetTopInput.value : '0', 0),
+        offsetrightpercent: localCourseBannerBuilderNormaliseNumericValue(offsetRightInput ? offsetRightInput.value : '0', 0),
+        offsetbottompercent: localCourseBannerBuilderNormaliseNumericValue(offsetBottomInput ? offsetBottomInput.value : '0', 0),
+        offsetleftpercent: localCourseBannerBuilderNormaliseNumericValue(offsetLeftInput ? offsetLeftInput.value : '0', 0),
+        imagewidth: currentLayer ? localCourseBannerBuilderNormaliseNumericValue(
+            currentLayer.getAttribute('data-preview-natural-width') || (image ? image.naturalWidth : '0'),
+            0
+        ) : 0,
+        imageheight: currentLayer ? localCourseBannerBuilderNormaliseNumericValue(
+            currentLayer.getAttribute('data-preview-natural-height') || (image ? image.naturalHeight : '0'),
+            0
+        ) : 0,
+        url: currentLayer ? (currentLayer.getAttribute('data-preview-current-url') || (image ? image.getAttribute('src') : '')) : ''
+    };
+}
+
+function localCourseBannerBuilderReadLayerPreviewStateFromLayer(layer) {
+    if (!layer) {
+        return null;
+    }
+    var image = layer.querySelector('[data-preview-image-tag="1"]');
+    var state = {
+        fitmodeoverride: layer.getAttribute('data-preview-fitmode') || '',
+        positionanchor: layer.getAttribute('data-preview-anchor') || 'center',
+        customwidthpercent: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-custom-width') || '100', 100),
+        customheightpercent: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-custom-height') || '100', 100),
+        customsizekeepaspect: layer.getAttribute('data-preview-keep-aspect') === '1',
+        dynamicimagesizeenabled: layer.getAttribute('data-preview-dynamic-image') === '1',
+        imageaboveoverlayenabled: layer.getAttribute('data-preview-above-overlay') === '1',
+        imagebelowinheritedenabled: layer.getAttribute('data-preview-below-inherited') === '1',
+        imageaboveinheritedenabled: layer.getAttribute('data-preview-above-inherited') === '1',
+        imagecenterfixed: layer.getAttribute('data-preview-center-fixed') === '1',
+        imageopacity: localCourseBannerBuilderClampPercent(layer.getAttribute('data-preview-image-opacity') || '100', 100),
+        imagecropenabled: layer.getAttribute('data-preview-crop-enabled') === '1',
+        imagecropleftpercent: localCourseBannerBuilderClampPercent(layer.getAttribute('data-preview-crop-left') || '0', 0),
+        imagecroptoppercent: localCourseBannerBuilderClampPercent(layer.getAttribute('data-preview-crop-top') || '0', 0),
+        imagecropwidthpercent: localCourseBannerBuilderClampCropSize(layer.getAttribute('data-preview-crop-width') || '100'),
+        imagecropheightpercent: localCourseBannerBuilderClampCropSize(layer.getAttribute('data-preview-crop-height') || '100'),
+        imagecropsourceleftpercent: localCourseBannerBuilderNormaliseNumericValue(
+            layer.getAttribute('data-preview-crop-source-left') || '0',
+            0
+        ),
+        imagecropsourcetoppercent: localCourseBannerBuilderNormaliseNumericValue(
+            layer.getAttribute('data-preview-crop-source-top') || '0',
+            0
+        ),
+        imagecropsourcewidthpercent: localCourseBannerBuilderNormaliseNumericValue(
+            layer.getAttribute('data-preview-crop-source-width') || '0',
+            0
+        ),
+        imagecropsourceheightpercent: localCourseBannerBuilderNormaliseNumericValue(
+            layer.getAttribute('data-preview-crop-source-height') || '0',
+            0
+        ),
+        offsettoppercent: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-offset-top') || '0', 0),
+        offsetrightpercent: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-offset-right') || '0', 0),
+        offsetbottompercent: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-offset-bottom') || '0', 0),
+        offsetleftpercent: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-offset-left') || '0', 0),
+        imagewidth: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-natural-width') || (image ? image.naturalWidth : '0'), 0),
+        imageheight: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-natural-height') || (image ? image.naturalHeight : '0'), 0),
+        url: layer.getAttribute('data-preview-current-url') || (image ? image.getAttribute('src') : ''),
+        sortorder: parseInt(layer.getAttribute('data-preview-sortorder') || layer.getAttribute('data-draft-index') || '0', 10) || 0,
+        zindex: parseInt(layer.getAttribute('data-preview-zindex') || '', 10) ||
+            localCourseBannerBuilderGetDraftPreviewZIndex(layer.getAttribute('data-draft-index') || '0')
+    };
+    if (state.imagecropenabled && !localCourseBannerBuilderHasCropSourceState(state)) {
+        var liveCropSourceState = localCourseBannerBuilderGetCropEditSourceState(layer);
+        if (liveCropSourceState) {
+            state = Object.assign({}, state, liveCropSourceState);
+        }
+    }
+    return state;
+}
+
+function localCourseBannerBuilderSyncCurrentLayerDataFromForm(form) {
+    if (!form) {
+        return;
+    }
+    var currentLayer = localCourseBannerBuilderGetEditableCurrentPreviewImage(form);
+    if (!currentLayer) {
+        return;
+    }
+    var state = localCourseBannerBuilderReadLayerFormPreviewState(form);
+    if (!state) {
+        return;
+    }
+    currentLayer.setAttribute('data-preview-fitmode', state.fitmodeoverride || '');
+    currentLayer.setAttribute('data-preview-anchor', state.positionanchor || 'center');
+    currentLayer.setAttribute('data-preview-custom-width', String(state.customwidthpercent ?? 100));
+    currentLayer.setAttribute('data-preview-custom-height', String(state.customheightpercent ?? 100));
+    currentLayer.setAttribute('data-preview-keep-aspect', state.customsizekeepaspect ? '1' : '0');
+    currentLayer.setAttribute('data-preview-dynamic-image', state.dynamicimagesizeenabled ? '1' : '0');
+    currentLayer.setAttribute('data-preview-above-overlay', state.imageaboveoverlayenabled ? '1' : '0');
+    currentLayer.setAttribute('data-preview-below-inherited', state.imagebelowinheritedenabled ? '1' : '0');
+    currentLayer.setAttribute('data-preview-above-inherited', state.imageaboveinheritedenabled ? '1' : '0');
+    currentLayer.setAttribute('data-preview-center-fixed', state.imagecenterfixed ? '1' : '0');
+    currentLayer.setAttribute('data-preview-image-opacity', String(state.imageopacity ?? 100));
+    currentLayer.setAttribute('data-preview-crop-enabled', state.imagecropenabled ? '1' : '0');
+    currentLayer.setAttribute('data-preview-crop-left', String(state.imagecropleftpercent ?? 0));
+    currentLayer.setAttribute('data-preview-crop-top', String(state.imagecroptoppercent ?? 0));
+    currentLayer.setAttribute('data-preview-crop-width', String(state.imagecropwidthpercent ?? 100));
+    currentLayer.setAttribute('data-preview-crop-height', String(state.imagecropheightpercent ?? 100));
+    if (Number(state.imagecropsourcewidthpercent || 0) > 0 &&
+            Number(state.imagecropsourceheightpercent || 0) > 0) {
+        currentLayer.setAttribute('data-preview-crop-source-left', String(state.imagecropsourceleftpercent ?? 0));
+        currentLayer.setAttribute('data-preview-crop-source-top', String(state.imagecropsourcetoppercent ?? 0));
+        currentLayer.setAttribute('data-preview-crop-source-width', String(state.imagecropsourcewidthpercent));
+        currentLayer.setAttribute('data-preview-crop-source-height', String(state.imagecropsourceheightpercent));
+    } else if (!state.imagecropenabled) {
+        currentLayer.removeAttribute('data-preview-crop-source-left');
+        currentLayer.removeAttribute('data-preview-crop-source-top');
+        currentLayer.removeAttribute('data-preview-crop-source-width');
+        currentLayer.removeAttribute('data-preview-crop-source-height');
+    }
+    localCourseBannerBuilderUpdateCropSelectionFrame(currentLayer, localCourseBannerBuilderNormaliseCropState(state));
+    currentLayer.setAttribute('data-preview-offset-top', String(state.offsettoppercent ?? 0));
+    currentLayer.setAttribute('data-preview-offset-right', String(state.offsetrightpercent ?? 0));
+    currentLayer.setAttribute('data-preview-offset-bottom', String(state.offsetbottompercent ?? 0));
+    currentLayer.setAttribute('data-preview-offset-left', String(state.offsetleftpercent ?? 0));
+    currentLayer.setAttribute('data-preview-natural-width', String(state.imagewidth ?? 0));
+    currentLayer.setAttribute('data-preview-natural-height', String(state.imageheight ?? 0));
+    var currentImage = currentLayer.querySelector('[data-preview-image-tag="1"]');
+    var currentUrl = state.url || currentLayer.getAttribute('data-preview-current-url') ||
+        (currentImage ? (currentImage.getAttribute('src') || '') : '');
+    if (currentUrl) {
+        currentLayer.setAttribute('data-preview-current-url', currentUrl);
+    }
+}
+
+function localCourseBannerBuilderApplyLayerFormPreviewState(form, state) {
+    if (!form || !state) {
+        return;
+    }
+    var fitOverride = form.querySelector('#id_fitmodeoverride');
+    var anchorInput = form.querySelector('[data-layer-position-anchor="1"]');
+    var widthInput = form.querySelector('#id_customwidthpercent');
+    var heightInput = form.querySelector('#id_customheightpercent');
+    var keepAspectInput = form.querySelector('[data-custom-size-keep-aspect="1"][type="checkbox"]');
+    var dynamicInput = form.querySelector('#id_dynamicimagesizeenabled');
+    var aboveOverlayInput = form.querySelector('#id_imageaboveoverlayenabled');
+    var belowInheritedInput = form.querySelector('#id_imagebelowinheritedenabled');
+    var aboveInheritedInput = form.querySelector('#id_imageaboveinheritedenabled');
+    var centerFixedInput = form.querySelector('#id_imagecenterfixed');
+    var imageOpacityInput = form.querySelector('#id_imageopacity');
+    var cropEnabledInput = form.querySelector('#id_imagecropenabled');
+    var cropLeftInput = form.querySelector('#id_imagecropleftpercent');
+    var cropTopInput = form.querySelector('#id_imagecroptoppercent');
+    var cropWidthInput = form.querySelector('#id_imagecropwidthpercent');
+    var cropHeightInput = form.querySelector('#id_imagecropheightpercent');
+    var offsetTopInput = form.querySelector('#id_offsettoppercent');
+    var offsetRightInput = form.querySelector('#id_offsetrightpercent');
+    var offsetBottomInput = form.querySelector('#id_offsetbottompercent');
+    var offsetLeftInput = form.querySelector('#id_offsetleftpercent');
+    var currentLayer = localCourseBannerBuilderGetEditableCurrentPreviewImage(form);
+    var image = currentLayer ? currentLayer.querySelector('[data-preview-image-tag="1"]') : null;
+
+    if (fitOverride) {
+        fitOverride.value = state.fitmodeoverride || '';
+    }
+    if (anchorInput) {
+        anchorInput.value = state.positionanchor || 'center';
+    }
+    if (widthInput) {
+        widthInput.value = String(state.customwidthpercent ?? 100);
+    }
+    if (heightInput) {
+        heightInput.value = String(state.customheightpercent ?? 100);
+    }
+    if (keepAspectInput) {
+        keepAspectInput.checked = !!state.customsizekeepaspect;
+    }
+    if (dynamicInput) {
+        dynamicInput.checked = !!state.dynamicimagesizeenabled;
+    }
+    if (aboveOverlayInput) {
+        aboveOverlayInput.checked = !!state.imageaboveoverlayenabled;
+    }
+    if (belowInheritedInput) {
+        belowInheritedInput.checked = !!state.imagebelowinheritedenabled;
+    }
+    if (aboveInheritedInput) {
+        aboveInheritedInput.checked = !!state.imageaboveinheritedenabled;
+    }
+    if (centerFixedInput) {
+        centerFixedInput.checked = !!state.imagecenterfixed;
+    }
+    if (imageOpacityInput) {
+        imageOpacityInput.value = String(state.imageopacity ?? 100);
+        localCourseBannerBuilderSetOpacityPanelValue(
+            form.querySelector('[data-preview-opacity-panel="modal"]'),
+            state.imageopacity ?? 100
+        );
+    }
+    if (cropEnabledInput) {
+        cropEnabledInput.value = state.imagecropenabled ? '1' : '0';
+    }
+    if (cropLeftInput) {
+        cropLeftInput.value = String(state.imagecropleftpercent ?? 0);
+    }
+    if (cropTopInput) {
+        cropTopInput.value = String(state.imagecroptoppercent ?? 0);
+    }
+    if (cropWidthInput) {
+        cropWidthInput.value = String(state.imagecropwidthpercent ?? 100);
+    }
+    if (cropHeightInput) {
+        cropHeightInput.value = String(state.imagecropheightpercent ?? 100);
+    }
+    if (offsetTopInput) {
+        offsetTopInput.value = String(state.offsettoppercent ?? 0);
+    }
+    if (offsetRightInput) {
+        offsetRightInput.value = String(state.offsetrightpercent ?? 0);
+    }
+    if (offsetBottomInput) {
+        offsetBottomInput.value = String(state.offsetbottompercent ?? 0);
+    }
+    if (offsetLeftInput) {
+        offsetLeftInput.value = String(state.offsetleftpercent ?? 0);
+    }
+    if (currentLayer) {
+        currentLayer.setAttribute('data-preview-fitmode', state.fitmodeoverride || '');
+        currentLayer.setAttribute('data-preview-anchor', state.positionanchor || 'center');
+        currentLayer.setAttribute('data-preview-custom-width', String(state.customwidthpercent ?? 100));
+        currentLayer.setAttribute('data-preview-custom-height', String(state.customheightpercent ?? 100));
+        currentLayer.setAttribute('data-preview-keep-aspect', state.customsizekeepaspect ? '1' : '0');
+        currentLayer.setAttribute('data-preview-dynamic-image', state.dynamicimagesizeenabled ? '1' : '0');
+        currentLayer.setAttribute('data-preview-above-overlay', state.imageaboveoverlayenabled ? '1' : '0');
+        currentLayer.setAttribute('data-preview-below-inherited', state.imagebelowinheritedenabled ? '1' : '0');
+        currentLayer.setAttribute('data-preview-above-inherited', state.imageaboveinheritedenabled ? '1' : '0');
+        currentLayer.setAttribute('data-preview-center-fixed', state.imagecenterfixed ? '1' : '0');
+        currentLayer.setAttribute('data-preview-image-opacity', String(state.imageopacity ?? 100));
+        currentLayer.setAttribute('data-preview-crop-enabled', state.imagecropenabled ? '1' : '0');
+        currentLayer.setAttribute('data-preview-crop-left', String(state.imagecropleftpercent ?? 0));
+        currentLayer.setAttribute('data-preview-crop-top', String(state.imagecroptoppercent ?? 0));
+        currentLayer.setAttribute('data-preview-crop-width', String(state.imagecropwidthpercent ?? 100));
+        currentLayer.setAttribute('data-preview-crop-height', String(state.imagecropheightpercent ?? 100));
+        if (Number(state.imagecropsourcewidthpercent || 0) > 0 &&
+                Number(state.imagecropsourceheightpercent || 0) > 0) {
+            currentLayer.setAttribute('data-preview-crop-source-left', String(state.imagecropsourceleftpercent ?? 0));
+            currentLayer.setAttribute('data-preview-crop-source-top', String(state.imagecropsourcetoppercent ?? 0));
+            currentLayer.setAttribute('data-preview-crop-source-width', String(state.imagecropsourcewidthpercent));
+            currentLayer.setAttribute('data-preview-crop-source-height', String(state.imagecropsourceheightpercent));
+        } else {
+            currentLayer.removeAttribute('data-preview-crop-source-left');
+            currentLayer.removeAttribute('data-preview-crop-source-top');
+            currentLayer.removeAttribute('data-preview-crop-source-width');
+            currentLayer.removeAttribute('data-preview-crop-source-height');
+        }
+        localCourseBannerBuilderUpdateCropSelectionFrame(
+            currentLayer,
+            localCourseBannerBuilderNormaliseCropState(state)
+        );
+        currentLayer.setAttribute('data-preview-offset-top', String(state.offsettoppercent ?? 0));
+        currentLayer.setAttribute('data-preview-offset-right', String(state.offsetrightpercent ?? 0));
+        currentLayer.setAttribute('data-preview-offset-bottom', String(state.offsetbottompercent ?? 0));
+        currentLayer.setAttribute('data-preview-offset-left', String(state.offsetleftpercent ?? 0));
+        currentLayer.setAttribute('data-preview-natural-width', String(state.imagewidth ?? 0));
+        currentLayer.setAttribute('data-preview-natural-height', String(state.imageheight ?? 0));
+        var currentUrl = state.url || currentLayer.getAttribute('data-preview-current-url') ||
+            (image ? (image.getAttribute('src') || '') : '');
+        if (currentUrl) {
+            currentLayer.setAttribute('data-preview-current-url', currentUrl);
+        }
+        if (typeof state.sortorder !== 'undefined') {
+            currentLayer.setAttribute('data-preview-sortorder', String(state.sortorder));
+        }
+        if (typeof state.zindex !== 'undefined') {
+            currentLayer.setAttribute('data-preview-zindex', String(state.zindex));
+        }
+    }
+    if (image && state.url) {
+        image.setAttribute('src', state.url);
+        image.hidden = false;
+        if (image.complete && image.naturalWidth && image.naturalHeight) {
+            state.imagewidth = image.naturalWidth;
+            state.imageheight = image.naturalHeight;
+            if (currentLayer) {
+                currentLayer.setAttribute('data-preview-natural-width', String(state.imagewidth));
+                currentLayer.setAttribute('data-preview-natural-height', String(state.imageheight));
+            }
+        }
+    }
+
+    localCourseBannerBuilderSyncCurrentLayerDataFromForm(form);
+    localCourseBannerBuilderSyncCustomSizeFields(form);
+    localCourseBannerBuilderSyncOffsetFields(form);
+    localCourseBannerBuilderBindPercentSliders(form);
+    form.dataset.previewUserChanged = '0';
+    localCourseBannerBuilderSyncLayerBannerPreview(form);
+}
+
+function localCourseBannerBuilderGetDraftFileInfo(file, form) {
+    var url = file && file.url ? String(file.url) : '';
+    var itemIdInput = form ? form.querySelector('#id_bannerimage_filemanager') : null;
+    var info = {
+        itemid: itemIdInput ? (itemIdInput.value || '') : '',
+        filepath: '/',
+        filename: ''
+    };
+    var match = url.match(/\/draftfile\.php\/[^\/]+\/user\/draft\/([^\/]+)\/(.*)$/);
+    if (match) {
+        info.itemid = info.itemid || decodeURIComponent(match[1]);
+        var path = (match[2] || '').split('?')[0].split('#')[0];
+        var parts = path.split('/').filter(function (part) {
+            return part !== '';
+        });
+        if (parts.length) {
+            info.filename = decodeURIComponent(parts.pop());
+            info.filepath = parts.length ? ('/' + parts.map(function (part) {
+                return decodeURIComponent(part);
+            }).join('/') + '/') : '/';
+        }
+    }
+    if (!info.filename && file && file.name) {
+        info.filename = file.name;
+    }
+    return info;
+}
+
+function localCourseBannerBuilderDeleteDraftFileFromServer(file, form) {
+    var info = localCourseBannerBuilderGetDraftFileInfo(file, form);
+    if (!info.itemid || !info.filename || !(window.M && M.cfg && M.cfg.wwwroot)) {
+        return Promise.resolve(false);
+    }
+    var postDraftAction = function (action, body) {
+        return fetch(M.cfg.wwwroot + '/repository/draftfiles_ajax.php?action=' + action, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
+            body: body.toString()
+        }).then(function (response) {
+            if (!response.ok) {
+                return false;
+            }
+            return response.text().then(function (text) {
+                if (!text) {
+                    return true;
+                }
+                try {
+                    return JSON.parse(text) !== false;
+                } catch (error) {
+                    return true;
+                }
+            });
+        }).catch(function () {
+            return false;
+        });
+    };
+    var body = new URLSearchParams();
+    body.set('sesskey', (M.cfg && M.cfg.sesskey) ? M.cfg.sesskey : '');
+    body.set('itemid', info.itemid);
+    body.set('filepath', info.filepath || '/');
+    body.set('filename', info.filename);
+    return postDraftAction('delete', body).then(function (deleted) {
+        if (deleted) {
+            return true;
+        }
+        var selectedBody = new URLSearchParams();
+        selectedBody.set('sesskey', (M.cfg && M.cfg.sesskey) ? M.cfg.sesskey : '');
+        selectedBody.set('itemid', info.itemid);
+        selectedBody.set('selected', JSON.stringify([{
+            filepath: info.filepath || '/',
+            filename: info.filename
+        }]));
+        return postDraftAction('deleteselected', selectedBody);
+    });
+}
+
+function localCourseBannerBuilderScheduleDraftPreviewRefresh(form, delays) {
+    if (!form) {
+        return;
+    }
+    (delays || [220, 700, 1300]).forEach(function (delay) {
+        window.setTimeout(function () {
+            localCourseBannerBuilderMoveLayerPreviewToTop(form);
+            localCourseBannerBuilderSyncLayerInputModes(form);
+            localCourseBannerBuilderEnhanceBinaryOptionButtons(form);
+            localCourseBannerBuilderSyncLayerBannerPreview(form);
+            localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+        }, delay);
+    });
+}
+
+function localCourseBannerBuilderScheduleAllOpenDraftPreviewRefresh() {
+    Array.prototype.slice.call(document.querySelectorAll(
+        '#local-course-banner-builder-add-layer-modal form.mform,' +
+        '#local-course-banner-builder-edit-image-layer-modal form.mform,' +
+        '#local-course-banner-builder-edit-overlay-layer-modal form.mform,' +
+        '#local-course-banner-builder-edit-border-layer-modal form.mform'
+    )).forEach(function (form) {
+        localCourseBannerBuilderScheduleDraftPreviewRefresh(form);
+    });
+}
+
+function localCourseBannerBuilderSuppressDeletedDraftPreviewUrl(form, url) {
+    if (!form || !url) {
+        return;
+    }
+    form.dataset.deletedDraftPreviewUrl = localCourseBannerBuilderNormaliseDraftPreviewUrl(url);
+    form.dataset.deletedDraftPreviewUntil = String(Date.now() + 2200);
+}
+
+function localCourseBannerBuilderIsDraftPreviewUrlSuppressed(form, url) {
+    if (!form || !url || !form.dataset.deletedDraftPreviewUrl) {
+        return false;
+    }
+    var until = parseInt(form.dataset.deletedDraftPreviewUntil || '0', 10) || 0;
+    if (until && Date.now() > until) {
+        delete form.dataset.deletedDraftPreviewUrl;
+        delete form.dataset.deletedDraftPreviewUntil;
+        return false;
+    }
+    return localCourseBannerBuilderNormaliseDraftPreviewUrl(url) === form.dataset.deletedDraftPreviewUrl;
+}
+
+function localCourseBannerBuilderMarkDraftFileItemDeleted(form, item) {
+    if (!form || !item) {
+        return;
+    }
+    var settings = localCourseBannerBuilderGetDraftPreviewSettings(form);
+    var link = item.matches && item.matches('a[href*="/draftfile.php/"], a[href*="/pluginfile.php/"]') ?
+        item : item.querySelector('a[href*="/draftfile.php/"], a[href*="/pluginfile.php/"]');
+    var image = item.querySelector('img[src*="/draftfile.php/"], img[src*="/pluginfile.php/"]');
+    var nameNode = item.querySelector('.fp-filename, .fp-pathbar, .fp-thumbnail .fp-filename');
+    var url = link && link.getAttribute('href') ? link.getAttribute('href') :
+        (image ? (image.getAttribute('src') || '') : '');
+    url = localCourseBannerBuilderNormaliseDraftPreviewUrl(url);
+    var fallbackIndex = Array.prototype.indexOf.call(
+        form.querySelectorAll('#fitem_id_bannerimage_filemanager .fp-file:not(.fp-folder)'),
+        item
+    );
+    var stableIndex = localCourseBannerBuilderGetStableDraftPreviewIndex(form, url, fallbackIndex);
+    item.dataset.previewDraftIndex = stableIndex;
+    item.dataset.previewDraftIdentity = localCourseBannerBuilderGetDraftPreviewFileIdentity(url, fallbackIndex);
+    settings[stableIndex] = settings[stableIndex] || {};
+    settings[stableIndex].deleted = true;
+    settings[stableIndex].deletedurl = url;
+    settings[stableIndex].deletedfilename = nameNode ? nameNode.textContent.trim() : '';
+    localCourseBannerBuilderSuppressDeletedDraftPreviewUrl(form, url);
+    item.dataset.previewDeleted = '1';
+    item.hidden = true;
+    item.setAttribute('aria-hidden', 'true');
+    if (String(form.dataset.activeDraftIndex || '') === String(stableIndex)) {
+        form.dataset.activeDraftIndex = '';
+    }
+    localCourseBannerBuilderSetDraftPreviewSettings(form, settings);
+}
+
+function localCourseBannerBuilderMarkDraftFilemanagerSelectedFilesDeleted(form) {
+    if (!form) {
+        return;
+    }
+    var filemanager = form.querySelector('#fitem_id_bannerimage_filemanager');
+    if (!filemanager) {
+        return;
+    }
+    var selected = Array.prototype.slice.call(filemanager.querySelectorAll(
+        '.fp-file.fp-file-selected:not(.fp-folder),' +
+        '.fp-file.selected:not(.fp-folder),' +
+        '.fp-file.active:not(.fp-folder),' +
+        '.fp-file[aria-selected="true"]:not(.fp-folder)'
+    ));
+    if (!selected.length && form.dataset.activeDraftIndex) {
+        selected = Array.prototype.slice.call(filemanager.querySelectorAll('.fp-file:not(.fp-folder)')).filter(function (item) {
+            return String(item.dataset.previewDraftIndex || '') === String(form.dataset.activeDraftIndex);
+        });
+    }
+    selected.forEach(function (item) {
+        localCourseBannerBuilderMarkDraftFileItemDeleted(form, item);
+    });
+    if (!localCourseBannerBuilderGetDraftPreviewFiles(form).length) {
+        localCourseBannerBuilderClearDraftPreviewState(form, true);
+        localCourseBannerBuilderPruneDraftFilemanagerEmptyState(form);
+        localCourseBannerBuilderSyncLayerInputModes(form);
+        localCourseBannerBuilderEnhanceBinaryOptionButtons(form);
+        localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+    }
+}
+
+function localCourseBannerBuilderMarkDraftFilemanagerDeletionClick(target) {
+    if (!target || !target.closest) {
+        return;
+    }
+    var deleteControl = target.closest(
+        '.fp-file-delete,' +
+        '.fp-dlg-butdelete,' +
+        '.fp-dlg-butconfirm,' +
+        '.fp-delete,' +
+        '[id^="fm-delete"],' +
+        '[data-action="delete"]'
+    );
+    if (deleteControl) {
+        Array.prototype.slice.call(document.querySelectorAll(
+            '#local-course-banner-builder-add-layer-modal form.mform,' +
+            '#local-course-banner-builder-edit-image-layer-modal form.mform,' +
+            '#local-course-banner-builder-edit-overlay-layer-modal form.mform'
+        )).forEach(function (form) {
+            localCourseBannerBuilderMarkDraftFilemanagerSelectedFilesDeleted(form);
+        });
+        localCourseBannerBuilderScheduleAllOpenDraftPreviewRefresh();
+    }
+}
+
+document.addEventListener('click', function (e) {
+    localCourseBannerBuilderMarkDraftFilemanagerDeletionClick(e.target);
+}, true);
+
+/*
+ * Moodle's filemanager updates itself asynchronously after its own file dialog
+ * delete action. Keep the layer preview in lock-step with that widget.
+ */
+document.addEventListener('change', function (e) {
+    if (e.target && e.target.closest && e.target.closest('#fitem_id_bannerimage_filemanager')) {
+        localCourseBannerBuilderScheduleAllOpenDraftPreviewRefresh();
+    }
+}, true);
+
+function localCourseBannerBuilderClearDraftPreviewState(form, keepSettings) {
+    if (!form) {
+        return;
+    }
+    if (!keepSettings) {
+        localCourseBannerBuilderSetDraftPreviewSettings(form, {});
+    }
+    form.dataset.activeDraftIndex = '';
+    form.dataset.draftPreviewSignature = '';
+    form.dataset.draftPreviewRenderedActive = '';
+    form.dataset.previewUserChanged = '0';
+    localCourseBannerBuilderForgetCurrentPreviewImageUrl(form);
+    localCourseBannerBuilderClearDraftPreviewFilesCache(form);
+    var currentLayer = localCourseBannerBuilderGetEditableCurrentPreviewImage(form);
+    var currentImage = currentLayer ? currentLayer.querySelector('[data-preview-image-tag="1"]') : null;
+    if (currentLayer) {
+        currentLayer.hidden = true;
+        currentLayer.style.display = 'none';
+        localCourseBannerBuilderRemoveCropEditor(currentLayer);
+        localCourseBannerBuilderResetLayerFormCropState(form);
+        currentLayer.removeAttribute('data-preview-current-url');
+        currentLayer.removeAttribute('data-preview-current-layer');
+        currentLayer.removeAttribute('data-preview-draft-selection-overlay');
+        currentLayer.removeAttribute('data-preview-draft-layer');
+        currentLayer.removeAttribute('data-draft-index');
+        currentLayer.classList.remove('local-course-banner-builder-preview-draft-layer');
+    }
+    if (currentImage) {
+        currentImage.hidden = true;
+        currentImage.removeAttribute('src');
+        currentImage.style.display = 'none';
+    }
+    var host = form.querySelector('[data-preview-draft-layer-host="1"]');
+    if (host) {
+        host.innerHTML = '';
+    }
+}
+
+function localCourseBannerBuilderPruneDraftFilemanagerEmptyState(form) {
+    var filemanager = form ? form.querySelector('#fitem_id_bannerimage_filemanager') : null;
+    if (!filemanager) {
+        return;
+    }
+    var visibleFiles = filemanager.querySelectorAll('.fp-file:not(.fp-folder):not([hidden]):not([aria-hidden="true"])');
+    var container = filemanager.querySelector('.filemanager, .filemanager-container') || filemanager;
+    if (!container || !container.classList) {
+        return;
+    }
+    if (!visibleFiles.length) {
+        container.classList.add('fm-noitems');
+        container.classList.add('fm-nofiles');
+        container.classList.remove('fm-maxfiles');
+    } else {
+        container.classList.remove('fm-noitems');
+        container.classList.remove('fm-nofiles');
+    }
+}
+
+function localCourseBannerBuilderReindexDraftPreviewSettings(form, oldActiveIndex) {
+    if (!form) {
+        return [];
+    }
+    var visibleItems = Array.prototype.slice.call(
+        form.querySelectorAll('#fitem_id_bannerimage_filemanager .fp-file:not(.fp-folder)')
+    ).filter(function (item) {
+        return item.dataset.previewDeleted !== '1' && !item.hidden && item.getAttribute('aria-hidden') !== 'true';
+    });
+    var files = localCourseBannerBuilderGetDraftPreviewFiles(form);
+    if (!files.some(function (file) {
+            return String(file.index) === String(oldActiveIndex || '');
+        })) {
+        form.dataset.activeDraftIndex = files.length ? String(files[0].index) : '';
+    } else {
+        form.dataset.activeDraftIndex = String(oldActiveIndex || '');
+    }
+    return visibleItems;
+}
+
+function localCourseBannerBuilderGetDraftPreviewFiles(form) {
+    var filemanager = form ? form.querySelector('#fitem_id_bannerimage_filemanager') : null;
+    if (!filemanager) {
+        return [];
+    }
+    if (localCourseBannerBuilderIsDraftFilemanagerBusy(form)) {
+        return [];
+    }
+    var domItems = Array.prototype.slice.call(filemanager.querySelectorAll('.fp-file:not(.fp-folder)'));
+    if (!domItems.length) {
+        if (!localCourseBannerBuilderDraftFilemanagerHasVisibleContent(form)) {
+            localCourseBannerBuilderSetDraftPreviewFilesCache(form, []);
+            return [];
+        }
+        localCourseBannerBuilderRefreshDraftPreviewFileList(form);
+        return localCourseBannerBuilderGetDraftPreviewFilesFromCache(form);
+    }
+    localCourseBannerBuilderClearDraftPreviewFilesCache(form);
+    return domItems.map(function (item, index) {
+        var link = item.matches && item.matches('a[href*="/draftfile.php/"], a[href*="/pluginfile.php/"]') ?
+            item : item.querySelector('a[href*="/draftfile.php/"], a[href*="/pluginfile.php/"]');
+        var image = item.querySelector('img[src*="/draftfile.php/"], img[src*="/pluginfile.php/"]');
+        var nameNode = item.querySelector('.fp-filename, .fp-pathbar, .fp-thumbnail .fp-filename');
+        var url = link && link.getAttribute('href') ? link.getAttribute('href') : (image ? (image.getAttribute('src') || '') : '');
+        url = localCourseBannerBuilderNormaliseDraftPreviewUrl(url);
+        var stableIndex = localCourseBannerBuilderGetStableDraftPreviewIndex(form, url, index);
+        item.dataset.previewDraftIndex = stableIndex;
+        item.dataset.previewDraftIdentity = localCourseBannerBuilderGetDraftPreviewFileIdentity(url, index);
+        var deleted = item.dataset.previewDeleted === '1' ||
+            localCourseBannerBuilderIsDraftPreviewUrlSuppressed(form, url);
+        if (deleted && item.dataset.previewDeleted !== '1') {
+            item.dataset.previewDeleted = '1';
+        }
+        if (item.hidden !== deleted) {
+            item.hidden = deleted;
+        }
+        if (item.getAttribute('aria-hidden') !== (deleted ? 'true' : 'false')) {
+            item.setAttribute('aria-hidden', deleted ? 'true' : 'false');
+        }
+        return {
+            index: parseInt(stableIndex, 10),
+            url: url,
+            name: nameNode ? nameNode.textContent.trim() : ('Layer ' + (index + 1)),
+            item: item,
+            deleted: deleted
+        };
+    }).filter(function (file) {
+        return !file.deleted && !!file.url && file.url.indexOf('/theme/image.php') === -1;
+    });
+}
+
+function localCourseBannerBuilderGetDraftPreviewSettings(form) {
+    var input = form ? form.querySelector('#id_multilayerdraftsettings') : null;
+    if (!input || !input.value) {
+        return {};
+    }
+    try {
+        var parsed = JSON.parse(input.value);
+        return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (error) {
+        return {};
+    }
+}
+
+function localCourseBannerBuilderSetDraftPreviewSettings(form, settings) {
+    var input = form ? form.querySelector('#id_multilayerdraftsettings') : null;
+    if (!input) {
+        return;
+    }
+    input.value = JSON.stringify(settings || {});
+}
+
+function localCourseBannerBuilderGetDefaultDraftPreviewState(file) {
+    return {
+        fitmodeoverride: 'cover',
+        positionanchor: 'center',
+        customwidthpercent: 100,
+        customheightpercent: 100,
+        customsizekeepaspect: true,
+        dynamicimagesizeenabled: false,
+        imageaboveoverlayenabled: false,
+        imagebelowinheritedenabled: false,
+        imageaboveinheritedenabled: false,
+        imagecenterfixed: false,
+        imageopacity: 100,
+        imagecropenabled: false,
+        imagecropleftpercent: 0,
+        imagecroptoppercent: 0,
+        imagecropwidthpercent: 100,
+        imagecropheightpercent: 100,
+        offsettoppercent: 0,
+        offsetrightpercent: 0,
+        offsetbottompercent: 0,
+        offsetleftpercent: 0,
+        sortorder: file ? file.index : 0,
+        zindex: localCourseBannerBuilderGetDraftPreviewZIndex(file ? file.index : 0),
+        url: file ? (file.url || '') : ''
+    };
+}
+
+function localCourseBannerBuilderResetLayerFormCropState(form) {
+    if (!form) {
+        return;
+    }
+    var values = {
+        imagecropenabled: '0',
+        imagecropleftpercent: '0',
+        imagecroptoppercent: '0',
+        imagecropwidthpercent: '100',
+        imagecropheightpercent: '100'
+    };
+    Object.keys(values).forEach(function (name) {
+        var input = localCourseBannerBuilderGetCropInput(form, name);
+        if (input) {
+            input.value = values[name];
+        }
+    });
+    var currentLayer = localCourseBannerBuilderGetEditableCurrentPreviewImage(form);
+    if (currentLayer) {
+        currentLayer.setAttribute('data-preview-crop-enabled', '0');
+        currentLayer.setAttribute('data-preview-crop-left', '0');
+        currentLayer.setAttribute('data-preview-crop-top', '0');
+        currentLayer.setAttribute('data-preview-crop-width', '100');
+        currentLayer.setAttribute('data-preview-crop-height', '100');
+        localCourseBannerBuilderUpdateCropSelectionFrame(currentLayer, {
+            imagecropenabled: false,
+            imagecropleftpercent: 0,
+            imagecroptoppercent: 0,
+            imagecropwidthpercent: 100,
+            imagecropheightpercent: 100
+        });
+    }
+}
+
+function localCourseBannerBuilderClearLayerPreviewCropState(form, layer) {
+    if (!form || !layer) {
+        return;
+    }
+    var resetState = {
+        imagecropenabled: false,
+        imagecropleftpercent: 0,
+        imagecroptoppercent: 0,
+        imagecropwidthpercent: 100,
+        imagecropheightpercent: 100
+    };
+    ['imagecropenabled', 'imagecropleftpercent', 'imagecroptoppercent', 'imagecropwidthpercent', 'imagecropheightpercent'].forEach(
+        function (name) {
+            var input = localCourseBannerBuilderGetCropInput(form, name);
+            if (input) {
+                input.value = name === 'imagecropenabled' ? '0' : (name.indexOf('width') !== -1 || name.indexOf('height') !== -1 ? '100' : '0');
+            }
+        }
+    );
+    layer.setAttribute('data-preview-crop-enabled', '0');
+    layer.setAttribute('data-preview-crop-left', '0');
+    layer.setAttribute('data-preview-crop-top', '0');
+    layer.setAttribute('data-preview-crop-width', '100');
+    layer.setAttribute('data-preview-crop-height', '100');
+    layer.removeAttribute('data-preview-crop-source-left');
+    layer.removeAttribute('data-preview-crop-source-top');
+    layer.removeAttribute('data-preview-crop-source-width');
+    layer.removeAttribute('data-preview-crop-source-height');
+    localCourseBannerBuilderUpdateCropSelectionFrame(layer, resetState);
+
+    var visualLayer = localCourseBannerBuilderGetDraftSelectionVisualLayer(form, layer);
+    if (visualLayer) {
+        visualLayer.setAttribute('data-preview-crop-enabled', '0');
+        visualLayer.setAttribute('data-preview-crop-left', '0');
+        visualLayer.setAttribute('data-preview-crop-top', '0');
+        visualLayer.setAttribute('data-preview-crop-width', '100');
+        visualLayer.setAttribute('data-preview-crop-height', '100');
+        visualLayer.removeAttribute('data-preview-crop-source-left');
+        visualLayer.removeAttribute('data-preview-crop-source-top');
+        visualLayer.removeAttribute('data-preview-crop-source-width');
+        visualLayer.removeAttribute('data-preview-crop-source-height');
+        localCourseBannerBuilderUpdateCropSelectionFrame(visualLayer, resetState);
+    }
+}
+
+function localCourseBannerBuilderGetDraftPreviewSignature(files) {
+    return (files || []).map(function (file) {
+        return String(file.index) + ':' + String(file.url || '');
+    }).join('|');
+}
+
+function localCourseBannerBuilderEnsureDraftPreviewSelection(form, files) {
+    if (!form || !files.length) {
+        return;
+    }
+    if (typeof form.dataset.activeDraftIndex === 'undefined' || form.dataset.activeDraftIndex === '') {
+        form.dataset.activeDraftIndex = String(files[0].index);
+    }
+    if (!files.some(function (file) { return String(file.index) === String(form.dataset.activeDraftIndex); })) {
+        form.dataset.activeDraftIndex = String(files[0].index);
+    }
+}
+
+function localCourseBannerBuilderMirrorDraftSelectionVisual(form, layer) {
+    if (!form || !layer || !layer.hasAttribute('data-preview-draft-selection-overlay')) {
+        return;
+    }
+    var draftIndex = layer.getAttribute('data-draft-index');
+    if (draftIndex === null || draftIndex === '') {
+        return;
+    }
+    var visualLayer = form.querySelector(
+        '[data-preview-draft-visual-layer="1"][data-draft-index="' + draftIndex + '"]'
+    );
+    var image = layer.querySelector('[data-preview-image-tag="1"]');
+    var visualImage = visualLayer ? visualLayer.querySelector('[data-preview-image-tag="1"]') : null;
+    if (!visualLayer || !visualImage || !image) {
+        return;
+    }
+    [
+        'data-preview-fitmode',
+        'data-preview-anchor',
+        'data-preview-custom-width',
+        'data-preview-custom-height',
+        'data-preview-keep-aspect',
+        'data-preview-dynamic-image',
+        'data-preview-above-overlay',
+        'data-preview-below-inherited',
+        'data-preview-above-inherited',
+        'data-preview-center-fixed',
+        'data-preview-image-opacity',
+        'data-preview-crop-enabled',
+        'data-preview-crop-left',
+        'data-preview-crop-top',
+        'data-preview-crop-width',
+        'data-preview-crop-height',
+        'data-preview-crop-source-left',
+        'data-preview-crop-source-top',
+        'data-preview-crop-source-width',
+        'data-preview-crop-source-height',
+        'data-preview-offset-top',
+        'data-preview-offset-right',
+        'data-preview-offset-bottom',
+        'data-preview-offset-left',
+        'data-preview-natural-width',
+        'data-preview-natural-height',
+        'data-preview-current-url',
+        'data-preview-sortorder',
+        'data-preview-zindex'
+    ].forEach(function (attribute) {
+        if (layer.hasAttribute(attribute)) {
+            visualLayer.setAttribute(attribute, layer.getAttribute(attribute));
+        }
+    });
+    visualLayer.style.cssText = layer.style.cssText;
+    visualLayer.style.visibility = '';
+    localCourseBannerBuilderUpdateCropSelectionFrame(visualLayer, localCourseBannerBuilderGetPreviewCropState(layer));
+    if (visualImage.getAttribute('src') !== (image.getAttribute('src') || '')) {
+        visualImage.setAttribute('src', image.getAttribute('src') || '');
+    }
+    visualImage.hidden = image.hidden;
+    visualImage.style.cssText = image.style.cssText;
+    visualLayer.hidden = layer.hidden;
+    if (visualLayer.getAttribute('data-preview-crop-enabled') === '1' &&
+            !layer.querySelector('[data-preview-crop-editor="1"]')) {
+        localCourseBannerBuilderSyncStandalonePreviewLayer(
+            visualLayer.closest('[data-layer-banner-preview="1"]'),
+            visualLayer
+        );
+    }
+}
+
+function localCourseBannerBuilderGetDraftSelectionVisualLayer(form, layer) {
+    if (!form || !layer || !layer.hasAttribute('data-preview-draft-selection-overlay')) {
+        return null;
+    }
+    var draftIndex = layer.getAttribute('data-draft-index');
+    if (draftIndex === null || draftIndex === '') {
+        return null;
+    }
+    return form.querySelector('[data-preview-draft-visual-layer="1"][data-draft-index="' + draftIndex + '"]');
+}
+
+function localCourseBannerBuilderSyncDraftSelectionShellState(form, layer) {
+    if (!form) {
+        return;
+    }
+    var currentLayer = layer || localCourseBannerBuilderGetEditableCurrentPreviewImage(form);
+    if (!currentLayer || !currentLayer.hasAttribute('data-preview-draft-selection-overlay')) {
+        return;
+    }
+    var visualLayer = localCourseBannerBuilderGetDraftSelectionVisualLayer(form, currentLayer);
+    if (!visualLayer) {
+        return;
+    }
+    var cropEditing = !!currentLayer.querySelector('[data-preview-crop-editor="1"]');
+    if (cropEditing) {
+        visualLayer.setAttribute('data-preview-draft-active-shell-disabled', '1');
+    } else {
+        visualLayer.removeAttribute('data-preview-draft-active-shell-disabled');
+    }
+}
+
+function localCourseBannerBuilderApplyDraftVisualLayerState(form, previewRoot, layer, file, layerState) {
+    if (!form || !previewRoot || !layer || !file) {
+        return;
+    }
+    layer.className = 'local-course-banner-builder-preview-image-layer local-course-banner-builder-preview-image-layer--context local-course-banner-builder-preview-draft-layer';
+    layer.setAttribute('data-preview-draft-layer', '1');
+    layer.setAttribute('data-preview-draft-visual-layer', '1');
+    layer.setAttribute('data-draft-index', String(file.index));
+    layer.setAttribute('data-preview-fitmode', layerState.fitmodeoverride || '');
+    layer.setAttribute('data-preview-anchor', layerState.positionanchor || 'center');
+    layer.setAttribute('data-preview-custom-width', String(layerState.customwidthpercent ?? 100));
+    layer.setAttribute('data-preview-custom-height', String(layerState.customheightpercent ?? 100));
+    layer.setAttribute('data-preview-keep-aspect', layerState.customsizekeepaspect ? '1' : '0');
+    layer.setAttribute('data-preview-dynamic-image', layerState.dynamicimagesizeenabled ? '1' : '0');
+    layer.setAttribute('data-preview-above-overlay', layerState.imageaboveoverlayenabled ? '1' : '0');
+    layer.setAttribute('data-preview-below-inherited', layerState.imagebelowinheritedenabled ? '1' : '0');
+    layer.setAttribute('data-preview-above-inherited', layerState.imageaboveinheritedenabled ? '1' : '0');
+    layer.setAttribute('data-preview-center-fixed', layerState.imagecenterfixed ? '1' : '0');
+    layer.setAttribute('data-preview-image-opacity', String(layerState.imageopacity ?? 100));
+    layer.setAttribute('data-preview-crop-enabled', layerState.imagecropenabled ? '1' : '0');
+    layer.setAttribute('data-preview-crop-left', String(layerState.imagecropleftpercent ?? 0));
+    layer.setAttribute('data-preview-crop-top', String(layerState.imagecroptoppercent ?? 0));
+    layer.setAttribute('data-preview-crop-width', String(layerState.imagecropwidthpercent ?? 100));
+    layer.setAttribute('data-preview-crop-height', String(layerState.imagecropheightpercent ?? 100));
+    if (Number(layerState.imagecropsourcewidthpercent || 0) > 0 &&
+            Number(layerState.imagecropsourceheightpercent || 0) > 0) {
+        layer.setAttribute('data-preview-crop-source-left', String(layerState.imagecropsourceleftpercent ?? 0));
+        layer.setAttribute('data-preview-crop-source-top', String(layerState.imagecropsourcetoppercent ?? 0));
+        layer.setAttribute('data-preview-crop-source-width', String(layerState.imagecropsourcewidthpercent));
+        layer.setAttribute('data-preview-crop-source-height', String(layerState.imagecropsourceheightpercent));
+    } else {
+        layer.removeAttribute('data-preview-crop-source-left');
+        layer.removeAttribute('data-preview-crop-source-top');
+        layer.removeAttribute('data-preview-crop-source-width');
+        layer.removeAttribute('data-preview-crop-source-height');
+    }
+    layer.setAttribute('data-preview-offset-top', String(layerState.offsettoppercent ?? 0));
+    layer.setAttribute('data-preview-offset-right', String(layerState.offsetrightpercent ?? 0));
+    layer.setAttribute('data-preview-offset-bottom', String(layerState.offsetbottompercent ?? 0));
+    layer.setAttribute('data-preview-offset-left', String(layerState.offsetleftpercent ?? 0));
+    layer.setAttribute('data-preview-natural-width', String(layerState.imagewidth ?? 0));
+    layer.setAttribute('data-preview-natural-height', String(layerState.imageheight ?? 0));
+    layer.setAttribute('data-preview-current-url', file.url);
+    layer.setAttribute('data-preview-sortorder', String(layerState.sortorder ?? file.index));
+    layer.setAttribute('data-preview-zindex', String(layerState.zindex ?? localCourseBannerBuilderGetDraftPreviewZIndex(file.index)));
+
+    var draftImage = layer.querySelector('[data-preview-image-tag="1"]');
+    if (!draftImage) {
+        draftImage = document.createElement('img');
+        draftImage.alt = '';
+        draftImage.className = 'local-course-banner-builder-preview-image';
+        draftImage.setAttribute('data-preview-image-tag', '1');
+        draftImage.setAttribute('draggable', 'false');
+        layer.appendChild(draftImage);
+    }
+    if (draftImage.getAttribute('src') !== file.url) {
+        draftImage.setAttribute('src', file.url);
+    }
+    draftImage.hidden = false;
+    if (!draftImage.dataset.previewLoadBound) {
+        draftImage.addEventListener('load', function () {
+            var latestSettings = localCourseBannerBuilderGetDraftPreviewSettings(form);
+            var latestState = latestSettings[file.index] || {};
+            latestState.imagewidth = draftImage.naturalWidth || 0;
+            latestState.imageheight = draftImage.naturalHeight || 0;
+            latestState.url = file.url;
+            latestSettings[file.index] = latestState;
+            layer.setAttribute('data-preview-natural-width', String(latestState.imagewidth || 0));
+            layer.setAttribute('data-preview-natural-height', String(latestState.imageheight || 0));
+            localCourseBannerBuilderSetDraftPreviewSettings(form, latestSettings);
+            localCourseBannerBuilderSyncStandalonePreviewLayer(previewRoot, layer);
+            localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+        });
+        draftImage.dataset.previewLoadBound = '1';
+    }
+    if (draftImage.complete && draftImage.naturalWidth && draftImage.naturalHeight) {
+        layerState.imagewidth = draftImage.naturalWidth;
+        layerState.imageheight = draftImage.naturalHeight;
+        layer.setAttribute('data-preview-natural-width', String(layerState.imagewidth || 0));
+        layer.setAttribute('data-preview-natural-height', String(layerState.imageheight || 0));
+    }
+    localCourseBannerBuilderSyncStandalonePreviewLayer(previewRoot, layer);
+    localCourseBannerBuilderUpdatePreviewAspectLockButton(layer);
+}
+
+function localCourseBannerBuilderRenderDraftUploadPreview(form) {
+    if (!form) {
+        return;
+    }
+    if (localCourseBannerBuilderIsDraftFilemanagerBusy(form)) {
+        return;
+    }
+    if (form.dataset.renderingDraftPreview === '1') {
+        return;
+    }
+    form.dataset.renderingDraftPreview = '1';
+    try {
+    var files = localCourseBannerBuilderGetDraftPreviewFiles(form);
+    localCourseBannerBuilderPruneDraftFilemanagerEmptyState(form);
+    var previewRoot = form.querySelector('[data-layer-banner-preview="1"]');
+    var frame = previewRoot ? previewRoot.querySelector('[data-banner-preview-frame="1"]') : null;
+    var currentLayer = localCourseBannerBuilderGetEditableCurrentPreviewImage(form);
+    if (!previewRoot || !frame || !currentLayer) {
+        return;
+    }
+    var host = previewRoot.querySelector('[data-preview-draft-layer-host="1"]');
+    if (!host) {
+        host = document.createElement('div');
+        host.setAttribute('data-preview-draft-layer-host', '1');
+        frame.appendChild(host);
+    }
+    var filesByIndex = {};
+    files.forEach(function (file) {
+        filesByIndex[String(file.index)] = true;
+    });
+    Array.prototype.slice.call(host.querySelectorAll('[data-preview-draft-visual-layer="1"]')).forEach(function (layer) {
+        if (!filesByIndex[String(layer.getAttribute('data-draft-index') || '')]) {
+            layer.remove();
+        }
+    });
+
+    if (!files.length) {
+        currentLayer.hidden = true;
+        currentLayer.style.display = 'none';
+        localCourseBannerBuilderRemoveCropEditor(currentLayer);
+        localCourseBannerBuilderResetLayerFormCropState(form);
+        currentLayer.removeAttribute('data-preview-current-url');
+        currentLayer.removeAttribute('data-preview-draft-layer');
+        currentLayer.removeAttribute('data-preview-draft-selection-overlay');
+        currentLayer.removeAttribute('data-draft-index');
+        currentLayer.classList.remove('local-course-banner-builder-preview-draft-layer');
+        var currentImage = currentLayer.querySelector('[data-preview-image-tag="1"]');
+        if (currentImage) {
+            currentImage.hidden = true;
+            currentImage.removeAttribute('src');
+            currentImage.style.display = 'none';
+        }
+        form.dataset.activeDraftIndex = '';
+        form.dataset.draftPreviewSignature = '';
+        form.dataset.draftPreviewRenderedActive = '';
+        localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+        return;
+    }
+
+    var settings = localCourseBannerBuilderGetDraftPreviewSettings(form);
+    localCourseBannerBuilderEnsureDraftPreviewSelection(form, files);
+    var activeIndex = String(form.dataset.activeDraftIndex);
+    var activeFile = files.find(function (file) {
+        return String(file.index) === activeIndex;
+    }) || files[0];
+    activeIndex = String(activeFile.index);
+    form.dataset.activeDraftIndex = activeIndex;
+
+    files.forEach(function (file) {
+        var existingState = settings[file.index] || null;
+        var existingUrl = existingState && existingState.url ?
+            localCourseBannerBuilderNormaliseDraftPreviewUrl(existingState.url) :
+            '';
+        var fileUrl = localCourseBannerBuilderNormaliseDraftPreviewUrl(file.url || '');
+        if (!existingState || existingState.deleted || (existingUrl && fileUrl && existingUrl !== fileUrl)) {
+            settings[file.index] = localCourseBannerBuilderGetDefaultDraftPreviewState(file);
+        }
+        settings[file.index].deleted = false;
+        settings[file.index].url = file.url;
+        if (typeof settings[file.index].sortorder === 'undefined') {
+            settings[file.index].sortorder = file.index;
+        }
+        if (typeof settings[file.index].zindex === 'undefined') {
+            settings[file.index].zindex = localCourseBannerBuilderGetDraftPreviewZIndex(file.index);
+        }
+        if (!settings[file.index].imagewidth) {
+            settings[file.index].imagewidth = file.width || 0;
+        }
+        if (!settings[file.index].imageheight) {
+            settings[file.index].imageheight = file.height || 0;
+        }
+    });
+
+    files.forEach(function (file) {
+        var layerState = settings[file.index] || {};
+        var layer = host.querySelector('[data-preview-draft-visual-layer="1"][data-draft-index="' + file.index + '"]');
+        if (!layer) {
+            layer = document.createElement('div');
+            host.appendChild(layer);
+        }
+        localCourseBannerBuilderApplyDraftVisualLayerState(form, previewRoot, layer, file, layerState);
+    });
+
+    localCourseBannerBuilderSetDraftPreviewSettings(form, settings);
+    form.dataset.draftPreviewSignature = localCourseBannerBuilderGetDraftPreviewSignature(files);
+    form.dataset.draftPreviewRenderedActive = activeIndex;
+    currentLayer.setAttribute('data-preview-draft-layer', '1');
+    currentLayer.setAttribute('data-preview-draft-selection-overlay', '1');
+    currentLayer.setAttribute('data-draft-index', activeIndex);
+    currentLayer.setAttribute('data-preview-sortorder', String(settings[activeIndex].sortorder ?? activeIndex));
+    currentLayer.setAttribute(
+        'data-preview-zindex',
+        String(settings[activeIndex].zindex ?? localCourseBannerBuilderGetDraftPreviewZIndex(activeIndex))
+    );
+    localCourseBannerBuilderApplyLayerFormPreviewState(form, settings[activeIndex]);
+    currentLayer.classList.add('local-course-banner-builder-preview-draft-layer');
+    currentLayer.hidden = false;
+    localCourseBannerBuilderSyncStandalonePreviewLayer(previewRoot, currentLayer);
+    localCourseBannerBuilderMirrorDraftSelectionVisual(form, currentLayer);
+    Array.prototype.slice.call(host.querySelectorAll('[data-preview-draft-visual-layer="1"]')).forEach(function (layer) {
+        var isActiveDraftVisual = String(layer.getAttribute('data-draft-index') || '') === activeIndex;
+        var draftImage = layer.querySelector('[data-preview-image-tag="1"]');
+        layer.hidden = false;
+        layer.setAttribute('aria-hidden', 'false');
+        if (isActiveDraftVisual) {
+            layer.setAttribute('data-preview-draft-active-shell', '1');
+            if (draftImage) {
+                draftImage.style.pointerEvents = 'none';
+            }
+        } else {
+            layer.removeAttribute('data-preview-draft-active-shell');
+            if (draftImage) {
+                draftImage.style.opacity = '';
+                draftImage.style.pointerEvents = '';
+            }
+        }
+    });
+    localCourseBannerBuilderSyncDraftSelectionShellState(form, currentLayer);
+    if (form.dataset.draftPreviewSwitching === '1') {
+        var currentImage = currentLayer.querySelector('[data-preview-image-tag="1"]');
+        var revealSelection = function () {
+            currentLayer.style.visibility = '';
+            delete form.dataset.draftPreviewSwitching;
+        };
+        if (currentImage && !currentImage.complete) {
+            currentImage.addEventListener('load', revealSelection, {once: true});
+            currentImage.addEventListener('error', revealSelection, {once: true});
+            window.setTimeout(revealSelection, 700);
+        } else {
+            window.requestAnimationFrame(revealSelection);
+        }
+    }
+    localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+    localCourseBannerBuilderSyncModalPreviewSelectionOutline(form);
+    localCourseBannerBuilderSyncContextPreviewVisibility(form);
+    if (localCourseBannerBuilderGetSelectedLayerType(form) === 'image') {
+        localCourseBannerBuilderOpenModalSidePanelOnce(form, 'imageoptions', 'imageOptionsAutoOpened');
+    }
+    } finally {
+        form.dataset.renderingDraftPreview = '0';
+    }
+}
+
+function localCourseBannerBuilderSaveActiveDraftPreviewState(form) {
+    if (!form || !form.dataset.activeDraftIndex) {
+        return;
+    }
+    var settings = localCourseBannerBuilderGetDraftPreviewSettings(form);
+    var index = String(form.dataset.activeDraftIndex);
+    var existingState = settings[index] || {};
+    var currentLayer = form.querySelector('[data-preview-current-image="1"][data-preview-draft-layer="1"]');
+    var visualLayer = form.querySelector(
+        '[data-preview-draft-visual-layer="1"][data-draft-index="' + index + '"]'
+    );
+    var state = currentLayer && String(currentLayer.getAttribute('data-draft-index') || '') === index ?
+        localCourseBannerBuilderReadLayerPreviewStateFromLayer(currentLayer) :
+        (visualLayer ? localCourseBannerBuilderReadLayerPreviewStateFromLayer(visualLayer) :
+            localCourseBannerBuilderReadLayerFormPreviewState(form));
+    if (!state) {
+        return;
+    }
+    if (state.imagecropenabled && !localCourseBannerBuilderHasCropSourceState(state)) {
+        var liveLayer = currentLayer && String(currentLayer.getAttribute('data-draft-index') || '') === index ?
+            currentLayer :
+            visualLayer;
+        var liveCropSourceState = localCourseBannerBuilderGetCropEditSourceState(liveLayer);
+        if (liveCropSourceState) {
+            state = Object.assign({}, state, liveCropSourceState);
+        }
+    }
+    if (!state.imagecropenabled && existingState.imagecropenabled) {
+        [
+            'imagecropenabled',
+            'imagecropleftpercent',
+            'imagecroptoppercent',
+            'imagecropwidthpercent',
+            'imagecropheightpercent',
+            'imagecropsourceleftpercent',
+            'imagecropsourcetoppercent',
+            'imagecropsourcewidthpercent',
+            'imagecropsourceheightpercent'
+        ].forEach(function (key) {
+            if (typeof existingState[key] !== 'undefined') {
+                state[key] = existingState[key];
+            }
+        });
+    }
+    state = localCourseBannerBuilderPreserveCropSourceState(existingState, state);
+    settings[index] = state;
+    localCourseBannerBuilderSetDraftPreviewSettings(form, settings);
+}
+
+function localCourseBannerBuilderCommitActiveDraftCropBeforeSwitch(form) {
+    if (!form || !form.dataset.activeDraftIndex) {
+        return false;
+    }
+    var activeLayer = localCourseBannerBuilderGetActivePreviewCropLayer(form);
+    if (!activeLayer || !activeLayer.hasAttribute('data-preview-draft-layer')) {
+        return false;
+    }
+    var draftIndex = String(activeLayer.getAttribute('data-draft-index') || '');
+    if (!draftIndex) {
+        return false;
+    }
+    var crop = localCourseBannerBuilderGetPreviewCropState(activeLayer);
+    var cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState(activeLayer);
+    var cropSourceState = localCourseBannerBuilderGetCropEditSourceState(activeLayer);
+    var settings = localCourseBannerBuilderGetDraftPreviewSettings(form);
+    var existingState = settings[draftIndex] || {};
+    var state = Object.assign(
+        {},
+        existingState || localCourseBannerBuilderReadLayerPreviewStateFromLayer(activeLayer) || {},
+        cropSelectionState || {},
+        {
+            imagecropenabled: crop.enabled,
+            imagecropleftpercent: crop.left,
+            imagecroptoppercent: crop.top,
+            imagecropwidthpercent: crop.width,
+            imagecropheightpercent: crop.height
+        },
+        cropSourceState || {}
+    );
+    state = localCourseBannerBuilderPreserveCropSourceState(existingState, state);
+    settings[draftIndex] = state;
+    localCourseBannerBuilderSetDraftPreviewSettings(form, settings);
+
+    delete activeLayer.dataset.previewCropBefore;
+    localCourseBannerBuilderRemoveCropEditor(activeLayer);
+    localCourseBannerBuilderSetSourcePreviewLayerState(activeLayer, state);
+    localCourseBannerBuilderSyncStandalonePreviewLayer(activeLayer.closest('[data-layer-banner-preview="1"]'), activeLayer);
+    localCourseBannerBuilderMirrorDraftSelectionVisual(form, activeLayer);
+    localCourseBannerBuilderSyncModalPreviewCropButtons(form);
+    return true;
+}
+
+function localCourseBannerBuilderSelectDraftPreviewLayer(form, index) {
+    if (!form) {
+        return;
+    }
+    if (String(form.dataset.activeDraftIndex || '') === String(index)) {
+        return;
+    }
+    var committedDraftCrop = localCourseBannerBuilderCommitActiveDraftCropBeforeSwitch(form);
+    if (!committedDraftCrop) {
+        localCourseBannerBuilderCancelActivePreviewCropInScope(form, null);
+        localCourseBannerBuilderSaveActiveDraftPreviewState(form);
+    }
+    var currentLayer = form.querySelector('[data-preview-current-image="1"][data-preview-draft-layer="1"]');
+    if (currentLayer) {
+        currentLayer.style.visibility = 'hidden';
+        form.dataset.draftPreviewSwitching = '1';
+    }
+    form.dataset.activeDraftIndex = String(index);
+    localCourseBannerBuilderRenderDraftUploadPreview(form);
+}
+
+function localCourseBannerBuilderDeleteSelectedDraftPreviewLayer(button) {
+    var form = localCourseBannerBuilderGetLayerScope(button);
+    if (!form || !form.dataset.activeDraftIndex) {
+        return;
+    }
+    var activeIndex = String(form.dataset.activeDraftIndex);
+    var files = localCourseBannerBuilderGetDraftPreviewFiles(form);
+    var activeFile = files.find(function (file) {
+        return String(file.index) === activeIndex;
+    });
+    if (!activeFile) {
+        return;
+    }
+    localCourseBannerBuilderSaveActiveDraftPreviewState(form);
+    var settings = localCourseBannerBuilderGetDraftPreviewSettings(form);
+    settings[activeIndex] = settings[activeIndex] || {};
+    settings[activeIndex].deleted = true;
+    settings[activeIndex].deletedurl = activeFile.url || '';
+    settings[activeIndex].deletedfilename = localCourseBannerBuilderGetDraftFileInfo(activeFile, form).filename || activeFile.name || '';
+    localCourseBannerBuilderSuppressDeletedDraftPreviewUrl(form, activeFile.url || '');
+    if (activeFile.item) {
+        activeFile.item.dataset.previewDeleted = '1';
+        activeFile.item.hidden = true;
+        activeFile.item.setAttribute('aria-hidden', 'true');
+        activeFile.item.remove();
+    }
+    localCourseBannerBuilderSetDraftPreviewSettings(form, settings);
+    var remaining = localCourseBannerBuilderGetDraftPreviewFiles(form);
+    form.dataset.activeDraftIndex = remaining.length ? String(remaining[0].index) : '';
+    form.dataset.previewUserChanged = '0';
+    form.dataset.draftPreviewSignature = '';
+    form.dataset.draftPreviewRenderedActive = '';
+    var deletePromise = localCourseBannerBuilderDeleteDraftFileFromServer(activeFile, form);
+    localCourseBannerBuilderScheduleDraftPreviewRefresh(form, [120, 450, 900, 1500]);
+    if (!remaining.length) {
+        var currentLayer = form.querySelector('[data-preview-current-image="1"]');
+        var currentImage = currentLayer ? currentLayer.querySelector('[data-preview-image-tag="1"]') : null;
+        if (currentLayer) {
+            currentLayer.hidden = true;
+            currentLayer.style.display = 'none';
+            localCourseBannerBuilderRemoveCropEditor(currentLayer);
+            currentLayer.removeAttribute('data-preview-current-url');
+            currentLayer.removeAttribute('data-preview-current-layer');
+            currentLayer.removeAttribute('data-preview-draft-layer');
+            currentLayer.removeAttribute('data-preview-draft-selection-overlay');
+            currentLayer.removeAttribute('data-draft-index');
+            currentLayer.classList.remove('local-course-banner-builder-preview-draft-layer');
+        }
+        if (currentImage) {
+            currentImage.hidden = true;
+            currentImage.removeAttribute('src');
+            currentImage.style.display = 'none';
+        }
+        var host = form.querySelector('[data-preview-draft-layer-host="1"]');
+        if (host) {
+            host.innerHTML = '';
+        }
+        localCourseBannerBuilderClearDraftPreviewState(form, true);
+        localCourseBannerBuilderPruneDraftFilemanagerEmptyState(form);
+        localCourseBannerBuilderSyncLayerInputModes(form);
+        localCourseBannerBuilderEnhanceBinaryOptionButtons(form);
+        localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+        deletePromise.then(function (deleted) {
+            if (deleted) {
+                localCourseBannerBuilderPruneDraftFilemanagerEmptyState(form);
+                localCourseBannerBuilderSyncLayerInputModes(form);
+                localCourseBannerBuilderEnhanceBinaryOptionButtons(form);
+                localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+                localCourseBannerBuilderScheduleDraftPreviewRefresh(form, [150, 600]);
+            }
+        });
+        return;
+    }
+    form.dataset.syncingDraftPreview = '1';
+    localCourseBannerBuilderRenderDraftUploadPreview(form);
+    form.dataset.syncingDraftPreview = '0';
+    localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+    deletePromise.then(function (deleted) {
+        if (!deleted) {
+            return;
+        }
+        var currentActiveIndex = form.dataset.activeDraftIndex || '';
+        localCourseBannerBuilderReindexDraftPreviewSettings(form, currentActiveIndex);
+        form.dataset.draftPreviewSignature = '';
+        form.dataset.draftPreviewRenderedActive = '';
+        localCourseBannerBuilderRenderDraftUploadPreview(form);
+        localCourseBannerBuilderScheduleDraftPreviewRefresh(form, [150, 600]);
+    });
+}
+
+function localCourseBannerBuilderSyncDraftUploadPreview(scope) {
+    var form = localCourseBannerBuilderGetLayerScope(scope);
+    if (!form || String(form.querySelector('#id_elementid') ? form.querySelector('#id_elementid').value || '0' : '0') !== '0') {
+        return;
+    }
+    if (!form.querySelector('#id_multilayerdraftsettings')) {
+        return;
+    }
+    if (localCourseBannerBuilderIsDraftFilemanagerBusy(form)) {
+        if (form.dataset.draftPreviewBusyRetry !== '1') {
+            form.dataset.draftPreviewBusyRetry = '1';
+            window.setTimeout(function () {
+                form.dataset.draftPreviewBusyRetry = '0';
+                localCourseBannerBuilderSyncDraftUploadPreview(form);
+            }, 450);
+        }
+        return;
+    }
+    if (form.dataset.renderingDraftPreview === '1') {
+        return;
+    }
+    if (form.dataset.syncingDraftPreview === '1') {
+        return;
+    }
+    if (form.dataset.previewInteractionStarting === '1') {
+        return;
+    }
+    if (localCourseBannerBuilderPreviewInteraction && localCourseBannerBuilderPreviewInteraction.form === form) {
+        return;
+    }
+    var files = localCourseBannerBuilderGetDraftPreviewFiles(form);
+    localCourseBannerBuilderPruneDraftFilemanagerEmptyState(form);
+    var signature = localCourseBannerBuilderGetDraftPreviewSignature(files);
+    var activeIndex = typeof form.dataset.activeDraftIndex !== 'undefined' ? String(form.dataset.activeDraftIndex) : '';
+    if (signature === (form.dataset.draftPreviewSignature || '') &&
+            activeIndex === (form.dataset.draftPreviewRenderedActive || '') &&
+            form.querySelector('[data-preview-draft-layer-host="1"]')) {
+        localCourseBannerBuilderSaveActiveDraftPreviewState(form);
+        localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+        return;
+    }
+    form.dataset.syncingDraftPreview = '1';
+    localCourseBannerBuilderSaveActiveDraftPreviewState(form);
+    localCourseBannerBuilderRenderDraftUploadPreview(form);
+    form.dataset.syncingDraftPreview = '0';
+}
+
+function localCourseBannerBuilderSyncStandalonePreviewLayer(previewRoot, layer) {
+    if (!previewRoot || !layer) {
+        return;
+    }
+    var fitMode = layer.getAttribute('data-preview-fitmode') || (previewRoot.getAttribute('data-default-fitmode') || 'bannerfit');
+    var anchor = layer.getAttribute('data-preview-anchor') || 'center';
+    var centerFixed = layer.getAttribute('data-preview-center-fixed') === '1';
+    var customWidth = Math.max(
+        0,
+        Math.min(
+            localCourseBannerBuilderCustomSizePercentMax,
+            localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-custom-width') || '100', 100)
+        )
+    );
+    var customHeight = Math.max(
+        0,
+        Math.min(
+            localCourseBannerBuilderCustomSizePercentMax,
+            localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-custom-height') || '100', 100)
+        )
+    );
+    var keepAspect = layer.getAttribute('data-preview-keep-aspect') === '1';
+    var dynamicImage = false;
+    var imageOpacity = localCourseBannerBuilderClampPercent(
+        layer.getAttribute('data-preview-image-opacity') || '100',
+        100
+    ) / 100;
+    var naturalWidth = localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-natural-width') || '0', 0);
+    var naturalHeight = localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-natural-height') || '0', 0);
+    var offsets = {
+        top: String(localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-offset-top') || '0', 0)) + '%',
+        right: String(localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-offset-right') || '0', 0)) + '%',
+        bottom: String(localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-offset-bottom') || '0', 0)) + '%',
+        left: String(localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-offset-left') || '0', 0)) + '%'
+    };
+    var objectPosition = localCourseBannerBuilderGetPreviewObjectPosition(anchor);
+    var image = layer.querySelector('[data-preview-image-tag="1"]');
+    if (!image) {
+        return;
+    }
+    if ((naturalWidth <= 0 || naturalHeight <= 0) && image.complete && image.naturalWidth && image.naturalHeight) {
+        naturalWidth = image.naturalWidth;
+        naturalHeight = image.naturalHeight;
+        layer.setAttribute('data-preview-natural-width', String(naturalWidth));
+        layer.setAttribute('data-preview-natural-height', String(naturalHeight));
+    }
+    var cropState = {
+        imagecropenabled: layer.getAttribute('data-preview-crop-enabled') === '1',
+        imagecropleftpercent: layer.getAttribute('data-preview-crop-left') || '0',
+        imagecroptoppercent: layer.getAttribute('data-preview-crop-top') || '0',
+        imagecropwidthpercent: layer.getAttribute('data-preview-crop-width') || '100',
+        imagecropheightpercent: layer.getAttribute('data-preview-crop-height') || '100'
+    };
+    var cropEditing = !!layer.querySelector('[data-preview-crop-editor="1"]');
+    var effectiveDimensions = localCourseBannerBuilderGetEffectivePreviewImageDimensions(
+        naturalWidth,
+        naturalHeight,
+        cropState,
+        fitMode === 'bannerfit' || cropEditing
+    );
+    var renderKeepAspect = keepAspect;
+    var placementWidth = effectiveDimensions.width;
+    var placementHeight = effectiveDimensions.height;
+
+    var layerStyles = [
+        'position: absolute;',
+        'display: flex;',
+        'align-items: stretch;',
+        'justify-content: stretch;',
+        'overflow: hidden;',
+        'z-index: ' + (parseInt(layer.getAttribute('data-preview-zindex') || '1', 10) || 1) + ';'
+    ];
+    var imageStyles = ['display: block;', 'width: 100%;', 'height: 100%;'];
+
+    if (dynamicImage) {
+        if (fitMode === 'custom') {
+            var dynamicCustomBox = localCourseBannerBuilderGetCustomPreviewBox(
+                customWidth,
+                customHeight,
+                placementWidth,
+                placementHeight,
+                renderKeepAspect,
+                localCourseBannerBuilderGetPreviewFrameAspect(previewRoot)
+            );
+            localCourseBannerBuilderAppendPreviewBoxStyles(layerStyles, dynamicCustomBox);
+            localCourseBannerBuilderAppendPreviewLayerPositionStyles(layerStyles, anchor, offsets, dynamicCustomBox, centerFixed);
+            imageStyles.push('object-fit: ' + (renderKeepAspect ? 'contain' : 'fill') + ';', 'object-position: ' + objectPosition + ';');
+        } else {
+            imageStyles = [localCourseBannerBuilderBuildDynamicPreviewImageStyle({
+                anchor: anchor,
+                fitMode: fitMode,
+                customWidth: customWidth,
+                customHeight: customHeight,
+                keepAspect: renderKeepAspect,
+                naturalWidth: placementWidth,
+                naturalHeight: placementHeight,
+                previewAspect: localCourseBannerBuilderGetPreviewFrameAspect(previewRoot),
+                offsets: offsets
+            })];
+            layerStyles = ['position: absolute;', 'inset: 0;', 'overflow: hidden;', 'z-index: ' + (parseInt(layer.getAttribute('data-preview-zindex') || '1', 10) || 1) + ';'];
+        }
+    } else if (fitMode === 'bannerfit') {
+        layerStyles.push('inset: 0;');
+        imageStyles.push('object-fit: fill;');
+    } else if (fitMode === 'cover') {
+        var containedBox = localCourseBannerBuilderGetContainedPreviewBox(
+            placementWidth,
+            placementHeight,
+            localCourseBannerBuilderGetPreviewFrameAspect(previewRoot)
+        );
+        layerStyles.push('width: ' + containedBox.width + '%;', 'height: ' + containedBox.height + '%;');
+        localCourseBannerBuilderAppendPreviewLayerPositionStyles(layerStyles, anchor, offsets, containedBox, centerFixed);
+        imageStyles.push('object-fit: fill;', 'object-position: ' + objectPosition + ';');
+    } else if (fitMode === 'custom') {
+        var customBox = localCourseBannerBuilderGetCustomPreviewBox(
+            customWidth,
+            customHeight,
+            placementWidth,
+            placementHeight,
+            renderKeepAspect,
+            localCourseBannerBuilderGetPreviewFrameAspect(previewRoot)
+        );
+        localCourseBannerBuilderAppendPreviewBoxStyles(layerStyles, customBox);
+        localCourseBannerBuilderAppendPreviewLayerPositionStyles(layerStyles, anchor, offsets, customBox, centerFixed);
+        imageStyles.push('object-fit: ' + (renderKeepAspect ? 'contain' : 'fill') + ';', 'object-position: ' + objectPosition + ';');
+    } else {
+        var originalBox = localCourseBannerBuilderGetOriginalPreviewBox(
+            placementWidth,
+            placementHeight,
+            localCourseBannerBuilderGetPreviewFrameAspect(previewRoot)
+        );
+        layerStyles.push('width: ' + originalBox.width + '%;', 'height: ' + originalBox.height + '%;');
+        localCourseBannerBuilderAppendPreviewLayerPositionStyles(layerStyles, anchor, offsets, originalBox, centerFixed);
+        imageStyles.push('object-fit: fill;', 'object-position: ' + objectPosition + ';');
+    }
+
+    imageStyles.push('opacity: ' + imageOpacity.toFixed(3) + ';');
+    localCourseBannerBuilderApplyCropToImageStyles(imageStyles, cropState, fitMode === 'bannerfit', cropEditing);
+    layer.style.cssText = layerStyles.join(' ');
+    localCourseBannerBuilderUpdateCropSelectionFrame(layer, localCourseBannerBuilderGetPreviewCropState(layer));
+    image.style.cssText = imageStyles.join(' ');
+    localCourseBannerBuilderApplyCropToLayerImage(layer, cropState);
+    localCourseBannerBuilderUpdatePreviewAspectLockButton(layer);
+    if (!image.dataset.previewLoadBound) {
+        image.addEventListener('load', function () {
+            layer.setAttribute('data-preview-natural-width', String(image.naturalWidth || 0));
+            layer.setAttribute('data-preview-natural-height', String(image.naturalHeight || 0));
+            localCourseBannerBuilderSyncStandalonePreviewLayer(previewRoot, layer);
+        });
+        image.dataset.previewLoadBound = '1';
+    }
+}
+
+function localCourseBannerBuilderEnsurePreviewDragMode(form, layer, frame) {
+    if (!form || !layer || !frame) {
+        return false;
+    }
+    var anchorInput = form.querySelector('[data-layer-position-anchor="1"]');
+    var offsetTopInput = form.querySelector('#id_offsettoppercent');
+    var offsetLeftInput = form.querySelector('#id_offsetleftpercent');
+    if (!anchorInput || !offsetTopInput || !offsetLeftInput) {
+        return false;
+    }
+    var frameRect = frame.getBoundingClientRect();
+    var visualLayer = localCourseBannerBuilderGetDraftSelectionVisualLayer(form, layer);
+    var layerRect = (visualLayer || layer).getBoundingClientRect();
+    var fitOverride = form.querySelector('#id_fitmodeoverride');
+    var widthInput = form.querySelector('#id_customwidthpercent');
+    var heightInput = form.querySelector('#id_customheightpercent');
+    if (!frameRect.width || !frameRect.height || !layerRect.width || !layerRect.height) {
+        return false;
+    }
+    var offsetLeftValue = localCourseBannerBuilderRoundPreviewPercent(((layerRect.left - frameRect.left) / frameRect.width) * 100);
+    var offsetTopValue = localCourseBannerBuilderRoundPreviewPercent(((layerRect.top - frameRect.top) / frameRect.height) * 100);
+    if (fitOverride && widthInput && heightInput) {
+        widthInput.value = String(localCourseBannerBuilderRoundPreviewPercent((layerRect.width / frameRect.width) * 100));
+        heightInput.value = String(localCourseBannerBuilderRoundPreviewPercent((layerRect.height / frameRect.height) * 100));
+        fitOverride.value = 'custom';
+    }
+    anchorInput.value = 'top-left';
+    offsetLeftInput.value = String(offsetLeftValue);
+    offsetTopInput.value = String(offsetTopValue);
+    form.dataset.previewUserChanged = '1';
+    localCourseBannerBuilderSyncCurrentLayerDataFromForm(form);
+    localCourseBannerBuilderSyncCustomSizeFields(form);
+    localCourseBannerBuilderSyncOffsetFields(form);
+    localCourseBannerBuilderBindPercentSliders(form);
+    localCourseBannerBuilderSyncLayerBannerPreview(form);
+    return true;
+}
+
+function localCourseBannerBuilderEnsurePreviewCustomMode(form, layer, frame) {
+    if (!form) {
+        return false;
+    }
+    var fitOverride = form.querySelector('#id_fitmodeoverride');
+    var anchorInput = form.querySelector('[data-layer-position-anchor="1"]');
+    var widthInput = form.querySelector('#id_customwidthpercent');
+    var heightInput = form.querySelector('#id_customheightpercent');
+    var keepAspectInput = form.querySelector('[data-custom-size-keep-aspect="1"][type="checkbox"]');
+    var offsetTopInput = form.querySelector('#id_offsettoppercent');
+    var offsetLeftInput = form.querySelector('#id_offsetleftpercent');
+    if (!fitOverride || !anchorInput || !widthInput || !heightInput || !offsetTopInput || !offsetLeftInput) {
+        return false;
+    }
+    var previewRoot = layer.closest('[data-banner-preview="1"]');
+    var currentFitMode = layer.getAttribute('data-preview-fitmode') ||
+        (previewRoot ? (previewRoot.getAttribute('data-default-fitmode') || 'bannerfit') : 'bannerfit');
+    var shouldKeepAspect = !!(keepAspectInput && (keepAspectInput.checked || currentFitMode === 'original' || currentFitMode === 'cover'));
+
+    var widthValue = localCourseBannerBuilderNormaliseNumericValue(widthInput.value || '100', 100);
+    var heightValue = localCourseBannerBuilderNormaliseNumericValue(heightInput.value || '100', 100);
+    var offsetLeftValue = localCourseBannerBuilderNormaliseNumericValue(offsetLeftInput.value || '0', 0);
+    var offsetTopValue = localCourseBannerBuilderNormaliseNumericValue(offsetTopInput.value || '0', 0);
+    if (layer && frame) {
+        var frameRect = frame.getBoundingClientRect();
+        var visualLayer = localCourseBannerBuilderGetDraftSelectionVisualLayer(form, layer);
+        var layerRect = (visualLayer || layer).getBoundingClientRect();
+        if (frameRect.width > 0 && frameRect.height > 0 && layerRect.width > 0 && layerRect.height > 0) {
+            widthValue = localCourseBannerBuilderRoundPreviewPercent((layerRect.width / frameRect.width) * 100);
+            heightValue = localCourseBannerBuilderRoundPreviewPercent((layerRect.height / frameRect.height) * 100);
+            offsetLeftValue = localCourseBannerBuilderRoundPreviewPercent(((layerRect.left - frameRect.left) / frameRect.width) * 100);
+            offsetTopValue = localCourseBannerBuilderRoundPreviewPercent(((layerRect.top - frameRect.top) / frameRect.height) * 100);
+        }
+    }
+
+    if (keepAspectInput) {
+        keepAspectInput.checked = shouldKeepAspect;
+    }
+    widthInput.value = String(widthValue);
+    heightInput.value = String(heightValue);
+    offsetLeftInput.value = String(offsetLeftValue);
+    offsetTopInput.value = String(offsetTopValue);
+    fitOverride.value = 'custom';
+    anchorInput.value = 'top-left';
+    form.dataset.previewUserChanged = '1';
+    localCourseBannerBuilderSyncCurrentLayerDataFromForm(form);
+    localCourseBannerBuilderSyncCustomSizeFields(form);
+    localCourseBannerBuilderSyncOffsetFields(form);
+    localCourseBannerBuilderBindPercentSliders(form);
+    localCourseBannerBuilderSyncLayerBannerPreview(form);
+    return true;
+}
+
+function localCourseBannerBuilderClampPreviewSize(state, widthPercent, heightPercent) {
+    widthPercent = Math.max(1, Math.min(localCourseBannerBuilderCustomSizePercentMax, widthPercent));
+    heightPercent = Math.max(1, Math.min(localCourseBannerBuilderCustomSizePercentMax, heightPercent));
+    return {
+        width: widthPercent,
+        height: heightPercent
+    };
+}
+
+function localCourseBannerBuilderSetModalResizeField(field, value) {
+    if (field) {
+        field.value = typeof value === 'number' ?
+            String(localCourseBannerBuilderRoundPreviewPercent(value)) :
+            String(value);
+    }
+}
+
+function localCourseBannerBuilderApplyModalResizeState(state, event) {
+    var deltaX = event.clientX - state.startX;
+    var deltaY = event.clientY - state.startY;
+    var widthPercent = localCourseBannerBuilderRoundPreviewPercent(((state.startWidthPx + deltaX) / state.frameWidth) * 100);
+    var heightPercent = localCourseBannerBuilderRoundPreviewPercent(((state.startHeightPx + deltaY) / state.frameHeight) * 100);
+    var nextLeft = null;
+    var nextTop = null;
+
+    if (state.mode === 'resize-edge') {
+        switch (state.edge) {
+            case 'left':
+                widthPercent = localCourseBannerBuilderRoundPreviewPercent(((state.startWidthPx - deltaX) / state.frameWidth) * 100);
+                nextLeft = localCourseBannerBuilderRoundPreviewPercent(((state.startLeftPx + deltaX) / state.frameWidth) * 100);
+                nextLeft = Math.max(-widthPercent, Math.min(state.startLeftPercent + state.startWidthPercent - 1, nextLeft));
+                widthPercent = Math.max(1, state.startLeftPercent + state.startWidthPercent - nextLeft);
+                break;
+            case 'right':
+                widthPercent = localCourseBannerBuilderRoundPreviewPercent(((state.startWidthPx + deltaX) / state.frameWidth) * 100);
+                break;
+            case 'top':
+                heightPercent = localCourseBannerBuilderRoundPreviewPercent(((state.startHeightPx - deltaY) / state.frameHeight) * 100);
+                nextTop = localCourseBannerBuilderRoundPreviewPercent(((state.startTopPx + deltaY) / state.frameHeight) * 100);
+                nextTop = Math.max(-heightPercent, Math.min(state.startTopPercent + state.startHeightPercent - 1, nextTop));
+                heightPercent = Math.max(1, state.startTopPercent + state.startHeightPercent - nextTop);
+                break;
+            case 'bottom':
+                heightPercent = localCourseBannerBuilderRoundPreviewPercent(((state.startHeightPx + deltaY) / state.frameHeight) * 100);
+                break;
+        }
+    }
+
+    if (state.keepAspect) {
+        var aspectRatio = state.startWidthPx > 0 && state.startHeightPx > 0 ? (state.startWidthPx / state.startHeightPx) : 1;
+        widthPercent = Math.max(1, widthPercent);
+        heightPercent = (widthPercent * state.frameWidth) / (Math.max(1, aspectRatio) * state.frameHeight);
+    }
+
+    var clamped = localCourseBannerBuilderClampPreviewSize(state, widthPercent, heightPercent);
+    widthPercent = clamped.width;
+    heightPercent = clamped.height;
+
+    localCourseBannerBuilderSetModalResizeField(state.fitOverride, 'custom');
+    if (state.anchorInput) {
+        state.anchorInput.value = 'top-left';
+    }
+    if (nextLeft !== null) {
+        localCourseBannerBuilderSetModalResizeField(state.offsetLeftInput, nextLeft);
+    }
+    if (nextTop !== null) {
+        localCourseBannerBuilderSetModalResizeField(state.offsetTopInput, nextTop);
+    }
+    localCourseBannerBuilderSetModalResizeField(state.widthInput, widthPercent);
+    localCourseBannerBuilderSetModalResizeField(state.heightInput, heightPercent);
+
+    state.form.dataset.previewApplyingInteraction = '1';
+    try {
+        localCourseBannerBuilderSyncCurrentLayerDataFromForm(state.form);
+        localCourseBannerBuilderSyncStandalonePreviewLayer(state.previewRoot, state.layer);
+        localCourseBannerBuilderMirrorDraftSelectionVisual(state.form, state.layer);
+        localCourseBannerBuilderSyncPreviewSelectionOutline(state.frame, state.layer);
+        localCourseBannerBuilderSyncPercentSliderValues(state.form);
+    } finally {
+        state.form.dataset.previewApplyingInteraction = '0';
+    }
+}
+
+function localCourseBannerBuilderHandleModalResizePointerMove(event) {
+    var state = localCourseBannerBuilderModalResizeInteraction;
+    if (!state) {
+        return;
+    }
+    event.preventDefault();
+    state.latestEvent = event;
+    if (localCourseBannerBuilderModalResizeFrame) {
+        return;
+    }
+    localCourseBannerBuilderModalResizeFrame = window.requestAnimationFrame(function () {
+        localCourseBannerBuilderModalResizeFrame = 0;
+        if (localCourseBannerBuilderModalResizeInteraction && localCourseBannerBuilderModalResizeInteraction.latestEvent) {
+            localCourseBannerBuilderApplyModalResizeState(
+                localCourseBannerBuilderModalResizeInteraction,
+                localCourseBannerBuilderModalResizeInteraction.latestEvent
+            );
+        }
+    });
+}
+
+function localCourseBannerBuilderStopModalResizeInteraction() {
+    var state = localCourseBannerBuilderModalResizeInteraction;
+    if (!state) {
+        return;
+    }
+    if (localCourseBannerBuilderModalResizeFrame) {
+        window.cancelAnimationFrame(localCourseBannerBuilderModalResizeFrame);
+        localCourseBannerBuilderModalResizeFrame = 0;
+    }
+    if (state.latestEvent) {
+        localCourseBannerBuilderApplyModalResizeState(state, state.latestEvent);
+    }
+    state.layer.removeAttribute('data-preview-active-edge');
+    localCourseBannerBuilderModalResizeInteraction = null;
+    localCourseBannerBuilderSaveActiveDraftPreviewState(state.form);
+    localCourseBannerBuilderSyncLayerBannerPreview(state.form);
+    localCourseBannerBuilderSyncModalPreviewActionButtons(state.form);
+    localCourseBannerBuilderClearPreviewGuides(state.frame);
+}
+
+function localCourseBannerBuilderStartModalResizeInteraction(event, handle) {
+    if (!handle || event.button !== 0) {
+        return false;
+    }
+    var form = handle.closest ? handle.closest('form.mform') : null;
+    if (!form || !form.classList.contains('local-course-banner-builder-has-preview-proxy')) {
+        return false;
+    }
+    if (localCourseBannerBuilderGetActivePreviewCropLayer(form)) {
+        return false;
+    }
+    var layer = handle.closest('[data-preview-current-layer="1"]');
+    if (!layer || !localCourseBannerBuilderIsLayerPreviewInteractionVisible(form, layer)) {
+        return false;
+    }
+    var frame = layer.closest('[data-banner-preview-frame="1"]');
+    var previewRoot = layer.closest('[data-layer-banner-preview="1"]');
+    var visualLayer = localCourseBannerBuilderGetDraftSelectionVisualLayer(form, layer);
+    var frameRect = frame ? frame.getBoundingClientRect() : null;
+    var layerRect = (visualLayer || layer).getBoundingClientRect();
+    var fitOverride = form.querySelector('#id_fitmodeoverride');
+    var anchorInput = form.querySelector('[data-layer-position-anchor="1"]');
+    var widthInput = form.querySelector('#id_customwidthpercent');
+    var heightInput = form.querySelector('#id_customheightpercent');
+    var keepAspectInput = form.querySelector('[data-custom-size-keep-aspect="1"][type="checkbox"]');
+    var offsetTopInput = form.querySelector('#id_offsettoppercent');
+    var offsetLeftInput = form.querySelector('#id_offsetleftpercent');
+    if (!frameRect || !frameRect.width || !frameRect.height || !layerRect.width || !layerRect.height ||
+            !fitOverride || !anchorInput || !widthInput || !heightInput || !offsetTopInput || !offsetLeftInput) {
+        return false;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    localCourseBannerBuilderPendingPreviewInteraction = null;
+    localCourseBannerBuilderPreviewInteraction = null;
+    localCourseBannerBuilderPushModalPreviewHistory(form);
+    localCourseBannerBuilderSelectLayerModalPreviewLayer(form, layer);
+    layer.setAttribute('data-preview-active-edge', handle.getAttribute('data-preview-resize-edge') || '');
+
+    var offsetLeftValue = localCourseBannerBuilderRoundPreviewPercent(((layerRect.left - frameRect.left) / frameRect.width) * 100);
+    var offsetTopValue = localCourseBannerBuilderRoundPreviewPercent(((layerRect.top - frameRect.top) / frameRect.height) * 100);
+    localCourseBannerBuilderSetModalResizeField(fitOverride, 'custom');
+    anchorInput.value = 'top-left';
+    localCourseBannerBuilderSetModalResizeField(widthInput, (layerRect.width / frameRect.width) * 100);
+    localCourseBannerBuilderSetModalResizeField(heightInput, (layerRect.height / frameRect.height) * 100);
+    localCourseBannerBuilderSetModalResizeField(offsetLeftInput, offsetLeftValue);
+    localCourseBannerBuilderSetModalResizeField(offsetTopInput, offsetTopValue);
+    localCourseBannerBuilderSyncCurrentLayerDataFromForm(form);
+
+    localCourseBannerBuilderModalResizeInteraction = {
+        mode: handle.getAttribute('data-preview-resize-mode') === 'edge' ? 'resize-edge' : 'resize',
+        edge: handle.getAttribute('data-preview-resize-edge') || '',
+        form: form,
+        frame: frame,
+        previewRoot: previewRoot,
+        layer: layer,
+        startX: event.clientX,
+        startY: event.clientY,
+        frameWidth: frameRect.width,
+        frameHeight: frameRect.height,
+        startLeftPx: layerRect.left - frameRect.left,
+        startTopPx: layerRect.top - frameRect.top,
+        startWidthPx: layerRect.width,
+        startHeightPx: layerRect.height,
+        startLeftPercent: offsetLeftValue,
+        startTopPercent: offsetTopValue,
+        startWidthPercent: localCourseBannerBuilderRoundPreviewPercent((layerRect.width / frameRect.width) * 100),
+        startHeightPercent: localCourseBannerBuilderRoundPreviewPercent((layerRect.height / frameRect.height) * 100),
+        fitOverride: fitOverride,
+        anchorInput: anchorInput,
+        widthInput: widthInput,
+        heightInput: heightInput,
+        offsetTopInput: offsetTopInput,
+        offsetLeftInput: offsetLeftInput,
+        keepAspect: !!(keepAspectInput && keepAspectInput.checked),
+        latestEvent: null
+    };
+    if (handle.setPointerCapture && event.pointerId) {
+        try {
+            handle.setPointerCapture(event.pointerId);
+        } catch (error) {
+            // Pointer capture is a nice-to-have; document listeners continue the resize.
+        }
+    }
+    return true;
+}
+
+function localCourseBannerBuilderHandleModalResizeHandlePointerDown(event, handle) {
+    return localCourseBannerBuilderStartModalResizeInteraction(event, handle) ? false : true;
+}
+
+window.localCourseBannerBuilderHandleModalResizeHandlePointerDown =
+    localCourseBannerBuilderHandleModalResizeHandlePointerDown;
+window.localCourseBannerBuilderStartModalResizeInteraction =
+    localCourseBannerBuilderStartModalResizeInteraction;
+
+var localCourseBannerBuilderPreviewGuideThreshold = 5;
+var localCourseBannerBuilderPreviewGuideMargin = 12;
+var localCourseBannerBuilderPreviewGuidePeerLimit = 4;
+var localCourseBannerBuilderCustomSizePercentMax = 1000;
+
+function localCourseBannerBuilderEnsurePreviewGuideLayer(frame) {
+    if (!frame) {
+        return null;
+    }
+    var layer = frame.querySelector(':scope > [data-preview-guides-layer="1"]');
+    if (!layer) {
+        layer = document.createElement('div');
+        layer.className = 'local-course-banner-builder-preview-guides';
+        layer.setAttribute('data-preview-guides-layer', '1');
+        layer.setAttribute('aria-hidden', 'true');
+        frame.appendChild(layer);
+    }
+    return layer;
+}
+
+function localCourseBannerBuilderClearPreviewGuides(frame) {
+    if (!frame) {
+        return;
+    }
+    var layer = frame.querySelector(':scope > [data-preview-guides-layer="1"]');
+    if (layer) {
+        layer.innerHTML = '';
+        layer.hidden = true;
+    }
+}
+
+function localCourseBannerBuilderGetPreviewGuideLayer(node) {
+    if (!node) {
+        return null;
+    }
+    if (node.matches && node.matches(
+            '[data-source-preview-layer="1"], [data-preview-current-layer="1"], [data-preview-draft-layer="1"]'
+    )) {
+        return node;
+    }
+    return node.closest ? node.closest(
+        '[data-source-preview-layer="1"], [data-preview-current-layer="1"], [data-preview-draft-layer="1"]'
+    ) : null;
+}
+
+function localCourseBannerBuilderGetPreviewGuideFitMode(layer) {
+    if (!layer) {
+        return '';
+    }
+    var previewRoot = layer.closest(
+        '[data-layer-banner-preview="1"], [data-source-preview-frame="1"], [data-source-preview-frame-moodle="1"]'
+    );
+    return layer.getAttribute('data-preview-fitmode') ||
+        (previewRoot ? (previewRoot.getAttribute('data-default-fitmode') || '') : '');
+}
+
+function localCourseBannerBuilderGetPreviewGuideCrop(layer) {
+    return {enabled: false, left: 0, top: 0, width: 100, height: 100};
+}
+
+function localCourseBannerBuilderApplyPreviewGuideCropRect(rect, layer) {
+    var crop = localCourseBannerBuilderGetPreviewGuideCrop(layer);
+    if (!crop.enabled) {
+        return rect;
+    }
+    var width = typeof rect.width !== 'undefined' ? rect.width : (rect.right - rect.left);
+    var height = typeof rect.height !== 'undefined' ? rect.height : (rect.bottom - rect.top);
+    var left = rect.left + (width * crop.left / 100);
+    var top = rect.top + (height * crop.top / 100);
+    width = width * crop.width / 100;
+    height = height * crop.height / 100;
+    return {
+        left: left,
+        top: top,
+        right: left + width,
+        bottom: top + height,
+        width: width,
+        height: height,
+        centerX: left + (width / 2),
+        centerY: top + (height / 2)
+    };
+}
+
+function localCourseBannerBuilderGetRectInFrame(frameRect, node) {
+    var layer = localCourseBannerBuilderGetPreviewGuideLayer(node);
+    var rect = (layer || node).getBoundingClientRect();
+    var frameRelative = {
+        left: rect.left - frameRect.left,
+        top: rect.top - frameRect.top,
+        right: rect.right - frameRect.left,
+        bottom: rect.bottom - frameRect.top,
+        width: rect.width,
+        height: rect.height,
+        centerX: rect.left - frameRect.left + (rect.width / 2),
+        centerY: rect.top - frameRect.top + (rect.height / 2)
+    };
+    return localCourseBannerBuilderApplyPreviewGuideCropRect(frameRelative, layer);
+}
+
+function localCourseBannerBuilderGetPreviewGuideRawRect(rawRect, layer) {
+    if (!rawRect) {
+        return rawRect;
+    }
+    var rect = {
+        left: rawRect.left,
+        top: rawRect.top,
+        right: rawRect.right,
+        bottom: rawRect.bottom,
+        width: typeof rawRect.width !== 'undefined' ? rawRect.width : (rawRect.right - rawRect.left),
+        height: typeof rawRect.height !== 'undefined' ? rawRect.height : (rawRect.bottom - rawRect.top),
+        centerX: rawRect.centerX,
+        centerY: rawRect.centerY
+    };
+    if (typeof rect.centerX === 'undefined') {
+        rect.centerX = rect.left + (rect.width / 2);
+    }
+    if (typeof rect.centerY === 'undefined') {
+        rect.centerY = rect.top + (rect.height / 2);
+    }
+    return localCourseBannerBuilderApplyPreviewGuideCropRect(rect, layer);
+}
+
+function localCourseBannerBuilderGetLayerRectInFrame(frameRect, node) {
+    var rect = node.getBoundingClientRect();
+    return {
+        left: rect.left - frameRect.left,
+        top: rect.top - frameRect.top,
+        right: rect.right - frameRect.left,
+        bottom: rect.bottom - frameRect.top,
+        width: rect.width,
+        height: rect.height,
+        centerX: rect.left - frameRect.left + (rect.width / 2),
+        centerY: rect.top - frameRect.top + (rect.height / 2)
+    };
+}
+
+function localCourseBannerBuilderPreviewRectsOverlap(a, b, margin) {
+    margin = margin || 0;
+    return !(a.right + margin < b.left || a.left - margin > b.right ||
+        a.bottom + margin < b.top || a.top - margin > b.bottom);
+}
+
+function localCourseBannerBuilderIsPreviewSnapEnabled(scope) {
+    var host = scope && scope.closest ?
+        (scope.closest('[data-preview-snap-enabled]') ||
+            scope.closest('[data-source-visual-editor="1"]') ||
+            localCourseBannerBuilderGetLayerScope(scope)) :
+        null;
+    if (!host) {
+        host = scope;
+    }
+    return !(host && host.getAttribute && host.getAttribute('data-preview-snap-enabled') === '0');
+}
+
+function localCourseBannerBuilderSyncPreviewSnapButtons(scope) {
+    var root = scope || document;
+    Array.prototype.slice.call(root.querySelectorAll('[data-action="local-course-banner-builder-toggle-preview-snap"]')).forEach(function (button) {
+        var host = button.closest('[data-source-visual-editor="1"]') || localCourseBannerBuilderGetLayerScope(button);
+        var enabled = localCourseBannerBuilderIsPreviewSnapEnabled(host || button);
+        button.classList.remove('btn-primary');
+        button.classList.remove('active');
+        button.classList.remove('local-course-banner-builder-source-preview-button--active');
+        button.classList.add('btn-outline-secondary');
+        button.classList.toggle('local-course-banner-builder-preview-snap-disabled', !enabled);
+        button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+    });
+}
+
+function localCourseBannerBuilderTogglePreviewSnap(button) {
+    var host = button ? (button.closest('[data-source-visual-editor="1"]') || localCourseBannerBuilderGetLayerScope(button)) : null;
+    if (!host) {
+        return;
+    }
+    var enabled = !localCourseBannerBuilderIsPreviewSnapEnabled(host);
+    host.setAttribute('data-preview-snap-enabled', enabled ? '1' : '0');
+    Array.prototype.slice.call(host.querySelectorAll(
+        '[data-source-preview-frame="1"], [data-banner-preview-frame="1"]'
+    )).forEach(function (frame) {
+        frame.setAttribute('data-preview-snap-enabled', enabled ? '1' : '0');
+    });
+    Array.prototype.slice.call(host.querySelectorAll(
+        '[data-action="local-course-banner-builder-toggle-preview-snap"]'
+    )).forEach(function (item) {
+        item.classList.remove('local-course-banner-builder-preview-snap-pulse');
+        void item.offsetWidth;
+        item.classList.add('local-course-banner-builder-preview-snap-pulse');
+    });
+    localCourseBannerBuilderSyncPreviewSnapButtons(host);
+}
+
+function localCourseBannerBuilderIsOneShotPreviewToolbarAction(button) {
+    if (!button || button.disabled || !button.closest) {
+        return false;
+    }
+    if (!button.closest([
+        '.local-course-banner-builder-source-preview-visibility-toggle-row',
+        '[data-modal-preview-icon-row="1"]',
+        '.local-course-banner-builder-slideshow-preview-toolbar',
+        '.local-course-banner-builder-title-preview-toolbar'
+    ].join(','))) {
+        return false;
+    }
+    var action = button.getAttribute('data-action') || '';
+    if (action.indexOf('toggle-') !== -1 || action.indexOf('set-selected-') !== -1) {
+        return false;
+    }
+    return !!action;
+}
+
+function localCourseBannerBuilderTriggerPreviewActionFeedback(button) {
+    if (!button) {
+        return;
+    }
+    button.classList.remove('local-course-banner-builder-preview-action-feedback');
+    void button.offsetWidth;
+    button.classList.add('local-course-banner-builder-preview-action-feedback');
+}
+
+function localCourseBannerBuilderTitleHexToRgba(hex, opacity) {
+    hex = /^#[0-9a-f]{6}$/i.test(hex || '') ? hex : '#000000';
+    opacity = Math.max(0, Math.min(100, parseFloat(opacity || '0'))) / 100;
+    return 'rgba(' + parseInt(hex.slice(1, 3), 16) + ', ' +
+        parseInt(hex.slice(3, 5), 16) + ', ' +
+        parseInt(hex.slice(5, 7), 16) + ', ' + opacity.toFixed(3) + ')';
+}
+
+function localCourseBannerBuilderSyncColourInput(input) {
+    if (!input || input.type !== 'color') {
+        return;
+    }
+    var value = /^#[0-9a-f]{6}$/i.test(input.value || '') ? input.value : '#000000';
+    input.style.setProperty('--local-course-banner-builder-selected-color', value);
+    input.style.backgroundColor = value;
+}
+
+function localCourseBannerBuilderBindColourInputs(scope) {
+    Array.prototype.slice.call((scope || document).querySelectorAll('input[type="color"]')).forEach(function (input) {
+        if (input.dataset.courseBannerBuilderColourBound === '1') {
+            localCourseBannerBuilderSyncColourInput(input);
+            return;
+        }
+        input.dataset.courseBannerBuilderColourBound = '1';
+        input.addEventListener('input', function () {
+            localCourseBannerBuilderSyncColourInput(input);
+        });
+        input.addEventListener('change', function () {
+            localCourseBannerBuilderSyncColourInput(input);
+        });
+        localCourseBannerBuilderSyncColourInput(input);
+    });
+}
+
+function localCourseBannerBuilderReadTitleValue(form, name, fallback) {
+    var input = form ? form.querySelector('[name="' + name + '"]') : null;
+    if (!input) {
+        return fallback;
+    }
+    if (input.type === 'checkbox') {
+        return input.checked;
+    }
+    return input.value === '' ? fallback : input.value;
+}
+
+function localCourseBannerBuilderReadTitleFlag(form, name, fallback) {
+    var value = localCourseBannerBuilderReadTitleValue(form, name, fallback ? '1' : '0');
+    return value === true || value === '1' || value === 1 || value === 'true';
+}
+
+function localCourseBannerBuilderSetTitleField(form, name, value) {
+    var input = form ? form.querySelector('[name="' + name + '"]') : null;
+    if (!input) {
+        return;
+    }
+    input.value = value;
+    var range = form.querySelector('[data-title-range-for="' + name + '"]');
+    var number = form.querySelector('[data-title-number-for="' + name + '"]');
+    if (range) {
+        range.value = value;
+    }
+    if (number) {
+        number.value = value;
+    }
+    localCourseBannerBuilderSyncTitleSliderOutput(form, name, value);
+}
+
+function localCourseBannerBuilderSyncTitleSliderOutput(form, name, value) {
+    var output = form ? form.querySelector('[data-title-output-for="' + name + '"]') : null;
+    var number = form ? form.querySelector('[data-title-number-for="' + name + '"]') : null;
+    if (!output) {
+        return;
+    }
+    output.textContent = value + (number ? (number.getAttribute('data-title-output-unit') || '') : '');
+}
+
+function localCourseBannerBuilderSyncTitleColorPickers(form) {
+    Array.prototype.slice.call(form.querySelectorAll('[data-title-color-picker-for]')).forEach(function (picker) {
+        var text = form.querySelector('[data-title-color-text-for="' +
+            picker.getAttribute('data-title-color-picker-for') + '"]');
+        if (text && /^#[0-9a-f]{6}$/i.test(text.value || '')) {
+            picker.value = text.value;
+        }
+        localCourseBannerBuilderSyncColourInput(picker);
+    });
+}
+
+function localCourseBannerBuilderCaptureTitleState(form) {
+    var state = {};
+    Array.prototype.slice.call(form.querySelectorAll('[data-title-control]')).forEach(function (input) {
+        state[input.name] = input.type === 'checkbox' ? input.checked : input.value;
+    });
+    return state;
+}
+
+function localCourseBannerBuilderReadTitleInheritStates(form) {
+    var states;
+    try {
+        states = JSON.parse(form.getAttribute('data-title-inherit-states') || '{}');
+    } catch (error) {
+        states = {};
+    }
+    Array.prototype.slice.call(document.querySelectorAll('[data-banner-title-editor="1"]')).forEach(function (editor) {
+        var context = editor.getAttribute('data-title-current-context') || '';
+        if (context) {
+            states[context] = localCourseBannerBuilderCaptureTitleState(editor);
+        }
+    });
+    return states;
+}
+
+function localCourseBannerBuilderApplyTitleState(form, state) {
+    Object.keys(state || {}).forEach(function (name) {
+        var input = form.querySelector('[name="' + name + '"]');
+        if (!input) {
+            return;
+        }
+        if (input.type === 'checkbox') {
+            input.checked = state[name] === true || state[name] === '1' || state[name] === 1 || state[name] === 'true';
+        } else {
+            input.value = state[name];
+        }
+        var range = form.querySelector('[data-title-range-for="' + name + '"]');
+        var number = form.querySelector('[data-title-number-for="' + name + '"]');
+        if (range) {
+            range.value = state[name];
+        }
+        if (number) {
+            number.value = state[name];
+        }
+        localCourseBannerBuilderSyncTitleSliderOutput(form, name, state[name]);
+    });
+    localCourseBannerBuilderSyncTitleColorPickers(form);
+    localCourseBannerBuilderSyncTitleToggleButtons(form);
+    localCourseBannerBuilderSyncTitleFrameTypeButtons(form);
+    localCourseBannerBuilderSyncTitleAlignButtons(form);
+    localCourseBannerBuilderSetTitleStyleMode(form, localCourseBannerBuilderReadTitleValue(form, 'stylemode', 'custom'));
+    localCourseBannerBuilderUpdateTitlePreview(form);
+}
+
+function localCourseBannerBuilderSyncTitleFrameTypeButtons(form) {
+    var current = localCourseBannerBuilderReadTitleValue(form, 'frametype', 'box');
+    Array.prototype.slice.call(form.querySelectorAll('[data-action="local-course-banner-builder-set-title-frame-type"]')).forEach(function (button) {
+        var active = button.getAttribute('data-title-frame-type') === current;
+        button.classList.toggle('active', active);
+        button.classList.toggle('btn-primary', active);
+        button.classList.toggle('btn-outline-secondary', !active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+}
+
+function localCourseBannerBuilderSyncTitleAlignButtons(form) {
+    var current = localCourseBannerBuilderReadTitleValue(form, 'align', 'center');
+    Array.prototype.slice.call(form.querySelectorAll('[data-action="local-course-banner-builder-set-title-align"]')).forEach(function (button) {
+        var active = button.getAttribute('data-title-align') === current;
+        button.classList.toggle('active', active);
+        button.classList.toggle('btn-primary', active);
+        button.classList.toggle('btn-outline-secondary', !active);
+        button.classList.toggle('local-course-banner-builder-preview-toolbar-button--active', active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+}
+
+function localCourseBannerBuilderPushTitleUndo(form) {
+    var undo = JSON.parse(form.dataset.titlePreviewUndoStack || '[]');
+    undo.push(localCourseBannerBuilderCaptureTitleState(form));
+    form.dataset.titlePreviewUndoStack = JSON.stringify(undo);
+    form.dataset.titlePreviewRedoStack = '[]';
+    localCourseBannerBuilderSyncTitleToolbar(form);
+}
+
+function localCourseBannerBuilderSyncTitleToggleButtons(form) {
+    var frameEnabledInput = form.querySelector('[name="frameenabled"][data-title-control="frameenabled"]');
+    var frameEnabled = !!(frameEnabledInput && frameEnabledInput.value === '1');
+    Array.prototype.slice.call(form.querySelectorAll('[data-local-title-toggle-button="1"]')).forEach(function (button) {
+        var input = form.querySelector(button.getAttribute('data-target-input'));
+        var enabled = !!(input && input.value === '1');
+        var isFrameShadow = !!(input && input.name === 'frameshadowenabled');
+        var icon = button.querySelector('.fa');
+        var label = button.querySelector('span');
+        if (isFrameShadow && !frameEnabled) {
+            enabled = false;
+            if (input) {
+                input.value = '0';
+            }
+        }
+        button.disabled = isFrameShadow && !frameEnabled;
+        button.classList.toggle('disabled', button.disabled);
+        button.classList.toggle('btn-primary', enabled);
+        button.classList.toggle('btn-outline-secondary', !enabled);
+        button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+        button.setAttribute('aria-disabled', button.disabled ? 'true' : 'false');
+        if (icon) {
+            icon.className = 'fa ' + (enabled ? 'fa-toggle-on' : 'fa-toggle-off') + ' me-2';
+        }
+        if (label) {
+            label.textContent = enabled ? button.getAttribute('data-label-on') : button.getAttribute('data-label-off');
+        }
+    });
+    Array.prototype.slice.call(form.querySelectorAll('[data-title-frame-shadow-note="1"]')).forEach(function (note) {
+        note.hidden = frameEnabled;
+    });
+    Array.prototype.slice.call(form.querySelectorAll('[data-action="local-course-banner-builder-toggle-title-style"]')).forEach(function (button) {
+        var input = form.querySelector('[data-title-style-input="' + button.getAttribute('data-title-style') + '"]');
+        var active = !!(input && input.value === '1');
+        button.classList.toggle('btn-primary', active);
+        button.classList.toggle('btn-outline-secondary', !active);
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+}
+
+function localCourseBannerBuilderSetTitleStyleMode(form, mode) {
+    var input = form.querySelector('[name="stylemode"][data-title-control="stylemode"]');
+    if (input) {
+        input.value = mode;
+    }
+    Array.prototype.slice.call(form.querySelectorAll('[data-title-style-mode]')).forEach(function (button) {
+        var active = button.getAttribute('data-title-style-mode') === mode;
+        button.classList.toggle('btn-primary', active);
+        button.classList.toggle('btn-outline-secondary', !active);
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+}
+
+function localCourseBannerBuilderMarkTitleStyleCustom(form) {
+    if (form && form.dataset.titleApplyingInheritedStyle !== '1') {
+        localCourseBannerBuilderSetTitleStyleMode(form, 'custom');
+    }
+}
+
+function localCourseBannerBuilderSyncTitleSnapButton(form) {
+    var button = form.querySelector('[data-action="local-course-banner-builder-toggle-title-preview-snap"]');
+    var enabled = form.getAttribute('data-title-preview-snap-enabled') !== '0';
+    if (!button) {
+        return;
+    }
+    button.classList.remove('btn-primary');
+    button.classList.remove('active');
+    button.classList.remove('local-course-banner-builder-source-preview-button--active');
+    button.classList.add('btn-outline-secondary');
+    button.classList.toggle('local-course-banner-builder-preview-snap-disabled', !enabled);
+    button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+}
+
+function localCourseBannerBuilderToggleTitleSnap(form, button) {
+    var enabled = form.getAttribute('data-title-preview-snap-enabled') === '0';
+    form.setAttribute('data-title-preview-snap-enabled', enabled ? '1' : '0');
+    if (button) {
+        button.classList.remove('local-course-banner-builder-preview-snap-pulse');
+        void button.offsetWidth;
+        button.classList.add('local-course-banner-builder-preview-snap-pulse');
+    }
+    localCourseBannerBuilderSyncTitleSnapButton(form);
+}
+
+function localCourseBannerBuilderSnapTitlePercent(form, value, axis, frame, target) {
+    if (form.getAttribute('data-title-preview-snap-enabled') === '0') {
+        return value;
+    }
+    if (Math.abs(value - 50) > 2) {
+        return value;
+    }
+    if (frame) {
+        var guideLayer = localCourseBannerBuilderEnsurePreviewGuideLayer(frame);
+        localCourseBannerBuilderAddPreviewGuide(
+            guideLayer,
+            axis === 'x' ? 'vertical' : 'horizontal',
+            axis === 'x' ? frame.clientWidth / 2 : frame.clientHeight / 2,
+            'frame local-course-banner-builder-preview-guide--center'
+        );
+    }
+    return 50;
+}
+
+function localCourseBannerBuilderUpdateTitleGuides(form, frame) {
+    if (!form || !frame || form.getAttribute('data-title-preview-snap-enabled') === '0') {
+        return;
+    }
+    localCourseBannerBuilderClearPreviewGuides(frame);
+    var guideLayer = localCourseBannerBuilderEnsurePreviewGuideLayer(frame);
+    if (guideLayer) {
+        guideLayer.hidden = false;
+    }
+    localCourseBannerBuilderAddPreviewGuide(
+        guideLayer,
+        'vertical',
+        frame.clientWidth / 2,
+        'frame local-course-banner-builder-preview-guide--center'
+    );
+    localCourseBannerBuilderAddPreviewGuide(
+        guideLayer,
+        'horizontal',
+        frame.clientHeight / 2,
+        'frame local-course-banner-builder-preview-guide--center'
+    );
+}
+
+function localCourseBannerBuilderSyncTitleToolbar(form) {
+    var undo = JSON.parse(form.dataset.titlePreviewUndoStack || '[]');
+    var redo = JSON.parse(form.dataset.titlePreviewRedoStack || '[]');
+    var undoButton = form.querySelector('[data-action="local-course-banner-builder-title-preview-undo"]');
+    var redoButton = form.querySelector('[data-action="local-course-banner-builder-title-preview-redo"]');
+    if (undoButton) {
+        undoButton.disabled = undo.length === 0;
+    }
+    if (redoButton) {
+        redoButton.disabled = redo.length === 0;
+    }
+}
+
+function localCourseBannerBuilderClearTitlePreviewSelection(form) {
+    if (!form) {
+        return;
+    }
+    Array.prototype.slice.call(form.querySelectorAll('[data-title-preview-draggable="1"]')).forEach(function (node) {
+        node.classList.remove('local-course-banner-builder-slideshow-preview-draggable--selected');
+    });
+    var frame = form.querySelector('[data-title-preview-frame="1"]');
+    localCourseBannerBuilderClearPreviewGuides(frame);
+    localCourseBannerBuilderSyncTitleToolbar(form);
+}
+
+function localCourseBannerBuilderToggleTitleSidePanel(form, button) {
+    if (!form || !button) {
+        return;
+    }
+    var panelKey = button.getAttribute('data-title-side-panel-target');
+    var panel = panelKey ? form.querySelector('[data-title-side-panel="' + panelKey + '"]') : null;
+    if (!panel) {
+        return;
+    }
+    var shouldOpen = panel.hidden || panel.classList.contains('is-collapsed');
+    Array.prototype.slice.call(form.querySelectorAll('[data-title-side-panel]')).forEach(function (candidate) {
+        var key = candidate.getAttribute('data-title-side-panel');
+        var candidateButton = form.querySelector('[data-title-side-panel-target="' + key + '"]');
+        if (candidate !== panel) {
+            localCourseBannerBuilderToggleOpacityPanel(candidate, candidateButton, false);
+            if (candidateButton) {
+                candidateButton.classList.remove('btn-primary');
+                candidateButton.classList.add('btn-outline-secondary');
+            }
+        }
+    });
+    localCourseBannerBuilderToggleOpacityPanel(panel, button, shouldOpen);
+    button.classList.toggle('btn-primary', shouldOpen);
+    button.classList.toggle('btn-outline-secondary', !shouldOpen);
+}
+
+function localCourseBannerBuilderGetInlineFrameGapEm(lineHeightPercent) {
+    var lineHeight = Math.max(40, Math.min(540, parseFloat(lineHeightPercent || '105') || 105));
+    return Math.max(0.14, Math.min(2.1, 0.14 + (((lineHeight - 105) / 100) * 0.45)));
+}
+
+function localCourseBannerBuilderGetFirstTitlePreviewLine(text) {
+    var newline = String.fromCharCode(10);
+    return String(text || '')
+        .split(String.fromCharCode(13) + newline).join(newline)
+        .split(String.fromCharCode(13)).join(newline)
+        .split(' / ').join(newline)
+        .split(newline)[0]
+        .trim();
+}
+
+function localCourseBannerBuilderTitlePreviewContainsLine(lines, expected) {
+    expected = localCourseBannerBuilderGetFirstTitlePreviewLine(expected).toLowerCase();
+    if (!expected) {
+        return false;
+    }
+    return lines.some(function (line) {
+        return localCourseBannerBuilderGetFirstTitlePreviewLine(line).toLowerCase() === expected;
+    });
+}
+
+function localCourseBannerBuilderNormaliseCombinedActivityPreviewLines(lines, courseText, activityText) {
+    var courseFirstLine = localCourseBannerBuilderGetFirstTitlePreviewLine(courseText);
+    var activityFirstLine = localCourseBannerBuilderGetFirstTitlePreviewLine(activityText);
+    if (!courseFirstLine || !activityFirstLine) {
+        return lines;
+    }
+    if (localCourseBannerBuilderTitlePreviewContainsLine(lines, courseFirstLine) &&
+            localCourseBannerBuilderTitlePreviewContainsLine(lines, activityFirstLine)) {
+        return [courseFirstLine, activityFirstLine];
+    }
+    return lines;
+}
+
+function localCourseBannerBuilderReadActivityTitleMode(form) {
+    if (!form) {
+        return 'activity';
+    }
+    var select = form.querySelector('select[name="activitytitlemode"]') ||
+        document.querySelector('.modal.show select[name="activitytitlemode"]');
+    if (select && select.value) {
+        return select.value;
+    }
+    if (select && select.options && select.selectedIndex >= 0) {
+        var selectedText = String(select.options[select.selectedIndex].textContent || '').toLowerCase();
+        if ((selectedText.indexOf('course') !== -1 && selectedText.indexOf('activity') !== -1) ||
+                (selectedText.indexOf('cours') !== -1 && selectedText.indexOf('activ') !== -1)) {
+            return 'both';
+        }
+    }
+    return localCourseBannerBuilderReadTitleValue(form, 'activitytitlemode', 'activity');
+}
+
+function localCourseBannerBuilderIsActivityBothTitlePreview(form) {
+    return !!(form && (form.getAttribute('data-title-current-context') || '') === 'activity' &&
+        localCourseBannerBuilderReadActivityTitleMode(form) === 'both');
+}
+
+function localCourseBannerBuilderBuildTitlePreviewText(form, previewText, previewLabel) {
+    var mode = localCourseBannerBuilderReadActivityTitleMode(form);
+    var lineCount = String(previewText.getAttribute('data-title-preview-line-count') || '2');
+    var isSingleLine = lineCount === '1';
+    var courseSingleText = previewText.getAttribute('data-title-preview-course-single') ||
+        previewText.getAttribute('data-title-preview-course') || '';
+    var activitySingleText = previewText.getAttribute('data-title-preview-activity-single') ||
+        previewText.getAttribute('data-title-preview-activity') || previewLabel.textContent;
+    var courseText = previewText.getAttribute(isSingleLine ? 'data-title-preview-course-single' : 'data-title-preview-course') ||
+        previewText.getAttribute('data-title-preview-course') || '';
+    var activityText = previewText.getAttribute(isSingleLine ? 'data-title-preview-activity-single' : 'data-title-preview-activity') ||
+        previewText.getAttribute('data-title-preview-activity') || previewLabel.textContent;
+    var siteText = previewText.getAttribute(isSingleLine ? 'data-title-preview-site-single' : 'data-title-preview-site') ||
+        previewText.getAttribute('data-title-preview-site') || activityText;
+    var context = form.getAttribute('data-title-current-context') || 'course';
+    if (context === 'site') {
+        return siteText;
+    }
+    if (mode === 'course') {
+        return courseText;
+    }
+    if (mode === 'both') {
+        var courseFirstLine = localCourseBannerBuilderGetFirstTitlePreviewLine(courseSingleText || courseText);
+        var activityFirstLine = localCourseBannerBuilderGetFirstTitlePreviewLine(activitySingleText || activityText);
+        return isSingleLine ? [courseFirstLine, activityFirstLine].filter(Boolean).join(' ') :
+            [courseFirstLine, activityFirstLine].filter(Boolean).join(String.fromCharCode(10));
+    }
+    return activityText;
+}
+
+function localCourseBannerBuilderApplyTitlePreviewPosition(previewText, x, align, aboveBorder) {
+    if (!previewText) {
+        return;
+    }
+    var safeLeft = aboveBorder ? '0px' : 'var(--local-course-banner-builder-preview-left-width, 0px)';
+    var safeRight = aboveBorder ? '0px' : 'var(--local-course-banner-builder-preview-right-width, 0px)';
+    var transform = 'translate(-50%, -50%)';
+    var available = 'calc((min(' +
+        'calc(var(--local-course-banner-builder-title-anchor-x) - var(--local-course-banner-builder-title-safe-left)), ' +
+        'calc(100% - var(--local-course-banner-builder-title-safe-right) - var(--local-course-banner-builder-title-anchor-x))' +
+        ') * 2) - 1.25rem)';
+    if (align === 'left') {
+        transform = 'translate(0, -50%)';
+        available = 'calc(100% - var(--local-course-banner-builder-title-anchor-x) - ' +
+            'var(--local-course-banner-builder-title-safe-right) - 1.25rem)';
+    } else if (align === 'right') {
+        transform = 'translate(-100%, -50%)';
+        available = 'calc(var(--local-course-banner-builder-title-anchor-x) - ' +
+            'var(--local-course-banner-builder-title-safe-left) - 1.25rem)';
+    } else {
+        transform = 'translate(calc(var(--local-course-banner-builder-title-raw-x) * -1), -50%)';
+        available = 'calc(100% - var(--local-course-banner-builder-title-safe-left) - ' +
+            'var(--local-course-banner-builder-title-safe-right) - 1.25rem)';
+    }
+    previewText.style.setProperty('--local-course-banner-builder-title-raw-x', x + '%');
+    previewText.style.setProperty('--local-course-banner-builder-title-safe-left', safeLeft);
+    previewText.style.setProperty('--local-course-banner-builder-title-safe-right', safeRight);
+    previewText.style.setProperty(
+        '--local-course-banner-builder-title-anchor-x',
+        'clamp(calc(' + safeLeft + ' + 0.625rem), ' + x + '%, calc(100% - ' + safeRight + ' - 0.625rem))'
+    );
+    previewText.style.left = 'var(--local-course-banner-builder-title-anchor-x)';
+    previewText.style.transform = transform;
+    previewText.style.maxWidth = 'max(1rem, ' + available + ')';
+}
+
+function localCourseBannerBuilderGetBannerTitlePreviewZIndex(aboveBorder, aboveOverlay) {
+    if (!aboveBorder) {
+        return aboveOverlay ? 1500 : 900;
+    }
+    return aboveOverlay ? 4010 : 2500;
+}
+
+function localCourseBannerBuilderGetResponsiveTitleFontCss() {
+    return 'clamp(0.62rem, min(7.4cqh, 2.65cqw), 2.35rem)';
+}
+
+function localCourseBannerBuilderGetTitleTextTransformOrigin(align) {
+    if (align === 'left') {
+        return 'left center';
+    }
+    if (align === 'right') {
+        return 'right center';
+    }
+    return 'center center';
+}
+
+function localCourseBannerBuilderGetTitleFramePaddingCss(padding) {
+    var safePadding = Math.max(0, Math.min(240, parseFloat(padding) || 0));
+    return (safePadding / 32).toFixed(4) + 'em ' + (safePadding / 16).toFixed(4) + 'em';
+}
+
+function localCourseBannerBuilderBuildScaledTitleTextNode(text, scale, align) {
+    var node = document.createElement('span');
+    node.setAttribute('data-title-render-node', '1');
+    node.textContent = text || 'u00a0';
+    node.style.display = 'inline-block';
+    node.style.lineHeight = '1';
+    node.style.transform = 'scale(' + scale.toFixed(4) + ')';
+    node.style.transformOrigin = localCourseBannerBuilderGetTitleTextTransformOrigin(align);
+    node.style.verticalAlign = 'baseline';
+    return node;
+}
+
+function localCourseBannerBuilderCaptureTitlePreviewVisualCenter(form) {
+    if (!form) {
+        return null;
+    }
+    var previewText = form.querySelector('[data-title-preview-text="1"]');
+    var frame = form.querySelector('[data-title-preview-frame="1"]');
+    if (!previewText || !frame || !previewText.getBoundingClientRect || !frame.getBoundingClientRect) {
+        return null;
+    }
+    var previewRect = previewText.getBoundingClientRect();
+    var frameRect = frame.getBoundingClientRect();
+    if (!previewRect.width || !frameRect.width) {
+        return null;
+    }
+    return {
+        frameWidth: frameRect.width,
+        centerX: previewRect.left + (previewRect.width / 2)
+    };
+}
+
+function localCourseBannerBuilderRestoreTitlePreviewVisualCenter(form, captured) {
+    if (!form || !captured || !captured.frameWidth) {
+        return;
+    }
+    var previewText = form.querySelector('[data-title-preview-text="1"]');
+    var frame = form.querySelector('[data-title-preview-frame="1"]');
+    if (!previewText || !frame || !previewText.getBoundingClientRect || !frame.getBoundingClientRect) {
+        return;
+    }
+    var previewRect = previewText.getBoundingClientRect();
+    var frameRect = frame.getBoundingClientRect();
+    if (!previewRect.width || !frameRect.width) {
+        return;
+    }
+    var currentX = parseFloat(localCourseBannerBuilderReadTitleValue(form, 'x', '50'));
+    if (!isFinite(currentX)) {
+        currentX = 50;
+    }
+    var currentCenterX = previewRect.left + (previewRect.width / 2);
+    var deltaPercent = ((captured.centerX - currentCenterX) / frameRect.width) * 100;
+    var nextX = Math.max(0, Math.min(100, currentX + deltaPercent));
+    localCourseBannerBuilderSetTitleField(form, 'x', nextX.toFixed(1));
+}
+
+function localCourseBannerBuilderApplyTextDecorationToTitleNodes(root, decoration) {
+    if (!root) {
+        return;
+    }
+    var value = decoration || 'none';
+    root.style.textDecoration = value;
+    Array.prototype.slice.call(root.querySelectorAll(
+        '[data-title-preview-label="1"], [data-layer-overlay-title-label="1"], ' +
+        '[data-title-highlight-line="1"], [data-title-render-node="1"]'
+    )).forEach(function (node) {
+        node.style.textDecoration = value;
+    });
+}
+
+function localCourseBannerBuilderUpdateTitlePreview(form) {
+    if (!form || !form.matches('[data-banner-title-editor="1"]')) {
+        return;
+    }
+    var previewText = form.querySelector('[data-title-preview-text="1"]');
+    var previewLabel = previewText ? previewText.querySelector('[data-title-preview-label="1"]') : null;
+    var overlay = form.querySelector('[data-title-preview-overlay="1"]');
+    if (!previewText || !previewLabel) {
+        return;
+    }
+    var enabled = localCourseBannerBuilderReadTitleFlag(form, 'enabled', false);
+    var x = localCourseBannerBuilderReadTitleValue(form, 'x', '50');
+    var y = localCourseBannerBuilderReadTitleValue(form, 'y', '50');
+    var size = parseFloat(localCourseBannerBuilderReadTitleValue(form, 'fontsize', '100')) || 100;
+    var textScale = Math.max(0.25, Math.min(4.8, size / 100));
+    var lineHeight = Math.max(40, Math.min(540,
+        parseFloat(localCourseBannerBuilderReadTitleValue(form, 'lineheight', '105')) || 105
+    ));
+    var color = localCourseBannerBuilderReadTitleValue(form, 'color', '#FFFFFF');
+    var font = localCourseBannerBuilderReadTitleValue(form, 'fontfamily', '');
+    var align = localCourseBannerBuilderReadTitleValue(form, 'align', 'center');
+    var flexAlign = align === 'left' ? 'flex-start' : (align === 'right' ? 'flex-end' : 'center');
+    var mode = localCourseBannerBuilderReadActivityTitleMode(form);
+    var courseSingleText = previewText.getAttribute('data-title-preview-course-single') ||
+        previewText.getAttribute('data-title-preview-course') || '';
+    var activitySingleText = previewText.getAttribute('data-title-preview-activity-single') ||
+        previewText.getAttribute('data-title-preview-activity') || previewLabel.textContent;
+    var courseText = previewText.getAttribute('data-title-preview-course') || courseSingleText;
+    var activityText = previewText.getAttribute('data-title-preview-activity') || activitySingleText;
+    var titleText = localCourseBannerBuilderBuildTitlePreviewText(form, previewText, previewLabel);
+    var highlightFrame = localCourseBannerBuilderReadTitleValue(form, 'frametype', 'box') === 'highlight';
+    var aboveBorder = localCourseBannerBuilderReadTitleFlag(form, 'aboveborder', true);
+    var aboveOverlay = localCourseBannerBuilderReadTitleFlag(form, 'aboveoverlay', true);
+    localCourseBannerBuilderSyncPreviewTitleSafeArea(previewText.closest('[data-title-preview-frame="1"]'));
+    previewText.hidden = !enabled || mode === 'none';
+    previewText.style.top = y + '%';
+    localCourseBannerBuilderApplyTitlePreviewPosition(previewText, x, align, aboveBorder);
+    previewText.style.display = 'inline-flex';
+    previewText.style.flexDirection = 'column';
+    previewText.style.width = 'max-content';
+    previewText.style.minWidth = '0';
+    previewText.style.color = color;
+    previewText.style.fontSize = localCourseBannerBuilderGetResponsiveTitleFontCss();
+    previewText.style.fontFamily = font || 'inherit';
+    previewText.style.fontWeight = localCourseBannerBuilderReadTitleFlag(form, 'bold', false) ? '800' : '500';
+    previewText.style.fontStyle = localCourseBannerBuilderReadTitleFlag(form, 'italic', false) ? 'italic' : 'normal';
+    var titleDecorations = [];
+    if (localCourseBannerBuilderReadTitleFlag(form, 'underline', false)) {
+        titleDecorations.push('underline');
+    }
+    if (localCourseBannerBuilderReadTitleFlag(form, 'strike', false)) {
+        titleDecorations.push('line-through');
+    }
+    localCourseBannerBuilderApplyTextDecorationToTitleNodes(
+        previewText,
+        titleDecorations.length ? titleDecorations.join(' ') : 'none'
+    );
+    previewText.style.textTransform = localCourseBannerBuilderReadTitleFlag(form, 'allcaps', false) ? 'uppercase' : 'none';
+    previewText.style.lineHeight = lineHeight + '%';
+    previewText.style.setProperty(
+        '--local-course-banner-builder-inline-frame-gap',
+        localCourseBannerBuilderGetInlineFrameGapEm(lineHeight).toFixed(3) + 'em'
+    );
+    previewText.style.display = 'inline-flex';
+    previewText.style.width = 'max-content';
+    previewText.style.minWidth = '0';
+    previewLabel.style.lineHeight = 'inherit';
+    previewLabel.style.display = 'none';
+    previewLabel.style.textAlign = align;
+    previewLabel.style.alignItems = '';
+    previewLabel.style.justifyContent = '';
+    previewText.style.textAlign = align;
+    previewText.style.alignItems = flexAlign;
+    previewText.style.justifyContent = 'flex-start';
+    previewText.style.minHeight = '';
+    previewText.style.whiteSpace = 'pre-wrap';
+    previewText.style.overflowWrap = 'normal';
+    previewText.style.wordBreak = 'normal';
+    previewText.style.zIndex = String(localCourseBannerBuilderGetBannerTitlePreviewZIndex(aboveBorder, aboveOverlay));
+    previewText.classList.toggle(
+        'local-course-banner-builder-title-preview-text--highlight-frame',
+        highlightFrame
+    );
+    Array.prototype.slice.call(previewText.querySelectorAll(
+        '[data-title-render-node="1"], [data-title-highlight-line="1"], ' +
+            '[data-title-highlight-break="1"], [data-title-highlight-single-line-measure="1"]'
+    )).forEach(function (node) {
+        node.remove();
+    });
+    previewLabel.textContent = '';
+    var firstControl = previewText.querySelector(
+        '.local-course-banner-builder-title-line-toggle, [data-title-preview-resize-handle]'
+    );
+    if (highlightFrame) {
+        var newline = String.fromCharCode(10);
+        var lines = String(titleText || '')
+            .split(String.fromCharCode(13) + newline).join(newline)
+            .split(String.fromCharCode(13)).join(newline)
+            .split(newline);
+        lines = localCourseBannerBuilderNormaliseCombinedActivityPreviewLines(
+            lines,
+            courseSingleText || courseText,
+            activitySingleText || activityText
+        );
+        if (localCourseBannerBuilderIsActivityBothTitlePreview(form)) {
+            lines = [
+                localCourseBannerBuilderGetFirstTitlePreviewLine(courseSingleText || courseText),
+                localCourseBannerBuilderGetFirstTitlePreviewLine(activitySingleText || activityText)
+            ].filter(Boolean);
+        }
+        if (String(previewText.getAttribute('data-title-preview-line-count') || '2') === '2' && lines.length === 1) {
+            previewText.style.minHeight = 'calc((2 * 1em * ' + (lineHeight / 100).toFixed(4) +
+                ') + var(--local-course-banner-builder-inline-frame-gap, 0.14em))';
+            previewText.style.justifyContent = 'center';
+        }
+        lines.forEach(function (line, index) {
+            var lineNode = document.createElement('span');
+            lineNode.setAttribute('data-title-highlight-line', '1');
+            lineNode.style.display = 'inline';
+            lineNode.style.lineHeight = lineHeight + '%';
+            lineNode.style.justifyContent = flexAlign;
+            lineNode.appendChild(localCourseBannerBuilderBuildScaledTitleTextNode(line, textScale, align));
+            previewText.insertBefore(lineNode, firstControl || null);
+            if (index < lines.length - 1) {
+                var lineBreak = document.createElement('br');
+                lineBreak.setAttribute('data-title-highlight-break', '1');
+                previewText.insertBefore(lineBreak, firstControl || null);
+            }
+        });
+    } else {
+        var directLines = String(titleText || '')
+            .split(String.fromCharCode(13) + String.fromCharCode(10)).join(String.fromCharCode(10))
+            .split(String.fromCharCode(13)).join(String.fromCharCode(10))
+            .split(String.fromCharCode(10));
+        directLines = localCourseBannerBuilderNormaliseCombinedActivityPreviewLines(
+            directLines,
+            courseSingleText || courseText,
+            activitySingleText || activityText
+        );
+        var directTextNode = localCourseBannerBuilderBuildScaledTitleTextNode(
+            directLines.join(String.fromCharCode(10)),
+            textScale,
+            align
+        );
+        previewText.insertBefore(directTextNode, firstControl || null);
+    }
+    if (localCourseBannerBuilderIsActivityBothTitlePreview(form)) {
+        Array.prototype.slice.call(previewText.querySelectorAll('[data-title-highlight-line="1"]')).forEach(
+            function (lineNode, index) {
+                if (index > 1) {
+                    var previous = lineNode.previousSibling;
+                    if (previous && previous.getAttribute &&
+                            previous.getAttribute('data-title-highlight-break') === '1') {
+                        previous.remove();
+                    }
+                    lineNode.remove();
+                }
+            }
+        );
+    }
+    localCourseBannerBuilderApplyTextDecorationToTitleNodes(
+        previewText,
+        titleDecorations.length ? titleDecorations.join(' ') : 'none'
+    );
+    previewLabel.style.background = '';
+    previewLabel.style.border = '';
+    previewLabel.style.borderRadius = '';
+    previewLabel.style.padding = '';
+    previewLabel.style.boxShadow = '';
+    Array.prototype.slice.call(previewText.querySelectorAll('[data-title-highlight-line="1"]')).forEach(function (lineNode) {
+        if (lineNode.parentNode !== previewText) {
+            return;
+        }
+        lineNode.style.background = '';
+        lineNode.style.border = '';
+        lineNode.style.borderRadius = '';
+        lineNode.style.padding = '';
+        lineNode.style.boxShadow = '';
+        lineNode.style.justifyContent = flexAlign;
+    });
+
+    if (localCourseBannerBuilderReadTitleFlag(form, 'frameenabled', false)) {
+        var frameTargets = highlightFrame ?
+            Array.prototype.slice.call(previewText.querySelectorAll('[data-title-highlight-line="1"]')).filter(function (lineNode) {
+                return lineNode.parentNode === previewText;
+            }) :
+            [previewText];
+        if (highlightFrame) {
+            previewText.style.background = 'transparent';
+            previewText.style.border = '0';
+            previewText.style.borderRadius = '0';
+            previewText.style.padding = '0';
+            previewText.style.boxShadow = 'none';
+        }
+        var frameBackground = localCourseBannerBuilderTitleHexToRgba(
+            localCourseBannerBuilderReadTitleValue(form, 'framecolor', '#000000'),
+            localCourseBannerBuilderReadTitleValue(form, 'frameopacity', '35')
+        );
+        var frameBorder = localCourseBannerBuilderReadTitleValue(form, 'frameborderwidth', '0') + 'px solid ' +
+            localCourseBannerBuilderReadTitleValue(form, 'framebordercolor', '#FFFFFF');
+        var frameRadius = localCourseBannerBuilderReadTitleValue(form, 'frameradius', '12') + 'px';
+        var padding = parseFloat(localCourseBannerBuilderReadTitleValue(form, 'framepadding', '18')) || 0;
+        var framePadding = localCourseBannerBuilderGetTitleFramePaddingCss(padding);
+        var frameShadow = 'none';
+        if (localCourseBannerBuilderReadTitleFlag(form, 'frameshadowenabled', false)) {
+            var frameDistance = parseFloat(localCourseBannerBuilderReadTitleValue(form, 'frameshadowdistance', '6')) || 0;
+            var frameAngle = (parseFloat(localCourseBannerBuilderReadTitleValue(form, 'frameshadowdirection', '135')) || 0) *
+                Math.PI / 180;
+            var frameBlur = parseFloat(localCourseBannerBuilderReadTitleValue(form, 'frameshadowblur', '14')) || 0;
+            frameShadow = (Math.cos(frameAngle) * frameDistance).toFixed(2) + 'px ' +
+                (Math.sin(frameAngle) * frameDistance).toFixed(2) + 'px ' + frameBlur + 'px ' +
+                localCourseBannerBuilderTitleHexToRgba(
+                    localCourseBannerBuilderReadTitleValue(form, 'frameshadowcolor', '#000000'),
+                    localCourseBannerBuilderReadTitleValue(form, 'frameshadowopacity', '25')
+                );
+        }
+        frameTargets.forEach(function (frameTarget) {
+            frameTarget.style.background = frameBackground;
+            frameTarget.style.border = frameBorder;
+            frameTarget.style.borderRadius = frameRadius;
+            frameTarget.style.padding = framePadding;
+            frameTarget.style.lineHeight = lineHeight + '%';
+            frameTarget.style.boxShadow = frameShadow;
+        });
+    } else {
+        previewText.style.background = 'transparent';
+        previewText.style.border = '0';
+        previewText.style.borderRadius = '0';
+        previewText.style.padding = '0';
+        previewText.style.boxShadow = 'none';
+    }
+
+    if (localCourseBannerBuilderReadTitleFlag(form, 'shadowenabled', false)) {
+        var distance = parseFloat(localCourseBannerBuilderReadTitleValue(form, 'shadowdistance', '4')) || 0;
+        var angle = (parseFloat(localCourseBannerBuilderReadTitleValue(form, 'shadowdirection', '135')) || 0) * Math.PI / 180;
+        var blur = parseFloat(localCourseBannerBuilderReadTitleValue(form, 'shadowblur', '10')) || 0;
+        previewText.style.textShadow = (Math.cos(angle) * distance).toFixed(2) + 'px ' +
+            (Math.sin(angle) * distance).toFixed(2) + 'px ' + blur + 'px ' +
+            localCourseBannerBuilderTitleHexToRgba(
+                localCourseBannerBuilderReadTitleValue(form, 'shadowcolor', '#000000'),
+                localCourseBannerBuilderReadTitleValue(form, 'shadowopacity', '55')
+            );
+    } else {
+        previewText.style.textShadow = 'none';
+    }
+
+    localCourseBannerBuilderSyncTitleContextLayers(form);
+}
+
+function localCourseBannerBuilderSetTitleContextToggleButton(button, visible) {
+    if (!button) {
+        return;
+    }
+    var label = visible ?
+        (button.getAttribute('data-label-on') || localCourseBannerBuilderGetJsString('hideotherlayers', 'Hide other layers')) :
+        (button.getAttribute('data-label-off') || localCourseBannerBuilderGetJsString('showotherlayers', 'Show other layers'));
+    var icon = visible ?
+        (button.getAttribute('data-icon-on') || 'fa-eye-slash') :
+        (button.getAttribute('data-icon-off') || 'fa-eye');
+    button.innerHTML = '<i class="fa ' + icon + ' me-2" aria-hidden="true"></i><span>' + label + '</span>';
+    button.setAttribute('aria-label', label);
+    button.setAttribute('aria-pressed', visible ? 'true' : 'false');
+    button.classList.toggle('btn-primary', visible);
+    button.classList.toggle('btn-outline-secondary', !visible);
+}
+
+function localCourseBannerBuilderSyncTitleContextLayers(form) {
+    if (!form || !form.matches('[data-banner-title-editor="1"]')) {
+        return;
+    }
+    var button = form.querySelector('[data-title-context-toggle="1"]');
+    var visible = !!(button && button.getAttribute('aria-pressed') === 'true');
+    Array.prototype.slice.call(form.querySelectorAll('[data-title-preview-context-layer="1"]')).forEach(function (layer) {
+        layer.hidden = !visible;
+        layer.setAttribute('aria-hidden', visible ? 'false' : 'true');
+    });
+    localCourseBannerBuilderSetTitleContextToggleButton(button, visible);
+}
+
+function localCourseBannerBuilderSyncTitlePreviewLineToggle(form) {
+    if (!form) {
+        return;
+    }
+    var previewText = form.querySelector('[data-title-preview-text="1"]');
+    var button = previewText ? previewText.querySelector('[data-action="local-course-banner-builder-toggle-title-preview-line-count"]') : null;
+    if (!previewText || !button) {
+        return;
+    }
+    if ((form.getAttribute('data-title-current-context') || '') === 'site') {
+        button.hidden = true;
+        button.setAttribute('aria-hidden', 'true');
+        return;
+    }
+    if (localCourseBannerBuilderIsActivityBothTitlePreview(form)) {
+        previewText.setAttribute('data-title-preview-line-count', '2');
+        button.hidden = true;
+        button.setAttribute('aria-hidden', 'true');
+        return;
+    }
+    button.hidden = false;
+    button.setAttribute('aria-hidden', 'false');
+    var lineCount = String(previewText.getAttribute('data-title-preview-line-count') || '2');
+    var twoLines = lineCount !== '1';
+    var label = twoLines ?
+        localCourseBannerBuilderGetJsString('bannertitlepreviewlines:double', 'Two-line preview') :
+        localCourseBannerBuilderGetJsString('bannertitlepreviewlines:single', 'Single-line preview');
+    button.setAttribute('aria-label', label);
+    button.setAttribute('title', label);
+    button.setAttribute('aria-pressed', twoLines ? 'true' : 'false');
+    var icon = button.querySelector('i');
+    if (icon) {
+        icon.className = 'fa ' + (twoLines ? 'fa-grip-lines' : 'fa-minus');
+    }
+}
+
+function localCourseBannerBuilderToggleTitlePreviewLineCount(form) {
+    if (!form) {
+        return;
+    }
+    var previewText = form.querySelector('[data-title-preview-text="1"]');
+    if (!previewText) {
+        return;
+    }
+    if (localCourseBannerBuilderIsActivityBothTitlePreview(form)) {
+        previewText.setAttribute('data-title-preview-line-count', '2');
+        localCourseBannerBuilderSyncTitlePreviewLineToggle(form);
+        localCourseBannerBuilderUpdateTitlePreview(form);
+        return;
+    }
+    var current = String(previewText.getAttribute('data-title-preview-line-count') || '2');
+    previewText.setAttribute('data-title-preview-line-count', current === '1' ? '2' : '1');
+    localCourseBannerBuilderSyncTitlePreviewLineToggle(form);
+    localCourseBannerBuilderUpdateTitlePreview(form);
+}
+
+function localCourseBannerBuilderToggleTitleContextLayers(button) {
+    var form = button ? button.closest('[data-banner-title-editor="1"]') : null;
+    if (!form) {
+        return;
+    }
+    var nextVisible = button.getAttribute('aria-pressed') !== 'true';
+    button.setAttribute('aria-pressed', nextVisible ? 'true' : 'false');
+    localCourseBannerBuilderSyncTitleContextLayers(form);
+}
+
+function localCourseBannerBuilderBindTitleEditor(form) {
+    if (!form || form.dataset.titleEditorBound === '1') {
+        return;
+    }
+    form.dataset.titleEditorBound = '1';
+    form.addEventListener('input', function (event) {
+        var target = event.target;
+        if (target && target.matches('[data-title-range-for]')) {
+            var rangeName = target.getAttribute('data-title-range-for');
+            var number = form.querySelector('[data-title-number-for="' + rangeName + '"]');
+            if (number) {
+                number.value = target.value;
+            }
+            localCourseBannerBuilderSyncTitleSliderOutput(form, rangeName, target.value);
+        }
+        if (target && target.matches('[data-title-number-for]')) {
+            var numberName = target.getAttribute('data-title-number-for');
+            var range = form.querySelector('[data-title-range-for="' + numberName + '"]');
+            if (range) {
+                range.value = target.value;
+            }
+            localCourseBannerBuilderSyncTitleSliderOutput(form, numberName, target.value);
+        }
+        if (target && target.matches('[data-title-color-picker-for]')) {
+            var text = form.querySelector('[data-title-color-text-for="' + target.getAttribute('data-title-color-picker-for') + '"]');
+            if (text) {
+                text.value = target.value.toUpperCase();
+            }
+            localCourseBannerBuilderSyncColourInput(target);
+        }
+        if (target && target.matches('[data-title-color-text-for]')) {
+            var picker = form.querySelector('[data-title-color-picker-for="' + target.getAttribute('data-title-color-text-for') + '"]');
+            if (picker && /^#[0-9a-f]{6}$/i.test(target.value)) {
+                picker.value = target.value;
+                localCourseBannerBuilderSyncColourInput(picker);
+            }
+        }
+        if (target && target.matches('[data-title-control], [data-title-range-for], [data-title-number-for], [data-title-color-picker-for], [data-title-color-text-for]') &&
+                target.name !== 'stylemode') {
+            localCourseBannerBuilderMarkTitleStyleCustom(form);
+        }
+        localCourseBannerBuilderUpdateTitlePreview(form);
+    }, true);
+    form.addEventListener('change', function (event) {
+        if (event.target && event.target.matches('[data-title-control]') && event.target.name !== 'stylemode') {
+            localCourseBannerBuilderMarkTitleStyleCustom(form);
+        }
+        localCourseBannerBuilderUpdateTitlePreview(form);
+    }, true);
+    form.addEventListener('click', function (event) {
+        var toggleButton = event.target.closest('[data-local-title-toggle-button="1"]');
+        var styleButton = event.target.closest('[data-action="local-course-banner-builder-toggle-title-style"]');
+        var lineToggleButton = event.target.closest('[data-action="local-course-banner-builder-toggle-title-preview-line-count"]');
+        var sidePanelButton = event.target.closest('[data-action="local-course-banner-builder-toggle-title-side-panel"]');
+        var snapButton = event.target.closest('[data-action="local-course-banner-builder-toggle-title-preview-snap"]');
+        var titleCornerButton = event.target.closest('[data-action="local-course-banner-builder-set-title-frame-corners"]');
+        var frameTypeButton = event.target.closest('[data-action="local-course-banner-builder-set-title-frame-type"]');
+        var alignButton = event.target.closest('[data-action="local-course-banner-builder-set-title-align"]');
+        var styleModeButton = event.target.closest('[data-action="local-course-banner-builder-apply-title-style-mode"]');
+        var undoButton = event.target.closest('[data-action="local-course-banner-builder-title-preview-undo"]');
+        var redoButton = event.target.closest('[data-action="local-course-banner-builder-title-preview-redo"]');
+        var recenterButton = event.target.closest('[data-action="local-course-banner-builder-title-preview-recenter"]');
+        var resetButton = event.target.closest('[data-action="local-course-banner-builder-reset-title-style"]');
+        var input;
+        var stack;
+        var redo;
+        var state;
+        var defaults;
+        if (toggleButton) {
+            event.preventDefault();
+            if (toggleButton.disabled || toggleButton.getAttribute('aria-disabled') === 'true') {
+                return;
+            }
+            input = form.querySelector(toggleButton.getAttribute('data-target-input'));
+            if (!input) {
+                return;
+            }
+            localCourseBannerBuilderPushTitleUndo(form);
+            input.value = input.value === '1' ? '0' : '1';
+            localCourseBannerBuilderSyncTitleToggleButtons(form);
+            localCourseBannerBuilderMarkTitleStyleCustom(form);
+            localCourseBannerBuilderUpdateTitlePreview(form);
+            return;
+        }
+        if (styleButton) {
+            event.preventDefault();
+            input = form.querySelector('[data-title-style-input="' + styleButton.getAttribute('data-title-style') + '"]');
+            if (!input) {
+                return;
+            }
+            localCourseBannerBuilderPushTitleUndo(form);
+            input.value = input.value !== '1' ? '1' : '0';
+            localCourseBannerBuilderSyncTitleToggleButtons(form);
+            localCourseBannerBuilderMarkTitleStyleCustom(form);
+            localCourseBannerBuilderUpdateTitlePreview(form);
+            return;
+        }
+        if (styleModeButton) {
+            event.preventDefault();
+            var mode = styleModeButton.getAttribute('data-title-style-mode') || 'custom';
+            if (mode !== 'custom') {
+                var states = localCourseBannerBuilderReadTitleInheritStates(form);
+                if (states[mode]) {
+                    localCourseBannerBuilderPushTitleUndo(form);
+                    form.dataset.titleApplyingInheritedStyle = '1';
+                    localCourseBannerBuilderApplyTitleState(form, states[mode]);
+                    form.dataset.titleApplyingInheritedStyle = '0';
+                }
+            }
+            localCourseBannerBuilderSetTitleStyleMode(form, mode);
+            localCourseBannerBuilderUpdateTitlePreview(form);
+            return;
+        }
+        if (sidePanelButton) {
+            event.preventDefault();
+            localCourseBannerBuilderToggleTitleSidePanel(form, sidePanelButton);
+            return;
+        }
+        if (snapButton) {
+            event.preventDefault();
+            localCourseBannerBuilderToggleTitleSnap(form, snapButton);
+            return;
+        }
+        if (titleCornerButton) {
+            event.preventDefault();
+            localCourseBannerBuilderPushTitleUndo(form);
+            localCourseBannerBuilderSetTitleField(form, 'frameradius', titleCornerButton.getAttribute('data-title-frame-radius') || '0');
+            localCourseBannerBuilderMarkTitleStyleCustom(form);
+            Array.prototype.slice.call(form.querySelectorAll('[data-action="local-course-banner-builder-set-title-frame-corners"]')).forEach(function (button) {
+                var active = button === titleCornerButton;
+                button.classList.toggle('active', active);
+                button.classList.toggle('btn-primary', active);
+                button.classList.toggle('btn-outline-secondary', !active);
+            });
+            localCourseBannerBuilderUpdateTitlePreview(form);
+            return;
+        }
+        if (frameTypeButton) {
+            event.preventDefault();
+            localCourseBannerBuilderPushTitleUndo(form);
+            localCourseBannerBuilderSetTitleField(form, 'frametype', frameTypeButton.getAttribute('data-title-frame-type') || 'box');
+            localCourseBannerBuilderMarkTitleStyleCustom(form);
+            Array.prototype.slice.call(form.querySelectorAll('[data-action="local-course-banner-builder-set-title-frame-type"]')).forEach(function (button) {
+                var active = button === frameTypeButton;
+                button.classList.toggle('active', active);
+                button.classList.toggle('btn-primary', active);
+                button.classList.toggle('btn-outline-secondary', !active);
+                button.setAttribute('aria-pressed', active ? 'true' : 'false');
+            });
+            localCourseBannerBuilderUpdateTitlePreview(form);
+            return;
+        }
+        if (alignButton) {
+            event.preventDefault();
+            localCourseBannerBuilderPushTitleUndo(form);
+            var nextAlign = alignButton.getAttribute('data-title-align') || 'center';
+            var capturedTitleCenter = localCourseBannerBuilderCaptureTitlePreviewVisualCenter(form);
+            localCourseBannerBuilderSetTitleField(form, 'align', nextAlign);
+            localCourseBannerBuilderSyncTitleAlignButtons(form);
+            localCourseBannerBuilderMarkTitleStyleCustom(form);
+            localCourseBannerBuilderUpdateTitlePreview(form);
+            localCourseBannerBuilderRestoreTitlePreviewVisualCenter(form, capturedTitleCenter);
+            localCourseBannerBuilderUpdateTitlePreview(form);
+            return;
+        }
+        if (lineToggleButton) {
+            event.preventDefault();
+            localCourseBannerBuilderToggleTitlePreviewLineCount(form);
+            return;
+        }
+        if (recenterButton) {
+            event.preventDefault();
+            localCourseBannerBuilderPushTitleUndo(form);
+            localCourseBannerBuilderSetTitleField(form, 'x', '50');
+            localCourseBannerBuilderSetTitleField(form, 'y', '50');
+            localCourseBannerBuilderMarkTitleStyleCustom(form);
+            localCourseBannerBuilderUpdateTitlePreview(form);
+            return;
+        }
+        if (resetButton) {
+            event.preventDefault();
+            try {
+                defaults = JSON.parse(resetButton.getAttribute('data-default-title-state') || '{}');
+            } catch (error) {
+                defaults = {};
+            }
+            localCourseBannerBuilderPushTitleUndo(form);
+            localCourseBannerBuilderApplyTitleState(form, defaults);
+            localCourseBannerBuilderSetTitleStyleMode(form, 'custom');
+            return;
+        }
+        if (undoButton) {
+            event.preventDefault();
+            stack = JSON.parse(form.dataset.titlePreviewUndoStack || '[]');
+            if (!stack.length) {
+                return;
+            }
+            redo = JSON.parse(form.dataset.titlePreviewRedoStack || '[]');
+            redo.push(localCourseBannerBuilderCaptureTitleState(form));
+            state = stack.pop();
+            form.dataset.titlePreviewUndoStack = JSON.stringify(stack);
+            form.dataset.titlePreviewRedoStack = JSON.stringify(redo);
+            localCourseBannerBuilderApplyTitleState(form, state);
+            localCourseBannerBuilderSyncTitleToolbar(form);
+            return;
+        }
+        if (redoButton) {
+            event.preventDefault();
+            redo = JSON.parse(form.dataset.titlePreviewRedoStack || '[]');
+            if (!redo.length) {
+                return;
+            }
+            stack = JSON.parse(form.dataset.titlePreviewUndoStack || '[]');
+            stack.push(localCourseBannerBuilderCaptureTitleState(form));
+            state = redo.pop();
+            form.dataset.titlePreviewUndoStack = JSON.stringify(stack);
+            form.dataset.titlePreviewRedoStack = JSON.stringify(redo);
+            localCourseBannerBuilderApplyTitleState(form, state);
+            localCourseBannerBuilderSyncTitleToolbar(form);
+        }
+    });
+    var dragState = null;
+    form.addEventListener('pointerdown', function (event) {
+        if (event.target.closest('.local-course-banner-builder-title-line-toggle')) {
+            return;
+        }
+        var target = event.target.closest('[data-title-preview-draggable="1"]');
+        var frame = form.querySelector('[data-title-preview-frame="1"]');
+        if (!target || !frame || event.button !== 0) {
+            if (!target && frame && event.target.closest('[data-title-preview-frame="1"]')) {
+                localCourseBannerBuilderClearTitlePreviewSelection(form);
+            }
+            return;
+        }
+        event.preventDefault();
+        target.classList.add('local-course-banner-builder-slideshow-preview-draggable--selected');
+        localCourseBannerBuilderPushTitleUndo(form);
+        var frameRect = frame.getBoundingClientRect();
+        var handle = event.target.closest('[data-title-preview-resize-handle]');
+        if (handle) {
+            dragState = {
+                mode: 'resize',
+                frame: frame,
+                target: target,
+                handle: handle.getAttribute('data-title-preview-resize-handle'),
+                startX: event.clientX,
+                startY: event.clientY,
+                frameWidth: Math.max(1, frameRect.width),
+                frameHeight: Math.max(1, frameRect.height),
+                startSize: parseFloat(localCourseBannerBuilderReadTitleValue(form, 'fontsize', '100')) || 100
+            };
+            if (target.setPointerCapture) {
+                target.setPointerCapture(event.pointerId);
+            }
+            return;
+        }
+        dragState = {
+            mode: 'move',
+            frame: frame,
+            target: target,
+            startX: event.clientX,
+            startY: event.clientY,
+            frameWidth: Math.max(1, frameRect.width),
+            frameHeight: Math.max(1, frameRect.height),
+            originX: parseFloat(localCourseBannerBuilderReadTitleValue(form, 'x', '50')) || 50,
+            originY: parseFloat(localCourseBannerBuilderReadTitleValue(form, 'y', '50')) || 50
+        };
+        if (target.setPointerCapture) {
+            target.setPointerCapture(event.pointerId);
+        }
+        localCourseBannerBuilderUpdateTitleGuides(form, frame);
+    });
+    form.addEventListener('pointermove', function (event) {
+        if (!dragState) {
+            return;
+        }
+        if (dragState.mode === 'resize') {
+            var direction = dragState.handle;
+            var distance = direction === 'left' ? dragState.startX - event.clientX :
+                (direction === 'right' ? event.clientX - dragState.startX :
+                    (direction === 'top' ? dragState.startY - event.clientY : event.clientY - dragState.startY));
+            var axis = direction === 'left' || direction === 'right' ? dragState.frameWidth : dragState.frameHeight;
+            var nextSize = Math.max(25, Math.min(480, dragState.startSize + ((distance / axis) * 360)));
+            localCourseBannerBuilderSetTitleField(form, 'fontsize', nextSize.toFixed(1));
+            localCourseBannerBuilderUpdateTitlePreview(form);
+            return;
+        }
+        var nextX = Math.max(0, Math.min(100, dragState.originX +
+            ((event.clientX - dragState.startX) / dragState.frameWidth) * 100));
+        var nextY = Math.max(0, Math.min(100, dragState.originY +
+            ((event.clientY - dragState.startY) / dragState.frameHeight) * 100));
+        localCourseBannerBuilderClearPreviewGuides(dragState.frame);
+        nextX = localCourseBannerBuilderSnapTitlePercent(form, nextX, 'x', dragState.frame, dragState.target);
+        nextY = localCourseBannerBuilderSnapTitlePercent(form, nextY, 'y', dragState.frame, dragState.target);
+        ['x', 'y'].forEach(function (name) {
+            var value = name === 'x' ? nextX : nextY;
+            var number = form.querySelector('[data-title-number-for="' + name + '"]');
+            var range = form.querySelector('[data-title-range-for="' + name + '"]');
+            if (number) {
+                number.value = value.toFixed(1);
+            }
+            if (range) {
+                range.value = value.toFixed(1);
+            }
+        });
+        localCourseBannerBuilderUpdateTitlePreview(form);
+        localCourseBannerBuilderUpdateTitleGuides(form, dragState.frame);
+    });
+    var stopTitleDrag = function (event) {
+        if (!dragState) {
+            return;
+        }
+        if (dragState.target.releasePointerCapture && event && event.pointerId !== undefined) {
+            dragState.target.releasePointerCapture(event.pointerId);
+        }
+        localCourseBannerBuilderClearPreviewGuides(dragState.frame);
+        dragState = null;
+    };
+    form.addEventListener('pointerup', stopTitleDrag);
+    form.addEventListener('pointercancel', stopTitleDrag);
+    localCourseBannerBuilderSyncTitleToggleButtons(form);
+    localCourseBannerBuilderSyncTitleFrameTypeButtons(form);
+    localCourseBannerBuilderSyncTitleAlignButtons(form);
+    localCourseBannerBuilderSyncTitlePreviewLineToggle(form);
+    localCourseBannerBuilderSetTitleStyleMode(form, localCourseBannerBuilderReadTitleValue(form, 'stylemode', 'custom'));
+    localCourseBannerBuilderSyncTitleSnapButton(form);
+    localCourseBannerBuilderSyncTitleToolbar(form);
+    localCourseBannerBuilderSyncTitleColorPickers(form);
+    localCourseBannerBuilderUpdateTitlePreview(form);
+}
+
+function localCourseBannerBuilderBindTitleEditors(scope) {
+    Array.prototype.slice.call((scope || document).querySelectorAll('[data-banner-title-editor="1"]')).forEach(
+        localCourseBannerBuilderBindTitleEditor
+    );
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () {
+        localCourseBannerBuilderBindColourInputs(document);
+        localCourseBannerBuilderBindTitleEditors(document);
+    }, {once: true});
+} else {
+    localCourseBannerBuilderBindColourInputs(document);
+    localCourseBannerBuilderBindTitleEditors(document);
+}
+
+function localCourseBannerBuilderAddPreviewGuide(layer, orientation, position, kind) {
+    if (!layer || !isFinite(position)) {
+        return;
+    }
+    var line = document.createElement('span');
+    line.className = 'local-course-banner-builder-preview-guide local-course-banner-builder-preview-guide--' +
+        orientation + ' local-course-banner-builder-preview-guide--' + kind;
+    if (orientation === 'vertical') {
+        line.style.left = position.toFixed(2) + 'px';
+    } else {
+        line.style.top = position.toFixed(2) + 'px';
+    }
+    layer.appendChild(line);
+}
+
+function localCourseBannerBuilderMaybeAddPreviewGuide(layer, orientation, activeValue, targetValue, kind, seen) {
+    if (Math.abs(activeValue - targetValue) > localCourseBannerBuilderPreviewGuideThreshold) {
+        return;
+    }
+    var key = orientation + ':' + Math.round(targetValue) + ':' + kind;
+    if (seen[key]) {
+        return;
+    }
+    seen[key] = true;
+    localCourseBannerBuilderAddPreviewGuide(layer, orientation, targetValue, kind);
+}
+
+function localCourseBannerBuilderPreviewSnapCandidate(best, axis, delta, priority) {
+    if (Math.abs(delta) > localCourseBannerBuilderPreviewGuideThreshold) {
+        return best;
+    }
+    var current = best[axis];
+    if (!current || priority > current.priority ||
+            (priority === current.priority && Math.abs(delta) < Math.abs(current.delta))) {
+        best[axis] = {
+            delta: delta,
+            priority: priority
+        };
+    }
+    return best;
+}
+
+function localCourseBannerBuilderGetPreviewGuideTargets(frame, activeLayer, targetSelector, options, activeRect) {
+    options = options || {};
+    var targets = Array.prototype.slice.call(frame.querySelectorAll(targetSelector || '[data-preview-image-tag="1"]'))
+        .map(function (node) {
+            return node.closest('[data-source-preview-layer="1"], [data-preview-current-layer="1"], [data-preview-draft-layer="1"]') || node;
+        })
+        .filter(function (node, index, list) {
+            return node && node !== activeLayer && !node.hidden && list.indexOf(node) === index &&
+                !(node.classList && node.classList.contains('local-course-banner-builder-source-preview-layer--hidden-in-preview')) &&
+                !(node.classList && node.classList.contains('local-course-banner-builder-source-preview-layer--disabled'));
+        });
+
+    if (options.limitPeers && (targets.length + 1) > localCourseBannerBuilderPreviewGuidePeerLimit) {
+        return [];
+    }
+
+    if (activeRect) {
+        var frameRect = frame.getBoundingClientRect();
+        targets = targets.filter(function (target) {
+            return !localCourseBannerBuilderPreviewRectsOverlap(
+                activeRect,
+                localCourseBannerBuilderGetRectInFrame(frameRect, target),
+                localCourseBannerBuilderPreviewGuideMargin
+            );
+        });
+    }
+    return targets;
+}
+
+function localCourseBannerBuilderFindPreviewSnap(frame, activeLayer, rawRect, targetSelector, options) {
+    if (!frame || !activeLayer || !rawRect) {
+        return {dx: 0, dy: 0};
+    }
+    var frameRect = frame.getBoundingClientRect();
+    var activeGuideRect = localCourseBannerBuilderGetPreviewGuideRawRect(rawRect, activeLayer);
+    var best = {};
+    best = localCourseBannerBuilderPreviewSnapCandidate(best, 'x', (frameRect.width / 2) - activeGuideRect.centerX, 3);
+    best = localCourseBannerBuilderPreviewSnapCandidate(best, 'y', (frameRect.height / 2) - activeGuideRect.centerY, 3);
+
+    localCourseBannerBuilderGetPreviewGuideTargets(frame, activeLayer, targetSelector, options, activeGuideRect).forEach(function (target) {
+        var targetRect = localCourseBannerBuilderGetRectInFrame(frameRect, target);
+        [
+            {value: activeGuideRect.centerX, priority: 2},
+            {value: activeGuideRect.left, priority: 1},
+            {value: activeGuideRect.right, priority: 1}
+        ].forEach(function (activeValue) {
+            [
+                {value: targetRect.centerX, priority: activeValue.priority === 2 ? 2 : 1},
+                {value: targetRect.left, priority: 1},
+                {value: targetRect.right, priority: 1}
+            ].forEach(function (targetValue) {
+                best = localCourseBannerBuilderPreviewSnapCandidate(
+                    best,
+                    'x',
+                    targetValue.value - activeValue.value,
+                    Math.min(activeValue.priority, targetValue.priority)
+                );
+            });
+        });
+        [
+            {value: activeGuideRect.centerY, priority: 2},
+            {value: activeGuideRect.top, priority: 1},
+            {value: activeGuideRect.bottom, priority: 1}
+        ].forEach(function (activeValue) {
+            [
+                {value: targetRect.centerY, priority: activeValue.priority === 2 ? 2 : 1},
+                {value: targetRect.top, priority: 1},
+                {value: targetRect.bottom, priority: 1}
+            ].forEach(function (targetValue) {
+                best = localCourseBannerBuilderPreviewSnapCandidate(
+                    best,
+                    'y',
+                    targetValue.value - activeValue.value,
+                    Math.min(activeValue.priority, targetValue.priority)
+                );
+            });
+        });
+    });
+    return {
+        dx: best.x ? best.x.delta : 0,
+        dy: best.y ? best.y.delta : 0
+    };
+}
+
+function localCourseBannerBuilderUpdatePreviewGuides(frame, activeLayer, targetSelector, options) {
+    if (!frame || !activeLayer || activeLayer.hidden) {
+        localCourseBannerBuilderClearPreviewGuides(frame);
+        return;
+    }
+    options = options || {};
+    var guideLayer = localCourseBannerBuilderEnsurePreviewGuideLayer(frame);
+    if (!guideLayer) {
+        return;
+    }
+    guideLayer.innerHTML = '';
+    guideLayer.hidden = false;
+
+    var frameRect = frame.getBoundingClientRect();
+    var activeRect = localCourseBannerBuilderGetRectInFrame(frameRect, activeLayer);
+    var seen = {};
+    localCourseBannerBuilderMaybeAddPreviewGuide(
+        guideLayer, 'vertical', activeRect.centerX, frameRect.width / 2, 'frame local-course-banner-builder-preview-guide--center', seen
+    );
+    localCourseBannerBuilderMaybeAddPreviewGuide(
+        guideLayer, 'horizontal', activeRect.centerY, frameRect.height / 2, 'frame local-course-banner-builder-preview-guide--center', seen
+    );
+
+    localCourseBannerBuilderGetPreviewGuideTargets(frame, activeLayer, targetSelector, options, activeRect).forEach(function (target) {
+        var targetRect = localCourseBannerBuilderGetRectInFrame(frameRect, target);
+        [
+            {value: activeRect.left, type: 'edge'},
+            {value: activeRect.centerX, type: 'center'},
+            {value: activeRect.right, type: 'edge'}
+        ].forEach(function (activeValue) {
+            [
+                {value: targetRect.left, type: 'edge'},
+                {value: targetRect.centerX, type: 'center'},
+                {value: targetRect.right, type: 'edge'}
+            ].forEach(function (targetValue) {
+                localCourseBannerBuilderMaybeAddPreviewGuide(
+                    guideLayer,
+                    'vertical',
+                    activeValue.value,
+                    targetValue.value,
+                    'peer local-course-banner-builder-preview-guide--' +
+                        (activeValue.type === 'center' && targetValue.type === 'center' ? 'center' : 'edge'),
+                    seen
+                );
+            });
+        });
+        [
+            {value: activeRect.top, type: 'edge'},
+            {value: activeRect.centerY, type: 'center'},
+            {value: activeRect.bottom, type: 'edge'}
+        ].forEach(function (activeValue) {
+            [
+                {value: targetRect.top, type: 'edge'},
+                {value: targetRect.centerY, type: 'center'},
+                {value: targetRect.bottom, type: 'edge'}
+            ].forEach(function (targetValue) {
+                localCourseBannerBuilderMaybeAddPreviewGuide(
+                    guideLayer,
+                    'horizontal',
+                    activeValue.value,
+                    targetValue.value,
+                    'peer local-course-banner-builder-preview-guide--' +
+                        (activeValue.type === 'center' && targetValue.type === 'center' ? 'center' : 'edge'),
+                    seen
+                );
+            });
+        });
+    });
+
+    if (!guideLayer.children.length) {
+        guideLayer.hidden = true;
+    }
+}
+
+function localCourseBannerBuilderApplyPreviewDrag(state, event) {
+    var deltaX = event.clientX - state.startX;
+    var deltaY = event.clientY - state.startY;
+    var nextLeftPx = state.startLeftPx + deltaX;
+    var nextTopPx = state.startTopPx + deltaY;
+    if (localCourseBannerBuilderIsPreviewSnapEnabled(state.form)) {
+        var snap = localCourseBannerBuilderFindPreviewSnap(
+            state.frame,
+            state.layer,
+            {
+                left: nextLeftPx,
+                top: nextTopPx,
+                right: nextLeftPx + state.startWidthPx,
+                bottom: nextTopPx + state.startHeightPx,
+                centerX: nextLeftPx + (state.startWidthPx / 2),
+                centerY: nextTopPx + (state.startHeightPx / 2)
+            },
+            '[data-preview-image-tag="1"]',
+            {limitPeers: false}
+        );
+        nextLeftPx += snap.dx;
+        nextTopPx += snap.dy;
+    }
+    var leftPercent = localCourseBannerBuilderRoundPreviewPercent((nextLeftPx / state.frameWidth) * 100);
+    var topPercent = localCourseBannerBuilderRoundPreviewPercent((nextTopPx / state.frameHeight) * 100);
+    leftPercent = localCourseBannerBuilderClampPreviewOffset(leftPercent);
+    topPercent = localCourseBannerBuilderClampPreviewOffset(topPercent);
+    localCourseBannerBuilderRunPreviewInteractionFieldBatch(state, function () {
+        localCourseBannerBuilderSetPreviewFieldValue(state.offsetLeftInput, leftPercent);
+        localCourseBannerBuilderSetPreviewFieldValue(state.offsetTopInput, topPercent);
+    });
+    localCourseBannerBuilderMaybeUpdateInteractionGuides(state, false);
+}
+
+function localCourseBannerBuilderApplyPreviewResize(state, event) {
+    var deltaX = event.clientX - state.startX;
+    var deltaY = event.clientY - state.startY;
+    var widthPercent = localCourseBannerBuilderRoundPreviewPercent(((state.startWidthPx + deltaX) / state.frameWidth) * 100);
+    var heightPercent = localCourseBannerBuilderRoundPreviewPercent(((state.startHeightPx + deltaY) / state.frameHeight) * 100);
+    var nextLeft = null;
+    var nextTop = null;
+
+    if (state.mode === 'resize-edge') {
+        switch (state.edge) {
+            case 'left':
+                widthPercent = localCourseBannerBuilderRoundPreviewPercent(((state.startWidthPx - deltaX) / state.frameWidth) * 100);
+                nextLeft = localCourseBannerBuilderRoundPreviewPercent(((state.startLeftPx + deltaX) / state.frameWidth) * 100);
+                nextLeft = Math.max(-widthPercent, Math.min(state.startLeftPercent + state.startWidthPercent - 1, nextLeft));
+                widthPercent = Math.max(1, state.startLeftPercent + state.startWidthPercent - nextLeft);
+                break;
+            case 'right':
+                widthPercent = localCourseBannerBuilderRoundPreviewPercent(((state.startWidthPx + deltaX) / state.frameWidth) * 100);
+                break;
+            case 'top':
+                heightPercent = localCourseBannerBuilderRoundPreviewPercent(((state.startHeightPx - deltaY) / state.frameHeight) * 100);
+                nextTop = localCourseBannerBuilderRoundPreviewPercent(((state.startTopPx + deltaY) / state.frameHeight) * 100);
+                nextTop = Math.max(-heightPercent, Math.min(state.startTopPercent + state.startHeightPercent - 1, nextTop));
+                heightPercent = Math.max(1, state.startTopPercent + state.startHeightPercent - nextTop);
+                break;
+            case 'bottom':
+                heightPercent = localCourseBannerBuilderRoundPreviewPercent(((state.startHeightPx + deltaY) / state.frameHeight) * 100);
+                break;
+        }
+    }
+
+    if (state.keepAspect) {
+        var aspectRatio = state.startWidthPx > 0 && state.startHeightPx > 0 ? (state.startWidthPx / state.startHeightPx) : 1;
+        widthPercent = Math.max(1, widthPercent);
+        heightPercent = (widthPercent * state.frameWidth) / (Math.max(1, aspectRatio) * state.frameHeight);
+        var clampedAspect = localCourseBannerBuilderClampPreviewSize(state, widthPercent, heightPercent);
+        if (clampedAspect.height !== heightPercent) {
+            heightPercent = clampedAspect.height;
+            widthPercent = (heightPercent * aspectRatio * state.frameHeight) / state.frameWidth;
+        } else {
+            widthPercent = clampedAspect.width;
+            heightPercent = (widthPercent * state.frameWidth) / (Math.max(1, aspectRatio) * state.frameHeight);
+        }
+    } else {
+        var clamped = localCourseBannerBuilderClampPreviewSize(state, widthPercent, heightPercent);
+        widthPercent = clamped.width;
+        heightPercent = clamped.height;
+    }
+
+    localCourseBannerBuilderRunPreviewInteractionFieldBatch(state, function () {
+        if (nextLeft !== null) {
+            localCourseBannerBuilderSetPreviewFieldValue(state.offsetLeftInput, nextLeft);
+        }
+        if (nextTop !== null) {
+            localCourseBannerBuilderSetPreviewFieldValue(state.offsetTopInput, nextTop);
+        }
+        localCourseBannerBuilderSetPreviewFieldValue(state.widthInput, widthPercent);
+        localCourseBannerBuilderSetPreviewFieldValue(state.heightInput, heightPercent);
+    });
+    localCourseBannerBuilderMaybeUpdateInteractionGuides(state, false);
+}
+
+function localCourseBannerBuilderStopPreviewInteraction() {
+    var pendingLayer = !localCourseBannerBuilderPreviewInteraction && localCourseBannerBuilderPendingPreviewInteraction ?
+        localCourseBannerBuilderPendingPreviewInteraction.layer :
+        null;
+    if (localCourseBannerBuilderPreviewInteraction && localCourseBannerBuilderPreviewInteraction.latestEvent) {
+        if (localCourseBannerBuilderPreviewInteraction.mode === 'resize' ||
+                localCourseBannerBuilderPreviewInteraction.mode === 'resize-edge') {
+            localCourseBannerBuilderApplyPreviewResize(
+                localCourseBannerBuilderPreviewInteraction,
+                localCourseBannerBuilderPreviewInteraction.latestEvent
+            );
+        } else {
+            localCourseBannerBuilderApplyPreviewDrag(
+                localCourseBannerBuilderPreviewInteraction,
+                localCourseBannerBuilderPreviewInteraction.latestEvent
+            );
+        }
+        localCourseBannerBuilderPreviewInteraction.latestEvent = null;
+    }
+    if (localCourseBannerBuilderPreviewInteractionFrame) {
+        window.cancelAnimationFrame(localCourseBannerBuilderPreviewInteractionFrame);
+        localCourseBannerBuilderPreviewInteractionFrame = 0;
+    }
+    var form = localCourseBannerBuilderPreviewInteraction ?
+        localCourseBannerBuilderPreviewInteraction.form :
+        localCourseBannerBuilderGetLayerScope(pendingLayer);
+    var frame = localCourseBannerBuilderPreviewInteraction ?
+        localCourseBannerBuilderPreviewInteraction.frame :
+        (pendingLayer ? pendingLayer.closest('[data-banner-preview-frame="1"]') : null);
+    if (form) {
+        var currentLayer = pendingLayer || form.querySelector('[data-preview-current-layer="1"]');
+        if (currentLayer) {
+            currentLayer.removeAttribute('data-preview-active-edge');
+        }
+    }
+    localCourseBannerBuilderPreviewInteraction = null;
+    localCourseBannerBuilderPendingPreviewInteraction = null;
+    if (form) {
+        if (localCourseBannerBuilderPreviewInteraction) {
+            localCourseBannerBuilderMaybeUpdateInteractionGuides(localCourseBannerBuilderPreviewInteraction, true);
+        }
+        localCourseBannerBuilderSaveActiveDraftPreviewState(form);
+        localCourseBannerBuilderSyncLayerBannerPreview(form);
+        localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+    }
+    localCourseBannerBuilderClearPreviewGuides(frame);
+}
+
+function localCourseBannerBuilderHandlePreviewPointerMove(event) {
+    if (localCourseBannerBuilderModalResizeInteraction) {
+        return;
+    }
+    if (!localCourseBannerBuilderPreviewInteraction && localCourseBannerBuilderPendingPreviewInteraction) {
+        var pending = localCourseBannerBuilderPendingPreviewInteraction;
+        var deltaX = event.clientX - pending.startX;
+        var deltaY = event.clientY - pending.startY;
+        var threshold = pending.mode === 'resize' || pending.mode === 'resize-edge' ? 4 : 8;
+        if (Math.abs(deltaX) >= threshold || Math.abs(deltaY) >= threshold) {
+            localCourseBannerBuilderPendingPreviewInteraction = null;
+            localCourseBannerBuilderStartPreviewInteraction(pending.event, pending.mode, pending.layer);
+        }
+    }
+    var state = localCourseBannerBuilderPreviewInteraction;
+    if (!state) {
+        return;
+    }
+    event.preventDefault();
+    state.latestEvent = event;
+    if (localCourseBannerBuilderPreviewInteractionFrame) {
+        return;
+    }
+    localCourseBannerBuilderPreviewInteractionFrame = window.requestAnimationFrame(function () {
+        localCourseBannerBuilderPreviewInteractionFrame = 0;
+        var activeState = localCourseBannerBuilderPreviewInteraction;
+        if (!activeState || !activeState.latestEvent) {
+            return;
+        }
+        var latestEvent = activeState.latestEvent;
+        activeState.latestEvent = null;
+        if (activeState.mode === 'resize' || activeState.mode === 'resize-edge') {
+            localCourseBannerBuilderApplyPreviewResize(activeState, latestEvent);
+            return;
+        }
+        localCourseBannerBuilderApplyPreviewDrag(activeState, latestEvent);
+    });
+}
+
+function localCourseBannerBuilderStartPreviewInteraction(event, mode, layer) {
+    if (!layer || event.button !== 0) {
+        return;
+    }
+    var form = localCourseBannerBuilderGetLayerScope(layer);
+    var frame = layer.closest('[data-banner-preview-frame="1"]');
+    var image = layer.querySelector('[data-preview-image-tag="1"]');
+    var widthInput = form ? form.querySelector('#id_customwidthpercent') : null;
+    var heightInput = form ? form.querySelector('#id_customheightpercent') : null;
+    var keepAspectInput = form ? form.querySelector('[data-custom-size-keep-aspect="1"][type="checkbox"]') : null;
+    var offsetTopInput = form ? form.querySelector('#id_offsettoppercent') : null;
+    var offsetLeftInput = form ? form.querySelector('#id_offsetleftpercent') : null;
+    if (!form || !frame || !image || !widthInput || !heightInput || !offsetTopInput || !offsetLeftInput) {
+        return;
+    }
+    localCourseBannerBuilderPushModalPreviewHistory(form);
+    form.dataset.previewInteractionStarting = '1';
+    localCourseBannerBuilderSyncModalImageOpacityInputFromLayer(form);
+    var fitOverride = form.querySelector('#id_fitmodeoverride');
+    var previewRoot = layer.closest('[data-banner-preview="1"]');
+    var currentFitMode = layer.getAttribute('data-preview-fitmode') ||
+        (fitOverride && fitOverride.value ? fitOverride.value : '') ||
+        (previewRoot ? (previewRoot.getAttribute('data-default-fitmode') || 'bannerfit') : 'bannerfit');
+    var prepared = mode === 'drag' ?
+        localCourseBannerBuilderEnsurePreviewDragMode(form, layer, frame) :
+        localCourseBannerBuilderEnsurePreviewCustomMode(form, layer, frame);
+    if (!prepared) {
+        form.dataset.previewInteractionStarting = '0';
+        return;
+    }
+
+    var beginInteraction = function () {
+        var refreshedFrame = layer.closest('[data-banner-preview-frame="1"]');
+        var frameRect = refreshedFrame ? refreshedFrame.getBoundingClientRect() : null;
+        var visualLayer = localCourseBannerBuilderGetDraftSelectionVisualLayer(form, layer);
+        var layerRect = (visualLayer || layer).getBoundingClientRect();
+        if (!frameRect || !frameRect.width || !frameRect.height ||
+                !localCourseBannerBuilderIsLayerPreviewInteractionVisible(form, layer)) {
+            form.dataset.previewInteractionStarting = '0';
+            return;
+        }
+        localCourseBannerBuilderPreviewInteraction = {
+            mode: mode,
+            edge: layer.getAttribute('data-preview-active-edge') || '',
+            form: form,
+            frame: refreshedFrame,
+            layer: layer,
+            frameWidth: frameRect.width,
+            frameHeight: frameRect.height,
+            startX: event.clientX,
+            startY: event.clientY,
+            startLeftPx: layerRect.left - frameRect.left,
+            startTopPx: layerRect.top - frameRect.top,
+            startWidthPx: layerRect.width,
+            startHeightPx: layerRect.height,
+            widthPercent: localCourseBannerBuilderRoundPreviewPercent((layerRect.width / frameRect.width) * 100),
+            heightPercent: localCourseBannerBuilderRoundPreviewPercent((layerRect.height / frameRect.height) * 100),
+            startWidthPercent: localCourseBannerBuilderRoundPreviewPercent((layerRect.width / frameRect.width) * 100),
+            startHeightPercent: localCourseBannerBuilderRoundPreviewPercent((layerRect.height / frameRect.height) * 100),
+            leftPercent: localCourseBannerBuilderRoundPreviewPercent(((layerRect.left - frameRect.left) / frameRect.width) * 100),
+            topPercent: localCourseBannerBuilderRoundPreviewPercent(((layerRect.top - frameRect.top) / frameRect.height) * 100),
+            startLeftPercent: localCourseBannerBuilderRoundPreviewPercent(((layerRect.left - frameRect.left) / frameRect.width) * 100),
+            startTopPercent: localCourseBannerBuilderRoundPreviewPercent(((layerRect.top - frameRect.top) / frameRect.height) * 100),
+            widthInput: widthInput,
+            heightInput: heightInput,
+            offsetTopInput: offsetTopInput,
+            offsetLeftInput: offsetLeftInput,
+            keepAspect: !!(keepAspectInput && keepAspectInput.checked),
+            latestEvent: null
+        };
+        form.dataset.previewInteractionStarting = '0';
+    };
+    if (mode === 'resize' || mode === 'resize-edge') {
+        beginInteraction();
+    } else {
+        window.setTimeout(beginInteraction, 0);
+    }
+}
+
+function localCourseBannerBuilderGetLayerPreviewFrame(form) {
+    if (!form) {
+        return null;
+    }
+    var previewRoot = form.querySelector('[data-layer-banner-preview="1"]');
+    return previewRoot ? previewRoot.querySelector('[data-banner-preview-frame="1"]') : null;
+}
+
+function localCourseBannerBuilderIsLayerPreviewImageLayerVisible(layer) {
+    return !!(layer && !layer.hidden && layer.querySelector('[data-preview-image-tag="1"]'));
+}
+
+function localCourseBannerBuilderGetCurrentLayerPreviewResizeHandleAtPoint(form, clientX, clientY) {
+    var currentLayer = form ? form.querySelector('[data-preview-current-layer="1"]') : null;
+    return localCourseBannerBuilderGetPreviewResizeHandleAtPoint(currentLayer, clientX, clientY);
+}
+
+function localCourseBannerBuilderSelectLayerModalPreviewLayer(form, layer) {
+    if (!form || !layer) {
+        return;
+    }
+    Array.prototype.slice.call(form.querySelectorAll('[data-preview-current-image="1"]')).forEach(function (node) {
+        if (node === layer) {
+            node.setAttribute('data-preview-current-layer', '1');
+            node.removeAttribute('data-preview-layer-deselected');
+        } else {
+            node.removeAttribute('data-preview-current-layer');
+            node.removeAttribute('data-preview-active-edge');
+            node.removeAttribute('data-preview-layer-deselected');
+        }
+    });
+    localCourseBannerBuilderSyncModalPreviewSelectionOutline(form);
+    localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+}
+
+function localCourseBannerBuilderClearLayerModalPreviewSelection(form) {
+    if (!form) {
+        return;
+    }
+    Array.prototype.slice.call(form.querySelectorAll('[data-preview-current-layer="1"]')).forEach(function (layer) {
+        layer.setAttribute('data-preview-layer-deselected', '1');
+        layer.removeAttribute('data-preview-active-edge');
+    });
+    localCourseBannerBuilderSyncModalPreviewSelectionOutline(form);
+    localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+}
+
+function localCourseBannerBuilderGetLayerPreviewZIndex(layer) {
+    if (!layer) {
+        return 0;
+    }
+    var inlineZIndex = parseInt(layer.getAttribute('data-preview-zindex') || '', 10);
+    if (!isNaN(inlineZIndex)) {
+        return inlineZIndex;
+    }
+    var styleZIndex = parseInt(layer.style && layer.style.zIndex ? layer.style.zIndex : '', 10);
+    if (!isNaN(styleZIndex)) {
+        return styleZIndex;
+    }
+    var computedZIndex = window.getComputedStyle ? parseInt(window.getComputedStyle(layer).zIndex || '', 10) : NaN;
+    return isNaN(computedZIndex) ? 0 : computedZIndex;
+}
+
+function localCourseBannerBuilderResolveDraftPreviewInteractionLayer(form, layer) {
+    if (!form || !layer || !layer.hasAttribute('data-preview-draft-visual-layer')) {
+        return layer;
+    }
+    var draftIndex = String(layer.getAttribute('data-draft-index') || '');
+    var activeDraftIndex = String(form.dataset.activeDraftIndex || '');
+    if (!draftIndex || draftIndex !== activeDraftIndex) {
+        return layer;
+    }
+    return form.querySelector(
+        '[data-preview-current-layer="1"][data-preview-draft-layer="1"][data-draft-index="' + draftIndex + '"]'
+    ) || form.querySelector('[data-preview-current-layer="1"]') || layer;
+}
+
+function localCourseBannerBuilderGetTopLayerPreviewImageLayerAtPoint(form, clientX, clientY) {
+    var frame = localCourseBannerBuilderGetLayerPreviewFrame(form);
+    if (!form || !frame) {
+        return null;
+    }
+    var frameRect = frame.getBoundingClientRect();
+    if (clientX < frameRect.left || clientX > frameRect.right || clientY < frameRect.top || clientY > frameRect.bottom) {
+        return null;
+    }
+
+    var currentLayer = form.querySelector('[data-preview-current-layer="1"]');
+    if (localCourseBannerBuilderIsLayerPreviewImageLayerVisible(currentLayer) &&
+            localCourseBannerBuilderIsPointOnPreviewLayerSelectionChrome(currentLayer, clientX, clientY)) {
+        return currentLayer;
+    }
+
+    if (typeof document.elementsFromPoint === 'function') {
+        var elements = document.elementsFromPoint(clientX, clientY);
+        var transparentFallback = null;
+        for (var i = 0; i < elements.length; i++) {
+            var layer = elements[i].closest ?
+                elements[i].closest('[data-preview-current-layer="1"], [data-preview-draft-layer="1"]') :
+                null;
+            if (layer && form.contains(layer) && localCourseBannerBuilderIsLayerPreviewImageLayerVisible(layer)) {
+                if (layer.hasAttribute('data-preview-draft-active-shell')) {
+                    return localCourseBannerBuilderResolveDraftPreviewInteractionLayer(form, layer);
+                }
+                if (localCourseBannerBuilderIsSourcePreviewLayerOpaqueAtPoint(layer, clientX, clientY)) {
+                    return localCourseBannerBuilderResolveDraftPreviewInteractionLayer(form, layer);
+                }
+                if (!transparentFallback) {
+                    transparentFallback = localCourseBannerBuilderResolveDraftPreviewInteractionLayer(form, layer);
+                }
+            }
+        }
+        if (transparentFallback) {
+            return transparentFallback;
+        }
+    }
+
+    var allLayers = Array.prototype.slice.call(
+        frame.querySelectorAll('[data-preview-current-layer="1"], [data-preview-draft-layer="1"]')
+    ).filter(localCourseBannerBuilderIsLayerPreviewImageLayerVisible);
+    allLayers.sort(function (a, b) {
+        return localCourseBannerBuilderGetLayerPreviewZIndex(b) - localCourseBannerBuilderGetLayerPreviewZIndex(a);
+    });
+    for (var j = 0; j < allLayers.length; j++) {
+        if (localCourseBannerBuilderIsSourcePreviewLayerOpaqueAtPoint(allLayers[j], clientX, clientY)) {
+            return allLayers[j];
+        }
+    }
+    return null;
+}
+
+function localCourseBannerBuilderHandleLayerModalPreviewPointerDown(form, event) {
+    if (!form || !event || event.button !== 0) {
+        return false;
+    }
+    if (event.target.closest('[data-action="local-course-banner-builder-toggle-preview-aspect-lock"]')) {
+        return false;
+    }
+    var activeCropLayer = localCourseBannerBuilderGetActivePreviewCropLayer(form);
+    if (activeCropLayer) {
+        return false;
+    }
+    var resizeHandle = localCourseBannerBuilderGetCurrentLayerPreviewResizeHandleAtPoint(form, event.clientX, event.clientY) ||
+        event.target.closest('[data-preview-resize-handle="1"]');
+    var currentLayer = resizeHandle ?
+        resizeHandle.closest('[data-preview-current-layer="1"]') :
+        localCourseBannerBuilderGetTopLayerPreviewImageLayerAtPoint(form, event.clientX, event.clientY);
+    if (!currentLayer || !localCourseBannerBuilderIsLayerPreviewInteractionVisible(form, currentLayer)) {
+        if (event.target.closest('[data-banner-preview-frame="1"]')) {
+            localCourseBannerBuilderClearLayerModalPreviewSelection(form);
+        }
+        return false;
+    }
+    if (currentLayer.hasAttribute('data-preview-draft-layer') &&
+            !currentLayer.hasAttribute('data-preview-current-layer')) {
+        event.preventDefault();
+        event.stopPropagation();
+        localCourseBannerBuilderSelectDraftPreviewLayer(form, currentLayer.getAttribute('data-draft-index') || '0');
+        return true;
+    }
+    if (resizeHandle) {
+        event.preventDefault();
+        event.stopPropagation();
+        localCourseBannerBuilderSelectLayerModalPreviewLayer(form, currentLayer);
+        currentLayer.setAttribute('data-preview-active-edge', resizeHandle.getAttribute('data-preview-resize-edge') || '');
+        localCourseBannerBuilderPendingPreviewInteraction = null;
+        localCourseBannerBuilderStartPreviewInteraction(
+            event,
+            resizeHandle.getAttribute('data-preview-resize-mode') === 'edge' ? 'resize-edge' : 'resize',
+            currentLayer
+        );
+        return true;
+    }
+    var clickedImage = event.target.closest('[data-preview-image-tag="1"]');
+    var activeDraftShell = event.target.closest('[data-preview-draft-active-shell="1"]');
+    if (currentLayer.hasAttribute('data-preview-current-layer') &&
+            currentLayer.getAttribute('data-preview-layer-deselected') !== '1') {
+        event.preventDefault();
+        event.stopPropagation();
+        localCourseBannerBuilderPendingPreviewInteraction = {
+            event: {
+                button: event.button,
+                clientX: event.clientX,
+                clientY: event.clientY
+            },
+            mode: 'drag',
+            layer: currentLayer,
+            startX: event.clientX,
+            startY: event.clientY
+        };
+        return true;
+    }
+    if (activeDraftShell && currentLayer.hasAttribute('data-preview-current-layer') &&
+            String(activeDraftShell.getAttribute('data-draft-index') || '') ===
+                String(currentLayer.getAttribute('data-draft-index') || '')) {
+        event.preventDefault();
+        event.stopPropagation();
+        localCourseBannerBuilderPendingPreviewInteraction = {
+            event: {
+                button: event.button,
+                clientX: event.clientX,
+                clientY: event.clientY
+            },
+            mode: 'drag',
+            layer: currentLayer,
+            startX: event.clientX,
+            startY: event.clientY
+        };
+        return true;
+    }
+    if ((clickedImage && currentLayer.contains(clickedImage)) || event.target === currentLayer ||
+            localCourseBannerBuilderIsPointOnPreviewLayerSelectionChrome(currentLayer, event.clientX, event.clientY)) {
+        event.preventDefault();
+        event.stopPropagation();
+        localCourseBannerBuilderSelectLayerModalPreviewLayer(form, currentLayer);
+        localCourseBannerBuilderPendingPreviewInteraction = {
+            event: {
+                button: event.button,
+                clientX: event.clientX,
+                clientY: event.clientY
+            },
+            mode: 'drag',
+            layer: currentLayer,
+            startX: event.clientX,
+            startY: event.clientY
+        };
+        return true;
+    }
+    return false;
+}
+
+function localCourseBannerBuilderBindLayerPreviewEvents(scope) {
+    var form = localCourseBannerBuilderGetLayerScope(scope);
+    if (!form) {
+        return;
+    }
+    if (!localCourseBannerBuilderLayerPreviewBoundForms.has(form)) {
+        localCourseBannerBuilderLayerPreviewBoundForms.add(form);
+        var isOverlayPreviewControl = function (target) {
+            return !!(target && target.matches && target.matches([
+                '#id_overlaytarget',
+                '#id_overlaybannercolor',
+                '#id_overlaybanneropacity',
+                '#id_overlayslideshowcolor',
+                '#id_overlayslideshowopacity',
+                '#id_overlaytitleabove',
+                '#id_overlayborderabove',
+                '[data-overlay-color-picker]',
+                '[data-overlay-target-option]',
+                '[data-overlay-toggle-button-for]',
+                '[data-overlay-opacity-control] input'
+            ].join(',')));
+        };
+        var syncPreview = function (event) {
+            var target = event && event.target ? event.target : null;
+            if (form.dataset.previewApplyingInteraction === '1') {
+                return;
+            }
+            if (target && target.closest && target.closest('[data-preview-context-toggle="1"]')) {
+                localCourseBannerBuilderSyncContextPreviewVisibility(form);
+                localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+                return;
+            }
+            if (target && target.closest && target.closest('[data-preview-opacity-panel="modal"]')) {
+                localCourseBannerBuilderApplyModalImageOpacity(form, target.value || '100');
+                return;
+            }
+            if (target && target.matches && target.matches('#id_imageopacity')) {
+                localCourseBannerBuilderApplyModalImageOpacity(form, target.value || '100');
+                return;
+            }
+            if (target && target.matches && target.matches('#id_isenabled')) {
+                localCourseBannerBuilderSyncBinaryOptionButton(target);
+                return;
+            }
+            if (isOverlayPreviewControl(target)) {
+                return;
+            }
+            if (localCourseBannerBuilderIsBorderPreviewControl(target)) {
+                localCourseBannerBuilderScheduleBorderPreviewSync(form, event.type === 'change');
+                form.dataset.previewUserChanged = '1';
+                return;
+            }
+            if (!(target && target.matches && target.matches('#id_dynamicimagesizeenabled'))) {
+                form.dataset.previewUserChanged = '1';
+            }
+            localCourseBannerBuilderSyncCurrentLayerDataFromForm(form);
+            localCourseBannerBuilderSyncLayerBannerPreview(form);
+            if (form.querySelector('[data-preview-draft-layer-host="1"]')) {
+                localCourseBannerBuilderSaveActiveDraftPreviewState(form);
+            }
+        };
+        form.addEventListener('input', syncPreview, true);
+        form.addEventListener('change', syncPreview, true);
+        form.addEventListener('pointerdown', function (event) {
+            localCourseBannerBuilderHandleLayerModalPreviewPointerDown(form, event);
+        });
+        form.dataset.previewEventsBound = '1';
+    }
+
+    var previewFrame = form.querySelector('[data-layer-banner-preview="1"] [data-banner-preview-frame="1"]');
+    if (previewFrame && previewFrame.dataset.layerPreviewPointerCaptureBound !== '1') {
+        previewFrame.addEventListener('pointerdown', function (event) {
+            localCourseBannerBuilderHandleLayerModalPreviewPointerDown(form, event);
+        }, true);
+        previewFrame.dataset.layerPreviewPointerCaptureBound = '1';
+    }
+
+    var filemanager = form.querySelector('#fitem_id_bannerimage_filemanager');
+    if (filemanager && !filemanager.dataset.previewObserverBound) {
+        var observer = new MutationObserver(function () {
+            if (filemanager.dataset.previewObserverQueued === '1') {
+                return;
+            }
+            filemanager.dataset.previewObserverQueued = '1';
+            window.setTimeout(function () {
+                filemanager.dataset.previewObserverQueued = '0';
+                localCourseBannerBuilderDisableDraftFilemanagerAlternateViews(form);
+                localCourseBannerBuilderSyncLayerInputModes(form);
+                localCourseBannerBuilderEnhanceBinaryOptionButtons(form);
+                localCourseBannerBuilderSyncLayerBannerPreview(form);
+            }, localCourseBannerBuilderIsDraftFilemanagerBusy(form) ? 500 : 120);
+        });
+        observer.observe(filemanager, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['href', 'src', 'class', 'style', 'hidden', 'aria-hidden', 'data-preview-deleted']
+        });
+        filemanager.dataset.previewObserverBound = '1';
+    }
+
+    localCourseBannerBuilderDisableDraftFilemanagerAlternateViews(form);
+    localCourseBannerBuilderSyncLayerBannerPreview(form);
+    localCourseBannerBuilderSyncModalPreviewSelectionOutline(form);
+}
+
+var localCourseBannerBuilderSourcePreviewInteraction = null;
+var localCourseBannerBuilderSuppressSourcePreviewClickUntil = 0;
+
+function localCourseBannerBuilderGetSourceVisualEditorRoots(scope) {
+    var root = scope || document;
+    if (root.nodeType === 1 && root.matches && root.matches('[data-source-visual-editor="1"]')) {
+        return [root];
+    }
+    return Array.prototype.slice.call(root.querySelectorAll ? root.querySelectorAll('[data-source-visual-editor="1"]') : []);
+}
+
+function localCourseBannerBuilderIsSourcePreviewReadonly(root) {
+    return !!(root && root.getAttribute && root.getAttribute('data-source-preview-readonly') === '1');
+}
+
+function localCourseBannerBuilderIsSourcePreviewLayerEnabled(layer) {
+    return !!(layer && layer.getAttribute('data-preview-enabled') !== '0' &&
+        !(layer.classList && layer.classList.contains('local-course-banner-builder-source-preview-layer--disabled')));
+}
+
+function localCourseBannerBuilderIsSourcePreviewLayerSelectable(layer) {
+    return !!(localCourseBannerBuilderIsSourcePreviewLayerEnabled(layer) &&
+        !localCourseBannerBuilderIsSourcePreviewLayerHiddenInPreview(layer));
+}
+
+function localCourseBannerBuilderGetFirstEnabledSourcePreviewLayer(root) {
+    if (!root) {
+        return null;
+    }
+    return Array.prototype.slice.call(root.querySelectorAll('[data-source-preview-layer="1"][data-source-preview-editable="1"]'))
+        .find(function (layer) {
+            return localCourseBannerBuilderIsSourcePreviewLayerSelectable(layer);
+        }) || null;
+}
+
+function localCourseBannerBuilderGetSelectedSourcePreviewLayer(root) {
+    if (!root) {
+        return null;
+    }
+    var selected = root.querySelector('.local-course-banner-builder-source-preview-layer--selected');
+    return localCourseBannerBuilderIsSourcePreviewLayerSelectable(selected) ? selected : null;
+}
+
+function localCourseBannerBuilderGetCurrentSourcePreviewCropLayer(root) {
+    return localCourseBannerBuilderGetSelectedSourcePreviewLayer(root) ||
+        localCourseBannerBuilderGetFirstEnabledSourcePreviewLayer(root);
+}
+
+function localCourseBannerBuilderGetActionableSourcePreviewLayer(root) {
+    if (!root) {
+        return null;
+    }
+    var selected = root.querySelector('.local-course-banner-builder-source-preview-layer--selected');
+    if (selected && selected.getAttribute('data-source-preview-editable') === '1' &&
+            localCourseBannerBuilderIsSourcePreviewLayerEnabled(selected)) {
+        return selected;
+    }
+    return Array.prototype.slice.call(root.querySelectorAll('[data-source-preview-layer="1"][data-source-preview-editable="1"]'))
+        .find(function (layer) {
+            return localCourseBannerBuilderIsSourcePreviewLayerEnabled(layer);
+        }) || null;
+}
+
+function localCourseBannerBuilderGetSelectedSourcePreviewResizeHandleAtPoint(root, clientX, clientY) {
+    if (!root) {
+        return null;
+    }
+    var selected = root.querySelector('.local-course-banner-builder-source-preview-layer--selected');
+    if (!localCourseBannerBuilderIsSourcePreviewLayerSelectable(selected) ||
+            selected.getAttribute('data-source-preview-editable') !== '1') {
+        return null;
+    }
+    return localCourseBannerBuilderGetPreviewResizeHandleAtPoint(selected, clientX, clientY);
+}
+
+function localCourseBannerBuilderGetPreviewResizeHandleAtPoint(layer, clientX, clientY) {
+    if (!layer || layer.hidden) {
+        return null;
+    }
+    var handles = Array.prototype.slice.call(layer.querySelectorAll('[data-preview-resize-handle="1"]'));
+    for (var i = 0; i < handles.length; i++) {
+        var rect = handles[i].getBoundingClientRect();
+        var tolerance = 6;
+        if (rect.width <= 0 || rect.height <= 0) {
+            continue;
+        }
+        if (
+            clientX >= rect.left - tolerance &&
+            clientX <= rect.right + tolerance &&
+            clientY >= rect.top - tolerance &&
+            clientY <= rect.bottom + tolerance
+        ) {
+            return handles[i];
+        }
+    }
+    return null;
+}
+
+function localCourseBannerBuilderIsPointOnPreviewLayerSelectionChrome(layer, clientX, clientY) {
+    return !!localCourseBannerBuilderGetPreviewResizeHandleAtPoint(layer, clientX, clientY);
+}
+
+function localCourseBannerBuilderSuppressNextSourcePreviewClick() {
+    localCourseBannerBuilderSuppressSourcePreviewClickUntil = Date.now() + 500;
+}
+
+function localCourseBannerBuilderGetSourcePreviewLayerState(layer) {
+    if (!layer) {
+        return null;
+    }
+    var image = layer.querySelector('[data-preview-image-tag="1"]');
+    return {
+        id: String(layer.getAttribute('data-source-preview-layer-id') || ''),
+        isenabled: layer.getAttribute('data-preview-enabled') !== '0',
+        fitmodeoverride: layer.hasAttribute('data-preview-fitmode') ? layer.getAttribute('data-preview-fitmode') : 'custom',
+        positionanchor: layer.getAttribute('data-preview-anchor') || 'center',
+        customwidthpercent: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-custom-width') || '100', 100),
+        customheightpercent: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-custom-height') || '100', 100),
+        customsizekeepaspect: layer.getAttribute('data-preview-keep-aspect') === '1',
+        dynamicimagesizeenabled: layer.getAttribute('data-preview-dynamic-image') === '1',
+        imageaboveoverlayenabled: layer.getAttribute('data-preview-above-overlay') === '1',
+        imagebelowinheritedenabled: layer.getAttribute('data-preview-below-inherited') === '1',
+        imageaboveinheritedenabled: layer.getAttribute('data-preview-above-inherited') === '1',
+        imagecenterfixed: layer.getAttribute('data-preview-center-fixed') === '1',
+        imageopacity: localCourseBannerBuilderClampPercent(layer.getAttribute('data-preview-image-opacity') || '100', 100),
+        imagecropenabled: layer.getAttribute('data-preview-crop-enabled') === '1',
+        imagecropleftpercent: localCourseBannerBuilderClampPercent(layer.getAttribute('data-preview-crop-left') || '0', 0),
+        imagecroptoppercent: localCourseBannerBuilderClampPercent(layer.getAttribute('data-preview-crop-top') || '0', 0),
+        imagecropwidthpercent: localCourseBannerBuilderClampCropSize(layer.getAttribute('data-preview-crop-width') || '100'),
+        imagecropheightpercent: localCourseBannerBuilderClampCropSize(layer.getAttribute('data-preview-crop-height') || '100'),
+        offsettoppercent: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-offset-top') || '0', 0),
+        offsetrightpercent: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-offset-right') || '0', 0),
+        offsetbottompercent: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-offset-bottom') || '0', 0),
+        offsetleftpercent: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-offset-left') || '0', 0),
+        imagewidth: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-natural-width') || '0', 0),
+        imageheight: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-natural-height') || '0', 0),
+        url: layer.getAttribute('data-preview-current-url') || (image ? (image.getAttribute('src') || '') : ''),
+        zindex: parseInt(layer.getAttribute('data-preview-zindex') || '1', 10) || 1
+    };
+}
+
+var localCourseBannerBuilderPreviewImageAlphaCache = new Map();
+
+function localCourseBannerBuilderGetPreviewImageAlphaCacheKey(image) {
+    if (!image) {
+        return '';
+    }
+    return (image.currentSrc || image.getAttribute('src') || '') + '|' +
+        String(image.naturalWidth || 0) + 'x' + String(image.naturalHeight || 0);
+}
+
+function localCourseBannerBuilderGetPreviewImageAlphaData(image) {
+    if (!image || !image.naturalWidth || !image.naturalHeight) {
+        return null;
+    }
+    var cacheKey = localCourseBannerBuilderGetPreviewImageAlphaCacheKey(image);
+    if (!cacheKey) {
+        return null;
+    }
+    if (localCourseBannerBuilderPreviewImageAlphaCache.has(cacheKey)) {
+        return localCourseBannerBuilderPreviewImageAlphaCache.get(cacheKey);
+    }
+    try {
+        var canvas = document.createElement('canvas');
+        canvas.width = image.naturalWidth;
+        canvas.height = image.naturalHeight;
+        var context = canvas.getContext('2d', {willReadFrequently: true});
+        if (!context) {
+            return null;
+        }
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        var data = context.getImageData(0, 0, canvas.width, canvas.height).data;
+        var payload = {
+            width: canvas.width,
+            height: canvas.height,
+            data: data
+        };
+        localCourseBannerBuilderPreviewImageAlphaCache.set(cacheKey, payload);
+        return payload;
+    } catch (error) {
+        return null;
+    }
+}
+
+function localCourseBannerBuilderIsSourcePreviewLayerOpaqueAtPoint(layer, clientX, clientY) {
+    if (!layer) {
+        return false;
+    }
+    var image = layer.querySelector('[data-preview-image-tag="1"]');
+    if (!image) {
+        return true;
+    }
+    var layerRect = layer.getBoundingClientRect();
+    if (clientX < layerRect.left || clientX > layerRect.right || clientY < layerRect.top || clientY > layerRect.bottom) {
+        return false;
+    }
+    var alphaData = localCourseBannerBuilderGetPreviewImageAlphaData(image);
+    if (!alphaData) {
+        return true;
+    }
+
+    var localX = clientX - layerRect.left;
+    var localY = clientY - layerRect.top;
+    var pixelX = Math.max(0, Math.min(alphaData.width - 1, Math.floor((localX / Math.max(1, layerRect.width)) * alphaData.width)));
+    var pixelY = Math.max(0, Math.min(alphaData.height - 1, Math.floor((localY / Math.max(1, layerRect.height)) * alphaData.height)));
+    var sampleRadius = Math.max(
+        1,
+        Math.ceil(Math.max(alphaData.width / Math.max(1, layerRect.width), alphaData.height / Math.max(1, layerRect.height)) * 3)
+    );
+    var alphaThreshold = 2;
+    for (var y = Math.max(0, pixelY - sampleRadius); y <= Math.min(alphaData.height - 1, pixelY + sampleRadius); y++) {
+        for (var x = Math.max(0, pixelX - sampleRadius); x <= Math.min(alphaData.width - 1, pixelX + sampleRadius); x++) {
+            var alphaIndex = ((y * alphaData.width) + x) * 4 + 3;
+            if ((alphaData.data[alphaIndex] || 0) > alphaThreshold) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function localCourseBannerBuilderGetTopSourcePreviewLayerAtPoint(root, clientX, clientY) {
+    if (!root || typeof document.elementsFromPoint !== 'function') {
+        return localCourseBannerBuilderGetSelectedSourcePreviewLayer(root);
+    }
+    var frame = root.querySelector('[data-source-preview-frame="1"]');
+    if (!frame) {
+        return null;
+    }
+    var frameRect = frame.getBoundingClientRect();
+    if (clientX < frameRect.left || clientX > frameRect.right || clientY < frameRect.top || clientY > frameRect.bottom) {
+        return null;
+    }
+
+    var elements = document.elementsFromPoint(clientX, clientY);
+    var transparentFallback = null;
+    for (var i = 0; i < elements.length; i++) {
+        var layer = elements[i].closest ? elements[i].closest('[data-source-preview-layer="1"][data-source-preview-editable="1"]') : null;
+        if (layer && root.contains(layer) && localCourseBannerBuilderIsSourcePreviewLayerEnabled(layer) &&
+                !localCourseBannerBuilderIsSourcePreviewLayerHiddenInPreview(layer)) {
+            if (localCourseBannerBuilderIsSourcePreviewLayerOpaqueAtPoint(layer, clientX, clientY)) {
+                return layer;
+            }
+            if (!transparentFallback) {
+                transparentFallback = layer;
+            }
+        }
+    }
+
+    var allLayers = Array.prototype.slice.call(root.querySelectorAll('[data-source-preview-layer="1"][data-source-preview-editable="1"]'))
+        .filter(function (layer) {
+            return localCourseBannerBuilderIsSourcePreviewLayerEnabled(layer) &&
+                !localCourseBannerBuilderIsSourcePreviewLayerHiddenInPreview(layer);
+        });
+    allLayers.sort(function (a, b) {
+        var aZ = parseInt(a.getAttribute('data-preview-zindex') || '0', 10) || 0;
+        var bZ = parseInt(b.getAttribute('data-preview-zindex') || '0', 10) || 0;
+        return bZ - aZ;
+    });
+    for (var j = 0; j < allLayers.length; j++) {
+        var candidate = allLayers[j];
+        if (localCourseBannerBuilderIsSourcePreviewLayerOpaqueAtPoint(candidate, clientX, clientY)) {
+            return candidate;
+        }
+    }
+
+    return transparentFallback;
+}
+
+function localCourseBannerBuilderGetSourcePreviewEventLayer(root, event) {
+    if (!root || !event) {
+        return null;
+    }
+    var layer = localCourseBannerBuilderGetTopSourcePreviewLayerAtPoint(root, event.clientX, event.clientY);
+    if (layer) {
+        return layer;
+    }
+    if (typeof document.elementsFromPoint !== 'function' && event.target && event.target.closest) {
+        return event.target.closest('[data-source-preview-layer="1"][data-source-preview-editable="1"]');
+    }
+    return null;
+}
+
+function localCourseBannerBuilderEnsureSourcePreviewCustomMode(root, layer, frame) {
+    if (!root || !layer || !frame) {
+        return false;
+    }
+    var state = localCourseBannerBuilderGetSourcePreviewLayerState(layer);
+    if (!state) {
+        return false;
+    }
+    var frameRect = frame.getBoundingClientRect();
+    var layerRect = layer.getBoundingClientRect();
+    if (!frameRect.width || !frameRect.height || !layerRect.width || !layerRect.height) {
+        return false;
+    }
+
+    var previousFitMode = state.fitmodeoverride || 'custom';
+    state.fitmodeoverride = 'custom';
+    state.positionanchor = 'top-left';
+    state.offsetrightpercent = 0;
+    state.offsetbottompercent = 0;
+    if (previousFitMode === 'original' || previousFitMode === 'cover') {
+        state.customsizekeepaspect = true;
+    }
+    state.customwidthpercent = localCourseBannerBuilderRoundPreviewPercent((layerRect.width / frameRect.width) * 100);
+    state.customheightpercent = localCourseBannerBuilderRoundPreviewPercent((layerRect.height / frameRect.height) * 100);
+    state.offsetleftpercent = localCourseBannerBuilderRoundPreviewPercent(((layerRect.left - frameRect.left) / frameRect.width) * 100);
+    state.offsettoppercent = localCourseBannerBuilderRoundPreviewPercent(((layerRect.top - frameRect.top) / frameRect.height) * 100);
+    localCourseBannerBuilderSetSourcePreviewLayerState(layer, state);
+    localCourseBannerBuilderSyncSourcePreviewLayer(root, layer);
+    localCourseBannerBuilderUpdateSourcePreviewRow(root, state);
+    localCourseBannerBuilderSyncSourcePreviewPayload(root);
+    return true;
+}
+
+function localCourseBannerBuilderIsPreviewNudgeEvent(event) {
+    if (!event || !Object.prototype.hasOwnProperty.call({
+            ArrowLeft: true,
+            ArrowRight: true,
+            ArrowUp: true,
+            ArrowDown: true
+        }, event.key)) {
+        return false;
+    }
+    if (event.altKey || event.ctrlKey || event.metaKey) {
+        return false;
+    }
+    var target = event.target;
+    if (!target || !target.closest) {
+        return true;
+    }
+    if (target.closest('[data-action="local-course-banner-builder-select-source-preview-thumbnail"]')) {
+        return true;
+    }
+    return !target.closest(
+        'input, textarea, select, button, a, [contenteditable="true"], .filemanager, .fp-content'
+    );
+}
+
+function localCourseBannerBuilderIsPreviewNudgeVisible(node) {
+    return !!(node && node.getClientRects && node.getClientRects().length &&
+        window.getComputedStyle(node).visibility !== 'hidden');
+}
+
+function localCourseBannerBuilderGetActivePreviewModal() {
+    var modals = Array.prototype.slice.call(document.querySelectorAll('.modal'));
+    return modals.reverse().find(function (modal) {
+        return localCourseBannerBuilderIsPreviewNudgeVisible(modal) && (
+            modal.classList.contains('show') ||
+            modal.classList.contains('in') ||
+            modal.getAttribute('aria-modal') === 'true' ||
+            modal.style.display === 'block'
+        );
+    }) || null;
+}
+
+function localCourseBannerBuilderFlashPreviewGuides(frame, layer, targetSelector, options) {
+    if (!frame || !layer) {
+        return;
+    }
+    localCourseBannerBuilderUpdatePreviewGuides(frame, layer, targetSelector, options);
+    window.clearTimeout(frame.localCourseBannerBuilderNudgeGuideTimer);
+    frame.localCourseBannerBuilderNudgeGuideTimer = window.setTimeout(function () {
+        localCourseBannerBuilderClearPreviewGuides(frame);
+    }, 450);
+}
+
+function localCourseBannerBuilderNudgeSourcePreviewLayer(root, deltaX, deltaY, pushHistory) {
+    if (!root || localCourseBannerBuilderIsSourcePreviewReadonly(root)) {
+        return false;
+    }
+    var frame = root.querySelector('[data-source-preview-frame="1"]');
+    var layer = localCourseBannerBuilderGetSelectedSourcePreviewLayer(root);
+    if (!frame || !layer || layer.getAttribute('data-source-preview-editable') !== '1') {
+        return false;
+    }
+    var frameRect = frame.getBoundingClientRect();
+    if (!frameRect.width || !frameRect.height) {
+        return false;
+    }
+    if (pushHistory) {
+        localCourseBannerBuilderPushSourcePreviewHistory(root);
+    }
+    var state = localCourseBannerBuilderGetSourcePreviewLayerState(layer);
+    if (!state) {
+        return false;
+    }
+    if (state.fitmodeoverride !== 'custom' || state.positionanchor !== 'top-left') {
+        localCourseBannerBuilderEnsureSourcePreviewCustomMode(root, layer, frame);
+        state = localCourseBannerBuilderGetSourcePreviewLayerState(layer);
+        if (!state) {
+            return false;
+        }
+    }
+    state.fitmodeoverride = 'custom';
+    state.positionanchor = 'top-left';
+    state.offsetrightpercent = 0;
+    state.offsetbottompercent = 0;
+    state.offsetleftpercent = localCourseBannerBuilderClampPreviewOffset(
+        state.offsetleftpercent + ((deltaX / frameRect.width) * 100)
+    );
+    state.offsettoppercent = localCourseBannerBuilderClampPreviewOffset(
+        state.offsettoppercent + ((deltaY / frameRect.height) * 100)
+    );
+    state.offsetleftpercent = localCourseBannerBuilderRoundPreviewPercent(state.offsetleftpercent);
+    state.offsettoppercent = localCourseBannerBuilderRoundPreviewPercent(state.offsettoppercent);
+    localCourseBannerBuilderSetSourcePreviewLayerState(layer, state);
+    localCourseBannerBuilderSyncSourcePreviewLayer(root, layer);
+    localCourseBannerBuilderUpdateSourcePreviewRow(root, state);
+    localCourseBannerBuilderSyncSourcePreviewPayload(root);
+    localCourseBannerBuilderSelectSourcePreviewLayer(root, layer);
+    localCourseBannerBuilderFlashPreviewGuides(
+        frame,
+        layer,
+        '[data-source-preview-layer="1"]',
+        {limitPeers: true}
+    );
+    return true;
+}
+
+function localCourseBannerBuilderNudgeLayerModalPreview(form, deltaX, deltaY, pushHistory) {
+    if (!form || !form.querySelector('[data-layer-banner-preview="1"]')) {
+        return false;
+    }
+    var layer = localCourseBannerBuilderGetLayerFormPreviewImage(form);
+    var frame = layer ? layer.closest('[data-banner-preview-frame="1"]') : null;
+    if (!layer || !frame || layer.hidden || !layer.querySelector('[data-preview-image-tag="1"]')) {
+        return false;
+    }
+    var frameRect = frame.getBoundingClientRect();
+    if (!frameRect.width || !frameRect.height) {
+        return false;
+    }
+    if (pushHistory) {
+        localCourseBannerBuilderPushModalPreviewHistory(form);
+    }
+    var leftInput = form.querySelector('#id_offsetleftpercent');
+    var topInput = form.querySelector('#id_offsettoppercent');
+    var fitOverride = form.querySelector('#id_fitmodeoverride');
+    var anchorInput = form.querySelector('[data-layer-position-anchor="1"]');
+    if (!leftInput || !topInput || !fitOverride || !anchorInput) {
+        return false;
+    }
+    if (fitOverride.value !== 'custom' || anchorInput.value !== 'top-left') {
+        localCourseBannerBuilderEnsurePreviewDragMode(form, layer, frame);
+    }
+    var left = localCourseBannerBuilderNormaliseNumericValue(leftInput.value || '0', 0);
+    var top = localCourseBannerBuilderNormaliseNumericValue(topInput.value || '0', 0);
+    localCourseBannerBuilderSetPreviewFieldValue(
+        leftInput,
+        localCourseBannerBuilderClampPreviewOffset(left + ((deltaX / frameRect.width) * 100))
+    );
+    localCourseBannerBuilderSetPreviewFieldValue(
+        topInput,
+        localCourseBannerBuilderClampPreviewOffset(top + ((deltaY / frameRect.height) * 100))
+    );
+    form.dataset.previewUserChanged = '1';
+    localCourseBannerBuilderSyncCurrentLayerDataFromForm(form);
+    localCourseBannerBuilderSyncCustomSizeFields(form);
+    localCourseBannerBuilderSyncOffsetFields(form);
+    localCourseBannerBuilderBindPercentSliders(form);
+    localCourseBannerBuilderSyncLayerBannerPreview(form);
+    localCourseBannerBuilderSaveActiveDraftPreviewState(form);
+    localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+    localCourseBannerBuilderFlashPreviewGuides(
+        frame,
+        layer,
+        '[data-preview-image-tag="1"]',
+        {limitPeers: false}
+    );
+    return true;
+}
+
+function localCourseBannerBuilderNudgeTitlePreview(form, deltaX, deltaY, pushHistory) {
+    if (!form || !form.matches('[data-banner-title-editor="1"]')) {
+        return false;
+    }
+    var frame = form.querySelector('[data-title-preview-frame="1"]');
+    var title = form.querySelector(
+        '[data-title-preview-text="1"].local-course-banner-builder-slideshow-preview-draggable--selected'
+    );
+    if (!frame || !title || title.hidden) {
+        return false;
+    }
+    var frameRect = frame.getBoundingClientRect();
+    if (!frameRect.width || !frameRect.height) {
+        return false;
+    }
+    if (pushHistory) {
+        localCourseBannerBuilderPushTitleUndo(form);
+    }
+    var nextX = Math.max(0, Math.min(100,
+        (parseFloat(localCourseBannerBuilderReadTitleValue(form, 'x', '50')) || 50) +
+            ((deltaX / frameRect.width) * 100)
+    ));
+    var nextY = Math.max(0, Math.min(100,
+        (parseFloat(localCourseBannerBuilderReadTitleValue(form, 'y', '50')) || 50) +
+            ((deltaY / frameRect.height) * 100)
+    ));
+    localCourseBannerBuilderClearPreviewGuides(frame);
+    nextX = localCourseBannerBuilderSnapTitlePercent(form, nextX, 'x', frame, title);
+    nextY = localCourseBannerBuilderSnapTitlePercent(form, nextY, 'y', frame, title);
+    localCourseBannerBuilderSetTitleField(form, 'x', nextX.toFixed(1));
+    localCourseBannerBuilderSetTitleField(form, 'y', nextY.toFixed(1));
+    title.classList.add('local-course-banner-builder-slideshow-preview-draggable--selected');
+    localCourseBannerBuilderUpdateTitlePreview(form);
+    localCourseBannerBuilderUpdateTitleGuides(form, frame);
+    window.clearTimeout(frame.localCourseBannerBuilderTitleNudgeGuideTimer);
+    frame.localCourseBannerBuilderTitleNudgeGuideTimer = window.setTimeout(function () {
+        localCourseBannerBuilderClearPreviewGuides(frame);
+    }, 450);
+    return true;
+}
+
+function localCourseBannerBuilderNudgeActivePreviewSelection(deltaX, deltaY, pushHistory) {
+    var active = document.activeElement;
+    var activeForm = active && active.closest ? active.closest('form') : null;
+    if (activeForm && localCourseBannerBuilderNudgeTitlePreview(activeForm, deltaX, deltaY, pushHistory)) {
+        return true;
+    }
+    if (activeForm && localCourseBannerBuilderNudgeLayerModalPreview(activeForm, deltaX, deltaY, pushHistory)) {
+        return true;
+    }
+
+    var modal = localCourseBannerBuilderGetActivePreviewModal();
+    if (modal) {
+        var titleForm = modal.querySelector('[data-banner-title-editor="1"]');
+        if (localCourseBannerBuilderNudgeTitlePreview(titleForm, deltaX, deltaY, pushHistory)) {
+            return true;
+        }
+        var layerForm = modal.querySelector('form.mform');
+        if (localCourseBannerBuilderNudgeLayerModalPreview(layerForm, deltaX, deltaY, pushHistory)) {
+            return true;
+        }
+    }
+
+    var activeRoot = active && active.closest ? active.closest('[data-source-visual-editor="1"]') : null;
+    if (activeRoot && localCourseBannerBuilderNudgeSourcePreviewLayer(activeRoot, deltaX, deltaY, pushHistory)) {
+        return true;
+    }
+    return Array.prototype.slice.call(document.querySelectorAll('[data-source-visual-editor="1"]')).some(function (root) {
+        return localCourseBannerBuilderIsPreviewNudgeVisible(root) &&
+            root.querySelector('.local-course-banner-builder-source-preview-layer--selected') &&
+            localCourseBannerBuilderNudgeSourcePreviewLayer(root, deltaX, deltaY, pushHistory);
+    });
+}
+
+function localCourseBannerBuilderGetSourcePreviewCustomInteractionState(layer, frame) {
+    if (!layer || !frame) {
+        return null;
+    }
+    var state = localCourseBannerBuilderGetSourcePreviewLayerState(layer);
+    if (!state) {
+        return null;
+    }
+    var frameRect = frame.getBoundingClientRect();
+    var layerRect = layer.getBoundingClientRect();
+    if (!frameRect.width || !frameRect.height || !layerRect.width || !layerRect.height) {
+        return state;
+    }
+
+    var previousFitMode = state.fitmodeoverride || 'custom';
+    var nextState = Object.assign({}, state, {
+        fitmodeoverride: 'custom',
+        positionanchor: 'top-left',
+        offsetrightpercent: 0,
+        offsetbottompercent: 0,
+        customwidthpercent: localCourseBannerBuilderRoundPreviewPercent((layerRect.width / frameRect.width) * 100),
+        customheightpercent: localCourseBannerBuilderRoundPreviewPercent((layerRect.height / frameRect.height) * 100),
+        offsetleftpercent: localCourseBannerBuilderRoundPreviewPercent(((layerRect.left - frameRect.left) / frameRect.width) * 100),
+        offsettoppercent: localCourseBannerBuilderRoundPreviewPercent(((layerRect.top - frameRect.top) / frameRect.height) * 100)
+    });
+    if (previousFitMode === 'original' || previousFitMode === 'cover') {
+        nextState.customsizekeepaspect = true;
+    }
+    return nextState;
+}
+
+function localCourseBannerBuilderSetSourcePreviewLayerState(layer, state) {
+    if (!layer || !state) {
+        return;
+    }
+    layer.setAttribute('data-preview-fitmode',
+        typeof state.fitmodeoverride === 'string' ? state.fitmodeoverride : 'custom');
+    if (Object.prototype.hasOwnProperty.call(state, 'isenabled')) {
+        layer.setAttribute('data-preview-enabled', state.isenabled ? '1' : '0');
+        layer.classList.toggle('local-course-banner-builder-source-preview-layer--disabled', !state.isenabled);
+    }
+    layer.setAttribute('data-preview-anchor', state.positionanchor || 'center');
+    layer.setAttribute('data-preview-custom-width', String(state.customwidthpercent ?? 100));
+    layer.setAttribute('data-preview-custom-height', String(state.customheightpercent ?? 100));
+    layer.setAttribute('data-preview-keep-aspect', state.customsizekeepaspect ? '1' : '0');
+    layer.setAttribute('data-preview-dynamic-image', state.dynamicimagesizeenabled ? '1' : '0');
+    layer.setAttribute('data-preview-above-overlay', state.imageaboveoverlayenabled ? '1' : '0');
+    layer.setAttribute('data-preview-below-inherited', state.imagebelowinheritedenabled ? '1' : '0');
+    layer.setAttribute('data-preview-above-inherited', state.imageaboveinheritedenabled ? '1' : '0');
+    layer.setAttribute('data-preview-center-fixed', state.imagecenterfixed ? '1' : '0');
+    layer.setAttribute('data-preview-image-opacity', String(state.imageopacity ?? 100));
+    layer.setAttribute('data-preview-crop-enabled', state.imagecropenabled ? '1' : '0');
+    layer.setAttribute('data-preview-crop-left', String(state.imagecropleftpercent ?? 0));
+    layer.setAttribute('data-preview-crop-top', String(state.imagecroptoppercent ?? 0));
+    layer.setAttribute('data-preview-crop-width', String(state.imagecropwidthpercent ?? 100));
+    layer.setAttribute('data-preview-crop-height', String(state.imagecropheightpercent ?? 100));
+    if (typeof state.imagecropsourcewidthpercent !== 'undefined' &&
+            typeof state.imagecropsourceheightpercent !== 'undefined' &&
+            Number(state.imagecropsourcewidthpercent) > 0 &&
+            Number(state.imagecropsourceheightpercent) > 0) {
+        layer.setAttribute('data-preview-crop-source-left', String(state.imagecropsourceleftpercent ?? 0));
+        layer.setAttribute('data-preview-crop-source-top', String(state.imagecropsourcetoppercent ?? 0));
+        layer.setAttribute('data-preview-crop-source-width', String(state.imagecropsourcewidthpercent));
+        layer.setAttribute('data-preview-crop-source-height', String(state.imagecropsourceheightpercent));
+    } else if (!state.imagecropenabled) {
+        layer.removeAttribute('data-preview-crop-source-left');
+        layer.removeAttribute('data-preview-crop-source-top');
+        layer.removeAttribute('data-preview-crop-source-width');
+        layer.removeAttribute('data-preview-crop-source-height');
+    }
+    localCourseBannerBuilderUpdateCropSelectionFrame(layer, localCourseBannerBuilderNormaliseCropState(state));
+    layer.setAttribute('data-preview-offset-top', String(state.offsettoppercent ?? 0));
+    layer.setAttribute('data-preview-offset-right', String(state.offsetrightpercent ?? 0));
+    layer.setAttribute('data-preview-offset-bottom', String(state.offsetbottompercent ?? 0));
+    layer.setAttribute('data-preview-offset-left', String(state.offsetleftpercent ?? 0));
+    layer.setAttribute('data-preview-natural-width', String(state.imagewidth ?? 0));
+    layer.setAttribute('data-preview-natural-height', String(state.imageheight ?? 0));
+    var image = layer.querySelector('[data-preview-image-tag="1"]');
+    var currentUrl = state.url || layer.getAttribute('data-preview-current-url') ||
+        (image ? (image.getAttribute('src') || '') : '');
+    if (currentUrl) {
+        layer.setAttribute('data-preview-current-url', currentUrl);
+    }
+    localCourseBannerBuilderUpdatePreviewAspectLockButton(layer);
+}
+
+function localCourseBannerBuilderBuildSourcePreviewPayload(root) {
+    var payload = {};
+    var tbody = localCourseBannerBuilderGetLayerSortableForSource(root);
+    Array.prototype.slice.call(root.querySelectorAll('[data-source-preview-layer="1"][data-source-preview-editable="1"]')).forEach(function (layer) {
+        var state = localCourseBannerBuilderGetSourcePreviewLayerState(layer);
+        if (!state || !state.id) {
+            return;
+        }
+        var sortInput = tbody ? tbody.querySelector('input[name="sortorder_inline[' + state.id + ']"]') : null;
+        if (!sortInput) {
+            sortInput = document.querySelector('input[name="sortorder_inline[' + state.id + ']"]');
+        }
+        if (sortInput) {
+            state.sortorder = parseInt(sortInput.value || '0', 10) || 0;
+        }
+        state.zindex = parseInt(layer.getAttribute('data-preview-zindex') || '0', 10) || 0;
+        payload[state.id] = state;
+    });
+    return payload;
+}
+
+function localCourseBannerBuilderSyncSourcePreviewPayload(root) {
+    if (!root) {
+        return;
+    }
+    var input = root.querySelector('[data-source-preview-payload="1"]');
+    if (!input) {
+        return;
+    }
+    input.value = JSON.stringify(localCourseBannerBuilderBuildSourcePreviewPayload(root));
+    if (root.dataset.sourcePreviewUndoStack) {
+        localCourseBannerBuilderUpdateSourcePreviewHistoryButtons(root);
+    }
+}
+
+function localCourseBannerBuilderReadJson(value, fallback) {
+    try {
+        return JSON.parse(value);
+    } catch (error) {
+        return fallback;
+    }
+}
+
+function localCourseBannerBuilderBuildSourcePreviewHistorySnapshot(root) {
+    if (!root) {
+        return '';
+    }
+    var order = [];
+    var tbody = localCourseBannerBuilderGetLayerSortableForSource(root);
+    if (tbody) {
+        Array.prototype.slice.call(tbody.querySelectorAll('.local-course-banner-builder-layer-row')).forEach(function (row) {
+            var checkbox = row.querySelector('.local-course-banner-builder-layer-select');
+            if (checkbox && checkbox.value) {
+                order.push(checkbox.value);
+            }
+        });
+    }
+    return JSON.stringify({
+        layers: localCourseBannerBuilderBuildSourcePreviewPayload(root),
+        order: order
+    });
+}
+
+function localCourseBannerBuilderUpdateSourcePreviewHistoryButtons(root) {
+    if (!root) {
+        return;
+    }
+    var undo = root.querySelector('[data-action="local-course-banner-builder-undo-source-preview-change"]');
+    var redo = root.querySelector('[data-action="local-course-banner-builder-redo-source-preview-change"]');
+    var undoStack = localCourseBannerBuilderReadJson(root.dataset.sourcePreviewUndoStack || '[]', []);
+    var redoStack = localCourseBannerBuilderReadJson(root.dataset.sourcePreviewRedoStack || '[]', []);
+    var currentSnapshot = localCourseBannerBuilderBuildSourcePreviewHistorySnapshot(root);
+    var canUndo = undoStack.length > 1 || (undoStack.length === 1 && undoStack[0] !== currentSnapshot);
+    if (undo) {
+        undo.disabled = !canUndo;
+        undo.classList.toggle('disabled', undo.disabled);
+        undo.setAttribute('aria-disabled', undo.disabled ? 'true' : 'false');
+    }
+    if (redo) {
+        redo.disabled = redoStack.length < 1;
+        redo.classList.toggle('disabled', redo.disabled);
+        redo.setAttribute('aria-disabled', redo.disabled ? 'true' : 'false');
+    }
+}
+
+function localCourseBannerBuilderEnsureSourcePreviewHistory(root) {
+    if (!root) {
+        return;
+    }
+    var undoStack = localCourseBannerBuilderReadJson(root.dataset.sourcePreviewUndoStack || '[]', []);
+    if (!undoStack.length) {
+        undoStack.push(localCourseBannerBuilderBuildSourcePreviewHistorySnapshot(root));
+        root.dataset.sourcePreviewUndoStack = JSON.stringify(undoStack);
+        root.dataset.sourcePreviewRedoStack = '[]';
+    }
+    localCourseBannerBuilderUpdateSourcePreviewHistoryButtons(root);
+}
+
+function localCourseBannerBuilderPushSourcePreviewHistory(root) {
+    if (!root) {
+        return;
+    }
+    localCourseBannerBuilderEnsureSourcePreviewHistory(root);
+    var undoStack = localCourseBannerBuilderReadJson(root.dataset.sourcePreviewUndoStack || '[]', []);
+    var snapshot = localCourseBannerBuilderBuildSourcePreviewHistorySnapshot(root);
+    if (undoStack[undoStack.length - 1] !== snapshot) {
+        undoStack.push(snapshot);
+        if (undoStack.length > 40) {
+            undoStack.shift();
+        }
+        root.dataset.sourcePreviewUndoStack = JSON.stringify(undoStack);
+    }
+    root.dataset.sourcePreviewRedoStack = '[]';
+    localCourseBannerBuilderUpdateSourcePreviewHistoryButtons(root);
+}
+
+function localCourseBannerBuilderPushSourcePreviewHistoryFromControl(control) {
+    var root = control && control.closest ? control.closest('[data-source-visual-editor="1"]') : null;
+    if (root) {
+        localCourseBannerBuilderPushSourcePreviewHistory(root);
+    }
+}
+
+function localCourseBannerBuilderApplySourcePreviewHistorySnapshot(root, snapshot) {
+    if (!root || !snapshot) {
+        return;
+    }
+    var data = localCourseBannerBuilderReadJson(snapshot, null);
+    if (!data || !data.layers) {
+        return;
+    }
+    var tbody = localCourseBannerBuilderGetLayerSortableForSource(root);
+    if (tbody && Array.isArray(data.order) && data.order.length) {
+        data.order.forEach(function (layerId) {
+            var row = Array.prototype.slice.call(tbody.querySelectorAll('.local-course-banner-builder-layer-row')).find(function (candidate) {
+                var checkbox = candidate.querySelector('.local-course-banner-builder-layer-select');
+                return checkbox && checkbox.value === String(layerId);
+            });
+            if (row) {
+                tbody.appendChild(row);
+            }
+        });
+        localCourseBannerBuilderEnforceLockedLayerOrder(tbody);
+        localCourseBannerBuilderSyncLayerSortOrders();
+        localCourseBannerBuilderApplyLayerSortableOrderToSourcePreview(root, tbody);
+    }
+    Object.keys(data.layers).forEach(function (layerId) {
+        var layer = root.querySelector('[data-source-preview-layer="1"][data-source-preview-layer-id="' + layerId + '"]');
+        var state = data.layers[layerId];
+        if (!layer || !state) {
+            return;
+        }
+        localCourseBannerBuilderSetSourcePreviewLayerState(layer, state);
+        localCourseBannerBuilderSyncSourcePreviewLayer(root, layer);
+        localCourseBannerBuilderUpdateSourcePreviewRow(root, state);
+    });
+    localCourseBannerBuilderSyncSourcePreviewOrder(root);
+    localCourseBannerBuilderSyncSourcePreviewPayload(root);
+    localCourseBannerBuilderSyncSourcePreviewThumbnails(root);
+    var selected = localCourseBannerBuilderGetSelectedSourcePreviewLayer(root);
+    if (selected) {
+        localCourseBannerBuilderSelectSourcePreviewLayer(root, selected);
+    }
+}
+
+function localCourseBannerBuilderUndoSourcePreviewChange(control) {
+    var root = control && control.closest ? control.closest('[data-source-visual-editor="1"]') : null;
+    if (!root) {
+        return;
+    }
+    localCourseBannerBuilderEnsureSourcePreviewHistory(root);
+    var undoStack = localCourseBannerBuilderReadJson(root.dataset.sourcePreviewUndoStack || '[]', []);
+    var redoStack = localCourseBannerBuilderReadJson(root.dataset.sourcePreviewRedoStack || '[]', []);
+    var currentSnapshot = localCourseBannerBuilderBuildSourcePreviewHistorySnapshot(root);
+    if (undoStack[undoStack.length - 1] !== currentSnapshot) {
+        undoStack.push(currentSnapshot);
+    }
+    if (undoStack.length <= 1) {
+        root.dataset.sourcePreviewUndoStack = JSON.stringify(undoStack);
+        localCourseBannerBuilderUpdateSourcePreviewHistoryButtons(root);
+        return;
+    }
+    redoStack.push(undoStack.pop());
+    var snapshot = undoStack[undoStack.length - 1];
+    root.dataset.sourcePreviewUndoStack = JSON.stringify(undoStack);
+    root.dataset.sourcePreviewRedoStack = JSON.stringify(redoStack);
+    localCourseBannerBuilderApplySourcePreviewHistorySnapshot(root, snapshot);
+    localCourseBannerBuilderUpdateSourcePreviewHistoryButtons(root);
+}
+
+function localCourseBannerBuilderRedoSourcePreviewChange(control) {
+    var root = control && control.closest ? control.closest('[data-source-visual-editor="1"]') : null;
+    if (!root) {
+        return;
+    }
+    localCourseBannerBuilderEnsureSourcePreviewHistory(root);
+    var undoStack = localCourseBannerBuilderReadJson(root.dataset.sourcePreviewUndoStack || '[]', []);
+    var redoStack = localCourseBannerBuilderReadJson(root.dataset.sourcePreviewRedoStack || '[]', []);
+    if (!redoStack.length) {
+        return;
+    }
+    var snapshot = redoStack.pop();
+    undoStack.push(snapshot);
+    root.dataset.sourcePreviewUndoStack = JSON.stringify(undoStack);
+    root.dataset.sourcePreviewRedoStack = JSON.stringify(redoStack);
+    localCourseBannerBuilderApplySourcePreviewHistorySnapshot(root, snapshot);
+    localCourseBannerBuilderUpdateSourcePreviewHistoryButtons(root);
+}
+
+function localCourseBannerBuilderSyncThumbnailBadge(preview, config) {
+    if (!preview || !config || !config.className) {
+        return;
+    }
+    var stack = preview.querySelector('.local-course-banner-builder-thumb-badge-stack');
+    if (!stack) {
+        stack = document.createElement('span');
+        stack.className = 'local-course-banner-builder-thumb-badge-stack';
+        preview.appendChild(stack);
+    }
+    var badge = stack.querySelector('.' + config.className);
+    if (!config.active) {
+        if (badge) {
+            badge.remove();
+        }
+        return;
+    }
+    if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'local-course-banner-builder-thumb-status-badge ' + config.className;
+        badge.setAttribute('role', 'button');
+        badge.setAttribute('data-container', 'body');
+        badge.setAttribute('data-toggle', 'popover');
+        badge.setAttribute('data-placement', 'left');
+        badge.setAttribute('data-html', 'true');
+        badge.setAttribute('data-trigger', 'hover');
+        badge.setAttribute('tabindex', '0');
+        stack.appendChild(badge);
+    }
+    badge.setAttribute('aria-label', config.label || '');
+    badge.setAttribute('data-content', '<div class="no-overflow"><p>' + (config.help || '') + '</p></div>');
+    badge.innerHTML = '<i class="fa ' + (config.icon || 'fa-info') + '" aria-hidden="true"></i>';
+    if (typeof localCourseBannerBuilderInitPopovers === 'function') {
+        localCourseBannerBuilderInitPopovers(badge);
+    }
+}
+
+function localCourseBannerBuilderUpdateSourcePreviewRow(root, state) {
+    if (!root || !state || !state.id) {
+        return;
+    }
+    var tbody = localCourseBannerBuilderGetLayerSortableForSource(root);
+    var row = tbody ? tbody.querySelector('.local-course-banner-builder-layer-row .local-course-banner-builder-layer-select[value="' + state.id + '"]') : null;
+    if (!row) {
+        row = document.querySelector('.local-course-banner-builder-layer-row .local-course-banner-builder-layer-select[value="' + state.id + '"]');
+    }
+    row = row ? row.closest('.local-course-banner-builder-layer-row') : null;
+    var fitSelect = tbody ? tbody.querySelector('select[name="fitmodeoverride_inline[' + state.id + ']"]') : null;
+    if (!fitSelect) {
+        fitSelect = document.querySelector('select[name="fitmodeoverride_inline[' + state.id + ']"]');
+    }
+    if (fitSelect) {
+        var nextFitMode = state.fitmodeoverride || '';
+        if (Array.prototype.some.call(fitSelect.options, function (option) { return option.value === nextFitMode; })) {
+            fitSelect.value = nextFitMode;
+        }
+    }
+    var cell = fitSelect ? fitSelect.closest('.local-course-banner-builder-fit-override-cell') :
+        (row ? row.querySelector('.local-course-banner-builder-fit-override-cell') : null);
+    if (!cell) {
+        return;
+    }
+    var summary = cell.querySelector('.local-course-banner-builder-border-summary');
+    if (!summary) {
+        summary = document.createElement('div');
+        summary.className = 'local-course-banner-builder-border-summary mt-2';
+        summary.innerHTML = '<dl class="local-course-banner-builder-border-summary-list"></dl>';
+        cell.appendChild(summary);
+    }
+    var list = summary.querySelector('.local-course-banner-builder-border-summary-list');
+    if (!list) {
+        return;
+    }
+    var items = [
+        {
+            label: localCourseBannerBuilderGetJsString('summarycustomsize', 'Custom size'),
+            value: localCourseBannerBuilderRoundPreviewPercent(state.customwidthpercent) + '% x ' +
+                localCourseBannerBuilderRoundPreviewPercent(state.customheightpercent) + '%'
+        },
+        {
+            label: localCourseBannerBuilderGetJsString('summaryspacing', 'Spacing'),
+            value: localCourseBannerBuilderGetJsString('summarytop', 'Top') + ' ' +
+                localCourseBannerBuilderRoundPreviewPercent(state.offsettoppercent) + '%, ' +
+                localCourseBannerBuilderGetJsString('summaryleft', 'Left') + ' ' +
+                localCourseBannerBuilderRoundPreviewPercent(state.offsetleftpercent) + '%'
+        }
+    ];
+    items.push({
+        label: localCourseBannerBuilderGetJsString('summarykeepaspect', 'Keep proportions'),
+        value: state.customsizekeepaspect ?
+            localCourseBannerBuilderGetJsString('yes', 'Yes') :
+            localCourseBannerBuilderGetJsString('no', 'No')
+    });
+    if (localCourseBannerBuilderClampPercent(state.imageopacity, 100) < 100) {
+        items.push({
+            label: localCourseBannerBuilderGetJsString('imageopacity', 'Image opacity'),
+            value: localCourseBannerBuilderRoundPreviewPercent(state.imageopacity) + '%'
+        });
+    }
+    if (state.dynamicimagesizeenabled) {
+        items.push({
+            label: localCourseBannerBuilderGetJsString('imageaboveborder', 'Image above border'),
+            value: localCourseBannerBuilderGetJsString('yes', 'Yes')
+        });
+    }
+    if (state.imageaboveoverlayenabled) {
+        items.push({
+            label: localCourseBannerBuilderGetJsString('imageaboveoverlayenabled', 'Push above overlay'),
+            value: localCourseBannerBuilderGetJsString('yes', 'Yes')
+        });
+    }
+    if (state.imagebelowinheritedenabled) {
+        items.push({
+            label: localCourseBannerBuilderGetJsString('imagebelowinheritedenabled', 'Push below inherited layers'),
+            value: localCourseBannerBuilderGetJsString('yes', 'Yes')
+        });
+    }
+    if (state.imageaboveinheritedenabled) {
+        items.push({
+            label: localCourseBannerBuilderGetJsString('imageaboveinheritedenabled', 'Push above inherited layers'),
+            value: localCourseBannerBuilderGetJsString('yes', 'Yes')
+        });
+    }
+    if (state.imagecenterfixed) {
+        items.push({
+            label: localCourseBannerBuilderGetJsString('imagecenterfixed', 'Fixed center'),
+            value: localCourseBannerBuilderGetJsString('yes', 'Yes')
+        });
+    }
+    list.innerHTML = items.map(function (item) {
+        return '<div><dt>' + item.label + '</dt><dd>' + item.value + '</dd></div>';
+    }).join('');
+    if (row) {
+        localCourseBannerBuilderSyncLayerRowOrderLockState(row, state);
+        var preview = row.querySelector('.local-course-banner-builder-admin-preview');
+        if (preview) {
+            preview.classList.toggle('local-course-banner-builder-admin-preview--dynamic', !!state.dynamicimagesizeenabled);
+            var cropActive = localCourseBannerBuilderNormaliseCropState(state).enabled;
+            localCourseBannerBuilderSyncThumbnailBadge(preview, {
+                active: cropActive,
+                className: 'local-course-banner-builder-thumb-crop-badge',
+                icon: 'fa-crop',
+                label: localCourseBannerBuilderGetJsString('croppedlayerthumbnail', 'Cropped image'),
+                help: localCourseBannerBuilderGetJsString(
+                    'croppedlayerthumbnail_help',
+                    'This layer uses a crop rectangle. Only part of the source image is rendered in the banner.'
+                )
+            });
+            localCourseBannerBuilderSyncThumbnailBadge(preview, {
+                active: !!state.imagecenterfixed,
+                className: 'local-course-banner-builder-thumb-center-fixed-badge',
+                icon: 'fa-thumb-tack',
+                label: localCourseBannerBuilderGetJsString('imagecenterfixed', 'Fixed center'),
+                help: localCourseBannerBuilderGetJsString(
+                    'imagecenterfixed_help',
+                    'When enabled, this image is anchored from the centre of the banner.'
+                )
+            });
+            localCourseBannerBuilderSyncThumbnailBadge(preview, {
+                active: !!state.imagebelowinheritedenabled,
+                className: 'local-course-banner-builder-thumb-below-inherited-badge',
+                icon: 'fa-level-down',
+                label: localCourseBannerBuilderGetJsString('imagebelowinheritedenabled', 'Push below inherited layers'),
+                help: localCourseBannerBuilderGetJsString(
+                    'imagebelowinheritedenabled_help',
+                    'This image is rendered below inherited image layers and its table order is locked while this option is enabled.'
+                )
+            });
+            localCourseBannerBuilderSyncThumbnailBadge(preview, {
+                active: !!state.imageaboveinheritedenabled,
+                className: 'local-course-banner-builder-thumb-above-inherited-badge',
+                icon: 'fa-layer-group',
+                label: localCourseBannerBuilderGetJsString('imageaboveinheritedenabled', 'Push above inherited layers'),
+                help: localCourseBannerBuilderGetJsString(
+                    'imageaboveinheritedenabled_help',
+                    'This image is rendered above inherited image layers while the source has no border or overlay.'
+                )
+            });
+        }
+    }
+}
+
+function localCourseBannerBuilderSyncLayerRowOrderLockState(row, state) {
+    if (!row || !state) {
+        return;
+    }
+    var locked = !!(
+        state.dynamicimagesizeenabled ||
+        state.imageaboveoverlayenabled ||
+        state.imagebelowinheritedenabled ||
+        state.imageaboveinheritedenabled
+    );
+    row.classList.toggle('local-course-banner-builder-layer-row--order-locked', locked);
+    row.classList.toggle('local-course-banner-builder-layer-row--dynamic', !!state.dynamicimagesizeenabled);
+    row.classList.toggle('local-course-banner-builder-layer-row--above-overlay', !!state.imageaboveoverlayenabled);
+    row.classList.toggle('local-course-banner-builder-layer-row--below-inherited', !!state.imagebelowinheritedenabled);
+    row.classList.toggle('local-course-banner-builder-layer-row--above-inherited', !!state.imageaboveinheritedenabled);
+    if (locked) {
+        row.removeAttribute('draggable');
+    } else if (row.closest('[data-layer-sortable="1"]')) {
+        row.setAttribute('draggable', 'true');
+    }
+    var dragCorner = row.querySelector('.local-course-banner-builder-drag-corner');
+    if (dragCorner) {
+        dragCorner.hidden = locked;
+        dragCorner.setAttribute('aria-hidden', 'true');
+    }
+    localCourseBannerBuilderEnsureLayerRowOrderLockHelp(row, state, locked);
+}
+
+function localCourseBannerBuilderEnsureLayerRowOrderLockHelp(row, state, locked) {
+    var cell = row ? row.querySelector('.local-course-banner-builder-layer-select-cell') : null;
+    if (!cell) {
+        return;
+    }
+    var help = cell.querySelector('.local-course-banner-builder-lock-help');
+    if (!locked) {
+        if (help) {
+            help.remove();
+        }
+        return;
+    }
+    if (!help) {
+        help = document.createElement('a');
+        help.className = 'btn btn-link p-0 icon-no-margin local-course-banner-builder-lock-help';
+        help.setAttribute('role', 'button');
+        help.setAttribute('data-container', 'body');
+        help.setAttribute('data-toggle', 'popover');
+        help.setAttribute('data-placement', 'right');
+        help.setAttribute('data-html', 'true');
+        help.setAttribute('data-trigger', 'hover');
+        help.tabIndex = 0;
+        cell.insertBefore(help, cell.firstChild);
+    }
+    var isAboveBorder = !!state.dynamicimagesizeenabled;
+    var isAboveOverlay = !!state.imageaboveoverlayenabled;
+    var isBelowInherited = !!state.imagebelowinheritedenabled;
+    var isAboveInherited = !!state.imageaboveinheritedenabled;
+    var isAboveBoth = isAboveBorder && isAboveOverlay;
+    var icon = isBelowInherited ? 'fa-level-down' :
+        (isAboveInherited ? 'fa-layer-group' : (isAboveBoth ? 'fa-clone' : (isAboveOverlay ? 'fa-layer-group' : 'fa-level-up')));
+    var label = isBelowInherited ?
+        localCourseBannerBuilderGetJsString('imagebelowinheritedenabled', 'Push below inherited layers') :
+        (isAboveInherited ?
+        localCourseBannerBuilderGetJsString('imageaboveinheritedenabled', 'Push above inherited layers') :
+        (isAboveBoth ?
+        localCourseBannerBuilderGetJsString('imageaboveborderandoverlayenabled', 'Push above border and overlay') :
+        (isAboveOverlay ?
+            localCourseBannerBuilderGetJsString('imageaboveoverlayenabled', 'Push above overlay') :
+            localCourseBannerBuilderGetJsString('imageaboveborderenabled', 'Push above border'))));
+    var helpText = isBelowInherited ?
+        localCourseBannerBuilderGetJsString(
+            'imagebelowinheritedenabled_help',
+            'This image is rendered below inherited image layers and its table order is locked while this option is enabled.'
+        ) :
+        (isAboveInherited ?
+        localCourseBannerBuilderGetJsString(
+            'imageaboveinheritedenabled_help',
+            'This image is rendered above inherited image layers while the source has no border or overlay.'
+        ) :
+        (isAboveBoth ?
+        localCourseBannerBuilderGetJsString(
+            'imageaboveborderandoverlayenabled_help',
+            'This image is pushed above both the border and the active overlay. Its table order is locked while these options are enabled.'
+        ) :
+        (isAboveOverlay ?
+        localCourseBannerBuilderGetJsString(
+            'imageaboveoverlayenabled_help',
+            'When enabled, this image is pushed above the active overlay in previews and banner rendering.'
+        ) :
+        localCourseBannerBuilderGetJsString(
+            'imageaboveborderenabled_help',
+            'When enabled, this image is pushed above the active border in previews and banner rendering. Its table order is locked while the option is enabled.'
+        ))));
+    help.className = 'btn btn-link p-0 icon-no-margin local-course-banner-builder-lock-help ' +
+        (isAboveBorder ? ' local-course-banner-builder-lock-help--dynamic' : '') +
+        (isAboveOverlay ? ' local-course-banner-builder-lock-help--overlay-top' : '') +
+        (isAboveBoth ? ' local-course-banner-builder-lock-help--both-top' : '') +
+        (isBelowInherited ? ' local-course-banner-builder-lock-help--below-inherited' : '') +
+        (isAboveInherited ? ' local-course-banner-builder-lock-help--above-inherited' : '');
+    help.setAttribute('aria-label', label);
+    help.setAttribute('data-content', '<div class="no-overflow"><p>' + helpText + '</p></div>');
+    help.innerHTML = '<i class="icon fa ' + icon + ' fa-fw" role="img" aria-label="' + label + '"></i>';
+    localCourseBannerBuilderInitPopovers(help);
+}
+
+function localCourseBannerBuilderMoveSourcePreviewLayerRowToTop(layerId) {
+    if (!layerId) {
+        return;
+    }
+    var root = document.querySelector('[data-source-visual-editor="1"]');
+    var tbody = localCourseBannerBuilderGetLayerSortableForSource(root);
+    if (!tbody) {
+        return;
+    }
+    var checkbox = tbody.querySelector('.local-course-banner-builder-layer-row .local-course-banner-builder-layer-select[value="' + layerId + '"]');
+    var row = checkbox ? checkbox.closest('.local-course-banner-builder-layer-row') : null;
+    if (!row) {
+        return;
+    }
+    tbody.appendChild(row);
+    localCourseBannerBuilderEnforceLockedLayerOrder(tbody);
+    Array.prototype.slice.call(tbody.querySelectorAll('.local-course-banner-builder-layer-row')).forEach(function (layerRow, index) {
+        var input = layerRow.querySelector('input[name^="sortorder_inline"]');
+        if (input) {
+            input.value = String(index);
+        }
+    });
+}
+
+function localCourseBannerBuilderSyncSourcePreviewLayer(root, layer) {
+    if (!root || !layer) {
+        return;
+    }
+    localCourseBannerBuilderSyncStandalonePreviewLayer(root.querySelector('[data-source-preview-frame="1"]') || root, layer);
+    localCourseBannerBuilderSyncSourcePreviewSelectionOutline(root);
+}
+
+function localCourseBannerBuilderSyncSourcePreviewOrder(root) {
+    if (!root) {
+        return;
+    }
+    var overlayContext = localCourseBannerBuilderGetOverlayOrderingContext(root);
+    var tbody = localCourseBannerBuilderGetLayerSortableForSource(root);
+    var frame = root.querySelector('[data-source-preview-frame="1"]') || root;
+    if (!tbody) {
+        localCourseBannerBuilderSyncSourcePreviewOverlayOrdering(root);
+        localCourseBannerBuilderSyncSourcePreviewPayload(root);
+        return;
+    }
+    localCourseBannerBuilderEnforceLockedLayerOrder(tbody);
+    var rows = Array.prototype.slice.call(tbody.querySelectorAll('.local-course-banner-builder-layer-row'));
+    rows.forEach(function (row, index) {
+        var checkbox = row.querySelector('.local-course-banner-builder-layer-select');
+        if (!checkbox) {
+            return;
+        }
+        var layerId = checkbox.value || '';
+        var previewLayer = root.querySelector('[data-source-preview-layer="1"][data-source-preview-layer-id="' + layerId + '"]');
+        if (previewLayer) {
+            var zindex = localCourseBannerBuilderGetPreviewImageZIndexBase(
+                previewLayer.getAttribute('data-preview-dynamic-image') === '1',
+                previewLayer.getAttribute('data-preview-above-overlay') === '1',
+                overlayContext,
+                previewLayer.getAttribute('data-preview-below-inherited') === '1',
+                previewLayer.getAttribute('data-preview-above-inherited') === '1'
+            ) + index + 1;
+            previewLayer.setAttribute('data-preview-sortorder', String(index));
+            previewLayer.setAttribute('data-preview-zindex', String(zindex));
+            previewLayer.style.zIndex = String(zindex);
+            if (previewLayer.parentNode === frame) {
+                frame.appendChild(previewLayer);
+            }
+            localCourseBannerBuilderSyncSourcePreviewLayer(root, previewLayer);
+            return;
+        }
+        var previewBorder = root.querySelector('[data-source-preview-border="1"]');
+        if (previewBorder && row.classList.contains('local-course-banner-builder-layer-row--border')) {
+            var borderZIndex = 1000 + index + 1;
+            previewBorder.setAttribute('data-preview-sortorder', String(index));
+            previewBorder.setAttribute('data-preview-zindex', String(borderZIndex));
+            previewBorder.style.zIndex = String(borderZIndex);
+        }
+        var previewOverlay = root.querySelector('[data-source-preview-overlay="1"][data-source-preview-overlay-id="' + layerId + '"]');
+        if (previewOverlay && row.classList.contains('local-course-banner-builder-layer-row--overlay')) {
+            var overlayZIndex = (previewOverlay.getAttribute('data-preview-overlay-border-above') === '1' ? 1000 : 3000) + index + 1;
+            previewOverlay.setAttribute('data-preview-sortorder', String(index));
+            previewOverlay.setAttribute('data-preview-zindex', String(overlayZIndex));
+            previewOverlay.style.zIndex = String(overlayZIndex);
+        }
+    });
+    Array.prototype.slice.call(root.querySelectorAll('[data-source-preview-layer="1"]')).forEach(function (layer) {
+        localCourseBannerBuilderSyncSourcePreviewLayer(root, layer);
+    });
+    localCourseBannerBuilderSyncSourcePreviewOverlayOrdering(root);
+    localCourseBannerBuilderSyncSourcePreviewPayload(root);
+    localCourseBannerBuilderSyncSourcePreviewThumbnails(root);
+    localCourseBannerBuilderSyncSourcePreviewAboveOverlayButton(root);
+    localCourseBannerBuilderSyncSourcePreviewInheritedDepthButtons(root);
+    localCourseBannerBuilderSyncSourcePreviewCenterFixedButton(root);
+    localCourseBannerBuilderSyncSourcePreviewSelectionOutline(root);
+}
+
+function localCourseBannerBuilderSyncSourcePreviewOverlayOrdering(root) {
+    if (!root) {
+        return;
+    }
+    var overlay = Array.prototype.slice.call(root.querySelectorAll('[data-source-preview-overlay="1"]')).find(function (layer) {
+        return layer.getAttribute('data-preview-enabled') !== '0' &&
+            !layer.classList.contains('local-course-banner-builder-source-preview-overlay--hidden-inherited');
+    });
+    var border = Array.prototype.slice.call(root.querySelectorAll('[data-source-preview-border="1"]')).find(function (layer) {
+        return layer.getAttribute('data-preview-enabled') !== '0' &&
+            !layer.classList.contains('local-course-banner-builder-source-preview-border--hidden-inherited');
+    });
+    var title = root.querySelector('[data-source-preview-title="1"]');
+    var previewFrame = root.querySelector('[data-source-preview-frame="1"]') || root;
+    localCourseBannerBuilderSyncPreviewTitleSafeArea(previewFrame);
+    if (!overlay) {
+        return;
+    }
+    var overlayBorderAbove = overlay.getAttribute('data-preview-overlay-border-above') === '1';
+    var overlayTitleAbove = overlay.getAttribute('data-preview-overlay-title-above') === '1';
+    var overlayBase = overlayBorderAbove ? 1000 : 3000;
+    var overlaySort = Math.max(0, parseInt(overlay.getAttribute('data-preview-sortorder') || '0', 10) || 0);
+    overlay.style.zIndex = String(overlayBase + overlaySort + 1);
+    overlay.setAttribute('data-preview-zindex', String(overlayBase + overlaySort + 1));
+    if (border) {
+        var borderSort = Math.max(0, parseInt(border.getAttribute('data-preview-sortorder') || '0', 10) || 0);
+        border.style.zIndex = String(2000 + borderSort + 1);
+        border.setAttribute('data-preview-zindex', String(2000 + borderSort + 1));
+    }
+    if (title) {
+        title.style.zIndex = String(localCourseBannerBuilderGetOverlayTitleZIndex(overlayTitleAbove, overlayBorderAbove));
+        title.setAttribute('data-preview-zindex', title.style.zIndex);
+    }
+}
+
+function localCourseBannerBuilderSelectSourcePreviewLayer(root, layer) {
+    if (!root || !layer || layer.getAttribute('data-source-preview-editable') !== '1' ||
+            !localCourseBannerBuilderIsSourcePreviewLayerEnabled(layer)) {
+        return;
+    }
+    localCourseBannerBuilderCancelActivePreviewCropInScope(root, layer);
+    Array.prototype.slice.call(root.querySelectorAll('[data-source-preview-layer="1"]')).forEach(function (node) {
+        var selected = node === layer;
+        node.classList.toggle('local-course-banner-builder-source-preview-layer--selected', selected);
+        if (selected) {
+            node.setAttribute('data-preview-current-layer', '1');
+        } else {
+            node.removeAttribute('data-preview-current-layer');
+            node.removeAttribute('data-preview-active-edge');
+        }
+    });
+    localCourseBannerBuilderSyncSourcePreviewTopLayerButton(root);
+    localCourseBannerBuilderSyncSourcePreviewAboveOverlayButton(root);
+    localCourseBannerBuilderSyncSourcePreviewInheritedDepthButtons(root);
+    localCourseBannerBuilderSyncSourcePreviewCenterFixedButton(root);
+    localCourseBannerBuilderSyncSourcePreviewKeepAspectButton(root);
+    localCourseBannerBuilderSyncSourcePreviewOpacityButton(root);
+    localCourseBannerBuilderSyncSourcePreviewFitButton(root);
+    localCourseBannerBuilderSyncSourcePreviewFillButton(root);
+    localCourseBannerBuilderSyncSourcePreviewCropButtons(root);
+    localCourseBannerBuilderSyncSourcePreviewDeleteButton(root);
+    localCourseBannerBuilderUpdateSourcePreviewThumbnailSelection(root);
+    localCourseBannerBuilderSyncSourcePreviewSelectionOutline(root);
+}
+
+function localCourseBannerBuilderClearSourcePreviewSelection(root) {
+    if (!root) {
+        return;
+    }
+    localCourseBannerBuilderCancelActivePreviewCropInScope(root, null);
+    Array.prototype.slice.call(root.querySelectorAll('[data-source-preview-layer="1"]')).forEach(function (node) {
+        node.classList.remove('local-course-banner-builder-source-preview-layer--selected');
+        node.removeAttribute('data-preview-current-layer');
+        node.removeAttribute('data-preview-active-edge');
+    });
+    localCourseBannerBuilderSyncSourcePreviewTopLayerButton(root);
+    localCourseBannerBuilderSyncSourcePreviewAboveOverlayButton(root);
+    localCourseBannerBuilderSyncSourcePreviewCenterFixedButton(root);
+    localCourseBannerBuilderSyncSourcePreviewKeepAspectButton(root);
+    localCourseBannerBuilderSyncSourcePreviewOpacityButton(root);
+    localCourseBannerBuilderSyncSourcePreviewFitButton(root);
+    localCourseBannerBuilderSyncSourcePreviewFillButton(root);
+    localCourseBannerBuilderSyncSourcePreviewCropButtons(root);
+    localCourseBannerBuilderSyncSourcePreviewOrderButtons(root);
+    localCourseBannerBuilderSyncSourcePreviewDeleteButton(root);
+    localCourseBannerBuilderUpdateSourcePreviewThumbnailSelection(root);
+    localCourseBannerBuilderSyncSourcePreviewSelectionOutline(root);
+}
+
+function localCourseBannerBuilderInitSourceVisualEditor(scope) {
+    localCourseBannerBuilderGetSourceVisualEditorRoots(scope).forEach(function (root) {
+        var isReadonly = localCourseBannerBuilderIsSourcePreviewReadonly(root);
+        if (!root.dataset.sourcePreviewBound) {
+            root.addEventListener('click', function (event) {
+                if (localCourseBannerBuilderIsSourcePreviewReadonly(root)) {
+                    return;
+                }
+                if (Date.now() < localCourseBannerBuilderSuppressSourcePreviewClickUntil) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    return;
+                }
+                var layer = localCourseBannerBuilderGetSourcePreviewEventLayer(root, event);
+                if (layer && root.contains(layer)) {
+                    localCourseBannerBuilderSelectSourcePreviewLayer(root, layer);
+                    return;
+                }
+                if (event.target.closest('[data-source-preview-frame="1"]')) {
+                    localCourseBannerBuilderClearSourcePreviewSelection(root);
+                }
+            });
+            root.addEventListener('dblclick', function (event) {
+                if (localCourseBannerBuilderIsSourcePreviewReadonly(root)) {
+                    return;
+                }
+                var layer = localCourseBannerBuilderGetSourcePreviewEventLayer(root, event);
+                if (layer && root.contains(layer)) {
+                    event.preventDefault();
+                    localCourseBannerBuilderSelectSourcePreviewLayer(root, layer);
+                }
+            });
+            root.dataset.sourcePreviewBound = '1';
+        }
+        Array.prototype.slice.call(root.querySelectorAll('[data-source-preview-layer="1"]')).forEach(function (layer) {
+            localCourseBannerBuilderSyncSourcePreviewLayer(root, layer);
+        });
+        var selected = localCourseBannerBuilderGetSelectedSourcePreviewLayer(root);
+        if (selected && !isReadonly) {
+            localCourseBannerBuilderSelectSourcePreviewLayer(root, selected);
+        }
+        var borderToggleButton = root.querySelector('[data-action="local-course-banner-builder-toggle-preview-border"]');
+        if (borderToggleButton) {
+            var borderVisible = root.getAttribute('data-preview-border-hidden') !== '1';
+            borderToggleButton.setAttribute('data-preview-border-visible', borderVisible ? '1' : '0');
+            borderToggleButton.setAttribute('aria-pressed', borderVisible ? 'true' : 'false');
+            localCourseBannerBuilderSetActionButtonContent(
+                borderToggleButton,
+                borderVisible ? (borderToggleButton.getAttribute('data-hide-icon') || 'fa-eye-slash') : (borderToggleButton.getAttribute('data-show-icon') || 'fa-eye'),
+                borderVisible ?
+                    (borderToggleButton.getAttribute('data-hide-label') ||
+                        localCourseBannerBuilderGetJsString('hidepreviewborder', '')) :
+                    (borderToggleButton.getAttribute('data-show-label') ||
+                        localCourseBannerBuilderGetJsString('showpreviewborder', ''))
+            );
+        }
+        localCourseBannerBuilderSyncSourcePreviewTopLayerButton(root);
+        localCourseBannerBuilderSyncSourcePreviewAboveOverlayButton(root);
+        localCourseBannerBuilderSyncSourcePreviewCenterFixedButton(root);
+        localCourseBannerBuilderSyncSourcePreviewKeepAspectButton(root);
+        localCourseBannerBuilderSyncSourcePreviewOpacityButton(root);
+        localCourseBannerBuilderSyncSourcePreviewFitButton(root);
+        localCourseBannerBuilderSyncSourcePreviewFillButton(root);
+        localCourseBannerBuilderSyncSourcePreviewCropButtons(root);
+        localCourseBannerBuilderSyncSourcePreviewOrderButtons(root);
+        localCourseBannerBuilderSyncSourcePreviewOrder(root);
+        localCourseBannerBuilderSyncSourcePreviewPayload(root);
+        localCourseBannerBuilderSyncSourcePreviewThumbnails(root);
+        localCourseBannerBuilderSyncSourcePreviewInheritedLayersButton(root);
+        localCourseBannerBuilderEnsureSourcePreviewHistory(root);
+        localCourseBannerBuilderSyncPreviewSnapButtons(root);
+    });
+}
+
+function localCourseBannerBuilderStartSourcePreviewInteraction(event, mode, layer) {
+    if (!layer || event.button !== 0) {
+        return;
+    }
+    var root = layer.closest('[data-source-visual-editor="1"]');
+    var frame = root ? root.querySelector('[data-source-preview-frame="1"]') : null;
+    var image = layer.querySelector('[data-preview-image-tag="1"]');
+    if (!root || !frame || !image || localCourseBannerBuilderIsSourcePreviewReadonly(root)) {
+        return;
+    }
+    localCourseBannerBuilderPushSourcePreviewHistory(root);
+    var frameRect = frame.getBoundingClientRect();
+    var layerRect = layer.getBoundingClientRect();
+    if (!frameRect.width || !frameRect.height) {
+        return;
+    }
+    var startState = localCourseBannerBuilderGetSourcePreviewCustomInteractionState(layer, frame);
+    if (!startState) {
+        return;
+    }
+    localCourseBannerBuilderSourcePreviewInteraction = {
+        mode: mode,
+        edge: layer.getAttribute('data-preview-active-edge') || '',
+        root: root,
+        frame: frame,
+        layer: layer,
+        thresholdPassed: mode !== 'drag',
+        frameWidth: frameRect.width,
+        frameHeight: frameRect.height,
+        startX: event.clientX,
+        startY: event.clientY,
+        startLeftPx: layerRect.left - frameRect.left,
+        startTopPx: layerRect.top - frameRect.top,
+        startWidthPx: layerRect.width,
+        startHeightPx: layerRect.height,
+        startState: startState
+    };
+    if (layer.setPointerCapture && event.pointerId !== undefined) {
+        try {
+            layer.setPointerCapture(event.pointerId);
+        } catch (error) {
+            // Ignore pointer capture failures and keep document-level listeners.
+        }
+    }
+}
+
+function localCourseBannerBuilderHandleSourcePreviewPointerMove(event) {
+    var interaction = localCourseBannerBuilderSourcePreviewInteraction;
+    if (!interaction) {
+        return;
+    }
+    event.preventDefault();
+    var deltaX = event.clientX - interaction.startX;
+    var deltaY = event.clientY - interaction.startY;
+    if (!interaction.thresholdPassed) {
+        if (Math.abs(deltaX) < 3 && Math.abs(deltaY) < 3) {
+            return;
+        }
+        interaction.thresholdPassed = true;
+    }
+    var state = interaction.startState;
+    var nextState = Object.assign({}, state, {
+        fitmodeoverride: 'custom',
+        positionanchor: 'top-left',
+        offsetrightpercent: 0,
+        offsetbottompercent: 0
+    });
+
+    if (interaction.mode === 'drag') {
+        var nextLeftPx = interaction.startLeftPx + deltaX;
+        var nextTopPx = interaction.startTopPx + deltaY;
+        if (localCourseBannerBuilderIsPreviewSnapEnabled(interaction.root)) {
+            var snap = localCourseBannerBuilderFindPreviewSnap(
+                interaction.frame,
+                interaction.layer,
+                {
+                    left: nextLeftPx,
+                    top: nextTopPx,
+                    right: nextLeftPx + interaction.startWidthPx,
+                    bottom: nextTopPx + interaction.startHeightPx,
+                    centerX: nextLeftPx + (interaction.startWidthPx / 2),
+                    centerY: nextTopPx + (interaction.startHeightPx / 2)
+                },
+                '[data-source-preview-layer="1"][data-source-preview-editable="1"]',
+                {limitPeers: true}
+            );
+            nextLeftPx += snap.dx;
+            nextTopPx += snap.dy;
+        }
+        nextState.offsetleftpercent = localCourseBannerBuilderClampPreviewOffset(
+            localCourseBannerBuilderRoundPreviewPercent((nextLeftPx / interaction.frameWidth) * 100)
+        );
+        nextState.offsettoppercent = localCourseBannerBuilderClampPreviewOffset(
+            localCourseBannerBuilderRoundPreviewPercent((nextTopPx / interaction.frameHeight) * 100)
+        );
+    } else {
+        var widthPercent = localCourseBannerBuilderRoundPreviewPercent(((interaction.startWidthPx + deltaX) / interaction.frameWidth) * 100);
+        var heightPercent = localCourseBannerBuilderRoundPreviewPercent(((interaction.startHeightPx + deltaY) / interaction.frameHeight) * 100);
+        if (interaction.mode === 'resize-edge') {
+            switch (interaction.edge) {
+                case 'left':
+                    widthPercent = localCourseBannerBuilderRoundPreviewPercent(((interaction.startWidthPx - deltaX) / interaction.frameWidth) * 100);
+                    nextState.offsetleftpercent = localCourseBannerBuilderRoundPreviewPercent(((interaction.startLeftPx + deltaX) / interaction.frameWidth) * 100);
+                    break;
+                case 'top':
+                    heightPercent = localCourseBannerBuilderRoundPreviewPercent(((interaction.startHeightPx - deltaY) / interaction.frameHeight) * 100);
+                    nextState.offsettoppercent = localCourseBannerBuilderRoundPreviewPercent(((interaction.startTopPx + deltaY) / interaction.frameHeight) * 100);
+                    break;
+                case 'right':
+                    break;
+                case 'bottom':
+                    break;
+            }
+        }
+
+        widthPercent = Math.max(1, Math.min(localCourseBannerBuilderCustomSizePercentMax, widthPercent));
+        heightPercent = Math.max(1, Math.min(localCourseBannerBuilderCustomSizePercentMax, heightPercent));
+        if (state.customsizekeepaspect) {
+            var aspectRatio = interaction.startWidthPx > 0 && interaction.startHeightPx > 0 ?
+                (interaction.startWidthPx / interaction.startHeightPx) : 1;
+            heightPercent = (widthPercent * interaction.frameWidth) / (Math.max(1, aspectRatio) * interaction.frameHeight);
+            heightPercent = Math.max(1, Math.min(localCourseBannerBuilderCustomSizePercentMax, heightPercent));
+        }
+        nextState.customwidthpercent = widthPercent;
+        nextState.customheightpercent = heightPercent;
+    }
+
+    localCourseBannerBuilderSetSourcePreviewLayerState(interaction.layer, nextState);
+    localCourseBannerBuilderSyncSourcePreviewLayer(interaction.root, interaction.layer);
+    localCourseBannerBuilderUpdateSourcePreviewRow(interaction.root, nextState);
+    localCourseBannerBuilderSyncSourcePreviewPayload(interaction.root);
+    localCourseBannerBuilderUpdatePreviewGuides(
+        interaction.frame,
+        interaction.layer,
+        '[data-source-preview-layer="1"][data-source-preview-editable="1"]',
+        {limitPeers: true}
+    );
+}
+
+function localCourseBannerBuilderStopSourcePreviewInteraction() {
+    var frame = localCourseBannerBuilderSourcePreviewInteraction ?
+        localCourseBannerBuilderSourcePreviewInteraction.frame : null;
+    if (localCourseBannerBuilderSourcePreviewInteraction && localCourseBannerBuilderSourcePreviewInteraction.layer) {
+        localCourseBannerBuilderSourcePreviewInteraction.layer.removeAttribute('data-preview-active-edge');
+    }
+    localCourseBannerBuilderSourcePreviewInteraction = null;
+    localCourseBannerBuilderClearPreviewGuides(frame);
+}
+
+document.addEventListener('pointermove', localCourseBannerBuilderHandleModalResizePointerMove);
+document.addEventListener('pointerup', localCourseBannerBuilderStopModalResizeInteraction);
+document.addEventListener('pointercancel', localCourseBannerBuilderStopModalResizeInteraction);
+document.addEventListener('pointermove', localCourseBannerBuilderHandlePreviewPointerMove);
+document.addEventListener('pointerup', localCourseBannerBuilderStopPreviewInteraction);
+document.addEventListener('pointercancel', localCourseBannerBuilderStopPreviewInteraction);
+document.addEventListener('pointermove', localCourseBannerBuilderHandleSourcePreviewPointerMove);
+document.addEventListener('pointerup', localCourseBannerBuilderStopSourcePreviewInteraction);
+document.addEventListener('pointercancel', localCourseBannerBuilderStopSourcePreviewInteraction);
+document.addEventListener('pointermove', localCourseBannerBuilderHandleCropPointerMove);
+document.addEventListener('pointerup', localCourseBannerBuilderStopCropInteraction);
+document.addEventListener('pointercancel', localCourseBannerBuilderStopCropInteraction);
+
+function localCourseBannerBuilderSyncDetailsCollapseIcons(scope) {
+    var root = scope || document;
+    Array.prototype.slice.call(root.querySelectorAll('details')).forEach(function (details) {
+        var icon = details.querySelector('summary [data-local-details-toggle-icon="1"], summary .icons-collapse-expand');
+        if (!icon) {
+            return;
+        }
+        icon.classList.toggle('collapsed', !details.open);
+        if (!details.dataset.collapseIconBound) {
+            details.addEventListener('toggle', function () {
+                icon.classList.toggle('collapsed', !details.open);
+            });
+            details.dataset.collapseIconBound = '1';
+        }
+    });
+}
+
+function localCourseBannerBuilderSyncDashedControls(scope) {
+    var layerForm = localCourseBannerBuilderGetLayerScope(scope);
+    var styleInput = layerForm ? layerForm.querySelector('#id_borderstyle') : null;
+    if (!styleInput) {
+        return;
+    }
+    var enabled = styleInput.value === 'dashed' && !styleInput.disabled;
+    var dashSelectors = [
+        '[data-border-dash-length="1"]',
+        '[data-percent-slider-for="id_borderdashlength"]',
+        '[data-modal-side-range-number-for="id_borderdashlength"]'
+    ];
+    Array.prototype.slice.call(layerForm.querySelectorAll(dashSelectors.join(','))).forEach(function (input) {
+        input.disabled = !enabled;
+        input.classList.toggle('local-course-banner-builder-input-disabled', !enabled);
+        var wrapper = input.closest(
+            '.fitem, .form-group, .mb-3, .local-course-banner-builder-linked-range-wrapper'
+        );
+        if (wrapper) {
+            wrapper.classList.toggle('local-course-banner-builder-option-disabled', !enabled);
+            wrapper.setAttribute('aria-hidden', 'false');
+        }
+    });
+    Array.prototype.slice.call(layerForm.querySelectorAll([
+        '[data-percent-slider-wrapper-for="id_borderdashlength"]',
+        '[data-modal-side-range-title="id_borderdashlength"]'
+    ].join(','))).forEach(function (element) {
+        element.classList.toggle('local-course-banner-builder-option-disabled', !enabled);
+        element.setAttribute('aria-hidden', 'false');
+    });
+}
+
+function localCourseBannerBuilderApplyFetchedFormValues(sourceForm, targetForm) {
+    if (!sourceForm || !targetForm) {
+        return;
+    }
+
+    Array.prototype.slice.call(targetForm.querySelectorAll('input, select, textarea')).forEach(function (targetField) {
+        if (!targetField.name) {
+            return;
+        }
+        if (targetField.type === 'checkbox') {
+            var sourceCheckbox = Array.prototype.slice.call(sourceForm.querySelectorAll('input[type="checkbox"]')).find(function (input) {
+                return input.name === targetField.name;
+            });
+            if (sourceCheckbox) {
+                targetField.checked = !!sourceCheckbox.checked;
+            }
+            return;
+        }
+
+        if (targetField.type === 'radio') {
+            var sourceRadio = Array.prototype.slice.call(sourceForm.querySelectorAll('input[type="radio"]')).find(function (input) {
+                return input.name === targetField.name && input.value === targetField.value;
+            });
+            if (sourceRadio) {
+                targetField.checked = !!sourceRadio.checked;
+            }
+            return;
+        }
+
+        var sourceField = Array.prototype.slice.call(sourceForm.elements).find(function (input) {
+            return input.name === targetField.name;
+        });
+        if (sourceField) {
+            targetField.value = sourceField.value;
+        }
+    });
+}
+
+function localCourseBannerBuilderIsFetchedBorderOnlyForm(sourceForm) {
+    if (!sourceForm) {
+        return false;
+    }
+
+    var borderToggle = sourceForm.querySelector('[data-border-toggle="1"][type="checkbox"]');
+    var hasExistingImageInput = sourceForm.querySelector('#id_hasexistingimage');
+    var hasExistingImage = !!(hasExistingImageInput && parseInt(hasExistingImageInput.value || '0', 10) > 0);
+
+    return !!(borderToggle && borderToggle.checked && !hasExistingImage);
+}
+
+function localCourseBannerBuilderValidateLayerForm(e) {
+    var layerForm = e && e.target ? localCourseBannerBuilderGetLayerScope(e.target) : localCourseBannerBuilderGetLayerScope();
+    var filemanager = layerForm ? layerForm.querySelector('#fitem_id_bannerimage_filemanager') : null;
+    var borderToggle = layerForm ? layerForm.querySelector('[data-border-toggle="1"][type="checkbox"]') : null;
+    var hasExistingImageInput = layerForm ? layerForm.querySelector('#id_hasexistingimage') : null;
+    var warning = layerForm ? layerForm.querySelector('[data-layer-validation-warning="1"]') : null;
+    localCourseBannerBuilderSyncUnifiedOverlayAppearance(layerForm);
+    if (!filemanager || !borderToggle || !warning) {
+        return true;
+    }
+    localCourseBannerBuilderSyncBorderSidesValue(layerForm);
+    var hasExistingImage = !!(hasExistingImageInput && parseInt(hasExistingImageInput.value || '0', 10) > 0);
+    var selectedLayerType = localCourseBannerBuilderGetSelectedLayerType(layerForm);
+    var valid = selectedLayerType === 'overlay' ||
+        borderToggle.checked ||
+        hasExistingImage ||
+        localCourseBannerBuilderGetVisibleDraftFileItems(layerForm).length > 0;
+    warning.classList.toggle('d-none', valid);
+    if (!valid && e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    return valid;
+}
+
+function localCourseBannerBuilderBindLayerFormEvents(scope) {
+    var layerForm = localCourseBannerBuilderGetLayerScope(scope);
+    if (!layerForm) {
+        return;
+    }
+    var fitOverride = layerForm.querySelector('#id_fitmodeoverride');
+    if (fitOverride && !fitOverride.dataset.layerEventsBound) {
+        fitOverride.addEventListener('change', function () {
+            localCourseBannerBuilderSyncCustomSizeFields(layerForm);
+            localCourseBannerBuilderSyncOffsetFields(layerForm);
+        });
+        fitOverride.dataset.layerEventsBound = '1';
+        fitOverride.dataset.layerBound = '1';
+    }
+
+    var keepAspect = layerForm.querySelector('[data-custom-size-keep-aspect="1"][type="checkbox"]');
+    if (keepAspect && !keepAspect.dataset.layerEventsBound) {
+        keepAspect.addEventListener('change', function () {
+            localCourseBannerBuilderSyncCustomSizeFields(layerForm);
+            if (keepAspect.checked) {
+                var widthInput = layerForm.querySelector('#id_customwidthpercent');
+                if (widthInput) {
+                    localCourseBannerBuilderSyncLinkedCustomSizeInputs(layerForm, widthInput);
+                }
+            }
+        });
+        keepAspect.dataset.layerEventsBound = '1';
+        keepAspect.dataset.layerBound = '1';
+    }
+
+    var dynamicSize = layerForm.querySelector('#id_dynamicimagesizeenabled');
+    if (dynamicSize && !dynamicSize.dataset.layerEventsBound) {
+        dynamicSize.addEventListener('change', function () {
+            localCourseBannerBuilderSyncCustomSizeFields(layerForm);
+        });
+        dynamicSize.dataset.layerEventsBound = '1';
+        dynamicSize.dataset.layerBound = '1';
+    }
+
+    var imageOpacity = layerForm.querySelector('#id_imageopacity');
+    if (imageOpacity && !imageOpacity.dataset.layerEventsBound) {
+        imageOpacity.addEventListener('input', function () {
+            localCourseBannerBuilderApplyModalImageOpacity(layerForm, imageOpacity.value || '100');
+        });
+        imageOpacity.dataset.layerEventsBound = '1';
+        imageOpacity.dataset.layerBound = '1';
+    }
+
+    var customWidth = layerForm.querySelector('#id_customwidthpercent');
+    if (customWidth && !customWidth.dataset.layerEventsBound) {
+        customWidth.addEventListener('input', function () {
+            localCourseBannerBuilderSyncLinkedCustomSizeInputs(layerForm, customWidth);
+        });
+        customWidth.dataset.layerEventsBound = '1';
+        customWidth.dataset.layerBound = '1';
+    }
+
+    var customHeight = layerForm.querySelector('#id_customheightpercent');
+    if (customHeight && !customHeight.dataset.layerEventsBound) {
+        customHeight.addEventListener('input', function () {
+            localCourseBannerBuilderSyncLinkedCustomSizeInputs(layerForm, customHeight);
+        });
+        customHeight.dataset.layerEventsBound = '1';
+        customHeight.dataset.layerBound = '1';
+    }
+
+    var anchor = layerForm.querySelector('[data-layer-position-anchor="1"]');
+    if (anchor && !anchor.dataset.layerEventsBound) {
+        anchor.addEventListener('change', function () {
+            localCourseBannerBuilderApplyLayerPositionAnchorChange(layerForm);
+        });
+        anchor.dataset.layerEventsBound = '1';
+        anchor.dataset.layerBound = '1';
+    }
+
+    var borderToggle = layerForm.querySelector('[data-border-toggle="1"][type="checkbox"]');
+    if (borderToggle && !borderToggle.dataset.layerEventsBound) {
+        borderToggle.addEventListener('change', function () {
+            localCourseBannerBuilderSyncLayerInputModes(layerForm);
+            localCourseBannerBuilderSyncDashedControls(layerForm);
+            localCourseBannerBuilderSyncBorderPreview(layerForm);
+            localCourseBannerBuilderSyncBinaryOptionButton(borderToggle);
+            localCourseBannerBuilderSyncModalPreviewActionButtons(layerForm);
+        });
+        borderToggle.dataset.layerEventsBound = '1';
+        borderToggle.dataset.layerBound = '1';
+    }
+
+    var overlayToggle = localCourseBannerBuilderGetOverlayToggle(layerForm);
+    if (overlayToggle && !overlayToggle.dataset.layerEventsBound) {
+        overlayToggle.addEventListener('change', function () {
+            localCourseBannerBuilderSyncLayerInputModes(layerForm);
+            localCourseBannerBuilderSyncModalPreviewActionButtons(layerForm);
+            localCourseBannerBuilderSyncBinaryOptionButton(overlayToggle);
+        });
+        overlayToggle.dataset.layerEventsBound = '1';
+        overlayToggle.dataset.layerBound = '1';
+    }
+
+    var enabledToggle = layerForm.querySelector('#id_isenabled[type="checkbox"]');
+    if (enabledToggle && !enabledToggle.dataset.layerEventsBound) {
+        enabledToggle.addEventListener('change', function () {
+            localCourseBannerBuilderSyncBinaryOptionButton(enabledToggle);
+        });
+        enabledToggle.dataset.layerEventsBound = '1';
+        enabledToggle.dataset.layerBound = '1';
+    }
+
+    var allBorderSides = layerForm.querySelector('[data-border-side-all="1"][type="checkbox"]');
+    if (allBorderSides && !allBorderSides.dataset.layerEventsBound) {
+        allBorderSides.addEventListener('change', function () {
+            var form = allBorderSides.closest('form.mform');
+            localCourseBannerBuilderSetBorderSidesFromAll(allBorderSides.checked, form);
+            localCourseBannerBuilderSyncBorderSideGroup(form);
+            localCourseBannerBuilderSyncBorderRoundedField(form);
+            localCourseBannerBuilderSyncBorderPreview(form);
+        });
+        allBorderSides.dataset.layerEventsBound = '1';
+        allBorderSides.dataset.layerBound = '1';
+    }
+
+    Array.prototype.slice.call(layerForm.querySelectorAll('[data-border-side][type="checkbox"]')).forEach(function (input) {
+        if (input.dataset.layerEventsBound) {
+            return;
+        }
+        input.addEventListener('change', function () {
+            var form = input.closest('form.mform');
+            localCourseBannerBuilderSyncBorderSidesValue(form);
+            localCourseBannerBuilderSyncBorderSideGroup(form);
+            localCourseBannerBuilderSyncBorderRoundedField(form);
+            localCourseBannerBuilderSyncBorderPreview(form);
+        });
+        input.dataset.layerEventsBound = '1';
+        input.dataset.layerBound = '1';
+    });
+
+    var borderAccordion = layerForm.querySelector('[data-border-accordion="1"]');
+    if (borderAccordion && !borderAccordion.dataset.layerEventsBound) {
+        var summary = borderAccordion.querySelector('summary');
+        if (summary) {
+            summary.addEventListener('click', function (e) {
+                if (borderAccordion.classList.contains('local-course-banner-builder-disabled')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            });
+        }
+        borderAccordion.dataset.layerEventsBound = '1';
+        borderAccordion.dataset.layerBound = '1';
+    }
+
+    Array.prototype.slice.call(layerForm.querySelectorAll('[data-layer-type-option]')).forEach(function (button) {
+        if (button.dataset.layerTypeBound) {
+            return;
+        }
+        button.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var form = button.closest('form.mform');
+            var nextType = button.getAttribute('data-layer-type-option');
+            localCourseBannerBuilderSelectLayerType(form, nextType, true);
+        });
+        button.dataset.layerTypeBound = '1';
+    });
+
+    Array.prototype.slice.call(layerForm.querySelectorAll([
+        '#id_bordercolor',
+        '#id_borderwidth',
+        '#id_borderopacity',
+        '#id_borderfade',
+        '#id_borderstyle',
+        '[data-border-dash-length="1"]',
+        '[data-border-inner-rounded="1"][type="checkbox"]'
+    ].join(','))).forEach(function (input) {
+        if (!input || input.dataset.layerEventsBound) {
+            return;
+        }
+        input.addEventListener('input', function () {
+            localCourseBannerBuilderScheduleBorderPreviewSync(layerForm, false);
+        });
+        input.addEventListener('change', function () {
+            localCourseBannerBuilderScheduleBorderPreviewSync(layerForm, true);
+        });
+        input.dataset.layerEventsBound = '1';
+        input.dataset.layerBound = '1';
+    });
+
+    Array.prototype.slice.call(layerForm.querySelectorAll([
+        '#id_overlaytarget',
+        '#id_overlaybannercolor',
+        '#id_overlaybanneropacity',
+        '#id_overlayslideshowcolor',
+        '#id_overlayslideshowopacity',
+        '#id_overlaytitleabove',
+        '#id_overlayborderabove',
+        '[data-overlay-color-picker]'
+    ].join(','))).forEach(function (input) {
+        if (!input || input.dataset.layerEventsBound) {
+            return;
+        }
+        input.addEventListener('input', function () {
+            localCourseBannerBuilderScheduleOverlayPreviewSync(layerForm, {
+                syncPreview: true
+            });
+        });
+        input.addEventListener('change', function () {
+            localCourseBannerBuilderScheduleOverlayPreviewSync(layerForm, {
+                syncPreview: true
+            });
+        });
+        input.dataset.layerEventsBound = '1';
+        input.dataset.layerBound = '1';
+    });
+
+    if (layerForm && !layerForm.dataset.layerEventsBound) {
+        layerForm.addEventListener('submit', function (event) {
+            localCourseBannerBuilderPrepareLayerFormForSubmit(layerForm);
+            localCourseBannerBuilderValidateLayerForm(event);
+        });
+        layerForm.dataset.layerEventsBound = '1';
+        layerForm.dataset.layerBound = '1';
+    }
+}
+
+function localCourseBannerBuilderToggleCheckboxInput(input) {
+    if (!input || input.disabled) {
+        return;
+    }
+    input.checked = !input.checked;
+    localCourseBannerBuilderSyncBinaryOptionButton(input);
+    input.dispatchEvent(new Event('change', {bubbles: true}));
+}
+
+function localCourseBannerBuilderSetActionButtonContent(button, iconClass, label) {
+    if (!button) {
+        return;
+    }
+    button.innerHTML = '<i class="fa ' + iconClass + ' me-2" aria-hidden="true"></i><span>' + label + '</span>';
+}
+
+function localCourseBannerBuilderGetJsString(key, fallback) {
+    if (window.M && M.util && typeof M.util.get_string === 'function') {
+        try {
+            return M.util.get_string(key, 'local_course_banner_builder');
+        } catch (error) {
+            return fallback;
+        }
+    }
+    return fallback;
+}
+
+function localCourseBannerBuilderSyncBinaryOptionButton(input) {
+    if (!input || !input.form) {
+        return;
+    }
+    var button = input.form.querySelector('[data-toggle-button-for="#' + input.id + '"]');
+    if (!button) {
+        return;
+    }
+    var checked = !!input.checked;
+    button.disabled = !!input.disabled;
+    button.classList.toggle('btn-primary', checked);
+    button.classList.toggle('btn-outline-secondary', !checked);
+    button.classList.toggle('disabled', !!input.disabled);
+    localCourseBannerBuilderSetActionButtonContent(
+        button,
+        checked ? 'fa-toggle-on' : 'fa-toggle-off',
+        checked ? (button.getAttribute('data-label-on') || 'Enabled') :
+            (button.getAttribute('data-label-off') || 'Disabled')
+    );
+}
+
+function localCourseBannerBuilderEnhanceBinaryOptionButtons(form) {
+    if (!form) {
+        return;
+    }
+    localCourseBannerBuilderMoveLayerPreviewToTop(form);
+    var enabledInput = form.querySelector('#id_isenabled');
+    var enabledRow = enabledInput ? enabledInput.closest('.fitem, .form-group, .mb-3, .row') : null;
+    var previewRow = form.querySelector('#fitem_id_layerpreview, #fitem_id_imagepreview, #fitem_id_borderpreview');
+    if (enabledRow && enabledRow.parentNode && enabledRow.parentNode.firstChild !== enabledRow &&
+            !form.querySelector('[data-layer-top-choice-row="1"]')) {
+        enabledRow.parentNode.insertBefore(enabledRow, previewRow ? previewRow.nextSibling : enabledRow.parentNode.firstChild);
+    }
+    [
+        {selector: '#id_isenabled', icon: 'fa-toggle-on', useenabledlabels: true},
+        {selector: '#id_borderenabled', icon: 'fa-toggle-off'}
+    ].forEach(function (config) {
+        var input = form.querySelector(config.selector);
+        if (!input || input.type === 'hidden') {
+            return;
+        }
+        if (config.selector === '#id_borderenabled' && form.querySelector('[data-layer-type-toggle="1"]')) {
+            return;
+        }
+        var row = input.closest('.fitem, .form-group, .mb-3, .row');
+        if (!row) {
+            return;
+        }
+        row.classList.add('local-course-banner-builder-toggle-button-row');
+        var source = input.closest('.form-check, .custom-control, .checkbox') || input.parentElement;
+        if (source) {
+            source.classList.add('local-course-banner-builder-toggle-button-source');
+        }
+        var host = form.querySelector('[data-toggle-button-host-for="#' + input.id + '"]') ||
+            row.querySelector('[data-toggle-button-host-for="#' + input.id + '"]');
+        if (!host) {
+            host = document.createElement('div');
+            host.className = 'local-course-banner-builder-toggle-button-host';
+            host.setAttribute('data-toggle-button-host-for', '#' + input.id);
+            var button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'btn btn-outline-secondary local-course-banner-builder-slideshow-enable-button';
+            button.setAttribute('data-toggle-button-for', '#' + input.id);
+            var label = row.querySelector('label[for="' + input.id + '"]');
+            var labelText = label ? label.textContent.trim() : input.name;
+            button.setAttribute('data-label-on', config.useenabledlabels ? 'Enabled' : labelText);
+            button.setAttribute('data-label-off', config.useenabledlabels ? 'Disabled' : labelText);
+            localCourseBannerBuilderSetActionButtonContent(button, config.icon, (label ? label.textContent.trim() : input.name));
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                localCourseBannerBuilderToggleCheckboxInput(input);
+            });
+            host.appendChild(button);
+        }
+        if (host.parentNode !== row.querySelector('.felement, .col-md-9')) {
+            var target = row.querySelector('.felement, .col-md-9');
+            if (target && host.parentNode !== target) {
+                target.insertBefore(host, target.firstChild);
+            }
+        }
+        localCourseBannerBuilderSyncBinaryOptionButton(input);
+    });
+    localCourseBannerBuilderEmbedEnabledToggleInLayerTypeChoice(form);
+}
+
+function localCourseBannerBuilderSyncModalPreviewActionButtons(form) {
+    if (!form) {
+        return;
+    }
+    var filemanager = form.querySelector('#fitem_id_bannerimage_filemanager');
+    var isFilemanagerBusy = localCourseBannerBuilderIsDraftFilemanagerBusy(form);
+    var draftFiles = isFilemanagerBusy ? [] : localCourseBannerBuilderGetDraftPreviewFiles(form);
+    var visibleFileItems = (!isFilemanagerBusy && filemanager) ? Array.prototype.slice.call(filemanager.querySelectorAll('.fp-file:not(.fp-folder)')).filter(function (item) {
+        return item.dataset.previewDeleted !== '1' && !item.hidden && item.getAttribute('aria-hidden') !== 'true';
+    }) : [];
+    var hasFiles = !!(draftFiles.length || visibleFileItems.length);
+    var hasExistingImageInput = form.querySelector('#id_hasexistingimage');
+    var currentIsBorderLayerInput = form.querySelector('#id_currentisborderlayer');
+    var currentIsOverlayLayerInput = form.querySelector('#id_currentisoverlaylayer');
+    var elementIdInput = form.querySelector('#id_elementid');
+    var borderToggle = form.querySelector(
+        '[data-border-toggle="1"][type="checkbox"], [data-border-toggle="1"][type="hidden"]'
+    );
+    var overlayToggle = localCourseBannerBuilderGetOverlayToggle(form);
+    var currentPreviewLayer = localCourseBannerBuilderGetEditableCurrentPreviewImage(form);
+    var currentPreviewImage = currentPreviewLayer ? currentPreviewLayer.querySelector('[data-preview-image-tag="1"]') : null;
+    var currentImageOrderLocked = localCourseBannerBuilderIsPreviewImageLayerOrderLocked(currentPreviewLayer);
+    var hasCurrentPreviewImage = !!(currentPreviewLayer && !currentPreviewLayer.hidden &&
+        ((currentPreviewLayer.getAttribute('data-preview-current-url') || '') ||
+        (currentPreviewImage && currentPreviewImage.getAttribute('src'))));
+    var hasExistingImage = !!(hasExistingImageInput && parseInt(hasExistingImageInput.value || '0', 10) > 0);
+    var isExistingBorderLayer = !!(currentIsBorderLayerInput && parseInt(currentIsBorderLayerInput.value || '0', 10) > 0);
+    var isExistingOverlayLayer = !!(currentIsOverlayLayerInput && parseInt(currentIsOverlayLayerInput.value || '0', 10) > 0);
+    var hasExistingElement = !!(elementIdInput && parseInt(elementIdInput.value || '0', 10) > 0);
+    var isEditImageLayer = hasExistingElement && !isExistingBorderLayer && !isExistingOverlayLayer;
+    var hasImage = hasFiles || hasExistingImage || isEditImageLayer || hasCurrentPreviewImage;
+    var borderToggleChecked = !!(borderToggle &&
+        (borderToggle.type === 'checkbox' ? borderToggle.checked : borderToggle.value === '1'));
+    var selectedLayerType = localCourseBannerBuilderGetSelectedLayerType(form);
+    var overlayToggleChecked = selectedLayerType === 'overlay';
+    var isBorderOnly = !!(selectedLayerType === 'border' && !hasFiles && !hasExistingImage);
+    var isOverlayOnly = !!overlayToggleChecked;
+    var overlayTargetInput = form.querySelector('#id_overlaytarget');
+    var overlayTargetValue = overlayTargetInput ? overlayTargetInput.value : 'both';
+    var submitProxy = form.querySelector('[data-modal-preview-submit-proxy="1"]');
+    var deleteDraftButton = form.querySelector('[data-action="local-course-banner-builder-delete-selected-draft-preview-layer"]');
+    var activeDraftIndex = typeof form.dataset.activeDraftIndex !== 'undefined' ? String(form.dataset.activeDraftIndex) : '';
+    var hasActiveDraft = activeDraftIndex !== '' && draftFiles.some(function (file) {
+        return String(file.index) === activeDraftIndex;
+    });
+
+    localCourseBannerBuilderEnsureModalImageControls(form);
+    localCourseBannerBuilderEnsureModalOpacityControls(form);
+    localCourseBannerBuilderEnsureModalBorderControls(form);
+    localCourseBannerBuilderEnsureModalOverlayControls(form);
+    localCourseBannerBuilderSyncModalOverlayPreview(form);
+    localCourseBannerBuilderEnsureBorderStyleChoice(form);
+
+    Array.prototype.slice.call(form.querySelectorAll('[data-preview-action-bound-input]')).forEach(function (button) {
+        var selector = button.getAttribute('data-preview-action-bound-input');
+        var input = selector ? form.querySelector(selector) : null;
+        if (!input) {
+            return;
+        }
+        var group = button.getAttribute('data-preview-action-group') || 'shared';
+        var visible = false;
+        if (group === 'image') {
+            visible = !isBorderOnly && !isOverlayOnly;
+        } else if (group === 'border') {
+            visible = isBorderOnly || isExistingBorderLayer;
+        } else if (group === 'overlay') {
+            visible = isOverlayOnly;
+        } else {
+            visible = hasImage || isBorderOnly || isExistingBorderLayer || isOverlayOnly;
+        }
+        if (input.matches && input.matches('[data-preview-context-toggle="1"]')) {
+            visible = !isOverlayOnly || overlayTargetValue !== 'slideshow';
+        }
+        if (button.hasAttribute('data-overlay-slideshow-preview-button')) {
+            visible = isOverlayOnly && overlayTargetValue !== 'banner';
+        }
+        if (selector === '#id_imageaboveoverlayenabled') {
+            visible = visible && localCourseBannerBuilderPreviewHasOverlay(form);
+        }
+        if (selector === '#id_imageaboveinheritedenabled') {
+            var sourceHasDirectBorderInput = form.querySelector('#id_sourcehasborderlayer');
+            var sourceHasDirectOverlayInput = form.querySelector('#id_sourcehasoverlaylayer');
+            visible = visible &&
+                !(sourceHasDirectBorderInput && sourceHasDirectBorderInput.value === '1') &&
+                !(sourceHasDirectOverlayInput && sourceHasDirectOverlayInput.value === '1');
+        }
+        button.hidden = !visible;
+        var disabled = group === 'image' && !hasImage;
+        button.disabled = disabled;
+        button.classList.toggle('disabled', disabled);
+        button.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+        var checked = !!input.checked;
+        button.classList.toggle('btn-primary', checked);
+        button.classList.toggle('btn-outline-secondary', !checked);
+        button.classList.toggle('active', checked);
+        button.classList.toggle('local-course-banner-builder-source-preview-button--active', checked);
+        button.setAttribute('aria-pressed', checked ? 'true' : 'false');
+        if (button.hasAttribute('data-preview-action-label-on') && button.hasAttribute('data-preview-action-label-off')) {
+            localCourseBannerBuilderSetActionButtonContent(
+                button,
+                checked ? (button.getAttribute('data-preview-action-icon-on') || 'fa-check') : (button.getAttribute('data-preview-action-icon-off') || 'fa-check'),
+                checked ? button.getAttribute('data-preview-action-label-on') : button.getAttribute('data-preview-action-label-off')
+            );
+        }
+    });
+    Array.prototype.slice.call(form.querySelectorAll(
+        '[data-modal-preview-action-list="1"] [data-preview-action-group]:not([data-preview-action-bound-input]),' +
+        '[data-modal-preview-icon-row="1"] [data-preview-action-group]:not([data-preview-action-bound-input])'
+    )).forEach(function (button) {
+        if (!button.matches || !button.matches('button')) {
+            return;
+        }
+        if (button.hasAttribute('data-modal-preview-submit-proxy')) {
+            return;
+        }
+        var group = button.getAttribute('data-preview-action-group') || 'shared';
+        if (group === 'image') {
+            var isDepthButton = button.getAttribute('data-action') === 'local-course-banner-builder-push-modal-preview-layer-behind' ||
+                button.getAttribute('data-action') === 'local-course-banner-builder-pull-modal-preview-layer-forward';
+            button.hidden = isBorderOnly || isOverlayOnly;
+            var disabled = !hasImage || (isDepthButton && currentImageOrderLocked);
+            button.disabled = disabled;
+            button.classList.toggle('disabled', disabled);
+            button.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+        } else if (group === 'border') {
+            button.hidden = !(isBorderOnly || isExistingBorderLayer);
+        } else if (group === 'overlay') {
+            button.hidden = !isOverlayOnly;
+        } else {
+            button.hidden = !(hasImage || isBorderOnly || isExistingBorderLayer || isOverlayOnly);
+            if (button.getAttribute('data-action') === 'local-course-banner-builder-toggle-preview-snap' &&
+                    (isBorderOnly || isExistingBorderLayer || isOverlayOnly)) {
+                button.hidden = true;
+            }
+        }
+    });
+    Array.prototype.slice.call(form.querySelectorAll('[data-preview-opacity-panel="modal"]')).forEach(function (panel) {
+        if (!(hasImage && !isBorderOnly)) {
+            var button = form.querySelector('[data-action="local-course-banner-builder-toggle-modal-preview-opacity"]');
+            localCourseBannerBuilderToggleOpacityPanel(panel, button, false);
+        }
+    });
+    Array.prototype.slice.call(form.querySelectorAll('[data-modal-preview-side-panel="1"]')).forEach(function (panel) {
+        var group = panel.getAttribute('data-preview-action-group') || 'shared';
+        var visible = group === 'border'
+            ? (isBorderOnly || isExistingBorderLayer)
+            : (group === 'overlay' ? isOverlayOnly : (!isBorderOnly && !isOverlayOnly));
+        if (!visible) {
+            panel.hidden = true;
+            panel.classList.add('is-collapsed');
+            var key = panel.getAttribute('data-modal-preview-side-panel-key');
+            var button = key ? form.querySelector('[data-modal-preview-side-panel-target="' + key + '"]') : null;
+            if (button) {
+                button.classList.remove('btn-primary', 'active');
+                button.classList.add('btn-outline-secondary');
+                button.setAttribute('aria-expanded', 'false');
+            }
+        }
+    });
+    if (submitProxy) {
+        var canSave = hasExistingElement || hasImage || isBorderOnly || isOverlayOnly;
+        submitProxy.disabled = !canSave;
+        submitProxy.classList.toggle('disabled', !canSave);
+        submitProxy.setAttribute('aria-disabled', canSave ? 'false' : 'true');
+    }
+    if (deleteDraftButton) {
+        var canDeleteDraft = !hasExistingElement && !isBorderOnly && hasActiveDraft;
+        deleteDraftButton.hidden = !canDeleteDraft;
+        deleteDraftButton.disabled = !canDeleteDraft;
+        deleteDraftButton.classList.toggle('disabled', !canDeleteDraft);
+        deleteDraftButton.setAttribute('aria-disabled', canDeleteDraft ? 'false' : 'true');
+    }
+    var fitButton = form.querySelector('[data-action="local-course-banner-builder-fit-layer-preview-image"]');
+    if (fitButton) {
+        var canFitImage = hasImage && !isBorderOnly && !!currentPreviewLayer && !currentPreviewLayer.hidden;
+        fitButton.disabled = !canFitImage;
+        fitButton.classList.toggle('disabled', !canFitImage);
+        fitButton.setAttribute('aria-disabled', canFitImage ? 'false' : 'true');
+    }
+    var fillButton = form.querySelector('[data-action="local-course-banner-builder-fill-layer-preview-image"]');
+    if (fillButton) {
+        var canFillImage = hasImage && !isBorderOnly && !!currentPreviewLayer && !currentPreviewLayer.hidden;
+        fillButton.disabled = !canFillImage;
+        fillButton.classList.toggle('disabled', !canFillImage);
+        fillButton.setAttribute('aria-disabled', canFillImage ? 'false' : 'true');
+    }
+    localCourseBannerBuilderSyncModalPreviewCenterFixedButton(form);
+    localCourseBannerBuilderSyncModalPreviewCropButtons(form);
+    localCourseBannerBuilderUpdateModalPreviewHistoryButtons(form);
+    var host = form.querySelector('[data-modal-preview-action-list="1"]');
+    if (host) {
+        localCourseBannerBuilderLayoutModalPreviewActionButtons(host);
+    }
+    var iconHost = form.querySelector('[data-modal-preview-icon-row="1"]');
+    if (iconHost) {
+        var visibleIcons = Array.prototype.slice.call(iconHost.querySelectorAll('button')).filter(function (button) {
+            return !button.hidden;
+        });
+        iconHost.hidden = !visibleIcons.length;
+    }
+    localCourseBannerBuilderSyncPreviewSnapButtons(form);
+}
+
+function localCourseBannerBuilderLayoutModalPreviewActionButtons(host) {
+    if (!host) {
+        return;
+    }
+    var buttons = Array.prototype.slice.call(host.querySelectorAll('.local-course-banner-builder-source-preview-button'));
+    buttons.forEach(function (button) {
+        button.classList.remove('local-course-banner-builder-source-preview-button--full');
+    });
+    var visibleButtons = buttons.filter(function (button) {
+        return !button.hidden;
+    });
+    if (visibleButtons.length > 0 && (visibleButtons.length % 2) === 1) {
+        visibleButtons[visibleButtons.length - 1].classList.add('local-course-banner-builder-source-preview-button--full');
+    }
+}
+
+function localCourseBannerBuilderSyncModalPreviewCenterFixedButton(form) {
+    if (!form) {
+        return;
+    }
+    var buttons = Array.prototype.slice.call(form.querySelectorAll(
+        '[data-action="local-course-banner-builder-toggle-modal-preview-center-fixed"]'
+    ));
+    if (!buttons.length) {
+        return;
+    }
+    var layer = localCourseBannerBuilderGetLayerFormPreviewImage(form);
+    var input = form.querySelector('#id_imagecenterfixed');
+    var image = layer ? layer.querySelector('[data-preview-image-tag="1"]') : null;
+    var hasImage = !!(layer && image && (
+        (image.currentSrc || image.getAttribute('src')) ||
+        (layer.getAttribute('data-preview-current-url') || '')
+    ));
+    var active = !!(hasImage && ((input && input.checked) ||
+        (!input && layer.getAttribute('data-preview-center-fixed') === '1')));
+    buttons.forEach(function (button) {
+        localCourseBannerBuilderConfigurePreviewIconButton(
+            button,
+            'fa-thumb-tack',
+            active ?
+                localCourseBannerBuilderGetJsString('imagecenterfixedon', 'Fixed center') :
+                localCourseBannerBuilderGetJsString('imagecenterfixedoff', 'Free placement')
+        );
+        button.disabled = !hasImage;
+        button.classList.toggle('disabled', !hasImage);
+        button.setAttribute('aria-disabled', hasImage ? 'false' : 'true');
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+        button.classList.remove('btn-primary');
+        button.classList.remove('active');
+        button.classList.remove('local-course-banner-builder-source-preview-visibility-toggle--active');
+        button.classList.remove('local-course-banner-builder-source-preview-button--active');
+        button.classList.add('btn-outline-secondary');
+        button.classList.toggle('local-course-banner-builder-preview-snap-disabled', !active);
+    });
+}
+
+function localCourseBannerBuilderIsPreviewImageLayerOrderLocked(layer) {
+    return !!(layer && (
+        layer.getAttribute('data-preview-dynamic-image') === '1' ||
+        layer.getAttribute('data-preview-above-overlay') === '1' ||
+        layer.getAttribute('data-preview-below-inherited') === '1' ||
+        layer.getAttribute('data-preview-above-inherited') === '1'
+    ));
+}
+
+function localCourseBannerBuilderSyncModalPreviewCropButtons(form) {
+    if (!form) {
+        return;
+    }
+    var layer = localCourseBannerBuilderGetEditableCurrentPreviewImage(form);
+    var hasImage = !!(layer && !layer.hidden && layer.querySelector('[data-preview-image-tag="1"]'));
+    var active = !!(hasImage && layer.querySelector('[data-preview-crop-editor="1"]'));
+    var toggle = form.querySelector('[data-action="local-course-banner-builder-toggle-modal-preview-crop"]');
+    var apply = form.querySelector('[data-action="local-course-banner-builder-apply-modal-preview-crop"]');
+    if (toggle) {
+        toggle.disabled = !hasImage;
+        toggle.classList.toggle('disabled', !hasImage);
+        toggle.classList.toggle('btn-primary', active);
+        toggle.classList.toggle('btn-outline-secondary', !active);
+        toggle.classList.toggle('active', active);
+        toggle.classList.remove(
+            'local-course-banner-builder-crop-applied',
+            'local-course-banner-builder-preview-toolbar-button--active'
+        );
+        toggle.setAttribute('aria-disabled', hasImage ? 'false' : 'true');
+        toggle.setAttribute('aria-pressed', active ? 'true' : 'false');
+    }
+    if (apply) {
+        apply.hidden = !active;
+        apply.disabled = !active;
+        apply.setAttribute('aria-disabled', active ? 'false' : 'true');
+    }
+}
+
+function localCourseBannerBuilderSetPreviewIconPopover(button, label, placement) {
+    if (!button) {
+        return;
+    }
+    button.setAttribute('data-toggle', 'popover');
+    button.setAttribute('data-trigger', 'hover');
+    button.setAttribute('data-placement', placement || 'top');
+    button.setAttribute('data-html', 'true');
+    button.setAttribute('data-content', '<div class="no-overflow"><p>' + label + '</p></div>');
+    button.setAttribute('aria-label', label);
+}
+
+function localCourseBannerBuilderConfigurePreviewIconButton(button, iconClass, label) {
+    if (!button) {
+        return null;
+    }
+    button.className = 'btn btn-outline-secondary local-course-banner-builder-source-preview-visibility-toggle';
+    button.innerHTML = '<i class="fa ' + iconClass + '" aria-hidden="true"></i><span class="sr-only">' +
+        label + '</span>';
+    localCourseBannerBuilderSetPreviewIconPopover(button, label, 'top');
+    return button;
+}
+
+function localCourseBannerBuilderCreatePreviewIconButton(action, iconClass, label, group) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.setAttribute('data-action', action);
+    button.setAttribute('data-preview-action-group', group || 'shared');
+    return localCourseBannerBuilderConfigurePreviewIconButton(button, iconClass, label);
+}
+
+function localCourseBannerBuilderCreateImageOpacityPanel(prefix, value) {
+    var panel = document.createElement('div');
+    panel.className = 'local-course-banner-builder-preview-opacity-panel';
+    panel.hidden = true;
+    panel.setAttribute('data-preview-opacity-panel', prefix);
+
+    var range = document.createElement('input');
+    range.type = 'range';
+    range.className = 'local-course-banner-builder-range theme-easyedu-range';
+    range.min = '0';
+    range.max = '100';
+    range.step = '1';
+    range.value = String(localCourseBannerBuilderClampPercent(value, 100));
+    range.setAttribute('data-preview-opacity-range', prefix);
+    range.setAttribute('aria-label', localCourseBannerBuilderGetJsString('imageopacity', 'Image opacity'));
+
+    var number = document.createElement('input');
+    number.type = 'number';
+    number.className = 'form-control form-control-sm';
+    number.min = '0';
+    number.max = '100';
+    number.step = '1';
+    number.value = range.value;
+    number.setAttribute('data-preview-opacity-number', prefix);
+    number.setAttribute('aria-label', localCourseBannerBuilderGetJsString('imageopacity', 'Image opacity'));
+
+    panel.appendChild(range);
+    panel.appendChild(number);
+    return panel;
+}
+
+function localCourseBannerBuilderToggleOpacityPanel(panel, button, forceOpen) {
+    if (!panel) {
+        return;
+    }
+    var shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : panel.hidden;
+    if (shouldOpen) {
+        panel.hidden = false;
+        panel.classList.add('is-collapsed');
+        window.requestAnimationFrame(function () {
+            panel.classList.remove('is-collapsed');
+        });
+    } else {
+        panel.classList.add('is-collapsed');
+        window.setTimeout(function () {
+            if (panel.classList.contains('is-collapsed')) {
+                panel.hidden = true;
+            }
+        }, 270);
+    }
+    if (button) {
+        button.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+        button.classList.toggle('btn-primary', shouldOpen);
+        button.classList.toggle('btn-outline-secondary', !shouldOpen);
+        button.classList.toggle('active', shouldOpen);
+        button.classList.toggle('local-course-banner-builder-source-preview-button--active', shouldOpen);
+    }
+}
+
+function localCourseBannerBuilderSetOpacityPanelValue(panel, value) {
+    if (!panel) {
+        return;
+    }
+    value = localCourseBannerBuilderClampPercent(value, 100);
+    var range = panel.querySelector('[data-preview-opacity-range], [data-source-preview-opacity-range]');
+    var number = panel.querySelector('[data-preview-opacity-number], [data-source-preview-opacity-number]');
+    if (range) {
+        range.value = String(value);
+    }
+    if (number) {
+        number.value = String(value);
+    }
+}
+
+function localCourseBannerBuilderSyncModalImageOpacityInputFromLayer(form) {
+    if (!form) {
+        return;
+    }
+    var imageOpacityInput = form.querySelector('#id_imageopacity');
+    var currentLayer = form.querySelector('[data-preview-current-image="1"]');
+    if (!imageOpacityInput || !currentLayer) {
+        return;
+    }
+    var layerOpacity = currentLayer.getAttribute('data-preview-image-opacity');
+    if (layerOpacity === null || layerOpacity === '') {
+        return;
+    }
+    var layerValue = localCourseBannerBuilderClampPercent(layerOpacity, 100);
+    var inputValue = imageOpacityInput.value === '' ?
+        100 :
+        localCourseBannerBuilderClampPercent(imageOpacityInput.value, 100);
+    var inputLooksDefault = imageOpacityInput.value === '' || inputValue === 100;
+    if (inputLooksDefault && layerValue !== inputValue) {
+        imageOpacityInput.value = String(layerValue);
+        localCourseBannerBuilderSetOpacityPanelValue(
+            form.querySelector('[data-preview-opacity-panel="modal"]'),
+            layerValue
+        );
+    }
+}
+
+function localCourseBannerBuilderApplyModalImageOpacity(form, value) {
+    if (!form) {
+        return;
+    }
+    value = localCourseBannerBuilderClampPercent(value, 100);
+    var imageOpacityInput = form.querySelector('#id_imageopacity');
+    if (imageOpacityInput) {
+        imageOpacityInput.value = String(value);
+    }
+    localCourseBannerBuilderSetOpacityPanelValue(
+        form.querySelector('[data-preview-opacity-panel="modal"]'),
+        value
+    );
+
+    var opacityStyle = (value / 100).toFixed(3);
+    var currentLayer = form.querySelector('[data-preview-current-image="1"]');
+    if (currentLayer) {
+        currentLayer.setAttribute('data-preview-image-opacity', String(value));
+        currentLayer.style.opacity = '';
+        var currentImage = currentLayer.querySelector('[data-preview-image-tag="1"]');
+        if (currentImage) {
+            currentImage.style.opacity = opacityStyle;
+        }
+    }
+
+    if (form.dataset.activeDraftIndex) {
+        var activeIndex = String(form.dataset.activeDraftIndex);
+        var settings = localCourseBannerBuilderGetDraftPreviewSettings(form);
+        settings[activeIndex] = settings[activeIndex] || {};
+        settings[activeIndex].imageopacity = value;
+        localCourseBannerBuilderSetDraftPreviewSettings(form, settings);
+    }
+    localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+}
+
+function localCourseBannerBuilderEscapeSelectorId(id) {
+    if (window.CSS && CSS.escape) {
+        return CSS.escape(id);
+    }
+    return String(id || '').replace(/([ #;?%&,.+*~':"!^$[\]()=>|/@])/g, '\$1');
+}
+
+function localCourseBannerBuilderBuildModalPreviewSnapshot(form) {
+    if (!form) {
+        return '';
+    }
+    var fields = [];
+    fields.push({
+        id: '__activeDraftIndex',
+        type: 'meta',
+        value: String(form.dataset.activeDraftIndex || ''),
+        checked: false
+    });
+    Array.prototype.slice.call(form.querySelectorAll('input, select, textarea')).forEach(function (field) {
+        if (!field.id || field.type === 'file' || field.type === 'submit' || field.type === 'button') {
+            return;
+        }
+        if (field.name === 'sesskey' || field.id.indexOf('filemanager') !== -1 || field.name === 'bannerimage') {
+            return;
+        }
+        fields.push({
+            id: field.id,
+            type: field.type || field.tagName.toLowerCase(),
+            value: field.value,
+            checked: !!field.checked
+        });
+    });
+    return JSON.stringify(fields);
+}
+
+function localCourseBannerBuilderEnsureModalPreviewHistory(form) {
+    if (!form) {
+        return;
+    }
+    var undoStack = localCourseBannerBuilderReadJson(form.dataset.modalPreviewUndoStack || '[]', []);
+    if (!undoStack.length) {
+        undoStack.push(localCourseBannerBuilderBuildModalPreviewSnapshot(form));
+        form.dataset.modalPreviewUndoStack = JSON.stringify(undoStack);
+        form.dataset.modalPreviewRedoStack = '[]';
+    }
+    localCourseBannerBuilderUpdateModalPreviewHistoryButtons(form);
+}
+
+function localCourseBannerBuilderScheduleOverlayPreviewSync(form, options) {
+    if (!form) {
+        return;
+    }
+    var state = form._localCourseBannerBuilderOverlaySyncState || {
+        syncUnified: false,
+        markCustom: false,
+        syncPreview: false,
+        syncContext: false
+    };
+    options = options || {};
+    state.syncUnified = state.syncUnified || !!options.syncUnified;
+    state.markCustom = state.markCustom || !!options.markCustom;
+    state.syncPreview = state.syncPreview || !!options.syncPreview;
+    state.syncContext = state.syncContext || !!options.syncContext;
+    form._localCourseBannerBuilderOverlaySyncState = state;
+    if (form._localCourseBannerBuilderOverlaySyncFrame) {
+        return;
+    }
+    form._localCourseBannerBuilderOverlaySyncFrame = window.requestAnimationFrame(function () {
+        var nextState = form._localCourseBannerBuilderOverlaySyncState || {};
+        form._localCourseBannerBuilderOverlaySyncFrame = null;
+        form._localCourseBannerBuilderOverlaySyncState = null;
+        if (nextState.syncUnified) {
+            localCourseBannerBuilderSyncUnifiedOverlayAppearance(form);
+        }
+        if (nextState.markCustom) {
+            localCourseBannerBuilderMarkOverlayCustom(form);
+        }
+        if (nextState.syncPreview) {
+            localCourseBannerBuilderSyncModalOverlayPreview(form);
+        }
+        if (nextState.syncContext) {
+            localCourseBannerBuilderSyncContextPreviewVisibility(form);
+        }
+    });
+}
+
+function localCourseBannerBuilderPushModalPreviewHistory(form) {
+    if (!form) {
+        return;
+    }
+    localCourseBannerBuilderEnsureModalPreviewHistory(form);
+    var undoStack = localCourseBannerBuilderReadJson(form.dataset.modalPreviewUndoStack || '[]', []);
+    var snapshot = localCourseBannerBuilderBuildModalPreviewSnapshot(form);
+    if (undoStack[undoStack.length - 1] !== snapshot) {
+        undoStack.push(snapshot);
+        if (undoStack.length > 40) {
+            undoStack.shift();
+        }
+        form.dataset.modalPreviewUndoStack = JSON.stringify(undoStack);
+    }
+    form.dataset.modalPreviewRedoStack = '[]';
+    localCourseBannerBuilderUpdateModalPreviewHistoryButtons(form);
+}
+
+function localCourseBannerBuilderPushModalPreviewHistoryFromControl(control) {
+    var form = localCourseBannerBuilderGetLayerScope(control);
+    if (form) {
+        localCourseBannerBuilderPushModalPreviewHistory(form);
+    }
+}
+
+function localCourseBannerBuilderIsOverlayLayerForm(form) {
+    if (!form) {
+        return false;
+    }
+    var currentIsOverlayLayerInput = form.querySelector('#id_currentisoverlaylayer');
+    if (currentIsOverlayLayerInput && parseInt(currentIsOverlayLayerInput.value || '0', 10) > 0) {
+        return true;
+    }
+    return localCourseBannerBuilderGetSelectedLayerType(form) === 'overlay';
+}
+
+function localCourseBannerBuilderSyncOverlayAppearanceControlValues(form) {
+    if (!form) {
+        return;
+    }
+    var colorInput = form.querySelector('#id_overlaybannercolor');
+    var colorPicker = form.querySelector('[data-overlay-color-picker="overlaybanner"]');
+    if (colorInput && colorPicker) {
+        colorPicker.value = localCourseBannerBuilderNormaliseHexColor(colorInput.value, colorPicker.value || '#000000');
+        localCourseBannerBuilderSyncColourInput(colorPicker);
+    }
+    var opacityInput = form.querySelector('#id_overlaybanneropacity');
+    var sliderWrap = form.querySelector('[data-overlay-opacity-control="1"]');
+    var slider = sliderWrap ? sliderWrap.querySelector('input[type="range"]') : null;
+    var output = sliderWrap ? sliderWrap.querySelector('output') : null;
+    if (opacityInput && slider) {
+        var number = localCourseBannerBuilderNormaliseNumericValue(opacityInput.value, 25);
+        var min = localCourseBannerBuilderNormaliseNumericValue(slider.min, 0);
+        var max = localCourseBannerBuilderNormaliseNumericValue(slider.max, 100);
+        number = Math.max(min, Math.min(max, number));
+        opacityInput.value = String(number);
+        slider.value = String(number);
+        if (output) {
+            output.textContent = String(number) + '%';
+        }
+    }
+    Array.prototype.slice.call(form.querySelectorAll('[data-overlay-toggle-button-for]')).forEach(function (button) {
+        localCourseBannerBuilderSyncOverlayToggleButton(button);
+    });
+}
+
+function localCourseBannerBuilderApplyModalPreviewSnapshotSilently(form, fields) {
+    fields.forEach(function (state) {
+        if (state.id === '__activeDraftIndex') {
+            return;
+        }
+        var field = state.id ? form.querySelector('#' + localCourseBannerBuilderEscapeSelectorId(state.id)) : null;
+        if (!field) {
+            return;
+        }
+        if (field.type === 'checkbox' || field.type === 'radio') {
+            field.checked = !!state.checked;
+            if (field.checked) {
+                field.setAttribute('checked', 'checked');
+            } else {
+                field.removeAttribute('checked');
+            }
+        } else {
+            field.value = state.value;
+        }
+    });
+}
+
+function localCourseBannerBuilderApplyModalPreviewSnapshot(form, snapshot) {
+    if (!form || !snapshot) {
+        return;
+    }
+    var fields = localCourseBannerBuilderReadJson(snapshot, []);
+    var activeDraftState = fields.find(function (state) {
+        return state && state.id === '__activeDraftIndex';
+    });
+    var currentActiveDraftIndex = String(form.dataset.activeDraftIndex || '');
+    var nextActiveDraftIndex = activeDraftState ? String(activeDraftState.value || '') : currentActiveDraftIndex;
+    form.dataset.previewApplyingInteraction = '1';
+    form.dataset.modalPreviewApplyingSnapshot = '1';
+    try {
+        localCourseBannerBuilderApplyModalPreviewSnapshotSilently(form, fields);
+        if (nextActiveDraftIndex !== currentActiveDraftIndex) {
+            form.dataset.activeDraftIndex = nextActiveDraftIndex;
+        }
+        if (localCourseBannerBuilderIsOverlayLayerForm(form)) {
+            localCourseBannerBuilderSyncUnifiedOverlayAppearance(form);
+            localCourseBannerBuilderSyncOverlayAppearanceControlValues(form);
+            localCourseBannerBuilderSyncModalOverlayPreview(form);
+            localCourseBannerBuilderSyncCurrentLayerDataFromForm(form);
+            localCourseBannerBuilderSyncLayerBannerPreview(form);
+            localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+            form.dataset.previewUserChanged = '1';
+            return;
+        }
+        form.dataset.previewUserChanged = '1';
+        localCourseBannerBuilderSyncCustomSizeFields(form);
+        localCourseBannerBuilderSyncOffsetFields(form);
+        localCourseBannerBuilderBindPercentSliders(form);
+        if (form.querySelector('[data-preview-draft-layer-host="1"]')) {
+            localCourseBannerBuilderRenderDraftUploadPreview(form);
+        } else {
+            localCourseBannerBuilderSyncCurrentLayerDataFromForm(form);
+            localCourseBannerBuilderSyncLayerBannerPreview(form);
+        }
+        localCourseBannerBuilderSaveActiveDraftPreviewState(form);
+        localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+    } finally {
+        delete form.dataset.previewApplyingInteraction;
+        delete form.dataset.modalPreviewApplyingSnapshot;
+    }
+}
+
+function localCourseBannerBuilderUpdateModalPreviewHistoryButtons(form) {
+    if (!form) {
+        return;
+    }
+    var undo = form.querySelector('[data-action="local-course-banner-builder-undo-modal-preview-change"]');
+    var redo = form.querySelector('[data-action="local-course-banner-builder-redo-modal-preview-change"]');
+    var undoStack = localCourseBannerBuilderReadJson(form.dataset.modalPreviewUndoStack || '[]', []);
+    var redoStack = localCourseBannerBuilderReadJson(form.dataset.modalPreviewRedoStack || '[]', []);
+    var currentSnapshot = localCourseBannerBuilderBuildModalPreviewSnapshot(form);
+    var canUndo = undoStack.length > 1 || (undoStack.length === 1 && undoStack[0] !== currentSnapshot);
+    if (undo) {
+        undo.disabled = !canUndo;
+        undo.classList.toggle('disabled', undo.disabled);
+        undo.setAttribute('aria-disabled', undo.disabled ? 'true' : 'false');
+    }
+    if (redo) {
+        redo.disabled = redoStack.length < 1;
+        redo.classList.toggle('disabled', redo.disabled);
+        redo.setAttribute('aria-disabled', redo.disabled ? 'true' : 'false');
+    }
+}
+
+function localCourseBannerBuilderEnsureModalOpacityControls(form) {
+    if (!form) {
+        return;
+    }
+    var host = form.querySelector('[data-modal-preview-action-list="1"]');
+    var imageOpacityInput = form.querySelector('#id_imageopacity');
+    if (!host) {
+        return;
+    }
+    if (!imageOpacityInput) {
+        imageOpacityInput = document.createElement('input');
+        imageOpacityInput.type = 'hidden';
+        imageOpacityInput.name = 'imageopacity';
+        imageOpacityInput.id = 'id_imageopacity';
+        imageOpacityInput.setAttribute('data-image-opacity-input', '1');
+        imageOpacityInput.value = '100';
+        form.appendChild(imageOpacityInput);
+    }
+    if (imageOpacityInput.value === '') {
+        imageOpacityInput.value = '100';
+    }
+    localCourseBannerBuilderSyncModalImageOpacityInputFromLayer(form);
+    if (host.querySelector('[data-action="local-course-banner-builder-toggle-modal-preview-opacity"]')) {
+        localCourseBannerBuilderSetOpacityPanelValue(
+            host.querySelector('[data-preview-opacity-panel="modal"]'),
+            imageOpacityInput.value || '100'
+        );
+        return;
+    }
+
+    var opacityPanel = localCourseBannerBuilderCreateImageOpacityPanel(
+        'modal',
+        imageOpacityInput.value || '100'
+    );
+    opacityPanel.setAttribute('data-preview-action-group', 'image');
+    host.appendChild(opacityPanel);
+
+    var opacityButton = document.createElement('button');
+    opacityButton.type = 'button';
+    opacityButton.className = 'btn btn-outline-secondary local-course-banner-builder-source-preview-button';
+    opacityButton.setAttribute('data-action', 'local-course-banner-builder-toggle-modal-preview-opacity');
+    opacityButton.setAttribute('data-preview-action-group', 'image');
+    opacityButton.setAttribute('aria-expanded', 'false');
+    localCourseBannerBuilderSetActionButtonContent(
+        opacityButton,
+        'fa-adjust',
+        localCourseBannerBuilderGetJsString('toggleimageopacity', 'Adjust image opacity')
+    );
+    opacityButton.addEventListener('click', function () {
+        var shouldOpen = opacityPanel.hidden || opacityPanel.classList.contains('is-collapsed');
+        localCourseBannerBuilderCloseOtherModalSidePanels(host, opacityPanel);
+        localCourseBannerBuilderToggleOpacityPanel(opacityPanel, opacityButton, shouldOpen);
+        localCourseBannerBuilderSetOpacityPanelValue(opacityPanel, imageOpacityInput.value || '100');
+    });
+    host.appendChild(opacityButton);
+
+    var syncModalOpacity = function (sourceInput, pushHistory) {
+        var value = localCourseBannerBuilderClampPercent(
+            sourceInput ? sourceInput.value : imageOpacityInput.value,
+            100
+        );
+        if (pushHistory) {
+            localCourseBannerBuilderPushModalPreviewHistory(form);
+        }
+        localCourseBannerBuilderApplyModalImageOpacity(form, value);
+    };
+    Array.prototype.slice.call(opacityPanel.querySelectorAll('input')).forEach(function (input) {
+        input.addEventListener('input', function () {
+            syncModalOpacity(input, false);
+        });
+        input.addEventListener('change', function () {
+            syncModalOpacity(input, true);
+        });
+    });
+}
+
+function localCourseBannerBuilderCloseOtherModalSidePanels(host, activePanel) {
+    Array.prototype.slice.call(host.querySelectorAll(
+        '[data-modal-preview-side-panel="1"], [data-preview-opacity-panel="modal"]'
+    )).forEach(function (panel) {
+        if (panel !== activePanel) {
+            var key = panel.getAttribute('data-modal-preview-side-panel-key');
+            var button = key ? host.querySelector('[data-modal-preview-side-panel-target="' + key + '"]') : null;
+            if (!button && panel.getAttribute('data-preview-opacity-panel') === 'modal') {
+                button = host.querySelector('[data-action="local-course-banner-builder-toggle-modal-preview-opacity"]');
+            }
+            localCourseBannerBuilderToggleOpacityPanel(panel, button, false);
+        }
+    });
+}
+
+function localCourseBannerBuilderEnhanceModalSidePanelLinkedRanges(panel) {
+    if (!panel) {
+        return;
+    }
+    Array.prototype.slice.call(panel.querySelectorAll('[data-percent-slider-wrapper-for]')).forEach(function (wrapper) {
+        var targetid = wrapper.getAttribute('data-percent-slider-wrapper-for');
+        var target = targetid ? panel.querySelector('#' + localCourseBannerBuilderEscapeSelectorId(targetid)) : null;
+        var slider = wrapper.querySelector('[data-percent-slider-for="' + targetid + '"]');
+        if (!target || !slider) {
+            return;
+        }
+        var targetrow = target.closest('.fitem, .form-group, .mb-3, .row');
+        if (targetrow) {
+            var label = targetrow.querySelector('label, .col-form-label');
+            var previous = wrapper.previousElementSibling;
+            var hastitle = previous && previous.matches &&
+                previous.matches('[data-modal-side-range-title="' + targetid + '"]');
+            if (label && !hastitle) {
+                var title = document.createElement('div');
+                title.className = 'local-course-banner-builder-slideshow-side-title';
+                title.setAttribute('data-modal-side-range-title', targetid);
+                title.textContent = label.textContent.trim();
+                wrapper.parentNode.insertBefore(title, wrapper);
+            }
+            targetrow.classList.add('local-course-banner-builder-modal-side-target-hidden');
+        }
+        var number = wrapper.querySelector('[data-modal-side-range-number-for="' + targetid + '"]');
+        if (!number) {
+            number = document.createElement('input');
+            number.type = 'number';
+            number.className = 'form-control form-control-sm local-course-banner-builder-slideshow-side-number';
+            number.setAttribute('data-modal-side-range-number-for', targetid);
+            wrapper.appendChild(number);
+        }
+        number.min = target.getAttribute('data-number-min') || slider.min || '';
+        number.max = target.getAttribute('data-number-max') || slider.max || '';
+        number.step = target.getAttribute('data-number-step') || slider.step || '1';
+        number.setAttribute('aria-label', target.getAttribute('aria-label') || target.name || targetid);
+        number.disabled = !!slider.disabled;
+        number.classList.toggle('local-course-banner-builder-input-disabled', !!slider.disabled);
+        var output = wrapper.querySelector('[data-percent-slider-output-for="' + targetid + '"]');
+        var suffix = slider.getAttribute('data-range-suffix') || '%';
+        var syncVisualValue = function (value, updateNumber) {
+            var fallback = localCourseBannerBuilderNormaliseNumericValue(slider.min || number.min || '0', 0);
+            var numeric = localCourseBannerBuilderNormaliseNumericValue(value, fallback);
+            if (slider.min !== '') {
+                numeric = Math.max(localCourseBannerBuilderNormaliseNumericValue(slider.min, numeric), numeric);
+            }
+            if (slider.max !== '') {
+                numeric = Math.min(localCourseBannerBuilderNormaliseNumericValue(slider.max, numeric), numeric);
+            }
+            slider.value = String(numeric);
+            if (output) {
+                output.textContent = String(numeric) + suffix;
+            }
+            if (updateNumber && document.activeElement !== number) {
+                number.value = target.value || String(numeric);
+            }
+        };
+        var applyNumberValue = function (commit) {
+            if (number.disabled) {
+                return;
+            }
+            var value = number.value;
+            if (commit && value !== '') {
+                var numeric = localCourseBannerBuilderNormaliseNumericValue(
+                    value,
+                    localCourseBannerBuilderNormaliseNumericValue(target.value, 0)
+                );
+                if (number.min !== '') {
+                    numeric = Math.max(localCourseBannerBuilderNormaliseNumericValue(number.min, numeric), numeric);
+                }
+                if (number.max !== '') {
+                    numeric = Math.min(localCourseBannerBuilderNormaliseNumericValue(number.max, numeric), numeric);
+                }
+                value = String(numeric);
+                number.value = value;
+            }
+            target.value = value;
+            if (value !== '') {
+                syncVisualValue(value, false);
+            }
+            target.dispatchEvent(new Event(commit ? 'change' : 'input', {bubbles: true}));
+        };
+        if (number.dataset.modalSideRangeNumberBound !== '1') {
+            number.dataset.modalSideRangeNumberBound = '1';
+            number.addEventListener('input', function () {
+                applyNumberValue(false);
+            });
+            number.addEventListener('change', function () {
+                applyNumberValue(true);
+            });
+        }
+        var syncNumber = function () {
+            var number = wrapper.querySelector('[data-modal-side-range-number-for="' + targetid + '"]');
+            if (number) {
+                number.disabled = !!slider.disabled;
+                number.classList.toggle('local-course-banner-builder-input-disabled', !!slider.disabled);
+                if (document.activeElement !== number) {
+                    number.value = target.value || slider.value || '';
+                }
+                if (document.activeElement !== slider && wrapper.dataset.modalSideRangeDragging !== '1') {
+                    syncVisualValue(target.value || slider.value || '', false);
+                } else if (output) {
+                    output.textContent = String(slider.value || target.value || '') + suffix;
+                }
+            }
+        };
+        if (wrapper.dataset.modalSideRangeEventsBound !== '1') {
+            wrapper.dataset.modalSideRangeEventsBound = '1';
+            slider.addEventListener('pointerdown', function () {
+                wrapper.dataset.modalSideRangeDragging = '1';
+            });
+            slider.addEventListener('pointerup', function () {
+                delete wrapper.dataset.modalSideRangeDragging;
+            });
+            slider.addEventListener('pointercancel', function () {
+                delete wrapper.dataset.modalSideRangeDragging;
+            });
+            slider.addEventListener('blur', function () {
+                delete wrapper.dataset.modalSideRangeDragging;
+            });
+            target.addEventListener('input', syncNumber);
+            target.addEventListener('change', syncNumber);
+        }
+        syncNumber();
+    });
+}
+
+function localCourseBannerBuilderEnsureModalImageControls(form) {
+    if (!form) {
+        return;
+    }
+    var host = form.querySelector('[data-modal-preview-action-list="1"]');
+    var imageAccordion = form.querySelector('[data-image-options-section="1"]');
+    if (!host || !imageAccordion) {
+        return;
+    }
+    var existingButton = host.querySelector('[data-modal-preview-side-panel-target="imageoptions"]');
+    imageAccordion.classList.add('local-course-banner-builder-modal-side-panel');
+    imageAccordion.classList.add('local-course-banner-builder-image-options-side-panel');
+    imageAccordion.setAttribute('data-modal-preview-side-panel', '1');
+    imageAccordion.setAttribute('data-modal-preview-side-panel-key', 'imageoptions');
+    imageAccordion.setAttribute('data-preview-action-group', 'image');
+    if (!existingButton) {
+        imageAccordion.hidden = true;
+        imageAccordion.classList.add('is-collapsed');
+    }
+    if (existingButton) {
+        if (imageAccordion.parentNode !== host) {
+            host.insertBefore(imageAccordion, existingButton);
+        }
+        var borderToggle = form.querySelector('[data-border-toggle="1"][type="checkbox"]');
+        existingButton.hidden = !!(borderToggle && borderToggle.checked);
+        existingButton.disabled = false;
+        existingButton.classList.remove('disabled');
+        existingButton.setAttribute('aria-disabled', 'false');
+        localCourseBannerBuilderEnhanceModalSidePanelLinkedRanges(imageAccordion);
+        return;
+    }
+
+    host.appendChild(imageAccordion);
+    localCourseBannerBuilderEnhanceModalSidePanelLinkedRanges(imageAccordion);
+
+    var imageOptionsButton = document.createElement('button');
+    imageOptionsButton.type = 'button';
+    imageOptionsButton.className = 'btn btn-outline-secondary local-course-banner-builder-source-preview-button ' +
+        'local-course-banner-builder-modal-image-options-button';
+    imageOptionsButton.setAttribute('data-modal-preview-side-panel-target', 'imageoptions');
+    imageOptionsButton.setAttribute('data-preview-action-group', 'image');
+    imageOptionsButton.setAttribute('aria-expanded', 'false');
+    imageOptionsButton.disabled = true;
+    imageOptionsButton.classList.add('disabled');
+    imageOptionsButton.setAttribute('aria-disabled', 'true');
+    localCourseBannerBuilderSetActionButtonContent(
+        imageOptionsButton,
+        'fa-sliders',
+        localCourseBannerBuilderGetJsString('imagelayeroptions', 'Image layer options')
+    );
+    imageOptionsButton.addEventListener('click', function () {
+        if (imageOptionsButton.disabled) {
+            return;
+        }
+        var shouldOpen = imageAccordion.hidden || imageAccordion.classList.contains('is-collapsed');
+        localCourseBannerBuilderCloseOtherModalSidePanels(host, imageAccordion);
+        localCourseBannerBuilderToggleOpacityPanel(imageAccordion, imageOptionsButton, shouldOpen);
+    });
+    host.appendChild(imageOptionsButton);
+}
+
+function localCourseBannerBuilderEnsureModalOverlayControls(form) {
+    if (!form) {
+        return;
+    }
+    var host = form.querySelector('[data-modal-preview-action-list="1"]');
+    var overlayAccordion = form.querySelector('[data-overlay-accordion="1"]');
+    if (!host || !overlayAccordion) {
+        return;
+    }
+    var existingButton = host.querySelector('[data-modal-preview-side-panel-target="overlaystyle"]');
+    overlayAccordion.classList.add('local-course-banner-builder-modal-side-panel');
+    overlayAccordion.classList.add('local-course-banner-builder-overlay-style-side-panel');
+    overlayAccordion.setAttribute('data-modal-preview-side-panel', '1');
+    overlayAccordion.setAttribute('data-modal-preview-side-panel-key', 'overlaystyle');
+    overlayAccordion.setAttribute('data-preview-action-group', 'overlay');
+    var summaryTitle = overlayAccordion.querySelector('.local-course-banner-builder-border-summary-title');
+    if (summaryTitle) {
+        summaryTitle.textContent = localCourseBannerBuilderGetJsString('overlaysettings', 'Overlay settings');
+    }
+    localCourseBannerBuilderEnhanceOverlaySidePanelControls(form, overlayAccordion);
+    if (!existingButton) {
+        overlayAccordion.hidden = true;
+        overlayAccordion.classList.add('is-collapsed');
+    }
+    if (existingButton) {
+        if (overlayAccordion.parentNode !== host) {
+            host.insertBefore(overlayAccordion, existingButton);
+        }
+        localCourseBannerBuilderEnhanceModalSidePanelLinkedRanges(overlayAccordion);
+        if (localCourseBannerBuilderGetSelectedLayerType(form) === 'overlay' ||
+                form.getAttribute('data-layer-modal-mode') === 'editoverlay') {
+            localCourseBannerBuilderOpenModalSidePanelOnce(form, 'overlaystyle', 'overlaySettingsAutoOpened');
+        }
+        return;
+    }
+
+    host.appendChild(overlayAccordion);
+    localCourseBannerBuilderEnhanceModalSidePanelLinkedRanges(overlayAccordion);
+
+    var overlayButton = document.createElement('button');
+    overlayButton.type = 'button';
+    overlayButton.className = 'btn btn-outline-secondary local-course-banner-builder-source-preview-button';
+    overlayButton.setAttribute('data-modal-preview-side-panel-target', 'overlaystyle');
+    overlayButton.setAttribute('data-preview-action-group', 'overlay');
+    overlayButton.setAttribute('aria-expanded', 'false');
+    localCourseBannerBuilderSetActionButtonContent(
+        overlayButton,
+        'fa-adjust',
+        localCourseBannerBuilderGetJsString('overlaysettings', 'Overlay settings')
+    );
+    overlayButton.addEventListener('click', function () {
+        var shouldOpen = overlayAccordion.hidden || overlayAccordion.classList.contains('is-collapsed');
+        localCourseBannerBuilderCloseOtherModalSidePanels(host, overlayAccordion);
+        localCourseBannerBuilderToggleOpacityPanel(overlayAccordion, overlayButton, shouldOpen);
+    });
+    host.appendChild(overlayButton);
+    if (localCourseBannerBuilderGetSelectedLayerType(form) === 'overlay' ||
+            form.getAttribute('data-layer-modal-mode') === 'editoverlay') {
+        localCourseBannerBuilderOpenModalSidePanelOnce(form, 'overlaystyle', 'overlaySettingsAutoOpened');
+    }
+}
+
+function localCourseBannerBuilderGetOverlayControlRow(input) {
+    return input ? input.closest('.fitem, .form-group, .mb-3, .row') : null;
+}
+
+function localCourseBannerBuilderSetOverlayStyleMode(form, mode) {
+    var group = form ? form.querySelector('[data-overlay-style-mode-choice="1"]') : null;
+    if (!group) {
+        return;
+    }
+    localCourseBannerBuilderSetSegmentedChoice(
+        Array.prototype.slice.call(group.querySelectorAll('[data-overlay-style-mode-option]')),
+        mode,
+        'data-overlay-style-mode-option'
+    );
+}
+
+function localCourseBannerBuilderMarkOverlayCustom(form) {
+    localCourseBannerBuilderSetOverlayStyleMode(form, 'custom');
+}
+
+function localCourseBannerBuilderSyncUnifiedOverlayAppearance(form) {
+    if (!form) {
+        return;
+    }
+    var bannerColor = form.querySelector('#id_overlaybannercolor');
+    var bannerOpacity = form.querySelector('#id_overlaybanneropacity');
+    var slideshowColor = form.querySelector('#id_overlayslideshowcolor');
+    var slideshowOpacity = form.querySelector('#id_overlayslideshowopacity');
+    if (bannerColor && slideshowColor) {
+        slideshowColor.value = bannerColor.value || '#000000';
+    }
+    if (bannerOpacity && slideshowOpacity) {
+        slideshowOpacity.value = bannerOpacity.value || '25';
+    }
+}
+
+function localCourseBannerBuilderInitialiseUnifiedOverlayAppearance(form) {
+    if (!form || form.dataset.overlayUnifiedAppearanceInitialised === '1') {
+        localCourseBannerBuilderSyncUnifiedOverlayAppearance(form);
+        return;
+    }
+    form.dataset.overlayUnifiedAppearanceInitialised = '1';
+    var target = form.querySelector('#id_overlaytarget');
+    var bannerColor = form.querySelector('#id_overlaybannercolor');
+    var bannerPicker = form.querySelector('[data-overlay-color-picker="overlaybanner"]');
+    var bannerOpacity = form.querySelector('#id_overlaybanneropacity');
+    var slideshowColor = form.querySelector('#id_overlayslideshowcolor');
+    var slideshowOpacity = form.querySelector('#id_overlayslideshowopacity');
+    if (target && target.value === 'slideshow') {
+        if (bannerColor && slideshowColor && slideshowColor.value) {
+            bannerColor.value = slideshowColor.value;
+        }
+        if (bannerPicker && bannerColor && bannerColor.value) {
+            bannerPicker.value = localCourseBannerBuilderNormaliseHexColor(bannerColor.value, bannerPicker.value || '#000000');
+            localCourseBannerBuilderSyncColourInput(bannerPicker);
+        }
+        if (bannerOpacity && slideshowOpacity && slideshowOpacity.value !== '') {
+            bannerOpacity.value = slideshowOpacity.value;
+        }
+    }
+    localCourseBannerBuilderSyncUnifiedOverlayAppearance(form);
+}
+
+function localCourseBannerBuilderInsertAfter(reference, node) {
+    if (!reference || !reference.parentNode || !node) {
+        return;
+    }
+    reference.parentNode.insertBefore(node, reference.nextSibling);
+}
+
+function localCourseBannerBuilderHideElementRow(element) {
+    var row = element ? element.closest('.fitem, .form-group, .mb-3, .row') : null;
+    if (row) {
+        row.hidden = true;
+        row.setAttribute('aria-hidden', 'true');
+    }
+}
+
+function localCourseBannerBuilderHideOverlayLegacyLabels(overlayAccordion) {
+    if (!overlayAccordion) {
+        return;
+    }
+    [
+        'label[for="id_overlaytarget"]',
+        'label[for="id_overlaybannercolor"]',
+        'label[for="id_overlaybanneropacity"]',
+        '[id^="fitem_id_overlayappearanceheading"]',
+        '[data-overlay-legacy-label="1"]'
+    ].forEach(function (selector) {
+        Array.prototype.slice.call(overlayAccordion.querySelectorAll(selector)).forEach(function (element) {
+            element.hidden = true;
+            element.setAttribute('aria-hidden', 'true');
+        });
+    });
+    Array.prototype.slice.call(overlayAccordion.querySelectorAll('.local-course-banner-builder-slideshow-side-title')).forEach(function (title) {
+        if (title.classList.contains('local-course-banner-builder-overlay-setting-title')) {
+            return;
+        }
+        var text = (title.textContent || '').trim().toLowerCase();
+        if (['overlay target', 'overlay appearance', 'overlay colour', 'overlay opacity'].indexOf(text) !== -1) {
+            title.hidden = true;
+            title.setAttribute('aria-hidden', 'true');
+            title.setAttribute('data-overlay-legacy-label', '1');
+        }
+    });
+}
+
+function localCourseBannerBuilderCreateOverlaySideTitle(text, markerName) {
+    var title = document.createElement('div');
+    title.className = 'local-course-banner-builder-slideshow-side-title local-course-banner-builder-overlay-setting-title';
+    title.textContent = text;
+    if (markerName) {
+        title.setAttribute('data-overlay-setting-title', markerName);
+    }
+    return title;
+}
+
+function localCourseBannerBuilderEnsureOverlayAppearanceControls(form, overlayAccordion, afterNode) {
+    if (!form || !overlayAccordion || overlayAccordion.querySelector('[data-overlay-appearance-controls="1"]')) {
+        return overlayAccordion.querySelector('[data-overlay-appearance-controls="1"]') || afterNode;
+    }
+    var bannerColor = form.querySelector('#id_overlaybannercolor');
+    var bannerPicker = form.querySelector('[data-overlay-color-picker="overlaybanner"]');
+    var bannerOpacity = form.querySelector('#id_overlaybanneropacity');
+    if (!bannerColor || !bannerOpacity) {
+        return afterNode;
+    }
+
+    [
+        '[id^="fitem_id_overlayappearanceheading"]',
+        '[id^="fgroup_id_overlaybannercolorgroup"]',
+        '[id^="fitem_id_overlaybanneropacity"]',
+        '[id^="fitem_id_overlaybanneropacity_slider"]',
+        '[data-modal-side-range-title="id_overlaybanneropacity"]'
+    ].forEach(function (selector) {
+        Array.prototype.slice.call(form.querySelectorAll(selector)).forEach(function (row) {
+            row.hidden = true;
+            row.setAttribute('aria-hidden', 'true');
+        });
+    });
+    localCourseBannerBuilderHideElementRow(bannerColor);
+    localCourseBannerBuilderHideElementRow(bannerPicker);
+    localCourseBannerBuilderHideElementRow(bannerOpacity);
+    Array.prototype.slice.call(form.querySelectorAll('[data-percent-slider-wrapper-for="id_overlaybanneropacity"]')).forEach(function (wrapper) {
+        localCourseBannerBuilderHideElementRow(wrapper);
+    });
+
+    var container = document.createElement('div');
+    container.className = 'local-course-banner-builder-overlay-appearance-controls';
+    container.setAttribute('data-overlay-appearance-controls', '1');
+
+    var colorBlock = document.createElement('div');
+    colorBlock.className = 'mb-3 local-course-banner-builder-overlay-color-block';
+    colorBlock.appendChild(localCourseBannerBuilderCreateOverlaySideTitle(
+        localCourseBannerBuilderGetJsString('overlaycolor', 'Overlay colour'),
+        'colour'
+    ));
+    var colorWrap = document.createElement('div');
+    colorWrap.className = 'local-course-banner-builder-title-color-field';
+    if (!bannerPicker) {
+        bannerPicker = document.createElement('input');
+        bannerPicker.type = 'color';
+        bannerPicker.name = 'overlaybannercolor_picker';
+        bannerPicker.value = localCourseBannerBuilderNormaliseHexColor(bannerColor.value, '#000000');
+        bannerPicker.setAttribute('data-overlay-color-picker', 'overlaybanner');
+        bannerPicker.setAttribute('aria-label', localCourseBannerBuilderGetJsString('overlaycolor', 'Overlay colour'));
+        bannerPicker.addEventListener('input', function () {
+            bannerColor.value = bannerPicker.value.toUpperCase();
+            localCourseBannerBuilderSyncColourInput(bannerPicker);
+        });
+        bannerPicker.addEventListener('change', function () {
+            bannerColor.value = bannerPicker.value.toUpperCase();
+            localCourseBannerBuilderSyncColourInput(bannerPicker);
+        });
+    }
+    if (bannerPicker) {
+        bannerPicker.className = 'form-control form-control-color local-course-banner-builder-color-input';
+        bannerPicker.hidden = false;
+        bannerPicker.removeAttribute('aria-hidden');
+        bannerPicker.value = localCourseBannerBuilderNormaliseHexColor(bannerColor.value, bannerPicker.value || '#000000');
+        localCourseBannerBuilderSyncColourInput(bannerPicker);
+        colorWrap.appendChild(bannerPicker);
+    }
+    bannerColor.className = 'form-control';
+    bannerColor.setAttribute('pattern', '^#[0-9A-Fa-f]{6}$');
+    colorWrap.appendChild(bannerColor);
+    colorBlock.appendChild(colorWrap);
+    container.appendChild(colorBlock);
+
+    container.appendChild(localCourseBannerBuilderCreateOverlaySideTitle(
+        localCourseBannerBuilderGetJsString('overlayopacity', 'Overlay opacity'),
+        'opacity'
+    ));
+    var sliderWrap = document.createElement('div');
+    sliderWrap.className = 'local-course-banner-builder-slideshow-side-slider';
+    sliderWrap.setAttribute('data-overlay-opacity-control', '1');
+    var slider = document.createElement('input');
+    slider.type = 'range';
+    slider.className = 'custom-range local-course-banner-builder-range';
+    slider.min = bannerOpacity.getAttribute('data-number-min') || '0';
+    slider.max = bannerOpacity.getAttribute('data-number-max') || '100';
+    slider.step = bannerOpacity.getAttribute('data-number-step') || '1';
+    slider.value = bannerOpacity.value || '25';
+    slider.setAttribute('aria-label', localCourseBannerBuilderGetJsString('overlayopacity', 'Overlay opacity'));
+    var output = document.createElement('output');
+    output.className = 'text-muted local-course-banner-builder-slideshow-opacity-output';
+    bannerOpacity.classList.add('form-control-sm', 'local-course-banner-builder-slideshow-side-number');
+    bannerOpacity.type = 'number';
+    bannerOpacity.min = slider.min;
+    bannerOpacity.max = slider.max;
+    bannerOpacity.step = slider.step;
+    var syncFromValue = function (value) {
+        var number = localCourseBannerBuilderNormaliseNumericValue(value, 25);
+        var min = localCourseBannerBuilderNormaliseNumericValue(slider.min, 0);
+        var max = localCourseBannerBuilderNormaliseNumericValue(slider.max, 100);
+        number = Math.max(min, Math.min(max, number));
+        slider.value = String(number);
+        bannerOpacity.value = String(number);
+        output.textContent = String(number) + '%';
+        localCourseBannerBuilderScheduleOverlayPreviewSync(form, {
+            syncUnified: true,
+            markCustom: true,
+            syncPreview: true
+        });
+    };
+    slider.addEventListener('input', function () {
+        syncFromValue(slider.value);
+    });
+    bannerOpacity.addEventListener('input', function () {
+        syncFromValue(bannerOpacity.value);
+    });
+    bannerOpacity.addEventListener('change', function () {
+        syncFromValue(bannerOpacity.value);
+    });
+    sliderWrap.appendChild(slider);
+    sliderWrap.appendChild(output);
+    sliderWrap.appendChild(bannerOpacity);
+    container.appendChild(sliderWrap);
+    syncFromValue(bannerOpacity.value || slider.value);
+
+    if (afterNode && afterNode.parentNode === overlayAccordion) {
+        localCourseBannerBuilderInsertAfter(afterNode, container);
+    } else {
+        overlayAccordion.appendChild(container);
+    }
+    localCourseBannerBuilderHideOverlayLegacyLabels(overlayAccordion);
+    return container;
+}
+
+function localCourseBannerBuilderCreateOverlayToggleButton(form, input, labelText) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'btn btn-sm local-course-banner-builder-slideshow-enable-button local-course-banner-builder-overlay-toggle-button';
+
+    var sync = function (fromVisual) {
+        if (input.disabled) {
+            button.disabled = true;
+            button.classList.add('disabled');
+            return;
+        }
+        if (fromVisual) {
+            input.checked = !input.checked;
+            if (input.checked) {
+                input.setAttribute('checked', 'checked');
+            } else {
+                input.removeAttribute('checked');
+            }
+            input.dispatchEvent(new Event('input', {bubbles: true}));
+            input.dispatchEvent(new Event('change', {bubbles: true}));
+        }
+        var checked = !!input.checked;
+        button.disabled = false;
+        button.classList.remove('disabled');
+        button.classList.toggle('btn-primary', checked);
+        button.classList.toggle('btn-outline-secondary', !checked);
+        button.classList.toggle('active', checked);
+        localCourseBannerBuilderSetActionButtonContent(button, checked ? 'fa-toggle-on' : 'fa-toggle-off', labelText);
+        button.setAttribute('aria-pressed', checked ? 'true' : 'false');
+        localCourseBannerBuilderMarkOverlayCustom(form);
+        localCourseBannerBuilderSyncModalOverlayPreview(form);
+    };
+    button.addEventListener('click', function (event) {
+        localCourseBannerBuilderToggleOverlayOrderingButton(button, event);
+    });
+    input.addEventListener('change', function () {
+        sync(false);
+    });
+    sync(false);
+    return button;
+}
+
+function localCourseBannerBuilderSyncOverlayToggleButton(button) {
+    if (!button) {
+        return;
+    }
+    var form = button.closest('form.mform');
+    var selector = button.getAttribute('data-overlay-toggle-button-for');
+    var input = form && selector ? form.querySelector(selector) : null;
+    if (!input) {
+        return;
+    }
+    var checked = !!input.checked;
+    button.disabled = !!input.disabled;
+    button.classList.toggle('disabled', !!input.disabled);
+    button.classList.toggle('btn-primary', checked);
+    button.classList.toggle('btn-outline-secondary', !checked);
+    button.classList.toggle('active', checked);
+    button.setAttribute('aria-pressed', checked ? 'true' : 'false');
+    localCourseBannerBuilderSetActionButtonContent(
+        button,
+        checked ? 'fa-toggle-on' : 'fa-toggle-off',
+        button.getAttribute('data-overlay-toggle-label') || (button.textContent || '').trim() || input.name
+    );
+}
+
+function localCourseBannerBuilderToggleOverlayOrderingButton(button, event) {
+    if (!button || button.disabled) {
+        return;
+    }
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        if (event.stopImmediatePropagation) {
+            event.stopImmediatePropagation();
+        }
+    }
+    var now = Date.now();
+    var lastToggle = parseInt(button.dataset.overlayToggleHandledAt || '0', 10) || 0;
+    if (lastToggle && now - lastToggle < 180) {
+        return;
+    }
+    button.dataset.overlayToggleHandledAt = String(now);
+    var form = button.closest('form.mform');
+    var selector = button.getAttribute('data-overlay-toggle-button-for');
+    var input = form && selector ? form.querySelector(selector) : null;
+    if (!input && selector && selector.charAt(0) === '#') {
+        input = document.getElementById(selector.slice(1));
+    }
+    if (!input || input.disabled) {
+        return;
+    }
+    input.checked = !input.checked;
+    if (input.checked) {
+        input.setAttribute('checked', 'checked');
+    } else {
+        input.removeAttribute('checked');
+    }
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    input.dispatchEvent(new Event('change', {bubbles: true}));
+    localCourseBannerBuilderSyncOverlayToggleButton(button);
+    localCourseBannerBuilderMarkOverlayCustom(form);
+    localCourseBannerBuilderSyncModalOverlayPreview(form);
+}
+
+document.addEventListener('pointerdown', function (event) {
+    var button = event.target.closest('[data-overlay-toggle-button-for]');
+    if (!button || button.disabled || event.defaultPrevented) {
+        return;
+    }
+    localCourseBannerBuilderToggleOverlayOrderingButton(button, event);
+}, true);
+
+document.addEventListener('click', function (event) {
+    var button = event.target.closest('[data-overlay-toggle-button-for]');
+    if (!button) {
+        return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.stopImmediatePropagation) {
+        event.stopImmediatePropagation();
+    }
+}, true);
+
+document.addEventListener('keydown', function (event) {
+    var button = event.target.closest('[data-overlay-toggle-button-for]');
+    if (!button || (event.key !== 'Enter' && event.key !== ' ')) {
+        return;
+    }
+    localCourseBannerBuilderToggleOverlayOrderingButton(button, event);
+}, true);
+
+function localCourseBannerBuilderApplyOverlayInheritance(form) {
+    var accordion = form ? form.querySelector('[data-overlay-accordion="1"]') : null;
+    if (!accordion) {
+        return;
+    }
+    var color = accordion.getAttribute('data-overlay-inherit-color') || '#000000';
+    var opacity = accordion.getAttribute('data-overlay-inherit-opacity') || '38';
+    var colorInput = form.querySelector('#id_overlaybannercolor');
+    var colorPicker = form.querySelector('[data-overlay-color-picker="overlaybanner"]');
+    var opacityInput = form.querySelector('#id_overlaybanneropacity');
+    if (colorInput) {
+        colorInput.value = color;
+        colorInput.dispatchEvent(new Event('input', {bubbles: true}));
+        colorInput.dispatchEvent(new Event('change', {bubbles: true}));
+    }
+    if (colorPicker) {
+        colorPicker.value = localCourseBannerBuilderNormaliseHexColor(color, colorPicker.value || '#000000');
+        colorPicker.dispatchEvent(new Event('input', {bubbles: true}));
+    }
+    if (opacityInput) {
+        opacityInput.value = opacity;
+        opacityInput.dispatchEvent(new Event('input', {bubbles: true}));
+        opacityInput.dispatchEvent(new Event('change', {bubbles: true}));
+    }
+    localCourseBannerBuilderSyncUnifiedOverlayAppearance(form);
+    localCourseBannerBuilderSetOverlayStyleMode(form, 'inherit');
+    localCourseBannerBuilderSyncModalOverlayPreview(form);
+}
+
+function localCourseBannerBuilderEnhanceOverlaySidePanelControls(form, overlayAccordion) {
+    if (!form || !overlayAccordion) {
+        return;
+    }
+    overlayAccordion.dataset.overlayControlsEnhanced = '1';
+    overlayAccordion.setAttribute('data-overlay-site-only', localCourseBannerBuilderIsSiteBannerLayerForm(form, overlayAccordion) ? '1' : '0');
+    localCourseBannerBuilderHideOverlayLegacyLabels(overlayAccordion);
+    var overlayEnabled = localCourseBannerBuilderGetOverlayToggle(form);
+    var overlayEnabledRow = localCourseBannerBuilderGetOverlayControlRow(overlayEnabled);
+    if (overlayEnabledRow) {
+        overlayEnabledRow.hidden = true;
+        overlayEnabledRow.setAttribute('aria-hidden', 'true');
+    }
+
+    var modeWrap = overlayAccordion.querySelector('[data-overlay-style-mode-wrap="1"]');
+    var firstBodyNode = Array.prototype.slice.call(overlayAccordion.children).find(function (child) {
+        return child.tagName && child.tagName.toLowerCase() !== 'summary';
+    });
+    if (!modeWrap) {
+        modeWrap = document.createElement('div');
+        modeWrap.className = 'local-course-banner-builder-overlay-mode-wrap mb-2';
+        modeWrap.setAttribute('data-overlay-style-mode-wrap', '1');
+        var modeTitle = document.createElement('div');
+        modeTitle.className = 'local-course-banner-builder-slideshow-side-title';
+        modeTitle.textContent = localCourseBannerBuilderGetJsString('overlaystylemode', 'Overlay style');
+        var modeChoice = localCourseBannerBuilderCreateSegmentedChoice(
+            [
+                {value: 'inherit', label: localCourseBannerBuilderGetJsString('overlaystylemode:inherit', 'Inherit slideshow overlay')},
+                {value: 'custom', label: localCourseBannerBuilderGetJsString('overlaystylemode:custom', 'Custom style')}
+            ],
+            'custom',
+            'data-overlay-style-mode-option',
+            function (value) {
+                if (value === 'inherit') {
+                    localCourseBannerBuilderApplyOverlayInheritance(form);
+                } else {
+                    localCourseBannerBuilderSetOverlayStyleMode(form, 'custom');
+                }
+            }
+        );
+        modeChoice.setAttribute('data-overlay-style-mode-choice', '1');
+        modeWrap.appendChild(modeTitle);
+        modeWrap.appendChild(modeChoice);
+        overlayAccordion.insertBefore(modeWrap, firstBodyNode || null);
+    }
+
+    var target = form.querySelector('#id_overlaytarget');
+    var targetRow = localCourseBannerBuilderGetOverlayControlRow(target);
+    if (target) {
+        var isSiteOverlayTarget = localCourseBannerBuilderIsSiteBannerLayerForm(form, overlayAccordion) ||
+            target.getAttribute('data-overlay-site-target') === '1';
+        if (targetRow) {
+            targetRow.hidden = true;
+            targetRow.setAttribute('aria-hidden', 'true');
+        }
+        localCourseBannerBuilderHideElementRow(target);
+        target.hidden = true;
+        target.setAttribute('aria-hidden', 'true');
+        Array.prototype.slice.call(overlayAccordion.querySelectorAll('label[for="id_overlaytarget"]')).forEach(function (label) {
+            label.hidden = true;
+            label.setAttribute('aria-hidden', 'true');
+        });
+        if (isSiteOverlayTarget) {
+            target.value = 'banner';
+            Array.prototype.slice.call(overlayAccordion.querySelectorAll(
+                '[data-overlay-target-choice="1"], [data-overlay-target-title="1"], ' +
+                'label[for="id_overlaytarget"], [id^="fitem_id_overlaytarget"]'
+            )).forEach(function (node) {
+                node.remove();
+            });
+            var existingTargetChoice = overlayAccordion.querySelector('[data-overlay-target-choice="1"]');
+            var existingTargetTitle = overlayAccordion.querySelector('[data-overlay-target-title="1"]');
+            if (existingTargetChoice) {
+                existingTargetChoice.remove();
+            }
+            if (existingTargetTitle) {
+                existingTargetTitle.remove();
+            }
+        } else if (!overlayAccordion.querySelector('[data-overlay-target-choice="1"]')) {
+            var targetTitle = localCourseBannerBuilderCreateOverlaySideTitle(
+                localCourseBannerBuilderGetJsString('overlaytarget', 'Overlay target'),
+                'target'
+            );
+            targetTitle.setAttribute('data-overlay-target-title', '1');
+            var targetHelp = document.createElement('button');
+            targetHelp.type = 'button';
+            targetHelp.className = 'btn btn-link p-0 icon-no-margin local-course-banner-builder-table-help-icon';
+            targetHelp.textContent = '?';
+            targetHelp.setAttribute('data-local-course-banner-builder-hover-popover', '1');
+            targetHelp.setAttribute('data-placement', 'top');
+            var targetHelpText = localCourseBannerBuilderGetJsString(
+                'overlaytarget_help',
+                'Choose where this overlay is applied. Banner only affects the banner preview, slideshow only replaces ' +
+                    'the slideshow overlay, and banner and slideshow applies it to both.'
+            );
+            targetHelp.setAttribute('data-content', '<div class="no-overflow"><p>' +
+                targetHelpText + '</p></div>');
+            targetHelp.setAttribute('data-html', 'true');
+            targetHelp.setAttribute('aria-label', targetHelpText);
+            targetTitle.appendChild(targetHelp);
+            var targetChoice = localCourseBannerBuilderCreateSegmentedChoice(
+                [
+                    {value: 'banner', label: localCourseBannerBuilderGetJsString('overlaytarget:banner', 'Banner only')},
+                    {value: 'slideshow', label: localCourseBannerBuilderGetJsString('overlaytarget:slideshow', 'Slideshow only')},
+                    {value: 'both', label: localCourseBannerBuilderGetJsString('overlaytarget:both', 'Banner and slideshow')}
+                ],
+                target.value || 'both',
+                'data-overlay-target-option',
+                function (value) {
+                    target.value = value;
+                    target.dispatchEvent(new Event('change', {bubbles: true}));
+                    localCourseBannerBuilderSetSegmentedChoice(
+                        Array.prototype.slice.call(targetChoice.querySelectorAll('[data-overlay-target-option]')),
+                        value,
+                        'data-overlay-target-option'
+                    );
+                    localCourseBannerBuilderMarkOverlayCustom(form);
+                }
+            );
+            targetChoice.setAttribute('data-overlay-target-choice', '1');
+            localCourseBannerBuilderInsertAfter(modeWrap, targetTitle);
+            localCourseBannerBuilderInsertAfter(targetTitle, targetChoice);
+            localCourseBannerBuilderInitPopovers(targetTitle);
+        }
+        var currentTargetChoice = overlayAccordion.querySelector('[data-overlay-target-choice="1"]');
+        if (currentTargetChoice) {
+            localCourseBannerBuilderSetSegmentedChoice(
+                Array.prototype.slice.call(currentTargetChoice.querySelectorAll('[data-overlay-target-option]')),
+                target.value || 'both',
+                'data-overlay-target-option'
+            );
+        }
+        if (target.dataset.overlayTargetBound !== '1') {
+            target.addEventListener('change', function () {
+                var targetChoice = overlayAccordion.querySelector('[data-overlay-target-choice="1"]');
+                if (targetChoice) {
+                    localCourseBannerBuilderSetSegmentedChoice(
+                        Array.prototype.slice.call(targetChoice.querySelectorAll('[data-overlay-target-option]')),
+                        target.value || 'both',
+                        'data-overlay-target-option'
+                    );
+                }
+                localCourseBannerBuilderSyncOverlaySlideshowPreviewToggleForTarget(form);
+                localCourseBannerBuilderScheduleOverlayPreviewSync(form, {
+                    syncUnified: true,
+                    syncPreview: true,
+                    syncContext: true
+                });
+                localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+            });
+            target.dataset.overlayTargetBound = '1';
+        }
+    }
+
+    ['overlayslideshowheading', 'overlayslideshowcolorgroup', 'overlayslideshowopacity', 'overlayslideshowopacity_slider'].forEach(function (name) {
+        var row = form.querySelector('#fitem_id_' + name + ', #fgroup_id_' + name);
+        if (row) {
+            row.hidden = true;
+            row.setAttribute('aria-hidden', 'true');
+        }
+    });
+    localCourseBannerBuilderInitialiseUnifiedOverlayAppearance(form);
+    var insertAfterNode = overlayAccordion.querySelector('[data-overlay-target-choice="1"]') ||
+        overlayAccordion.querySelector('[data-overlay-style-mode-wrap="1"]') ||
+        modeWrap;
+    var appearanceControls = localCourseBannerBuilderEnsureOverlayAppearanceControls(
+        form,
+        overlayAccordion,
+        insertAfterNode
+    );
+    localCourseBannerBuilderHideOverlayLegacyLabels(overlayAccordion);
+
+    Array.prototype.slice.call(overlayAccordion.querySelectorAll('[data-overlay-color-text]')).forEach(function (input) {
+        input.classList.add('local-course-banner-builder-slideshow-hex-input');
+        if (input.dataset.overlayUnifiedBound === '1') {
+            return;
+        }
+        input.addEventListener('input', function () {
+            localCourseBannerBuilderScheduleOverlayPreviewSync(form, {
+                syncUnified: true,
+                markCustom: true,
+                syncPreview: true
+            });
+        });
+        input.dataset.overlayUnifiedBound = '1';
+    });
+    Array.prototype.slice.call(overlayAccordion.querySelectorAll('[data-overlay-color-picker]')).forEach(function (input) {
+        input.classList.add('local-course-banner-builder-slideshow-color-input');
+        if (input.dataset.overlayUnifiedBound === '1') {
+            return;
+        }
+        input.addEventListener('input', function () {
+            localCourseBannerBuilderScheduleOverlayPreviewSync(form, {
+                syncUnified: true,
+                markCustom: true,
+                syncPreview: true
+            });
+        });
+        input.dataset.overlayUnifiedBound = '1';
+    });
+    Array.prototype.slice.call(overlayAccordion.querySelectorAll('#id_overlaybanneropacity')).forEach(function (input) {
+        if (input.dataset.overlayUnifiedBound === '1') {
+            return;
+        }
+        input.addEventListener('input', function () {
+            localCourseBannerBuilderScheduleOverlayPreviewSync(form, {
+                syncUnified: true,
+                markCustom: true,
+                syncPreview: true
+            });
+        });
+        input.dataset.overlayUnifiedBound = '1';
+    });
+
+    ['overlaytitleabove', 'overlayborderabove'].forEach(function (name) {
+        var input = form.querySelector('#id_' + name + '[type="checkbox"]');
+        if (!input || overlayAccordion.querySelector('[data-overlay-toggle-button-for="#id_' + name + '"]')) {
+            return;
+        }
+        var label = input.closest('label');
+        var row = localCourseBannerBuilderGetOverlayControlRow(input);
+        var labelText = ((label && label.textContent) || (row && row.textContent) || '').trim() || name;
+        if (label) {
+            label.hidden = true;
+            label.setAttribute('aria-hidden', 'true');
+        }
+        if (row) {
+            row.hidden = true;
+            row.setAttribute('aria-hidden', 'true');
+        }
+        input.hidden = true;
+        input.setAttribute('aria-hidden', 'true');
+        var title = localCourseBannerBuilderCreateOverlaySideTitle(labelText, name);
+        title.setAttribute('data-overlay-toggle-title-for', '#id_' + name);
+        var button = localCourseBannerBuilderCreateOverlayToggleButton(form, input, labelText);
+        button.setAttribute('data-overlay-toggle-button-for', '#id_' + name);
+        button.setAttribute('data-overlay-toggle-label', labelText);
+        overlayAccordion.appendChild(title);
+        overlayAccordion.appendChild(button);
+    });
+    if (appearanceControls && appearanceControls.parentNode === overlayAccordion) {
+        ['overlaytitleabove', 'overlayborderabove'].forEach(function (name) {
+            var title = overlayAccordion.querySelector('[data-overlay-toggle-title-for="#id_' + name + '"]');
+            var button = overlayAccordion.querySelector('[data-overlay-toggle-button-for="#id_' + name + '"]');
+            if (title) {
+                overlayAccordion.appendChild(title);
+            }
+            if (button) {
+                overlayAccordion.appendChild(button);
+                localCourseBannerBuilderSyncOverlayToggleButton(button);
+            }
+        });
+    }
+}
+
+function localCourseBannerBuilderParseOverlayTitleStyle(overlayAccordion) {
+    if (!overlayAccordion) {
+        return {};
+    }
+    try {
+        return JSON.parse(overlayAccordion.getAttribute('data-overlay-title-preview-style') || '{}') || {};
+    } catch (error) {
+        return {};
+    }
+}
+
+function localCourseBannerBuilderApplyLayerOverlayTitleStyle(titlePreview, overlayAccordion) {
+    if (!titlePreview) {
+        return;
+    }
+    var style = localCourseBannerBuilderParseOverlayTitleStyle(overlayAccordion);
+    var size = parseFloat(style.fontsize || '100') || 100;
+    var lineHeight = Math.max(40, Math.min(540, parseFloat(style.lineheight || '105') || 105));
+    var x = Math.max(0, Math.min(100, parseFloat(style.x || '50') || 50));
+    var y = Math.max(0, Math.min(100, parseFloat(style.y || '50') || 50));
+    var align = ['left', 'center', 'right'].indexOf(style.align || '') !== -1 ? style.align : 'center';
+    var flexAlign = align === 'left' ? 'flex-start' : (align === 'right' ? 'flex-end' : 'center');
+    var textScale = Math.max(0.1, Math.min(4.8, size / 100));
+    var text = overlayAccordion ?
+        (overlayAccordion.getAttribute('data-overlay-title-preview-text') ||
+            localCourseBannerBuilderGetJsString('previewcoursetitle', 'Course title')) :
+        localCourseBannerBuilderGetJsString('previewcoursetitle', 'Course title');
+    var highlightFrame = (style.frametype || 'box') === 'highlight';
+    titlePreview.textContent = '';
+    var label = document.createElement('span');
+    label.setAttribute('data-layer-overlay-title-label', '1');
+    if (highlightFrame) {
+        var newline = String.fromCharCode(10);
+        String(text)
+            .split(String.fromCharCode(13) + newline).join(newline)
+            .split(String.fromCharCode(13)).join(newline)
+            .split(newline).forEach(function (line, index, lines) {
+            var lineNode = document.createElement('span');
+            lineNode.setAttribute('data-title-highlight-line', '1');
+            lineNode.appendChild(localCourseBannerBuilderBuildScaledTitleTextNode(line || 'u00a0', textScale, align));
+            lineNode.style.lineHeight = lineHeight + '%';
+            lineNode.style.justifyContent = flexAlign;
+            label.appendChild(lineNode);
+            if (index < lines.length - 1) {
+                label.appendChild(document.createElement('br'));
+            }
+        });
+    } else {
+        label.appendChild(localCourseBannerBuilderBuildScaledTitleTextNode(text, textScale, align));
+    }
+    titlePreview.appendChild(label);
+    titlePreview.style.left = x + '%';
+    titlePreview.style.top = y + '%';
+    titlePreview.style.transform = 'translate(-50%, -50%)';
+    titlePreview.style.color = /^#[0-9a-f]{6}$/i.test(style.color || '') ? style.color : '#FFFFFF';
+    titlePreview.style.fontSize = localCourseBannerBuilderGetResponsiveTitleFontCss();
+    titlePreview.style.fontFamily = style.fontfamily || 'inherit';
+    titlePreview.style.fontWeight = style.bold ? '800' : '500';
+    titlePreview.style.fontStyle = style.italic ? 'italic' : 'normal';
+    var inheritedTitleDecorations = [];
+    if (style.underline) {
+        inheritedTitleDecorations.push('underline');
+    }
+    if (style.strike) {
+        inheritedTitleDecorations.push('line-through');
+    }
+    localCourseBannerBuilderApplyTextDecorationToTitleNodes(
+        titlePreview,
+        inheritedTitleDecorations.length ? inheritedTitleDecorations.join(' ') : 'none'
+    );
+    titlePreview.style.textTransform = style.allcaps ? 'uppercase' : 'none';
+    titlePreview.style.lineHeight = lineHeight + '%';
+    titlePreview.style.setProperty(
+        '--local-course-banner-builder-inline-frame-gap',
+        localCourseBannerBuilderGetInlineFrameGapEm(lineHeight).toFixed(3) + 'em'
+    );
+    titlePreview.style.textAlign = align;
+    titlePreview.style.alignItems = flexAlign;
+    label.style.textAlign = align;
+    titlePreview.style.whiteSpace = 'pre';
+    titlePreview.classList.toggle('local-course-banner-builder-title-preview-text--highlight-frame', highlightFrame);
+
+    titlePreview.style.background = 'transparent';
+    titlePreview.style.border = '0';
+    titlePreview.style.borderRadius = '0';
+    titlePreview.style.padding = '0';
+    titlePreview.style.boxShadow = 'none';
+    label.style.lineHeight = 'inherit';
+    label.style.display = highlightFrame ? 'block' : 'contents';
+    label.style.background = '';
+    label.style.border = '';
+    label.style.borderRadius = '';
+    label.style.padding = '';
+    label.style.boxShadow = '';
+    Array.prototype.slice.call(label.querySelectorAll('[data-title-highlight-line="1"]')).forEach(function (lineNode) {
+        lineNode.style.display = highlightFrame ? 'inline' : '';
+        lineNode.style.lineHeight = highlightFrame ? (lineHeight + '%') : '';
+        lineNode.style.background = '';
+        lineNode.style.border = '';
+        lineNode.style.borderRadius = '';
+        lineNode.style.padding = '';
+        lineNode.style.boxShadow = '';
+        lineNode.style.justifyContent = flexAlign;
+    });
+
+    if (style.frameenabled) {
+        var frameTargets = highlightFrame ? Array.prototype.slice.call(label.querySelectorAll('[data-title-highlight-line="1"]')) : [titlePreview];
+        var padding = parseFloat(style.framepadding || '18') || 0;
+        var frameShadow = 'none';
+        if (style.frameshadowenabled) {
+            var frameDistance = parseFloat(style.frameshadowdistance || '6') || 0;
+            var frameAngle = (parseFloat(style.frameshadowdirection || '135') || 0) * Math.PI / 180;
+            frameShadow = (Math.cos(frameAngle) * frameDistance).toFixed(2) + 'px ' +
+                (Math.sin(frameAngle) * frameDistance).toFixed(2) + 'px ' +
+                (parseFloat(style.frameshadowblur || '14') || 0) + 'px ' +
+                localCourseBannerBuilderTitleHexToRgba(style.frameshadowcolor || '#000000', style.frameshadowopacity || '25');
+        }
+        frameTargets.forEach(function (frameTarget) {
+            frameTarget.style.background = localCourseBannerBuilderTitleHexToRgba(style.framecolor || '#000000', style.frameopacity || '35');
+            frameTarget.style.border = (parseFloat(style.frameborderwidth || '0') || 0) + 'px solid ' +
+                (/^#[0-9a-f]{6}$/i.test(style.framebordercolor || '') ? style.framebordercolor : '#FFFFFF');
+            frameTarget.style.borderRadius = (parseFloat(style.frameradius || '12') || 0) + 'px';
+            frameTarget.style.padding = localCourseBannerBuilderGetTitleFramePaddingCss(padding);
+            frameTarget.style.lineHeight = lineHeight + '%';
+            frameTarget.style.boxShadow = frameShadow;
+        });
+    }
+
+    if (style.shadowenabled) {
+        var distance = parseFloat(style.shadowdistance || '4') || 0;
+        var angle = (parseFloat(style.shadowdirection || '135') || 0) * Math.PI / 180;
+        titlePreview.style.textShadow = (Math.cos(angle) * distance).toFixed(2) + 'px ' +
+            (Math.sin(angle) * distance).toFixed(2) + 'px ' +
+            (parseFloat(style.shadowblur || '10') || 0) + 'px ' +
+            localCourseBannerBuilderTitleHexToRgba(style.shadowcolor || '#000000', style.shadowopacity || '55');
+    } else {
+        titlePreview.style.textShadow = 'none';
+    }
+}
+
+function localCourseBannerBuilderSyncModalOverlayPreview(form) {
+    if (!form) {
+        return;
+    }
+    localCourseBannerBuilderSyncOverlaySlideshowPreviewToggleForTarget(form);
+    var previewRoot = form.querySelector('[data-layer-banner-preview="1"]');
+    if (!previewRoot) {
+        return;
+    }
+    var previewFrame = previewRoot.querySelector('[data-banner-preview-frame="1"], [data-border-preview-frame="1"]') || previewRoot;
+    var overlayToggle = localCourseBannerBuilderGetOverlayToggle(form);
+    var target = form.querySelector('#id_overlaytarget');
+    var colorInput = form.querySelector('#id_overlaybannercolor');
+    var opacityInput = form.querySelector('#id_overlaybanneropacity');
+    var borderAboveInput = form.querySelector('#id_overlayborderabove');
+    var titleAboveInput = form.querySelector('#id_overlaytitleabove');
+    var overlayAccordion = form.querySelector('[data-overlay-accordion="1"]');
+    var overlayEnabled = localCourseBannerBuilderGetSelectedLayerType(form) === 'overlay' ||
+        !!(overlayToggle && (overlayToggle.type === 'checkbox' ? overlayToggle.checked : overlayToggle.value === '1'));
+    var targetValue = target ? target.value : 'both';
+    var show = overlayEnabled && targetValue !== 'slideshow';
+    var slideshowToggle = form.querySelector('[data-overlay-slideshow-preview-toggle="1"]');
+    var showSlideshowPreview = overlayEnabled && targetValue !== 'banner' &&
+        !!(slideshowToggle && slideshowToggle.checked);
+    var overlay = previewRoot.querySelector('[data-layer-overlay-preview="1"]');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'local-course-banner-builder-banner-overlay-layer';
+        overlay.setAttribute('data-layer-overlay-preview', '1');
+    }
+    if (overlay.parentNode !== previewFrame) {
+        previewFrame.insertBefore(overlay, previewFrame.firstChild);
+    }
+    overlay.hidden = !show;
+    if (show) {
+        overlay.style.backgroundColor = localCourseBannerBuilderTitleHexToRgba(
+            colorInput ? colorInput.value : '#000000',
+            opacityInput ? opacityInput.value : '25'
+        );
+        overlay.style.zIndex = borderAboveInput && borderAboveInput.checked ? '1001' : '3001';
+        overlay.setAttribute('data-preview-overlay-title-above', titleAboveInput && titleAboveInput.checked ? '1' : '0');
+        overlay.setAttribute('data-preview-overlay-border-above', borderAboveInput && borderAboveInput.checked ? '1' : '0');
+    }
+    var currentBorder = previewFrame.querySelector('[data-preview-current-border="1"]');
+    if (currentBorder) {
+        currentBorder.style.zIndex = '2001';
+    }
+    localCourseBannerBuilderEnsurePreviewContextTitle(previewRoot);
+    var titlePreview = previewFrame.querySelector('[data-preview-title-context-layer="1"]');
+    if (titlePreview) {
+        var contextToggle = localCourseBannerBuilderGetPreviewContextToggle(previewRoot, form);
+        titlePreview.hidden = targetValue === 'slideshow' || !!(contextToggle && !contextToggle.checked);
+        titlePreview.style.zIndex = String(localCourseBannerBuilderGetOverlayTitleZIndex(
+            !!(titleAboveInput && titleAboveInput.checked),
+            !!(borderAboveInput && borderAboveInput.checked)
+        ));
+    }
+    var slideshowPreview = previewFrame.querySelector('[data-layer-overlay-slideshow-preview="1"]');
+    if (slideshowPreview) {
+        slideshowPreview.hidden = !showSlideshowPreview;
+        slideshowPreview.setAttribute('aria-hidden', showSlideshowPreview ? 'false' : 'true');
+        if (showSlideshowPreview) {
+            var colorInfo = localCourseBannerBuilderParseColor(colorInput ? colorInput.value : '#000000', 1);
+            slideshowPreview.style.setProperty(
+                '--local-course-banner-builder-slideshow-overlay-rgb',
+                colorInfo.red + ', ' + colorInfo.green + ', ' + colorInfo.blue
+            );
+            slideshowPreview.style.setProperty(
+                '--local-course-banner-builder-slideshow-overlay-opacity',
+                (Math.max(0, Math.min(100, parseFloat(opacityInput && opacityInput.value ? opacityInput.value : '25'))) / 100).toFixed(3)
+            );
+        }
+    }
+}
+
+function localCourseBannerBuilderSyncOverlaySlideshowPreviewToggleForTarget(form) {
+    if (!form) {
+        return;
+    }
+    var target = form.querySelector('#id_overlaytarget');
+    var slideshowToggle = form.querySelector('[data-overlay-slideshow-preview-toggle="1"]');
+    if (!target || !slideshowToggle) {
+        return;
+    }
+    var targetValue = target.value || 'both';
+    var previousTargetValue = form.dataset.overlaySlideshowPreviewTarget || '';
+    form.dataset.overlaySlideshowPreviewTarget = targetValue;
+    if (targetValue === 'slideshow') {
+        slideshowToggle.checked = true;
+        return;
+    }
+    if (targetValue === 'banner' || previousTargetValue !== targetValue) {
+        slideshowToggle.checked = false;
+    }
+}
+
+function localCourseBannerBuilderEnsureModalBorderControls(form) {
+    if (!form) {
+        return;
+    }
+    var host = form.querySelector('[data-modal-preview-action-list="1"]');
+    var borderAccordion = form.querySelector('[data-border-accordion="1"]');
+    if (!host || !borderAccordion) {
+        return;
+    }
+    var existingButton = host.querySelector('[data-modal-preview-side-panel-target="borderstyle"]');
+    borderAccordion.classList.add('local-course-banner-builder-modal-side-panel');
+    borderAccordion.classList.add('local-course-banner-builder-border-style-side-panel');
+    borderAccordion.setAttribute('data-modal-preview-side-panel', '1');
+    borderAccordion.setAttribute('data-modal-preview-side-panel-key', 'borderstyle');
+    borderAccordion.setAttribute('data-preview-action-group', 'border');
+    if (!existingButton) {
+        borderAccordion.hidden = true;
+        borderAccordion.classList.add('is-collapsed');
+    }
+    if (existingButton) {
+        if (borderAccordion.parentNode !== host) {
+            host.insertBefore(borderAccordion, existingButton);
+        }
+        localCourseBannerBuilderEnhanceModalSidePanelLinkedRanges(borderAccordion);
+        return;
+    }
+
+    host.appendChild(borderAccordion);
+    localCourseBannerBuilderEnhanceModalSidePanelLinkedRanges(borderAccordion);
+
+    var borderStyleButton = document.createElement('button');
+    borderStyleButton.type = 'button';
+    borderStyleButton.className = 'btn btn-outline-secondary local-course-banner-builder-source-preview-button';
+    borderStyleButton.setAttribute('data-modal-preview-side-panel-target', 'borderstyle');
+    borderStyleButton.setAttribute('data-preview-action-group', 'border');
+    borderStyleButton.setAttribute('aria-expanded', 'false');
+    localCourseBannerBuilderSetActionButtonContent(
+        borderStyleButton,
+        'fa-border-all',
+        localCourseBannerBuilderGetJsString('borderstyle', 'Border style')
+    );
+    borderStyleButton.addEventListener('click', function () {
+        var shouldOpen = borderAccordion.hidden || borderAccordion.classList.contains('is-collapsed');
+        localCourseBannerBuilderCloseOtherModalSidePanels(host, borderAccordion);
+        localCourseBannerBuilderToggleOpacityPanel(borderAccordion, borderStyleButton, shouldOpen);
+    });
+    host.appendChild(borderStyleButton);
+}
+
+function localCourseBannerBuilderSyncBorderStyleChoice(form) {
+    var select = form ? form.querySelector('#id_borderstyle') : null;
+    var group = form ? form.querySelector('[data-border-style-choice="1"]') : null;
+    if (!select || !group) {
+        return;
+    }
+    Array.prototype.slice.call(group.querySelectorAll('[data-border-style-option]')).forEach(function (button) {
+        var active = button.getAttribute('data-border-style-option') === select.value;
+        button.disabled = !!select.disabled;
+        button.classList.toggle('btn-primary', active);
+        button.classList.toggle('active', active);
+        button.classList.toggle('btn-outline-secondary', !active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+}
+
+function localCourseBannerBuilderEnsureBorderStyleChoice(form) {
+    var select = form ? form.querySelector('#id_borderstyle') : null;
+    if (!select) {
+        return;
+    }
+    if (select.dataset.borderStyleChoiceBound === '1') {
+        localCourseBannerBuilderSyncBorderStyleChoice(form);
+        return;
+    }
+    var group = document.createElement('div');
+    group.className = 'btn-group local-course-banner-builder-border-style-choice';
+    group.setAttribute('role', 'group');
+    group.setAttribute('data-border-style-choice', '1');
+    Array.prototype.slice.call(select.options).forEach(function (option) {
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'btn btn-sm btn-outline-secondary';
+        button.setAttribute('data-border-style-option', option.value);
+        button.setAttribute('aria-pressed', option.selected ? 'true' : 'false');
+        button.textContent = option.textContent || option.value;
+        button.addEventListener('click', function () {
+            if (select.disabled) {
+                return;
+            }
+            select.value = option.value;
+            select.dispatchEvent(new Event('change', {bubbles: true}));
+            localCourseBannerBuilderSyncBorderStyleChoice(form);
+        });
+        group.appendChild(button);
+    });
+    select.classList.add('local-course-banner-builder-visually-hidden-select');
+    select.setAttribute('aria-hidden', 'true');
+    select.parentNode.insertBefore(group, select.nextSibling);
+    select.dataset.borderStyleChoiceBound = '1';
+    localCourseBannerBuilderSyncBorderStyleChoice(form);
+}
+
+function localCourseBannerBuilderEnsureLayerModalFooter(form, submitLabel) {
+    if (!form) {
+        return;
+    }
+    Array.prototype.slice.call(form.querySelectorAll('input[type="submit"], button[type="submit"]')).forEach(
+        function (button) {
+            if (!button.hasAttribute('data-modal-preview-submit-proxy')) {
+                button.hidden = true;
+                button.setAttribute('aria-hidden', 'true');
+                button.classList.add('local-course-banner-builder-modal-original-submit');
+            }
+        }
+    );
+    if (!form.id) {
+        form.id = 'local-course-banner-builder-layer-form-' + Math.random().toString(36).slice(2);
+    }
+    if (form.dataset.layerSubmitPrepareBound !== '1') {
+        form.addEventListener('submit', function () {
+            localCourseBannerBuilderPrepareLayerFormForSubmit(form);
+        });
+        form.dataset.layerSubmitPrepareBound = '1';
+    }
+    var modalContent = form.closest('.modal-content');
+    var modalBody = form.closest('.modal-body');
+    var footer = modalContent ? modalContent.querySelector('[data-layer-modal-footer="1"]') : null;
+    if (!footer) {
+        footer = document.createElement('div');
+        footer.className = 'modal-footer local-course-banner-builder-slideshow-modal-footer ' +
+            'local-course-banner-builder-layer-modal-footer';
+        footer.setAttribute('data-layer-modal-footer', '1');
+        if (modalContent && modalBody && modalBody.parentNode === modalContent) {
+            modalContent.insertBefore(footer, modalBody.nextSibling);
+        } else {
+            form.appendChild(footer);
+        }
+    }
+    footer.innerHTML = '';
+    var submitButton = document.createElement('button');
+    submitButton.type = 'button';
+    submitButton.className = 'btn btn-primary local-course-banner-builder-compact-save-button';
+    submitButton.setAttribute('data-modal-preview-submit-proxy', '1');
+    var submitForm = function () {
+        if (form.dataset.formSubmitRequested === '1' || form.dataset.formSubmitting === '1') {
+            return;
+        }
+        form.dataset.formSubmitRequested = '1';
+        submitButton.disabled = true;
+        submitButton.classList.add('disabled');
+        submitButton.setAttribute('aria-disabled', 'true');
+        localCourseBannerBuilderPrepareLayerFormForSubmit(form);
+        var originalSubmit = form.querySelector(
+            'input[type="submit"][name="submitbutton"],' +
+            'button[type="submit"]:not([data-modal-preview-submit-proxy])'
+        );
+        if (form.requestSubmit) {
+            form.requestSubmit(originalSubmit || undefined);
+        } else if (originalSubmit && originalSubmit.click) {
+            originalSubmit.click();
+        } else {
+            form.submit();
+        }
+    };
+    submitButton.addEventListener('click', function (e) {
+        e.preventDefault();
+        if (submitButton.disabled) {
+            return;
+        }
+        if (localCourseBannerBuilderShouldConfirmChildBorderDisable(form) &&
+                form.dataset.childBorderDisableConfirmed !== '1') {
+            localCourseBannerBuilderConfirmAction(
+                localCourseBannerBuilderGetChildBorderDisableConfirmMessage(form)
+            ).then(function (confirmed) {
+                if (!confirmed) {
+                    return;
+                }
+                form.dataset.childBorderDisableConfirmed = '1';
+                submitForm();
+            });
+            return;
+        }
+        if (localCourseBannerBuilderShouldConfirmChildOverlayDisable(form) &&
+                form.dataset.childOverlayDisableConfirmed !== '1') {
+            localCourseBannerBuilderConfirmAction(
+                localCourseBannerBuilderGetChildOverlayDisableConfirmMessage(form)
+            ).then(function (confirmed) {
+                if (!confirmed) {
+                    return;
+                }
+                form.dataset.childOverlayDisableConfirmed = '1';
+                submitForm();
+            });
+            return;
+        }
+        delete form.dataset.childBorderDisableConfirmed;
+        delete form.dataset.childOverlayDisableConfirmed;
+        submitForm();
+    });
+    localCourseBannerBuilderSetActionButtonContent(
+        submitButton,
+        'fa-save',
+        submitLabel || localCourseBannerBuilderGetJsString('savebannerlayers', 'Save layers')
+    );
+    footer.appendChild(submitButton);
+}
+
+function localCourseBannerBuilderUndoModalPreviewChange(control) {
+    var form = localCourseBannerBuilderGetLayerScope(control);
+    if (!form) {
+        return;
+    }
+    localCourseBannerBuilderEnsureModalPreviewHistory(form);
+    var undoStack = localCourseBannerBuilderReadJson(form.dataset.modalPreviewUndoStack || '[]', []);
+    var redoStack = localCourseBannerBuilderReadJson(form.dataset.modalPreviewRedoStack || '[]', []);
+    var currentSnapshot = localCourseBannerBuilderBuildModalPreviewSnapshot(form);
+    if (undoStack[undoStack.length - 1] !== currentSnapshot) {
+        undoStack.push(currentSnapshot);
+    }
+    if (undoStack.length <= 1) {
+        form.dataset.modalPreviewUndoStack = JSON.stringify(undoStack);
+        localCourseBannerBuilderUpdateModalPreviewHistoryButtons(form);
+        return;
+    }
+    redoStack.push(undoStack.pop());
+    var snapshot = undoStack[undoStack.length - 1];
+    form.dataset.modalPreviewUndoStack = JSON.stringify(undoStack);
+    form.dataset.modalPreviewRedoStack = JSON.stringify(redoStack);
+    localCourseBannerBuilderApplyModalPreviewSnapshot(form, snapshot);
+}
+
+function localCourseBannerBuilderRedoModalPreviewChange(control) {
+    var form = localCourseBannerBuilderGetLayerScope(control);
+    if (!form) {
+        return;
+    }
+    localCourseBannerBuilderEnsureModalPreviewHistory(form);
+    var undoStack = localCourseBannerBuilderReadJson(form.dataset.modalPreviewUndoStack || '[]', []);
+    var redoStack = localCourseBannerBuilderReadJson(form.dataset.modalPreviewRedoStack || '[]', []);
+    if (!redoStack.length) {
+        return;
+    }
+    var snapshot = redoStack.pop();
+    undoStack.push(snapshot);
+    form.dataset.modalPreviewUndoStack = JSON.stringify(undoStack);
+    form.dataset.modalPreviewRedoStack = JSON.stringify(redoStack);
+    localCourseBannerBuilderApplyModalPreviewSnapshot(form, snapshot);
+}
+
+function localCourseBannerBuilderEnhanceModalPreviewActions(form) {
+    if (!form) {
+        return;
+    }
+    var panel = form.querySelector('.local-course-banner-builder-banner-preview-panel');
+    if (!panel) {
+        return;
+    }
+    var dynamicModal = form.closest('[data-dynamic-layer-modal="1"]');
+    var previewRow = panel.closest('.fitem, .form-group, .mb-3, .row');
+    if (dynamicModal && previewRow) {
+        previewRow.classList.add('local-course-banner-builder-modal-preview-sticky-row');
+    }
+    var helpText = panel.querySelector('.form-text.text-muted');
+    var previewBlock = panel.querySelector('[data-layer-banner-preview="1"], .local-course-banner-builder-border-preview, .local-course-banner-builder-banner-preview');
+    var iconHost = panel.querySelector('[data-modal-preview-icon-row="1"]');
+    if (!iconHost) {
+        iconHost = document.createElement('div');
+        iconHost.className = 'local-course-banner-builder-source-preview-visibility-toggle-row local-course-banner-builder-modal-preview-icon-row';
+        iconHost.setAttribute('data-modal-preview-icon-row', '1');
+        if (previewBlock && previewBlock.parentNode === panel) {
+            previewBlock.insertAdjacentElement('afterend', iconHost);
+        } else {
+            panel.insertBefore(iconHost, panel.firstChild);
+        }
+    }
+
+    var host = form.querySelector('[data-modal-preview-action-list="1"]');
+    if (!host) {
+        host = document.createElement('div');
+        host.className = 'local-course-banner-builder-modal-preview-action-list';
+        host.setAttribute('data-modal-preview-action-list', '1');
+        form.appendChild(host);
+    } else if (host.parentNode !== form) {
+        form.appendChild(host);
+    }
+    form.classList.add('local-course-banner-builder-has-preview-proxy');
+    var hasImageOptionsSection = !!form.querySelector('[data-image-options-section="1"]');
+    var hasBorderOptionsSection = !!form.querySelector('[data-border-accordion="1"]');
+    var hasOverlayOptionsSection = !!form.querySelector('[data-overlay-accordion="1"]');
+    var imageOptionsMissing = hasImageOptionsSection &&
+        !host.querySelector('[data-modal-preview-side-panel-target="imageoptions"]');
+    var borderStyleMissing = hasBorderOptionsSection &&
+        !host.querySelector('[data-modal-preview-side-panel-target="borderstyle"]');
+    var overlayStyleMissing = hasOverlayOptionsSection &&
+        !host.querySelector('[data-modal-preview-side-panel-target="overlaystyle"]');
+    if (form.dataset.modalPreviewActionsEnhanced === '1' &&
+            (imageOptionsMissing || borderStyleMissing || overlayStyleMissing)) {
+        delete form.dataset.modalPreviewActionsEnhanced;
+    }
+    if (form.dataset.modalPreviewActionsEnhanced === '1') {
+        localCourseBannerBuilderEnsureModalImageControls(form);
+        localCourseBannerBuilderEnsureModalOpacityControls(form);
+        localCourseBannerBuilderEnsureModalBorderControls(form);
+        localCourseBannerBuilderEnsureModalOverlayControls(form);
+        localCourseBannerBuilderEnsureLayerModalFooter(form);
+        localCourseBannerBuilderLayoutModalPreviewActionButtons(host);
+        localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+        localCourseBannerBuilderEnsureModalPreviewHistory(form);
+        localCourseBannerBuilderInitPopovers(panel);
+        return;
+    }
+    iconHost.innerHTML = '';
+    var preservedBorderAccordion = host.querySelector('[data-border-accordion="1"]');
+    if (preservedBorderAccordion) {
+        form.appendChild(preservedBorderAccordion);
+    }
+    var preservedImageAccordion = host.querySelector('[data-image-options-section="1"]');
+    if (preservedImageAccordion) {
+        form.appendChild(preservedImageAccordion);
+    }
+    var preservedOverlayAccordion = host.querySelector('[data-overlay-accordion="1"]');
+    if (preservedOverlayAccordion) {
+        form.appendChild(preservedOverlayAccordion);
+    }
+    host.innerHTML = '';
+    form.dataset.modalPreviewActionsEnhanced = '1';
+
+    iconHost.appendChild(localCourseBannerBuilderCreatePreviewIconButton(
+        'local-course-banner-builder-undo-modal-preview-change',
+        'fa-undo',
+        localCourseBannerBuilderGetJsString('undopreviewchange', 'Undo'),
+        'shared'
+    ));
+
+    iconHost.appendChild(localCourseBannerBuilderCreatePreviewIconButton(
+        'local-course-banner-builder-toggle-preview-snap',
+        'fa-magnet',
+        localCourseBannerBuilderGetJsString('togglepreviewsnap', 'Snap to alignment guides'),
+        'shared'
+    ));
+
+    var recenterButton = panel.querySelector('[data-action="local-course-banner-builder-recenter-preview-image"]');
+    if (!recenterButton) {
+        recenterButton = localCourseBannerBuilderCreatePreviewIconButton(
+            'local-course-banner-builder-recenter-preview-image',
+            'fa-crosshairs',
+            localCourseBannerBuilderGetJsString('recenterpreviewimage', 'Recenter image'),
+            'image'
+        );
+    } else {
+        recenterButton.setAttribute('data-preview-action-group', 'image');
+        localCourseBannerBuilderConfigurePreviewIconButton(
+            recenterButton,
+            'fa-crosshairs',
+            localCourseBannerBuilderGetJsString('recenterpreviewimage', 'Recenter image')
+        );
+    }
+    iconHost.appendChild(recenterButton);
+
+    iconHost.appendChild(localCourseBannerBuilderCreatePreviewIconButton(
+        'local-course-banner-builder-fit-layer-preview-image',
+        'fa-compress',
+        localCourseBannerBuilderGetJsString('fittopreview', 'Fit to preview'),
+        'image'
+    ));
+
+    iconHost.appendChild(localCourseBannerBuilderCreatePreviewIconButton(
+        'local-course-banner-builder-fill-layer-preview-image',
+        'fa-arrows-alt',
+        localCourseBannerBuilderGetJsString('fillbannerpreviewimage', 'Fill banner'),
+        'image'
+    ));
+
+    iconHost.appendChild(localCourseBannerBuilderCreatePreviewIconButton(
+        'local-course-banner-builder-push-modal-preview-layer-behind',
+        'fa-arrow-down',
+        localCourseBannerBuilderGetJsString('pushbehindpreviewlayer', 'Send backward'),
+        'image'
+    ));
+
+    iconHost.appendChild(localCourseBannerBuilderCreatePreviewIconButton(
+        'local-course-banner-builder-pull-modal-preview-layer-forward',
+        'fa-arrow-up',
+        localCourseBannerBuilderGetJsString('pullforwardpreviewlayer', 'Bring forward'),
+        'image'
+    ));
+
+    iconHost.appendChild(localCourseBannerBuilderCreatePreviewIconButton(
+        'local-course-banner-builder-toggle-modal-preview-crop',
+        'fa-crop',
+        localCourseBannerBuilderGetJsString('cropimage', 'Crop image'),
+        'image'
+    ));
+
+    iconHost.appendChild(localCourseBannerBuilderCreatePreviewIconButton(
+        'local-course-banner-builder-toggle-modal-preview-center-fixed',
+        'fa-thumb-tack',
+        localCourseBannerBuilderGetJsString('imagecenterfixed', 'Fixed center'),
+        'image'
+    ));
+
+    iconHost.appendChild(localCourseBannerBuilderCreatePreviewIconButton(
+        'local-course-banner-builder-redo-modal-preview-change',
+        'fa-redo',
+        localCourseBannerBuilderGetJsString('redopreviewchange', 'Redo'),
+        'shared'
+    ));
+
+    var deleteDraftButton = document.createElement('button');
+    deleteDraftButton.type = 'button';
+    deleteDraftButton.className = 'btn btn-danger local-course-banner-builder-source-preview-button';
+    deleteDraftButton.setAttribute('data-action', 'local-course-banner-builder-delete-selected-draft-preview-layer');
+    deleteDraftButton.setAttribute('data-preview-action-group', 'image');
+    localCourseBannerBuilderSetActionButtonContent(
+        deleteDraftButton,
+        'fa-trash-can',
+        localCourseBannerBuilderGetJsString('deleteselectedlayer', 'Delete selected layer')
+    );
+    host.appendChild(deleteDraftButton);
+
+    var contextToggle = panel.querySelector('[data-preview-context-toggle="1"]');
+    var contextToolbar = panel.querySelector('.local-course-banner-builder-banner-preview-toolbar');
+    if (contextToolbar) {
+        contextToolbar.style.display = 'none';
+    }
+    if (!contextToggle) {
+        contextToggle = document.createElement('input');
+        contextToggle.type = 'checkbox';
+        contextToggle.id = 'local-course-banner-builder-context-toggle-' + Math.random().toString(36).slice(2);
+        contextToggle.setAttribute('data-preview-context-toggle', '1');
+        contextToggle.hidden = true;
+        panel.appendChild(contextToggle);
+    }
+    if (contextToggle) {
+        var contextButton = document.createElement('button');
+        contextButton.type = 'button';
+        contextButton.className = 'btn btn-outline-secondary local-course-banner-builder-source-preview-button ' +
+            'local-course-banner-builder-modal-context-button';
+        contextButton.setAttribute('data-preview-action-bound-input', '#'+ contextToggle.id);
+        contextButton.setAttribute(
+            'data-preview-action-label-on',
+            localCourseBannerBuilderGetJsString('hideotherlayers', 'Hide other layers')
+        );
+        contextButton.setAttribute(
+            'data-preview-action-label-off',
+            localCourseBannerBuilderGetJsString('showotherlayers', 'Show other layers')
+        );
+        contextButton.setAttribute('data-preview-action-icon-on', 'fa-eye-slash');
+        contextButton.setAttribute('data-preview-action-icon-off', 'fa-eye');
+        contextButton.setAttribute('data-preview-action-group', 'shared');
+        contextButton.addEventListener('click', function () {
+            localCourseBannerBuilderToggleCheckboxInput(contextToggle);
+            localCourseBannerBuilderSyncContextPreviewVisibility(form);
+            localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+        });
+        host.appendChild(contextButton);
+    }
+
+    var slideshowToggle = panel.querySelector('[data-overlay-slideshow-preview-toggle="1"]');
+    if (!slideshowToggle) {
+        slideshowToggle = document.createElement('input');
+        slideshowToggle.type = 'checkbox';
+        slideshowToggle.checked = false;
+        slideshowToggle.id = 'local-course-banner-builder-slideshow-preview-toggle-' + Math.random().toString(36).slice(2);
+        slideshowToggle.setAttribute('data-overlay-slideshow-preview-toggle', '1');
+        slideshowToggle.hidden = true;
+        panel.appendChild(slideshowToggle);
+    }
+    if (slideshowToggle) {
+        var slideshowButton = document.createElement('button');
+        slideshowButton.type = 'button';
+        slideshowButton.className = 'btn btn-outline-secondary local-course-banner-builder-source-preview-button ' +
+            'local-course-banner-builder-modal-slideshow-preview-button';
+        slideshowButton.setAttribute('data-preview-action-bound-input', '#' + slideshowToggle.id);
+        slideshowButton.setAttribute('data-overlay-slideshow-preview-button', '1');
+        slideshowButton.setAttribute(
+            'data-preview-action-label-on',
+            localCourseBannerBuilderGetJsString('hideslideshowpreview', 'Hide slideshow preview')
+        );
+        slideshowButton.setAttribute(
+            'data-preview-action-label-off',
+            localCourseBannerBuilderGetJsString('showslideshowpreview', 'Show slideshow preview')
+        );
+        slideshowButton.setAttribute('data-preview-action-icon-on', 'fa-eye-slash');
+        slideshowButton.setAttribute('data-preview-action-icon-off', 'fa-eye');
+        slideshowButton.setAttribute('data-preview-action-group', 'overlay');
+        slideshowButton.addEventListener('click', function () {
+            localCourseBannerBuilderToggleCheckboxInput(slideshowToggle);
+            localCourseBannerBuilderSyncModalOverlayPreview(form);
+            localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+        });
+        host.appendChild(slideshowButton);
+    }
+
+    localCourseBannerBuilderEnsureModalImageControls(form);
+    localCourseBannerBuilderEnsureModalOpacityControls(form);
+    localCourseBannerBuilderEnsureModalBorderControls(form);
+    localCourseBannerBuilderEnsureModalOverlayControls(form);
+
+    [
+        {
+            selector: '#id_dynamicimagesizeenabled',
+            on: localCourseBannerBuilderGetJsString('imageaboveborder', 'Image above border'),
+            off: localCourseBannerBuilderGetJsString('imagebelowborder', 'Image below border'),
+            iconon: 'fa-level-up',
+            iconoff: 'fa-level-down',
+            group: 'image'
+        },
+        {
+            selector: '#id_imageaboveoverlayenabled',
+            on: localCourseBannerBuilderGetJsString('imageaboveoverlay', 'Push above overlay'),
+            off: localCourseBannerBuilderGetJsString('imagebelowoverlay', 'Image below overlay'),
+            iconon: 'fa-layer-group',
+            iconoff: 'fa-clone',
+            group: 'image'
+        },
+        {
+            selector: '#id_imagebelowinheritedenabled',
+            on: localCourseBannerBuilderGetJsString('imagebelowinheritedenabled', 'Push below inherited layers'),
+            off: localCourseBannerBuilderGetJsString('imagewithinheritedorder', 'Use inherited order'),
+            iconon: 'fa-level-down',
+            iconoff: 'fa-level-up',
+            group: 'image'
+        },
+        {
+            selector: '#id_imageaboveinheritedenabled',
+            on: localCourseBannerBuilderGetJsString('imageaboveinheritedenabled', 'Push above inherited layers'),
+            off: localCourseBannerBuilderGetJsString('imagewithinheritedorder', 'Use inherited order'),
+            iconon: 'fa-layer-group',
+            iconoff: 'fa-level-down',
+            group: 'image'
+        },
+        {
+            selector: '#id_imagecenterfixed',
+            on: localCourseBannerBuilderGetJsString('imagecenterfixedon', 'Fixed center'),
+            off: localCourseBannerBuilderGetJsString('imagecenterfixedoff', 'Free placement'),
+            iconon: 'fa-thumb-tack',
+            iconoff: 'fa-thumb-tack',
+            group: 'image'
+        },
+        {
+            selector: '#id_customsizekeepaspect',
+            on: localCourseBannerBuilderGetJsString('customsizekeepaspect', 'Keep original dimensions'),
+            off: localCourseBannerBuilderGetJsString('allowstretchpreviewimage', 'Allow stretch'),
+            iconon: 'fa-link',
+            iconoff: 'fa-expand',
+            group: 'image'
+        },
+        {
+            selector: '#id_borderinnerrounded',
+            on: localCourseBannerBuilderGetJsString('borderinnerrounded', 'Round inner corners'),
+            off: localCourseBannerBuilderGetJsString('sharpinnercorners', 'Sharp inner corners'),
+            iconon: 'fa-circle-o',
+            iconoff: 'fa-square-o',
+            group: 'border'
+        }
+    ].forEach(function (config) {
+        var input = form.querySelector(config.selector);
+        if (!input) {
+            return;
+        }
+        var row = input.closest('.fitem, .form-group, .mb-3, .row');
+        if (row) {
+            row.classList.add('local-course-banner-builder-border-side-picker-source');
+        }
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'btn btn-outline-secondary local-course-banner-builder-source-preview-button';
+        button.setAttribute('data-preview-action-bound-input', config.selector);
+        button.setAttribute('data-preview-action-label-on', config.on);
+        button.setAttribute('data-preview-action-label-off', config.off);
+        button.setAttribute('data-preview-action-icon-on', config.iconon);
+        button.setAttribute('data-preview-action-icon-off', config.iconoff);
+        button.setAttribute('data-preview-action-group', config.group);
+        button.addEventListener('click', function () {
+            localCourseBannerBuilderPushModalPreviewHistory(form);
+            if (config.selector === '#id_customsizekeepaspect') {
+                localCourseBannerBuilderTogglePreviewAspectLock(button);
+                return;
+            }
+            var currentState = (config.selector === '#id_dynamicimagesizeenabled' ||
+                    config.selector === '#id_imageaboveoverlayenabled' ||
+                    config.selector === '#id_imagebelowinheritedenabled' ||
+                    config.selector === '#id_imageaboveinheritedenabled' ||
+                    config.selector === '#id_imagecenterfixed') ?
+                localCourseBannerBuilderReadLayerPreviewStateFromLayer(
+                    localCourseBannerBuilderGetLayerFormPreviewImage(form)
+                ) :
+                null;
+            input.checked = !input.checked;
+            if (config.selector === '#id_dynamicimagesizeenabled' && input.checked) {
+                var overlayContext = localCourseBannerBuilderGetOverlayOrderingContext(form);
+                var aboveOverlayInput = form.querySelector('#id_imageaboveoverlayenabled');
+                if (overlayContext.hasOverlay && overlayContext.borderAbove && aboveOverlayInput) {
+                    aboveOverlayInput.checked = true;
+                }
+            }
+            if (config.selector === '#id_imagebelowinheritedenabled' && input.checked) {
+                var modalAboveInheritedInput = form.querySelector('#id_imageaboveinheritedenabled');
+                var modalDynamicInput = form.querySelector('#id_dynamicimagesizeenabled');
+                var modalAboveOverlayInput = form.querySelector('#id_imageaboveoverlayenabled');
+                if (modalAboveInheritedInput) {
+                    modalAboveInheritedInput.checked = false;
+                }
+                if (modalDynamicInput) {
+                    modalDynamicInput.checked = false;
+                }
+                if (modalAboveOverlayInput) {
+                    modalAboveOverlayInput.checked = false;
+                }
+            }
+            if (config.selector === '#id_imageaboveinheritedenabled' && input.checked) {
+                var modalBelowInheritedInput = form.querySelector('#id_imagebelowinheritedenabled');
+                var modalAboveInheritedDynamicInput = form.querySelector('#id_dynamicimagesizeenabled');
+                var modalAboveInheritedOverlayInput = form.querySelector('#id_imageaboveoverlayenabled');
+                if (modalBelowInheritedInput) {
+                    modalBelowInheritedInput.checked = false;
+                }
+                if (modalAboveInheritedDynamicInput) {
+                    modalAboveInheritedDynamicInput.checked = false;
+                }
+                if (modalAboveInheritedOverlayInput) {
+                    modalAboveInheritedOverlayInput.checked = false;
+                }
+            }
+            input.dispatchEvent(new Event('change', {bubbles: true}));
+            if (currentState) {
+                if (config.selector === '#id_dynamicimagesizeenabled') {
+                    currentState.dynamicimagesizeenabled = !!input.checked;
+                    if (input.checked) {
+                        currentState.imageaboveinheritedenabled = false;
+                        currentState.imagebelowinheritedenabled = false;
+                        var currentOverlayContext = localCourseBannerBuilderGetOverlayOrderingContext(form);
+                        if (currentOverlayContext.hasOverlay && currentOverlayContext.borderAbove) {
+                            currentState.imageaboveoverlayenabled = true;
+                        }
+                    }
+                } else if (config.selector === '#id_imageaboveoverlayenabled') {
+                    currentState.imageaboveoverlayenabled = !!input.checked;
+                    if (input.checked) {
+                        currentState.imageaboveinheritedenabled = false;
+                        currentState.imagebelowinheritedenabled = false;
+                    }
+                } else if (config.selector === '#id_imagebelowinheritedenabled') {
+                    currentState.imagebelowinheritedenabled = !!input.checked;
+                    if (input.checked) {
+                        currentState.imageaboveinheritedenabled = false;
+                        currentState.dynamicimagesizeenabled = false;
+                        currentState.imageaboveoverlayenabled = false;
+                    }
+                } else if (config.selector === '#id_imageaboveinheritedenabled') {
+                    currentState.imageaboveinheritedenabled = !!input.checked;
+                    if (input.checked) {
+                        currentState.imagebelowinheritedenabled = false;
+                        currentState.dynamicimagesizeenabled = false;
+                        currentState.imageaboveoverlayenabled = false;
+                    }
+                } else if (config.selector === '#id_imagecenterfixed') {
+                    currentState.imagecenterfixed = !!input.checked;
+                }
+                localCourseBannerBuilderApplyLayerFormPreviewState(form, currentState);
+            } else {
+                localCourseBannerBuilderSyncCurrentLayerDataFromForm(form);
+            }
+            localCourseBannerBuilderSyncLayerBannerPreview(form);
+            localCourseBannerBuilderSaveActiveDraftPreviewState(form);
+            localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+            localCourseBannerBuilderSyncModalPreviewSelectionOutline(form);
+        });
+        host.appendChild(button);
+    });
+
+    var submitField = form.querySelector([
+        '.fitem_actionbuttons input[type="submit"]',
+        '.fitem_actionbuttons button[type="submit"]',
+        '.local-course-banner-builder-submit-actions input[type="submit"]',
+        '.local-course-banner-builder-submit-actions button[type="submit"]'
+    ].join(','));
+    var submitLabel = localCourseBannerBuilderGetJsString('savebannerlayers', 'Save layers');
+    if (submitField) {
+        Array.prototype.slice.call(form.querySelectorAll(
+            '.fitem_actionbuttons, #fgroup_id_buttonar, .local-course-banner-builder-submit-actions'
+        )).forEach(function (row) {
+            row.hidden = true;
+            row.setAttribute('aria-hidden', 'true');
+            row.classList.add('local-course-banner-builder-modal-original-submit');
+        });
+        submitLabel = submitField.value || submitField.textContent.trim() || submitLabel;
+        var oldFooter = form.querySelector('[data-layer-modal-footer="1"]');
+        if (oldFooter) {
+            oldFooter.remove();
+        }
+    }
+    localCourseBannerBuilderEnsureLayerModalFooter(form, submitLabel);
+
+    localCourseBannerBuilderLayoutModalPreviewActionButtons(host);
+    localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+    localCourseBannerBuilderEnsureModalPreviewHistory(form);
+    localCourseBannerBuilderInitPopovers(panel);
+}
+
+function localCourseBannerBuilderSyncBorderSidePicker(form) {
+    if (!form) {
+        return;
+    }
+    var picker = form.querySelector('[data-border-side-picker="1"]');
+    if (!picker) {
+        return;
+    }
+    Array.prototype.slice.call(picker.querySelectorAll('[data-border-side-button]')).forEach(function (button) {
+        var side = button.getAttribute('data-border-side-button');
+        var input = form.querySelector('[data-border-side="' + side + '"][type="checkbox"]');
+        var active = !!(input && input.checked);
+        button.classList.toggle('is-active', active);
+        button.classList.toggle('btn-primary', active);
+        button.classList.toggle('btn-outline-secondary', !active);
+    });
+    var allButton = picker.querySelector('[data-border-side-all-button="1"]');
+    var allInput = form.querySelector('[data-border-side-all="1"][type="checkbox"]');
+    if (allButton && allInput) {
+        var allActive = !!allInput.checked;
+        allButton.classList.toggle('is-active', allActive);
+        allButton.classList.toggle('btn-primary', allActive);
+        allButton.classList.toggle('btn-outline-secondary', !allActive);
+    }
+}
+
+function localCourseBannerBuilderEnhanceBorderSidePicker(form) {
+    if (!form) {
+        return;
+    }
+    var sideInputs = Array.prototype.slice.call(form.querySelectorAll('[data-border-side][type="checkbox"]'));
+    if (!sideInputs.length) {
+        return;
+    }
+    var source = sideInputs[0].closest('.fitem, .form-group, .mb-3, .row');
+    if (!source) {
+        return;
+    }
+    source.classList.add('local-course-banner-builder-border-side-picker-source');
+    var sourceGroup = form.querySelector('#fgroup_id_bordersidesgroup, #fitem_id_bordersidesgroup');
+    if (sourceGroup) {
+        sourceGroup.classList.add('local-course-banner-builder-border-side-picker-source');
+    }
+    var picker = form.querySelector('[data-border-side-picker="1"]');
+    if (!picker) {
+        picker = document.createElement('div');
+        picker.className = 'local-course-banner-builder-border-side-picker mt-2';
+        picker.setAttribute('data-border-side-picker', '1');
+        ['top', 'right', 'bottom', 'left'].forEach(function (side) {
+            var button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'btn btn-outline-secondary local-course-banner-builder-border-side-button';
+            button.setAttribute('data-border-side-button', side);
+            button.textContent = side.charAt(0).toUpperCase() + side.slice(1);
+            button.addEventListener('click', function () {
+                var input = form.querySelector('[data-border-side="' + side + '"][type="checkbox"]');
+                localCourseBannerBuilderToggleCheckboxInput(input);
+            });
+            picker.appendChild(button);
+        });
+        var allButton = document.createElement('button');
+        allButton.type = 'button';
+        allButton.className = 'btn btn-outline-secondary local-course-banner-builder-border-side-button local-course-banner-builder-border-side-picker-all';
+        allButton.setAttribute('data-border-side-all-button', '1');
+        allButton.textContent = localCourseBannerBuilderGetJsString('bordersides:all', '');
+        allButton.addEventListener('click', function () {
+            var allInput = form.querySelector('[data-border-side-all="1"][type="checkbox"]');
+            localCourseBannerBuilderToggleCheckboxInput(allInput);
+        });
+        picker.appendChild(allButton);
+        source.parentNode.insertBefore(picker, source.nextSibling);
+    }
+    localCourseBannerBuilderSyncBorderSidePicker(form);
+}
+
+var localCourseBannerBuilderHoverPopoverCounter = 0;
+
+function localCourseBannerBuilderGetPopoverElements(scope) {
+    var root = scope || document;
+    var selector = [
+        '[data-toggle="popover"]',
+        '[data-bs-toggle="popover"]',
+        '[data-local-course-banner-builder-hover-popover="1"]'
+    ].join(',');
+    var nodes = [];
+    if (root && root.nodeType === 1 && root.matches && root.matches(selector)) {
+        nodes.push(root);
+    }
+    if (root && root.querySelectorAll) {
+        nodes = nodes.concat(Array.prototype.slice.call(root.querySelectorAll(selector)));
+    }
+    return nodes;
+}
+
+function localCourseBannerBuilderGetPopoverTrigger(target) {
+    if (!target || !target.closest) {
+        return null;
+    }
+    return target.closest(
+        '[data-toggle="popover"], [data-bs-toggle="popover"], ' +
+        '[data-local-course-banner-builder-hover-popover="1"]'
+    );
+}
+
+function localCourseBannerBuilderDisposeBootstrapPopover(node) {
+    if (!node) {
+        return;
+    }
+    if (typeof window.jQuery !== 'undefined' && window.jQuery.fn && window.jQuery.fn.popover) {
+        try {
+            window.jQuery(node).popover('dispose');
+        } catch (e) {
+            // Ignore dispose errors on non-initialized nodes.
+        }
+    }
+    if (window.bootstrap && window.bootstrap.Popover && typeof window.bootstrap.Popover.getInstance === 'function') {
+        try {
+            var instance = window.bootstrap.Popover.getInstance(node);
+            if (instance) {
+                instance.dispose();
+            }
+        } catch (e) {
+            // Ignore Bootstrap 5 dispose errors.
+        }
+    }
+}
+
+function localCourseBannerBuilderPrepareHoverPopoverNode(node) {
+    if (!node) {
+        return;
+    }
+    localCourseBannerBuilderDisposeBootstrapPopover(node);
+    var label = node.getAttribute('title') ||
+        node.getAttribute('data-original-title') ||
+        node.getAttribute('data-bs-original-title') ||
+        node.getAttribute('aria-label') ||
+        '';
+    if (label) {
+        node.setAttribute('data-local-course-banner-builder-popover-label', label);
+    }
+    node.setAttribute('data-trigger', 'manual');
+    node.setAttribute('data-bs-trigger', 'manual');
+    node.setAttribute('title', '');
+    node.removeAttribute('data-original-title');
+    node.removeAttribute('data-bs-original-title');
+    node.removeAttribute('aria-describedby');
+}
+
+function localCourseBannerBuilderGetHoverPopoverPayload(node) {
+    var content = node.getAttribute('data-content') || node.getAttribute('data-bs-content') || '';
+    var html = node.getAttribute('data-html') === 'true' || node.getAttribute('data-bs-html') === 'true';
+    if (!content) {
+        content = node.getAttribute('data-local-course-banner-builder-popover-label') ||
+            node.getAttribute('aria-label') ||
+            node.getAttribute('title') ||
+            '';
+        html = false;
+    }
+    return {
+        content: content,
+        html: html,
+        placement: node.getAttribute('data-placement') || node.getAttribute('data-bs-placement') || 'top'
+    };
+}
+
+function localCourseBannerBuilderPlaceHoverPopover(node, popover, placement) {
+    if (!node || !popover) {
+        return;
+    }
+    var triggerRect = node.getBoundingClientRect();
+    var popoverRect = popover.getBoundingClientRect();
+    var gap = 8;
+    var scrollTop = window.pageYOffset || document.documentElement.scrollTop || 0;
+    var scrollLeft = window.pageXOffset || document.documentElement.scrollLeft || 0;
+    var top;
+    var left;
+
+    if (placement === 'left') {
+        top = triggerRect.top + scrollTop + ((triggerRect.height - popoverRect.height) / 2);
+        left = triggerRect.left + scrollLeft - popoverRect.width - gap;
+    } else if (placement === 'right') {
+        top = triggerRect.top + scrollTop + ((triggerRect.height - popoverRect.height) / 2);
+        left = triggerRect.right + scrollLeft + gap;
+    } else if (placement === 'bottom') {
+        top = triggerRect.bottom + scrollTop + gap;
+        left = triggerRect.left + scrollLeft + ((triggerRect.width - popoverRect.width) / 2);
+    } else {
+        top = triggerRect.top + scrollTop - popoverRect.height - gap;
+        left = triggerRect.left + scrollLeft + ((triggerRect.width - popoverRect.width) / 2);
+        if (top < scrollTop + gap) {
+            top = triggerRect.bottom + scrollTop + gap;
+        }
+    }
+
+    var minLeft = scrollLeft + gap;
+    var maxLeft = scrollLeft + Math.max(gap, window.innerWidth - popoverRect.width - gap);
+    popover.style.top = Math.max(scrollTop + gap, top) + 'px';
+    popover.style.left = Math.max(minLeft, Math.min(maxLeft, left)) + 'px';
+}
+
+function localCourseBannerBuilderShowHoverPopover(node) {
+    if (!node || node.disabled) {
+        return;
+    }
+    localCourseBannerBuilderPrepareHoverPopoverNode(node);
+    var payload = localCourseBannerBuilderGetHoverPopoverPayload(node);
+    if (!payload.content) {
+        return;
+    }
+    localCourseBannerBuilderDismissOpenPopovers();
+
+    var popover = document.createElement('div');
+    var id = 'local-course-banner-builder-hover-popover-' + (++localCourseBannerBuilderHoverPopoverCounter);
+    popover.id = id;
+    popover.className = 'popover local-course-banner-builder-hover-popover ' +
+        'local-course-banner-builder-hover-popover--' + payload.placement + ' show';
+    popover.setAttribute('role', 'tooltip');
+    popover.setAttribute('aria-hidden', 'true');
+
+    var arrow = document.createElement('div');
+    arrow.className = 'popover-arrow';
+    popover.appendChild(arrow);
+
+    var body = document.createElement('div');
+    body.className = 'popover-body';
+    if (payload.html) {
+        body.innerHTML = payload.content;
+    } else {
+        body.textContent = payload.content;
+    }
+    popover.appendChild(body);
+    document.body.appendChild(popover);
+    node.setAttribute('aria-describedby', id);
+
+    window.requestAnimationFrame(function () {
+        localCourseBannerBuilderPlaceHoverPopover(node, popover, payload.placement);
+    });
+}
+
+function localCourseBannerBuilderHideHoverPopover(node) {
+    Array.prototype.slice.call(document.querySelectorAll('.local-course-banner-builder-hover-popover')).forEach(function (popover) {
+        popover.remove();
+    });
+    if (node && node.removeAttribute) {
+        node.removeAttribute('aria-describedby');
+    }
+}
+
+function localCourseBannerBuilderHandlePopoverMouseEnter(event) {
+    localCourseBannerBuilderShowHoverPopover(event.currentTarget);
+}
+
+function localCourseBannerBuilderHandlePopoverMouseLeave(event) {
+    localCourseBannerBuilderHideHoverPopover(event.currentTarget);
+}
+
+function localCourseBannerBuilderHandlePopoverFocus(event) {
+    localCourseBannerBuilderHideHoverPopover(event.currentTarget);
+    if (event.currentTarget && event.currentTarget.blur) {
+        event.currentTarget.blur();
+    }
+}
+
+function localCourseBannerBuilderHandlePopoverClick(event) {
+    localCourseBannerBuilderHideHoverPopover(event.currentTarget);
+    if (event.currentTarget && !event.currentTarget.hasAttribute('data-action')) {
+        event.preventDefault();
+    }
+    if (event.currentTarget && event.currentTarget.blur) {
+        event.currentTarget.blur();
+    }
+}
+
+function localCourseBannerBuilderBindDelegatedPopovers() {
+    if (document.documentElement.getAttribute('data-local-course-banner-builder-popover-delegated') === '1') {
+        return;
+    }
+    document.documentElement.setAttribute('data-local-course-banner-builder-popover-delegated', '1');
+    document.addEventListener('mouseover', function (event) {
+        var trigger = localCourseBannerBuilderGetPopoverTrigger(event.target);
+        if (!trigger || (event.relatedTarget && trigger.contains(event.relatedTarget))) {
+            return;
+        }
+        localCourseBannerBuilderShowHoverPopover(trigger);
+    });
+    document.addEventListener('mouseout', function (event) {
+        var trigger = localCourseBannerBuilderGetPopoverTrigger(event.target);
+        if (!trigger || (event.relatedTarget && trigger.contains(event.relatedTarget))) {
+            return;
+        }
+        localCourseBannerBuilderHideHoverPopover(trigger);
+    });
+    document.addEventListener('click', function (event) {
+        var trigger = localCourseBannerBuilderGetPopoverTrigger(event.target);
+        if (!trigger) {
+            return;
+        }
+        localCourseBannerBuilderHideHoverPopover(trigger);
+        if (!trigger.hasAttribute('data-action')) {
+            event.preventDefault();
+        }
+    }, true);
+    document.addEventListener('focusin', function (event) {
+        var trigger = localCourseBannerBuilderGetPopoverTrigger(event.target);
+        if (trigger) {
+            localCourseBannerBuilderHideHoverPopover(trigger);
+        }
+    }, true);
+}
+
+function localCourseBannerBuilderInitPopovers(scope) {
+    localCourseBannerBuilderBindDelegatedPopovers();
+    localCourseBannerBuilderGetPopoverElements(scope).forEach(function (node) {
+        localCourseBannerBuilderPrepareHoverPopoverNode(node);
+    });
+}
+
+function localCourseBannerBuilderPrimeHelpBubbles(scope) {
+    var root = scope || document;
+    var bubbles = [];
+    if (root.matches && root.matches('.local-course-banner-builder-help-bubble')) {
+        bubbles.push(root);
+    }
+    bubbles = bubbles.concat(Array.prototype.slice.call(
+        root.querySelectorAll ? root.querySelectorAll('.local-course-banner-builder-help-bubble') : []
+    ));
+    bubbles.forEach(function (details) {
+        details.open = true;
+        var summary = details.querySelector('summary');
+        if (summary) {
+            summary.removeAttribute('title');
+        }
+    });
+}
+
+function localCourseBannerBuilderDismissOpenPopovers(activeElement) {
+    if (typeof window.jQuery !== 'undefined' && window.jQuery.fn && window.jQuery.fn.popover) {
+        try {
+            window.jQuery('[data-toggle="popover"], [data-bs-toggle="popover"]').popover('hide');
+        } catch (e) {
+            // Ignore hide errors on nodes not initialized by Bootstrap.
+        }
+    }
+    if (window.bootstrap && window.bootstrap.Popover && typeof window.bootstrap.Popover.getInstance === 'function') {
+        localCourseBannerBuilderGetPopoverElements(document).forEach(function (node) {
+            try {
+                var instance = window.bootstrap.Popover.getInstance(node);
+                if (instance) {
+                    instance.hide();
+                }
+            } catch (e) {
+                // Ignore Bootstrap 5 hide errors.
+            }
+        });
+    }
+    if (activeElement && activeElement.getAttribute) {
+        var describedBy = activeElement.getAttribute('aria-describedby');
+        if (describedBy) {
+            var describedNode = document.getElementById(describedBy);
+            if (describedNode && describedNode.classList.contains('popover')) {
+                describedNode.remove();
+            }
+            activeElement.removeAttribute('aria-describedby');
+        }
+        if (activeElement.blur) {
+            activeElement.blur();
+        }
+    }
+    Array.prototype.slice.call(document.querySelectorAll('.local-course-banner-builder-hover-popover')).forEach(function (popover) {
+        popover.remove();
+    });
+}
+
+function localCourseBannerBuilderToggleInlineSetting(row, editing) {
+    if (!row) {
+        return;
+    }
+    row.classList.toggle('is-editing', !!editing);
+    var select = row.querySelector('[data-inline-setting-select]');
+    if (!select) {
+        return;
+    }
+    if (!editing) {
+        select.value = select.getAttribute('data-initial-value') || select.value;
+        var dropdown = row.querySelector('[data-source-dropdown]');
+        if (dropdown) {
+            localCourseBannerBuilderSyncSourceDropdownButton(dropdown);
+        }
+    }
+    select.disabled = !editing;
+    if (editing) {
+        window.setTimeout(function () {
+            var dropdownButton = row.querySelector('[data-source-dropdown-label]');
+            if (select.type === 'hidden' && dropdownButton) {
+                dropdownButton.focus();
+            } else {
+                select.focus();
+            }
+        }, 0);
+    }
+}
+
+function localCourseBannerBuilderShowModal(modal) {
+    if (!modal) {
+        return false;
+    }
+    if (typeof window.jQuery !== 'undefined' && typeof window.jQuery(modal).modal === 'function') {
+        window.jQuery(modal).modal('show');
+        return true;
+    }
+    if (window.bootstrap && window.bootstrap.Modal) {
+        window.bootstrap.Modal.getOrCreateInstance(modal).show();
+        return true;
+    }
+    modal.style.display = 'block';
+    modal.removeAttribute('aria-hidden');
+    modal.setAttribute('aria-modal', 'true');
+    modal.classList.add('show');
+    document.body.classList.add('modal-open');
+    if (!document.querySelector('.modal-backdrop.local-course-banner-builder-modal-backdrop')) {
+        var backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade show local-course-banner-builder-modal-backdrop';
+        document.body.appendChild(backdrop);
+    }
+    return true;
+}
+
+function localCourseBannerBuilderIsNativeAdmin() {
+    return !!document.querySelector('.local-course-banner-builder-admin--native');
+}
+
+function localCourseBannerBuilderGetOpenModal() {
+    var modals = Array.prototype.slice.call(document.querySelectorAll('.modal.show'));
+    return modals.length ? modals[modals.length - 1] : null;
+}
+
+function localCourseBannerBuilderForceHideModal(modal) {
+    if (!modal) {
+        return;
+    }
+    modal.classList.remove('show');
+    modal.style.display = 'none';
+    modal.setAttribute('aria-hidden', 'true');
+    modal.removeAttribute('aria-modal');
+    modal.removeAttribute('role');
+    if (document.activeElement && modal.contains(document.activeElement)) {
+        try {
+            document.activeElement.blur();
+        } catch (e) {
+            // Ignore focus cleanup failures from browser-managed controls.
+        }
+    }
+    if (!document.querySelector('.modal.show')) {
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('padding-right');
+        Array.prototype.slice.call(document.querySelectorAll('.modal-backdrop')).forEach(function (backdrop) {
+            backdrop.remove();
+        });
+    }
+}
+
+function localCourseBannerBuilderHideModal(modal) {
+    if (!modal) {
+        return;
+    }
+    if (typeof window.jQuery !== 'undefined' && typeof window.jQuery(modal).modal === 'function') {
+        window.jQuery(modal).modal('hide');
+        window.setTimeout(function () {
+            if (modal.classList.contains('show') || modal.style.display === 'block') {
+                localCourseBannerBuilderForceHideModal(modal);
+                return;
+            }
+            if (!document.querySelector('.modal.show')) {
+                document.body.classList.remove('modal-open');
+            }
+        }, 240);
+        return;
+    }
+    if (window.bootstrap && window.bootstrap.Modal) {
+        window.bootstrap.Modal.getOrCreateInstance(modal).hide();
+        window.setTimeout(function () {
+            if (modal.classList.contains('show') || modal.style.display === 'block') {
+                localCourseBannerBuilderForceHideModal(modal);
+                return;
+            }
+            if (!document.querySelector('.modal.show')) {
+                document.body.classList.remove('modal-open');
+            }
+        }, 240);
+        return;
+    }
+    localCourseBannerBuilderForceHideModal(modal);
+}
+
+function localCourseBannerBuilderConfirmAction(message) {
+    return new Promise(function (resolve) {
+        var oldModal = document.getElementById('local-course-banner-builder-confirm-action-modal');
+        if (oldModal) {
+            oldModal.remove();
+        }
+
+        var modal = document.createElement('div');
+        modal.id = 'local-course-banner-builder-confirm-action-modal';
+        modal.className = 'modal fade local-course-banner-builder-confirm-action-modal';
+        modal.setAttribute('tabindex', '-1');
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+
+        var dialog = document.createElement('div');
+        dialog.className = 'modal-dialog modal-dialog-centered';
+        dialog.setAttribute('role', 'document');
+        modal.appendChild(dialog);
+
+        var content = document.createElement('div');
+        content.className = 'modal-content local-course-banner-builder-layer-modal-content';
+        dialog.appendChild(content);
+
+        var header = document.createElement('div');
+        header.className = 'modal-header d-flex align-items-center';
+        content.appendChild(header);
+
+        var title = document.createElement('h5');
+        title.className = 'modal-title flex-grow-1';
+        title.textContent = localCourseBannerBuilderGetJsString('areyousure', '');
+        header.appendChild(title);
+
+        var close = document.createElement('button');
+        close.type = 'button';
+        close.className = 'close ml-auto ms-auto';
+        close.setAttribute('aria-label', localCourseBannerBuilderGetJsString('no', ''));
+        close.innerHTML = '<span aria-hidden="true">&times;</span>';
+        header.appendChild(close);
+
+        var body = document.createElement('div');
+        body.className = 'modal-body';
+        body.textContent = message || localCourseBannerBuilderGetJsString('areyousure', '');
+        content.appendChild(body);
+
+        var footer = document.createElement('div');
+        footer.className = 'modal-footer';
+        content.appendChild(footer);
+
+        var cancel = document.createElement('button');
+        cancel.type = 'button';
+        cancel.className = 'btn btn-outline-secondary';
+        cancel.textContent = localCourseBannerBuilderGetJsString('no', '');
+        footer.appendChild(cancel);
+
+        var confirm = document.createElement('button');
+        confirm.type = 'button';
+        confirm.className = 'btn btn-danger';
+        confirm.textContent = localCourseBannerBuilderGetJsString('yes', '');
+        footer.appendChild(confirm);
+
+        var settled = false;
+        var finish = function (value) {
+            if (settled) {
+                return;
+            }
+            settled = true;
+            localCourseBannerBuilderHideModal(modal);
+            window.setTimeout(function () {
+                modal.remove();
+            }, 180);
+            resolve(value);
+        };
+
+        close.addEventListener('click', function () {
+            finish(false);
+        });
+        cancel.addEventListener('click', function () {
+            finish(false);
+        });
+        confirm.addEventListener('click', function () {
+            finish(true);
+        });
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) {
+                finish(false);
+            }
+        });
+        document.body.appendChild(modal);
+        localCourseBannerBuilderShowModal(modal);
+        confirm.focus();
+    });
+}
+
+var localCourseBannerBuilderForwardingModalDrop = false;
+
+function localCourseBannerBuilderGetAddImageLayerDropModal(target) {
+    var modal = target && target.closest ?
+        target.closest('#local-course-banner-builder-add-layer-modal') :
+        document.getElementById('local-course-banner-builder-add-layer-modal');
+    if (!modal || !(modal.classList.contains('show') || modal.style.display === 'block')) {
+        return null;
+    }
+    var form = modal.querySelector('form.mform');
+    if (!form || localCourseBannerBuilderGetSelectedLayerType(form) !== 'image') {
+        return null;
+    }
+    var filemanager = form.querySelector('#fitem_id_bannerimage_filemanager');
+    if (!filemanager || filemanager.hidden || filemanager.getAttribute('aria-disabled') === 'true' ||
+            filemanager.classList.contains('local-course-banner-builder-is-disabled')) {
+        return null;
+    }
+    return modal;
+}
+
+function localCourseBannerBuilderDragHasFiles(event) {
+    var transfer = event ? event.dataTransfer : null;
+    if (!transfer || !transfer.types) {
+        return false;
+    }
+    return Array.prototype.slice.call(transfer.types).indexOf('Files') !== -1;
+}
+
+function localCourseBannerBuilderGetModalDropFilemanagerContainer(modal) {
+    var filemanager = modal ? modal.querySelector('#fitem_id_bannerimage_filemanager') : null;
+    if (!filemanager) {
+        return null;
+    }
+    return filemanager.querySelector('.filemanager-container') ||
+        filemanager.querySelector('.filemanager') ||
+        filemanager;
+}
+
+function localCourseBannerBuilderEnsureModalDropOverlay(modal) {
+    if (!modal) {
+        return null;
+    }
+    var content = modal.querySelector('.modal-content') || modal;
+    var overlay = content.querySelector('[data-layer-modal-drop-overlay="1"]');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'local-course-banner-builder-layer-modal-drop-overlay';
+        overlay.setAttribute('data-layer-modal-drop-overlay', '1');
+        overlay.setAttribute('aria-hidden', 'true');
+        overlay.innerHTML = '<span class="local-course-banner-builder-layer-modal-drop-plus">+</span>';
+        content.appendChild(overlay);
+    }
+    return overlay;
+}
+
+function localCourseBannerBuilderSetModalDropOverlay(modal, visible) {
+    var overlay = localCourseBannerBuilderEnsureModalDropOverlay(modal);
+    if (!overlay) {
+        return;
+    }
+    overlay.classList.toggle('is-visible', !!visible);
+    if (modal) {
+        modal.classList.toggle('local-course-banner-builder-layer-modal-drop-active', !!visible);
+    }
+}
+
+function localCourseBannerBuilderHideAllModalDropOverlays() {
+    Array.prototype.slice.call(document.querySelectorAll('#local-course-banner-builder-add-layer-modal')).forEach(function (modal) {
+        modal.dataset.layerModalDropDepth = '0';
+        localCourseBannerBuilderSetModalDropOverlay(modal, false);
+    });
+}
+
+function localCourseBannerBuilderForwardModalDropToFilemanager(modal, event) {
+    var container = localCourseBannerBuilderGetModalDropFilemanagerContainer(modal);
+    if (!container || !event || !event.dataTransfer) {
+        return false;
+    }
+    localCourseBannerBuilderForwardingModalDrop = true;
+    try {
+        ['dragenter', 'dragover', 'drop'].forEach(function (type) {
+            var forwarded;
+            try {
+                forwarded = new DragEvent(type, {
+                    bubbles: true,
+                    cancelable: true,
+                    dataTransfer: event.dataTransfer
+                });
+            } catch (error) {
+                forwarded = document.createEvent('Event');
+                forwarded.initEvent(type, true, true);
+                forwarded.dataTransfer = event.dataTransfer;
+            }
+            container.dispatchEvent(forwarded);
+        });
+    } finally {
+        window.setTimeout(function () {
+            localCourseBannerBuilderForwardingModalDrop = false;
+            localCourseBannerBuilderHideAllModalDropOverlays();
+        }, 0);
+    }
+    return true;
+}
+
+document.addEventListener('dragenter', function (event) {
+    if (!localCourseBannerBuilderDragHasFiles(event)) {
+        return;
+    }
+    var modal = localCourseBannerBuilderGetAddImageLayerDropModal(event.target);
+    if (!modal) {
+        return;
+    }
+    modal.dataset.layerModalDropDepth = String((parseInt(modal.dataset.layerModalDropDepth || '0', 10) || 0) + 1);
+    localCourseBannerBuilderSetModalDropOverlay(modal, true);
+}, true);
+
+document.addEventListener('dragover', function (event) {
+    if (!localCourseBannerBuilderDragHasFiles(event)) {
+        return;
+    }
+    var modal = localCourseBannerBuilderGetAddImageLayerDropModal(event.target);
+    if (!modal) {
+        return;
+    }
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'copy';
+    localCourseBannerBuilderSetModalDropOverlay(modal, true);
+}, true);
+
+document.addEventListener('dragleave', function (event) {
+    var modal = localCourseBannerBuilderGetAddImageLayerDropModal(event.target);
+    if (!modal) {
+        return;
+    }
+    var depth = Math.max(0, (parseInt(modal.dataset.layerModalDropDepth || '0', 10) || 0) - 1);
+    modal.dataset.layerModalDropDepth = String(depth);
+    if (depth === 0) {
+        localCourseBannerBuilderSetModalDropOverlay(modal, false);
+    }
+}, true);
+
+document.addEventListener('drop', function (event) {
+    if (localCourseBannerBuilderForwardingModalDrop || !localCourseBannerBuilderDragHasFiles(event)) {
+        localCourseBannerBuilderHideAllModalDropOverlays();
+        return;
+    }
+    var modal = localCourseBannerBuilderGetAddImageLayerDropModal(event.target);
+    if (!modal) {
+        localCourseBannerBuilderHideAllModalDropOverlays();
+        return;
+    }
+    modal.dataset.layerModalDropDepth = '0';
+    localCourseBannerBuilderSetModalDropOverlay(modal, false);
+    if (event.target && event.target.closest && event.target.closest('#fitem_id_bannerimage_filemanager')) {
+        window.setTimeout(localCourseBannerBuilderHideAllModalDropOverlays, 0);
+        return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    localCourseBannerBuilderForwardModalDropToFilemanager(modal, event);
+    window.setTimeout(localCourseBannerBuilderHideAllModalDropOverlays, 60);
+    var form = modal.querySelector('form.mform');
+    if (form) {
+        localCourseBannerBuilderScheduleDraftPreviewRefresh(form, [200, 600, 1200]);
+    }
+}, true);
+
+function localCourseBannerBuilderRestoreCreateLayerModal() {
+    var modal = document.getElementById('local-course-banner-builder-add-layer-modal');
+    if (!modal) {
+        return;
+    }
+    var title = modal.querySelector('.modal-title');
+    if (title && modal.dataset.defaultTitle !== undefined) {
+        title.textContent = modal.dataset.defaultTitle;
+    }
+    var form = modal.querySelector('form.mform');
+    if (!form) {
+        return;
+    }
+    form.removeAttribute('data-edit-border-locked');
+    localCourseBannerBuilderSetSelectedLayerType(form, 'image');
+    form.dataset.activeDraftIndex = '';
+    delete form.dataset.modalPreviewActionsEnhanced;
+    delete form.dataset.previewMovedToTop;
+    delete form.dataset.borderSidesValue;
+    var snapshot = {};
+    try {
+        snapshot = modal.dataset.createDefaults ? JSON.parse(modal.dataset.createDefaults) : {};
+    } catch (e) {
+        snapshot = {};
+    }
+
+    Array.prototype.slice.call(form.querySelectorAll('input, select, textarea')).forEach(function (field) {
+        if (!field.name || !(field.name in snapshot)) {
+            return;
+        }
+        if (field.type === 'checkbox') {
+            field.checked = !!snapshot[field.name];
+        } else {
+            field.value = snapshot[field.name];
+        }
+    });
+
+    var borderAccordion = form.querySelector('[data-border-accordion="1"]');
+    if (borderAccordion) {
+        borderAccordion.open = false;
+    }
+
+    var elementIdInput = form.querySelector('#id_elementid');
+    if (elementIdInput) {
+        elementIdInput.value = '0';
+    }
+    var hasExistingImageInput = form.querySelector('#id_hasexistingimage');
+    if (hasExistingImageInput) {
+        hasExistingImageInput.value = '0';
+    }
+    var currentIsBorderLayerInput = form.querySelector('#id_currentisborderlayer');
+    if (currentIsBorderLayerInput) {
+        currentIsBorderLayerInput.value = '0';
+    }
+    var currentIsOverlayLayerInput = form.querySelector('#id_currentisoverlaylayer');
+    if (currentIsOverlayLayerInput) {
+        currentIsOverlayLayerInput.value = '0';
+    }
+    var borderSidesValueInput = form.querySelector('#id_bordersidesvalue');
+    if (borderSidesValueInput) {
+        borderSidesValueInput.value = 'top,right,bottom,left';
+    }
+    var multiDraftSettingsInput = form.querySelector('#id_multilayerdraftsettings');
+    if (multiDraftSettingsInput) {
+        multiDraftSettingsInput.value = '';
+    }
+    var borderToggle = form.querySelector('[data-border-toggle="1"][type="checkbox"]');
+    if (borderToggle) {
+        borderToggle.checked = false;
+        var sourceHasBorderLayerInput = form.querySelector('#id_sourcehasborderlayer');
+        var sourceHasBorderLayer = !!(sourceHasBorderLayerInput && parseInt(sourceHasBorderLayerInput.value || '0', 10) > 0);
+        borderToggle.disabled = sourceHasBorderLayer;
+        borderToggle.setAttribute('aria-disabled', sourceHasBorderLayer ? 'true' : 'false');
+        var borderToggleWrapper = borderToggle.closest('.form-check, .fitem, .felement');
+        if (borderToggleWrapper) {
+            borderToggleWrapper.classList.remove('local-course-banner-builder-option-disabled');
+        }
+    }
+    var overlayToggle = localCourseBannerBuilderGetOverlayToggle(form);
+    if (overlayToggle) {
+        if (overlayToggle.type === 'checkbox') {
+            overlayToggle.checked = false;
+        } else {
+            overlayToggle.value = '0';
+        }
+        var sourceHasOverlayLayerInput = form.querySelector('#id_sourcehasoverlaylayer');
+        var sourceHasOverlayLayer = !!(
+            sourceHasOverlayLayerInput && parseInt(sourceHasOverlayLayerInput.value || '0', 10) > 0
+        );
+        overlayToggle.disabled = sourceHasOverlayLayer;
+        overlayToggle.setAttribute('aria-disabled', sourceHasOverlayLayer ? 'true' : 'false');
+    }
+    localCourseBannerBuilderSyncLayerTypeChoice(form);
+    var filemanagerItem = form.querySelector('#fitem_id_bannerimage_filemanager');
+    if (filemanagerItem) {
+        filemanagerItem.hidden = false;
+        filemanagerItem.classList.remove('local-course-banner-builder-is-disabled');
+        filemanagerItem.setAttribute('aria-disabled', 'false');
+    }
+    var filemanagerNote = form.querySelector('[data-border-filemanager-note="1"]');
+    var filemanagerNoteItem = filemanagerNote ? filemanagerNote.closest('.fitem, .form-group, .mb-3') : null;
+    if (filemanagerNoteItem) {
+        filemanagerNoteItem.hidden = true;
+    }
+
+    localCourseBannerBuilderSyncBulkFields();
+    localCourseBannerBuilderPopulateBorderSidesFromValue('top,right,bottom,left', form);
+    localCourseBannerBuilderSyncOffsetFields(form);
+    localCourseBannerBuilderSyncCustomSizeFields(form);
+    localCourseBannerBuilderBindPercentSliders(form);
+    localCourseBannerBuilderSyncBorderSideGroup(form);
+    localCourseBannerBuilderSyncBorderRoundedField(form);
+    localCourseBannerBuilderSyncBorderSidesValue(form);
+    localCourseBannerBuilderUpgradeRanges();
+    localCourseBannerBuilderUpgradeNumberInputs();
+    localCourseBannerBuilderUpgradeColorPickers(form);
+    localCourseBannerBuilderBindColourInputs(form);
+    localCourseBannerBuilderSyncDashedControls(form);
+    localCourseBannerBuilderSyncLayerInputModes(form);
+    localCourseBannerBuilderSyncBorderPreview(form);
+    localCourseBannerBuilderSyncDraftUploadPreview(form);
+    localCourseBannerBuilderEnhanceBinaryOptionButtons(form);
+    localCourseBannerBuilderEnhanceModalPreviewActions(form);
+    localCourseBannerBuilderEnhanceBorderSidePicker(form);
+    localCourseBannerBuilderBindLayerFormEvents(form);
+    localCourseBannerBuilderBindLayerPreviewEvents(form);
+    localCourseBannerBuilderSyncDetailsCollapseIcons(form);
+}
+
+function localCourseBannerBuilderLoadCreateLayerModal() {
+    var modal = document.getElementById('local-course-banner-builder-add-layer-modal');
+    if (!modal) {
+        return false;
+    }
+    localCourseBannerBuilderRestoreCreateLayerModal();
+    var opened = localCourseBannerBuilderShowModal(modal);
+    if (opened && typeof window.jQuery !== 'undefined') {
+        window.jQuery(modal).one('shown.bs.modal', function () {
+            var form = modal.querySelector('form.mform');
+            localCourseBannerBuilderSyncLayerInputModes(form);
+            localCourseBannerBuilderSyncBorderPreview(form);
+            localCourseBannerBuilderEnhanceBinaryOptionButtons(form);
+            localCourseBannerBuilderEnhanceModalPreviewActions(form);
+            localCourseBannerBuilderEnhanceBorderSidePicker(form);
+            localCourseBannerBuilderBindColourInputs(form);
+            localCourseBannerBuilderSyncDetailsCollapseIcons(modal);
+            localCourseBannerBuilderPrimeHelpBubbles(modal);
+        });
+    } else {
+        var form = modal.querySelector('form.mform');
+        localCourseBannerBuilderSyncLayerInputModes(form);
+        localCourseBannerBuilderSyncBorderPreview(form);
+        localCourseBannerBuilderEnhanceBinaryOptionButtons(form);
+        localCourseBannerBuilderEnhanceModalPreviewActions(form);
+        localCourseBannerBuilderEnhanceBorderSidePicker(form);
+        localCourseBannerBuilderBindColourInputs(form);
+        localCourseBannerBuilderSyncDetailsCollapseIcons(modal);
+        localCourseBannerBuilderPrimeHelpBubbles(modal);
+    }
+    return opened;
+}
+
+function localCourseBannerBuilderFindFetchedLayerModal(doc) {
+    return doc.getElementById('local-course-banner-builder-edit-border-layer-modal') ||
+        doc.getElementById('local-course-banner-builder-edit-overlay-layer-modal') ||
+        doc.getElementById('local-course-banner-builder-edit-image-layer-modal') ||
+        doc.getElementById('local-course-banner-builder-add-layer-modal');
+}
+
+function localCourseBannerBuilderPrepareDynamicLayerModal(modal) {
+    var form = modal ? modal.querySelector('form.mform') : null;
+    if (!form) {
+        return;
+    }
+    form.dataset.previewUserChanged = '0';
+    localCourseBannerBuilderSyncBulkFields();
+    localCourseBannerBuilderApplyStoredBorderStateDeferred(form);
+    localCourseBannerBuilderSyncOffsetFields(form);
+    localCourseBannerBuilderSyncCustomSizeFields(form);
+    localCourseBannerBuilderBindPercentSliders(form);
+    localCourseBannerBuilderSyncBorderSideGroup(form);
+    localCourseBannerBuilderSyncBorderRoundedField(form);
+    localCourseBannerBuilderSyncBorderSidesValue(form);
+    localCourseBannerBuilderUpgradeRanges();
+    localCourseBannerBuilderUpgradeNumberInputs();
+    localCourseBannerBuilderUpgradeColorPickers(modal);
+    localCourseBannerBuilderBindColourInputs(modal);
+    localCourseBannerBuilderSyncDashedControls(form);
+    localCourseBannerBuilderSyncBorderPreview(form);
+    localCourseBannerBuilderSyncLayerInputModes(form);
+    localCourseBannerBuilderBindLayerFormEvents(form);
+    localCourseBannerBuilderBindLayerPreviewEvents(form);
+    localCourseBannerBuilderEnhanceBinaryOptionButtons(form);
+    localCourseBannerBuilderEnhanceModalPreviewActions(form);
+    localCourseBannerBuilderEnhanceBorderSidePicker(form);
+    localCourseBannerBuilderAlignModalActionButtons(modal);
+    localCourseBannerBuilderEnhanceAccordions(modal);
+    localCourseBannerBuilderSyncDetailsCollapseIcons(modal);
+    localCourseBannerBuilderInitPopovers(modal);
+    localCourseBannerBuilderPrimeHelpBubbles(modal);
+    window.requestAnimationFrame(function () {
+        localCourseBannerBuilderRefreshCurrentPreviewLayer(form);
+        localCourseBannerBuilderSyncBorderPreview(form);
+        window.requestAnimationFrame(function () {
+            localCourseBannerBuilderRefreshCurrentPreviewLayer(form);
+            localCourseBannerBuilderSyncBorderPreview(form);
+        });
+    });
+}
+
+function localCourseBannerBuilderSafelyPrepareDynamicLayerModal(modal) {
+    try {
+        localCourseBannerBuilderPrepareDynamicLayerModal(modal);
+    } catch (error) {
+        window.console.error(error);
+    }
+}
+
+function localCourseBannerBuilderAlignModalActionButtons(root) {
+    var scope = root || document;
+    var modals = [];
+    if (scope.nodeType === 1 && scope.matches && scope.matches('.modal[id^="local-course-banner-builder-"]')) {
+        modals.push(scope);
+    }
+    modals = modals.concat(Array.prototype.slice.call(scope.querySelectorAll ? scope.querySelectorAll('.modal[id^="local-course-banner-builder-"]') : []));
+
+    modals.forEach(function (modal) {
+        Array.prototype.slice.call(modal.querySelectorAll('form input[type="submit"], form button[type="submit"]')).forEach(function (button) {
+            if (button.closest('[data-modal-preview-action-list="1"]') || button.hasAttribute('data-modal-preview-submit-proxy')) {
+                return;
+            }
+            var row = button.closest('.fitem_actionbuttons, #fgroup_id_buttonar, .fitem, .form-group, .mb-3, .row, .text-end');
+            if (!row || row.tagName === 'FORM') {
+                row = button.parentElement;
+            }
+            if (!row || row.tagName === 'FORM') {
+                return;
+            }
+            row.classList.add('local-course-banner-builder-submit-actions');
+            row.style.display = 'flex';
+            row.style.justifyContent = 'flex-end';
+            row.style.alignItems = 'center';
+            row.style.width = '100%';
+            row.style.maxWidth = '100%';
+            row.style.marginLeft = 'auto';
+            button.style.marginLeft = 'auto';
+            button.style.display = 'inline-flex';
+        });
+    });
+
+    Array.prototype.slice.call(scope.querySelectorAll ? scope.querySelectorAll('.modal[id^="local-course-banner-builder-"] .fitem_actionbuttons') : []).forEach(function (row) {
+        var rowItem = row.closest('.fitem, .form-group, .mb-3, .row');
+        if (rowItem) {
+            rowItem.style.display = 'flex';
+            rowItem.style.justifyContent = 'flex-end';
+            rowItem.style.width = '100%';
+        }
+        row.style.display = 'flex';
+        row.style.justifyContent = 'flex-end';
+        row.style.alignItems = 'center';
+        row.style.width = '100%';
+        row.style.marginLeft = 'auto';
+        Array.prototype.slice.call(row.querySelectorAll('.felement, .col-md-9, fieldset, .fgroup, #fgroup_id_buttonar')).forEach(function (container) {
+            container.style.display = 'flex';
+            container.style.justifyContent = 'flex-end';
+            container.style.alignItems = 'center';
+            container.style.width = '100%';
+            container.style.maxWidth = '100%';
+            container.style.flex = '0 0 100%';
+            container.style.marginLeft = 'auto';
+        });
+        Array.prototype.slice.call(row.querySelectorAll('input[type="submit"], button[type="submit"]')).forEach(function (button) {
+            if (button.closest('[data-modal-preview-action-list="1"]') || button.hasAttribute('data-modal-preview-submit-proxy')) {
+                return;
+            }
+            button.style.marginLeft = 'auto';
+            button.style.display = 'inline-flex';
+        });
+    });
+}
+
+function localCourseBannerBuilderRehydrateSelectedSourceContent(root) {
+    var scope = root || document;
+    localCourseBannerBuilderSyncSelectionButton();
+    localCourseBannerBuilderSyncLayerSortOrders();
+    localCourseBannerBuilderSyncBulkFields();
+    localCourseBannerBuilderInitSourceVisualEditor(scope);
+    localCourseBannerBuilderSyncDetailsCollapseIcons(scope);
+    localCourseBannerBuilderEnhanceAccordions(scope);
+    localCourseBannerBuilderInitPopovers(scope);
+    localCourseBannerBuilderPrimeHelpBubbles(scope);
+    localCourseBannerBuilderSyncStickyHeader();
+}
+
+function localCourseBannerBuilderSyncLayerModalAfterContextChange(form) {
+    if (!form) {
+        return;
+    }
+    localCourseBannerBuilderSyncContextPreviewVisibility(form);
+    localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+}
+
+function localCourseBannerBuilderRemoveLayerFromLayerModals(layerId) {
+    if (!layerId) {
+        return;
+    }
+    var escapedLayerId = localCourseBannerBuilderEscapeSelectorId(String(layerId));
+    var touchedForms = [];
+    Array.prototype.slice.call(document.querySelectorAll(
+        '.modal[id^="local-course-banner-builder-"] [data-preview-layer-id="' + escapedLayerId + '"]'
+    )).forEach(function (layer) {
+        var form = localCourseBannerBuilderGetLayerScope(layer);
+        if (form && touchedForms.indexOf(form) === -1) {
+            touchedForms.push(form);
+        }
+        layer.remove();
+    });
+    touchedForms.forEach(localCourseBannerBuilderSyncLayerModalAfterContextChange);
+}
+
+function localCourseBannerBuilderRemoveOwnSourceLayersFromLayerModals() {
+    var touchedForms = [];
+    Array.prototype.slice.call(document.querySelectorAll(
+        '.modal[id^="local-course-banner-builder-"] [data-preview-context-layer="1"]:not([data-preview-inherited="1"])'
+    )).forEach(function (layer) {
+        var form = localCourseBannerBuilderGetLayerScope(layer);
+        if (form && touchedForms.indexOf(form) === -1) {
+            touchedForms.push(form);
+        }
+        layer.remove();
+    });
+    touchedForms.forEach(localCourseBannerBuilderSyncLayerModalAfterContextChange);
+}
+
+function localCourseBannerBuilderDeleteAllLayers(button) {
+    if (!button) {
+        return;
+    }
+    var form = document.getElementById('local-course-banner-builder-delete-all-layers');
+    if (!form) {
+        return;
+    }
+    var message = button.getAttribute('data-confirm-message') ||
+        localCourseBannerBuilderGetJsString('areyousure', '');
+    localCourseBannerBuilderConfirmAction(message).then(function (confirmed) {
+        if (!confirmed) {
+            return;
+        }
+        var formData = new FormData(form);
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin',
+            headers: {'X-Requested-With': 'XMLHttpRequest'}
+        }).then(function (response) {
+            if (!response.ok) {
+                throw new Error(localCourseBannerBuilderGetJsString(
+                    'unabletodeletealllayers',
+                    'Unable to delete all layers'
+                ));
+            }
+            return response.json();
+        }).then(function (data) {
+            if (!data || !data.success || typeof data.html !== 'string') {
+                throw new Error(localCourseBannerBuilderGetJsString(
+                    'invaliddeletealllayersresponse',
+                    'Invalid delete-all-layers response'
+                ));
+            }
+            var host = document.querySelector('[data-selected-source-content="1"]');
+            if (!host) {
+                return;
+            }
+            host.innerHTML = data.html;
+            var replacement = host.querySelector('[data-selected-source-content="1"]');
+            if (replacement) {
+                host.replaceWith(replacement);
+                host = replacement;
+            }
+            localCourseBannerBuilderRehydrateSelectedSourceContent(host);
+            localCourseBannerBuilderRemoveOwnSourceLayersFromLayerModals();
+        }).catch(function (error) {
+            window.console.error(error);
+        });
+    });
+}
+
+function localCourseBannerBuilderReplaceSelectedSourceContentFromDeleteResponse(data) {
+    if (!data || !data.success || typeof data.html !== 'string') {
+        throw new Error(localCourseBannerBuilderGetJsString(
+            'invaliddeleteselectedlayerresponse',
+            'Invalid delete-selected-layer response'
+        ));
+    }
+    var host = document.querySelector('[data-selected-source-content="1"]');
+    if (!host) {
+        return null;
+    }
+    host.innerHTML = data.html;
+    var replacement = host.querySelector('[data-selected-source-content="1"]');
+    if (replacement) {
+        host.replaceWith(replacement);
+        host = replacement;
+    }
+    localCourseBannerBuilderRehydrateSelectedSourceContent(host);
+    return host;
+}
+
+function localCourseBannerBuilderDeleteSelectedLayers(button) {
+    if (!button) {
+        return;
+    }
+    var form = document.getElementById('local-course-banner-builder-bulk-delete');
+    if (!form) {
+        return;
+    }
+    var selected = document.querySelectorAll(
+        'input[name="selectedelements[]"][form="local-course-banner-builder-bulk-delete"]:checked'
+    );
+    if (!selected.length) {
+        return;
+    }
+    var message = button.getAttribute('data-confirm-message') ||
+        localCourseBannerBuilderGetJsString('areyousure', '');
+    localCourseBannerBuilderConfirmAction(message).then(function (confirmed) {
+        if (!confirmed) {
+            return;
+        }
+        var formData = new FormData(form);
+        formData.delete('deleteselectedlayers');
+        formData.append('deleteselectedlayersajax', '1');
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin',
+            headers: {'X-Requested-With': 'XMLHttpRequest'}
+        }).then(function (response) {
+            if (!response.ok) {
+                throw new Error(localCourseBannerBuilderGetJsString(
+                    'unabletodeleteselectedlayer',
+                    'Unable to delete selected layer'
+                ));
+            }
+            return response.json();
+        }).then(function (data) {
+            localCourseBannerBuilderReplaceSelectedSourceContentFromDeleteResponse(data);
+        }).catch(function (error) {
+            window.console.error(error);
+            window.alert(error.message || localCourseBannerBuilderGetJsString(
+                'unabletodeleteselectedlayer',
+                'Unable to delete selected layer'
+            ));
+        });
+    });
+}
+
+function localCourseBannerBuilderEnhanceAccordions(root) {
+    Array.prototype.slice.call((root || document).querySelectorAll([
+        'details.local-course-banner-builder-upload-accordion',
+        'details.local-course-banner-builder-advanced-accordion',
+        'details.local-course-banner-builder-section'
+    ].join(','))).forEach(function (details) {
+        var summary = details.querySelector(':scope > summary');
+        if (!summary) {
+            return;
+        }
+        var icon = summary.querySelector('[data-accordion-chevron="1"], [data-local-details-toggle-icon="1"], .icons-collapse-expand');
+        if (!icon) {
+            icon = document.createElement('span');
+            icon.setAttribute('data-accordion-chevron', '1');
+            icon.setAttribute('aria-hidden', 'true');
+            icon.textContent = '';
+            var firstChild = summary.firstChild;
+            summary.insertBefore(icon, firstChild);
+        }
+        icon.setAttribute('data-accordion-chevron', '1');
+        icon.setAttribute('aria-hidden', 'true');
+        icon.className = 'btn btn-icon me-2 icons-collapse-expand local-course-banner-builder-collapse-icon';
+        if (!icon.querySelector('.expanded-icon')) {
+            icon.innerHTML = '<span class="expanded-icon icon-no-margin p-2"><i class="icon fa fa-chevron-down fa-fw" aria-hidden="true"></i></span>' +
+                '<span class="collapsed-icon icon-no-margin p-2"><i class="icon fa fa-chevron-right fa-fw" aria-hidden="true"></i></span>';
+        }
+        icon.removeAttribute('style');
+        icon.classList.toggle('collapsed', !details.hasAttribute('open'));
+        if (!details.dataset.chevronBound) {
+            details.addEventListener('toggle', function () {
+                var toggleIcon = summary.querySelector('[data-accordion-chevron="1"], [data-local-details-toggle-icon="1"], .icons-collapse-expand');
+                if (toggleIcon) {
+                    toggleIcon.style.removeProperty('transform');
+                    toggleIcon.classList.toggle('collapsed', !details.hasAttribute('open'));
+                }
+            });
+            details.dataset.chevronBound = '1';
+        }
+    });
+}
+
+function localCourseBannerBuilderLoadLayerModal(url) {
+    if (!url) {
+        return;
+    }
+    fetch(url, {
+        credentials: 'same-origin',
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    }).then(function (response) {
+        if (!response.ok) {
+            throw new Error(localCourseBannerBuilderGetJsString('unabletoloadlayerform', ''));
+        }
+        return response.text();
+    }).then(function (response) {
+        var html = response;
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(html, 'text/html');
+        var fetchedmodal = localCourseBannerBuilderFindFetchedLayerModal(doc);
+        if (!fetchedmodal) {
+            throw new Error(localCourseBannerBuilderGetJsString('fetchedmodalnotfound', ''));
+        }
+
+        if (fetchedmodal.id === 'local-course-banner-builder-add-layer-modal') {
+            throw new Error(localCourseBannerBuilderGetJsString('unexpectedcreatemodalreturned', ''));
+            return;
+        }
+
+        var targetmodal = document.getElementById(fetchedmodal.id);
+        if (!targetmodal) {
+            throw new Error(localCourseBannerBuilderGetJsString('targetmodalnotfound', ''));
+        }
+
+        var fetchedtitle = fetchedmodal.querySelector('.modal-title');
+        var fetchedbody = fetchedmodal.querySelector('.modal-body');
+        var targettitle = targetmodal.querySelector('.modal-title');
+        var targetbody = targetmodal.querySelector('.modal-body');
+        if (!fetchedbody || !targetbody) {
+            throw new Error(localCourseBannerBuilderGetJsString('modalbodynotfound', ''));
+        }
+
+        if (fetchedtitle && targettitle) {
+            targettitle.textContent = fetchedtitle.textContent;
+        }
+        targetbody.innerHTML = fetchedbody.innerHTML;
+
+        var form = targetbody.querySelector('form.mform');
+        if (form && fetchedmodal.id === 'local-course-banner-builder-edit-image-layer-modal') {
+            form.setAttribute('data-layer-modal-mode', 'editimage');
+            var hasExistingImage = form.querySelector('#id_hasexistingimage');
+            if (hasExistingImage) {
+                hasExistingImage.value = '1';
+            }
+        }
+        if (form && fetchedmodal.id === 'local-course-banner-builder-edit-border-layer-modal') {
+            form.setAttribute('data-layer-modal-mode', 'editborder');
+            form.setAttribute('data-edit-border-locked', '1');
+            var currentIsBorderLayer = form.querySelector('#id_currentisborderlayer');
+            if (currentIsBorderLayer) {
+                currentIsBorderLayer.value = '1';
+            }
+            var borderToggle = form.querySelector(
+                '[data-border-toggle="1"][type="checkbox"], [data-border-toggle="1"][type="hidden"]'
+            );
+            if (borderToggle) {
+                if (borderToggle.type === 'checkbox') {
+                    borderToggle.checked = true;
+                    borderToggle.disabled = true;
+                    borderToggle.setAttribute('aria-disabled', 'true');
+                } else {
+                    borderToggle.value = '1';
+                }
+            }
+            var sidesValue = form.querySelector('#id_bordersidesvalue');
+            if (sidesValue) {
+                form.dataset.borderSidesValue = sidesValue.value;
+            }
+        }
+        if (form && fetchedmodal.id === 'local-course-banner-builder-edit-overlay-layer-modal') {
+            form.setAttribute('data-layer-modal-mode', 'editoverlay');
+            var currentIsOverlayLayer = form.querySelector('#id_currentisoverlaylayer');
+            if (currentIsOverlayLayer) {
+                currentIsOverlayLayer.value = '1';
+            }
+            var overlayToggle = localCourseBannerBuilderGetOverlayToggle(form);
+            if (overlayToggle) {
+                if (overlayToggle.type === 'checkbox') {
+                    overlayToggle.checked = true;
+                    overlayToggle.disabled = true;
+                    overlayToggle.setAttribute('aria-disabled', 'true');
+                } else {
+                    overlayToggle.value = '1';
+                }
+            }
+            localCourseBannerBuilderSetSelectedLayerType(form, 'overlay');
+        }
+
+        localCourseBannerBuilderSafelyPrepareDynamicLayerModal(targetmodal);
+        if (localCourseBannerBuilderShowModal(targetmodal) && typeof window.jQuery !== 'undefined') {
+            window.jQuery(targetmodal).one('shown.bs.modal', function () {
+                var shownForm = targetmodal.querySelector('form.mform');
+                window.requestAnimationFrame(function () {
+                    localCourseBannerBuilderRefreshCurrentPreviewLayer(shownForm);
+                    localCourseBannerBuilderSyncBorderPreview(shownForm);
+                    localCourseBannerBuilderSyncContextPreviewVisibility(shownForm);
+                    window.requestAnimationFrame(function () {
+                        localCourseBannerBuilderSyncBorderPreview(shownForm);
+                    });
+                });
+            });
+        } else {
+            var visibleForm = targetmodal.querySelector('form.mform');
+            window.requestAnimationFrame(function () {
+                localCourseBannerBuilderRefreshCurrentPreviewLayer(visibleForm);
+                localCourseBannerBuilderSyncBorderPreview(visibleForm);
+                localCourseBannerBuilderSyncContextPreviewVisibility(visibleForm);
+                window.requestAnimationFrame(function () {
+                    localCourseBannerBuilderSyncBorderPreview(visibleForm);
+                });
+            });
+        }
+    }).catch(function (error) {
+        window.console.error(error);
+    });
+}
+
+function localCourseBannerBuilderSyncStickyHeader() {
+    var holder = document.querySelector('.local-course-banner-builder-selected-source-sticky-holder');
+    var header = document.querySelector('.local-course-banner-builder-selected-source-sticky');
+    var breadcrumbnav = document.querySelector('#page-header .page-header-nav');
+    if (breadcrumbnav) {
+        var breadcrumbHeight = breadcrumbnav.offsetHeight + 'px';
+        if (document.body.style.getPropertyValue('--local-course-banner-builder-breadcrumb-height') !== breadcrumbHeight) {
+            document.body.style.setProperty('--local-course-banner-builder-breadcrumb-height', breadcrumbHeight);
+        }
+    }
+    if (!holder || !header) {
+        return;
+    }
+    var snapOffset = 2;
+    var nav = document.querySelector('.navbar.fixed-top, header.fixed-top, #page-header.fixed-top');
+    var navbottom = nav ? Math.max(0, nav.getBoundingClientRect().bottom) : 0;
+    var top = navbottom;
+    var breadcrumbbottom = navbottom;
+    if (breadcrumbnav) {
+        breadcrumbbottom = Math.max(navbottom, breadcrumbnav.getBoundingClientRect().bottom);
+        top = Math.max(navbottom, breadcrumbbottom - snapOffset);
+    }
+
+    if (!holder.dataset.stickyAnchorTop) {
+        holder.dataset.stickyAnchorTop = String(holder.getBoundingClientRect().top + window.scrollY);
+    }
+    var anchortop = parseFloat(holder.dataset.stickyAnchorTop || '0');
+    var shouldFloat = (anchortop - window.scrollY) <= (breadcrumbbottom + snapOffset);
+
+    if (!shouldFloat) {
+        holder.classList.remove('focus-navigation-buttons-holder--floating');
+        header.classList.remove('focus-navigation-buttons--floating');
+        holder.style.left = '';
+        holder.style.right = '';
+        holder.style.width = '';
+        holder.style.top = '';
+        holder.style.bottom = '';
+        holder.style.minHeight = '0px';
+        header.style.left = '';
+        header.style.right = '';
+        header.style.width = '';
+        header.style.top = '';
+        if (document.body.style.getPropertyValue('--local-course-banner-builder-sticky-header-space') !== '0px') {
+            document.body.style.setProperty('--local-course-banner-builder-sticky-header-space', '0px');
+        }
+        return;
+    }
+    var rightSpace = 0;
+    var page = document.getElementById('page');
+    var rightDrawerOpen = document.body.classList.contains('drawer-open-right') ||
+        (page && page.classList.contains('show-drawer-right'));
+    var rightDrawerSelectors = [
+        '#theme_boost-drawers-blocks',
+        '#theme_boost-drawers-blocks.show',
+        '.drawer.drawer-right',
+        '.drawer.drawer-right.show',
+        '[data-region="right-hand-drawer"]:not(.hidden)',
+        '[data-region="right-hand-drawer"].drawer.show',
+        '[data-region="right-hand-drawer"].drawer'
+    ];
+    rightDrawerSelectors.forEach(function (selector) {
+        var drawer = document.querySelector(selector);
+        if (!drawer) {
+            return;
+        }
+        var rect = drawer.getBoundingClientRect();
+        var style = window.getComputedStyle(drawer);
+        var visible = rect.width > 0 &&
+            rect.right > 0 &&
+            rect.left < window.innerWidth &&
+            style.display !== 'none' &&
+            style.visibility !== 'hidden' &&
+            !drawer.classList.contains('hidden');
+        if (visible) {
+            rightSpace = Math.max(0, window.innerWidth - rect.left);
+        } else if (rightDrawerOpen) {
+            rightSpace = Math.max(rightSpace, drawer.offsetWidth || rect.width || 0);
+        }
+    });
+    holder.classList.add('focus-navigation-buttons-holder--floating');
+    header.classList.add('focus-navigation-buttons--floating');
+    var left = 0;
+    var rightBoundary = window.innerWidth;
+    var rightDrawerToggle = document.querySelector(
+        '.drawer-toggler.drawer-right-toggle, button[data-toggler="drawers"][data-target="theme_boost-drawers-blocks"]'
+    );
+    if (rightDrawerToggle) {
+        var toggleRect = rightDrawerToggle.getBoundingClientRect();
+        var toggleVisible = toggleRect.width > 0 && toggleRect.height > 0 && toggleRect.left < window.innerWidth;
+        if (toggleVisible) {
+            rightBoundary = Math.min(rightBoundary, Math.max(left, toggleRect.left - 12));
+        }
+    }
+    if (rightSpace > 0) {
+        rightBoundary = Math.min(rightBoundary, window.innerWidth - rightSpace);
+    }
+    var width = Math.max(0, rightBoundary - left);
+    holder.style.left = left + 'px';
+    holder.style.right = '';
+    holder.style.width = width + 'px';
+    holder.style.top = top + 'px';
+    holder.style.bottom = 'auto';
+    header.style.left = '';
+    header.style.right = '';
+    header.style.width = '100%';
+    header.style.top = '';
+    header.style.setProperty('--local-course-banner-builder-sticky-header-right-space', '0px');
+    holder.style.minHeight = header.offsetHeight + 'px';
+    var stickySpace = header.offsetHeight + 'px';
+    if (document.body.style.getPropertyValue('--local-course-banner-builder-sticky-header-space') !== stickySpace) {
+        document.body.style.setProperty('--local-course-banner-builder-sticky-header-space', stickySpace);
+    }
+}
+
+function localCourseBannerBuilderRunInitStep(label, callback) {
+    try {
+        callback();
+    } catch (error) {
+        if (window.console && window.console.error) {
+            window.console.error('Course banner builder init failed: ' + label, error);
+        }
+    }
+}
+
+localCourseBannerBuilderOnReady(function () {
+    var filemanager = document.querySelector('#fitem_id_bannerimage_filemanager');
+    var addlayermodal = document.getElementById('local-course-banner-builder-add-layer-modal');
+    if (addlayermodal) {
+        var defaulttitle = addlayermodal.querySelector('.modal-title');
+        addlayermodal.dataset.defaultTitle = defaulttitle ? defaulttitle.textContent : '';
+        var createDefaults = {};
+        Array.prototype.slice.call(addlayermodal.querySelectorAll('form.mform input, form.mform select, form.mform textarea')).forEach(function (field) {
+            if (!field.name) {
+                return;
+            }
+            if (field.type === 'checkbox') {
+                createDefaults[field.name] = !!field.checked;
+            } else {
+                createDefaults[field.name] = field.value;
+            }
+        });
+        addlayermodal.dataset.createDefaults = JSON.stringify(createDefaults);
+    }
+    Array.prototype.slice.call(document.querySelectorAll('[data-dynamic-layer-modal="1"]')).forEach(function (dynamicmodal) {
+        if (typeof window.jQuery === 'undefined') {
+            return;
+        }
+        window.jQuery(dynamicmodal).on('hidden.bs.modal', function () {
+            var body = dynamicmodal.querySelector('.modal-body');
+            if (body) {
+                body.innerHTML = '';
+            }
+        });
+    });
+    localCourseBannerBuilderRunInitStep('selection button', localCourseBannerBuilderSyncSelectionButton);
+    localCourseBannerBuilderRunInitStep('layer sort orders', localCourseBannerBuilderSyncLayerSortOrders);
+    localCourseBannerBuilderRunInitStep('bulk fields', localCourseBannerBuilderSyncBulkFields);
+    localCourseBannerBuilderRunInitStep('stored border state', localCourseBannerBuilderApplyStoredBorderStateDeferred);
+    localCourseBannerBuilderRunInitStep('offset fields', localCourseBannerBuilderSyncOffsetFields);
+    localCourseBannerBuilderRunInitStep('custom size fields', localCourseBannerBuilderSyncCustomSizeFields);
+    localCourseBannerBuilderRunInitStep('percent sliders', localCourseBannerBuilderBindPercentSliders);
+    localCourseBannerBuilderRunInitStep('border side group', localCourseBannerBuilderSyncBorderSideGroup);
+    localCourseBannerBuilderRunInitStep('border rounded field', localCourseBannerBuilderSyncBorderRoundedField);
+    localCourseBannerBuilderRunInitStep('range upgrades', localCourseBannerBuilderUpgradeRanges);
+    localCourseBannerBuilderRunInitStep('number input upgrades', localCourseBannerBuilderUpgradeNumberInputs);
+    localCourseBannerBuilderRunInitStep('color picker upgrades', function () {
+        localCourseBannerBuilderUpgradeColorPickers(document);
+    });
+    localCourseBannerBuilderRunInitStep('dashed controls', localCourseBannerBuilderSyncDashedControls);
+    localCourseBannerBuilderRunInitStep('layer input modes', localCourseBannerBuilderSyncLayerInputModes);
+    localCourseBannerBuilderRunInitStep('border preview', localCourseBannerBuilderSyncBorderPreview);
+    localCourseBannerBuilderRunInitStep('layer form events', localCourseBannerBuilderBindLayerFormEvents);
+    localCourseBannerBuilderRunInitStep('layer preview events', localCourseBannerBuilderBindLayerPreviewEvents);
+    var createLayerForm = addlayermodal ? addlayermodal.querySelector('form.mform') : null;
+    if (createLayerForm) {
+        localCourseBannerBuilderRunInitStep('create layer binary buttons', function () {
+            localCourseBannerBuilderEnhanceBinaryOptionButtons(createLayerForm);
+        });
+        localCourseBannerBuilderRunInitStep('create layer preview actions', function () {
+            localCourseBannerBuilderEnhanceModalPreviewActions(createLayerForm);
+        });
+        localCourseBannerBuilderRunInitStep('create layer border side picker', function () {
+            localCourseBannerBuilderEnhanceBorderSidePicker(createLayerForm);
+        });
+    }
+    localCourseBannerBuilderRunInitStep('source visual editor', function () {
+        localCourseBannerBuilderInitSourceVisualEditor(document);
+    });
+    Array.prototype.slice.call(document.querySelectorAll('[data-source-visual-editor="1"]')).forEach(function (root) {
+        localCourseBannerBuilderSyncSourcePreviewSelectionOutline(root);
+    });
+    Array.prototype.slice.call(document.querySelectorAll('form.mform')).forEach(function (form) {
+        localCourseBannerBuilderSyncModalPreviewSelectionOutline(form);
+    });
+    localCourseBannerBuilderRunInitStep('details icons', localCourseBannerBuilderSyncDetailsCollapseIcons);
+    localCourseBannerBuilderRunInitStep('modal action buttons', function () {
+        localCourseBannerBuilderAlignModalActionButtons(document);
+    });
+    localCourseBannerBuilderRunInitStep('accordions', function () {
+        localCourseBannerBuilderEnhanceAccordions(document);
+    });
+    localCourseBannerBuilderRunInitStep('popovers', function () {
+        localCourseBannerBuilderInitPopovers(document);
+    });
+    localCourseBannerBuilderRunInitStep('help bubbles', function () {
+        localCourseBannerBuilderPrimeHelpBubbles(document);
+    });
+    if (!document.documentElement.dataset.localCourseBannerBuilderFilmstripResizeBound) {
+        window.addEventListener('resize', function () {
+            Array.prototype.slice.call(document.querySelectorAll('[data-source-preview-filmstrip="1"]')).forEach(function (filmstrip) {
+                localCourseBannerBuilderUpdateSourcePreviewFilmstripNav(filmstrip);
+            });
+            Array.prototype.slice.call(document.querySelectorAll('[data-source-visual-editor="1"]')).forEach(function (root) {
+                localCourseBannerBuilderSyncSourcePreviewSelectionOutline(root);
+            });
+            Array.prototype.slice.call(document.querySelectorAll('form.mform')).forEach(function (form) {
+                localCourseBannerBuilderSyncModalPreviewSelectionOutline(form);
+            });
+        });
+        document.documentElement.dataset.localCourseBannerBuilderFilmstripResizeBound = '1';
+    }
+    localCourseBannerBuilderSyncStickyHeader();
+    Array.prototype.slice.call(document.querySelectorAll('[data-source-dropdown]')).forEach(function (dropdown) {
+        localCourseBannerBuilderSyncSourceDropdownButton(dropdown);
+        localCourseBannerBuilderSyncSourceSubmit(dropdown);
+    });
+    Array.prototype.slice.call(document.querySelectorAll('[data-target="#local-course-banner-builder-add-layer-modal"]')).forEach(function (button) {
+        button.addEventListener('click', function (e) {
+            if (localCourseBannerBuilderLoadCreateLayerModal()) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+    });
+    var params = new URLSearchParams(window.location.search);
+    var settings = document.getElementById('local-course-banner-builder-source-settings');
+    if (settings && (params.get('sourcekey') || parseInt(params.get('categoryid') || '0', 10) > 0)) {
+        window.setTimeout(function () {
+            settings.scrollIntoView({behavior: 'smooth', block: 'start'});
+        }, 120);
+    }
+    var autoSettingsModal = document.querySelector('[data-auto-open-source-settings="1"]');
+    if (autoSettingsModal) {
+        window.setTimeout(function () {
+            localCourseBannerBuilderShowModal(autoSettingsModal);
+        }, 160);
+    }
+    if (params.get('openformatmodal') === '1') {
+        window.setTimeout(function () {
+            var formatContext = params.get('bannerformatcontext') === 'site' ? 'site' : 'course';
+            localCourseBannerBuilderShowModal(
+                document.getElementById('local-course-banner-builder-banner-format-' + formatContext + '-modal')
+            );
+        }, 160);
+    }
+    window.addEventListener('resize', localCourseBannerBuilderSyncStickyHeader, {passive: true});
+    window.addEventListener('resize', function () {
+        localCourseBannerBuilderSyncBorderPreview();
+        localCourseBannerBuilderSyncLayerBannerPreview();
+    }, {passive: true});
+    window.addEventListener('scroll', localCourseBannerBuilderSyncStickyHeader, {passive: true});
+    if (typeof MutationObserver !== 'undefined') {
+        var drawerObserver = new MutationObserver(localCourseBannerBuilderSyncStickyHeader);
+        var body = document.body;
+        if (body) {
+            drawerObserver.observe(body, {attributes: true, attributeFilter: ['class']});
+        }
+        Array.prototype.slice.call(document.querySelectorAll(
+            '#page, #theme_boost-drawers-blocks, [data-region="right-hand-drawer"], .drawer, .navbar.fixed-top, header.fixed-top, #page-header.fixed-top'
+        )).forEach(function (target) {
+            drawerObserver.observe(target, {attributes: true, attributeFilter: ['class', 'style', 'aria-expanded']});
+        });
+    }
+    if (!filemanager || typeof MutationObserver === 'undefined') {
+        return;
+    }
+    var observer = new MutationObserver(function () {
+        localCourseBannerBuilderSyncBulkFields();
+        localCourseBannerBuilderSyncLayerInputModes();
+    });
+    observer.observe(filemanager, {childList: true, subtree: true});
+});
+
+    if (typeof window !== 'undefined') {
+        window.localCourseBannerBuilderSyncSourceDropdownButton = localCourseBannerBuilderSyncSourceDropdownButton;
+        window.localCourseBannerBuilderToggleRootSource = localCourseBannerBuilderToggleRootSource;
+        window.localCourseBannerBuilderGetSourceChainDescendants = localCourseBannerBuilderGetSourceChainDescendants;
+        window.localCourseBannerBuilderGetSourceChainRowsByKey = localCourseBannerBuilderGetSourceChainRowsByKey;
+        window.localCourseBannerBuilderSyncSourceChainRowVisibility = localCourseBannerBuilderSyncSourceChainRowVisibility;
+        window.localCourseBannerBuilderToggleSourceChain = localCourseBannerBuilderToggleSourceChain;
+        window.localCourseBannerBuilderToggleAllSourceChains = localCourseBannerBuilderToggleAllSourceChains;
+        window.localCourseBannerBuilderEnsureSourceChainPreviewModal = localCourseBannerBuilderEnsureSourceChainPreviewModal;
+        window.localCourseBannerBuilderShowSourceChainPreview = localCourseBannerBuilderShowSourceChainPreview;
+        window.localCourseBannerBuilderSyncSourceSubmit = localCourseBannerBuilderSyncSourceSubmit;
+        window.localCourseBannerBuilderSyncSelectionButton = localCourseBannerBuilderSyncSelectionButton;
+        window.localCourseBannerBuilderSyncSourcePreviewEnabledState = localCourseBannerBuilderSyncSourcePreviewEnabledState;
+        window.localCourseBannerBuilderSyncSourcePreviewFitOverrideState = localCourseBannerBuilderSyncSourcePreviewFitOverrideState;
+        window.localCourseBannerBuilderSyncBulkFields = localCourseBannerBuilderSyncBulkFields;
+        window.localCourseBannerBuilderSyncLayerSortOrders = localCourseBannerBuilderSyncLayerSortOrders;
+        window.localCourseBannerBuilderGetLayerSortableForSource = localCourseBannerBuilderGetLayerSortableForSource;
+        window.localCourseBannerBuilderGetSourcePreviewRootForLayerSortable = localCourseBannerBuilderGetSourcePreviewRootForLayerSortable;
+        window.localCourseBannerBuilderSyncLayerSortablePreviewOrder = localCourseBannerBuilderSyncLayerSortablePreviewOrder;
+        window.localCourseBannerBuilderApplyLayerSortableOrderToSourcePreview = localCourseBannerBuilderApplyLayerSortableOrderToSourcePreview;
+        window.localCourseBannerBuilderEnforceLockedLayerOrder = localCourseBannerBuilderEnforceLockedLayerOrder;
+        window.localCourseBannerBuilderIsLayerRowOrderLocked = localCourseBannerBuilderIsLayerRowOrderLocked;
+        window.localCourseBannerBuilderGetLayerScope = localCourseBannerBuilderGetLayerScope;
+        window.localCourseBannerBuilderSyncBorderSideGroup = localCourseBannerBuilderSyncBorderSideGroup;
+        window.localCourseBannerBuilderGetBorderSides = localCourseBannerBuilderGetBorderSides;
+        window.localCourseBannerBuilderSyncBorderSidesValue = localCourseBannerBuilderSyncBorderSidesValue;
+        window.localCourseBannerBuilderApplyStoredBorderSides = localCourseBannerBuilderApplyStoredBorderSides;
+        window.localCourseBannerBuilderPopulateBorderSidesFromValue = localCourseBannerBuilderPopulateBorderSidesFromValue;
+        window.localCourseBannerBuilderExtractBorderSidesFromForm = localCourseBannerBuilderExtractBorderSidesFromForm;
+        window.localCourseBannerBuilderApplyStoredBorderStateDeferred = localCourseBannerBuilderApplyStoredBorderStateDeferred;
+        window.localCourseBannerBuilderSetBorderSidesFromAll = localCourseBannerBuilderSetBorderSidesFromAll;
+        window.localCourseBannerBuilderSyncBorderRoundedField = localCourseBannerBuilderSyncBorderRoundedField;
+        window.localCourseBannerBuilderSyncBorderAccordion = localCourseBannerBuilderSyncBorderAccordion;
+        window.localCourseBannerBuilderSetDisabledState = localCourseBannerBuilderSetDisabledState;
+        window.localCourseBannerBuilderPlaceExistingBorderNote = localCourseBannerBuilderPlaceExistingBorderNote;
+        window.localCourseBannerBuilderMoveLayerPreviewToTop = localCourseBannerBuilderMoveLayerPreviewToTop;
+        window.localCourseBannerBuilderCreateLayerTypeButton = localCourseBannerBuilderCreateLayerTypeButton;
+        window.localCourseBannerBuilderCreateLayerTypeChoice = localCourseBannerBuilderCreateLayerTypeChoice;
+        window.localCourseBannerBuilderIsEditLayerForm = localCourseBannerBuilderIsEditLayerForm;
+        window.localCourseBannerBuilderIsEditBorderForm = localCourseBannerBuilderIsEditBorderForm;
+        window.localCourseBannerBuilderIsEditOverlayForm = localCourseBannerBuilderIsEditOverlayForm;
+        window.localCourseBannerBuilderIsEditImageForm = localCourseBannerBuilderIsEditImageForm;
+        window.localCourseBannerBuilderGetOverlayToggle = localCourseBannerBuilderGetOverlayToggle;
+        window.localCourseBannerBuilderCreateOverlayFallbackField = localCourseBannerBuilderCreateOverlayFallbackField;
+        window.localCourseBannerBuilderIsSiteBannerLayerForm = localCourseBannerBuilderIsSiteBannerLayerForm;
+        window.localCourseBannerBuilderSetSegmentedChoice = localCourseBannerBuilderSetSegmentedChoice;
+        window.localCourseBannerBuilderCreateSegmentedChoice = localCourseBannerBuilderCreateSegmentedChoice;
+        window.localCourseBannerBuilderEnsureOverlayFallbackControls = localCourseBannerBuilderEnsureOverlayFallbackControls;
+        window.localCourseBannerBuilderReadOverlayToggle = localCourseBannerBuilderReadOverlayToggle;
+        window.localCourseBannerBuilderSetOverlayToggle = localCourseBannerBuilderSetOverlayToggle;
+        window.localCourseBannerBuilderGetSelectedLayerType = localCourseBannerBuilderGetSelectedLayerType;
+        window.localCourseBannerBuilderSetSelectedLayerType = localCourseBannerBuilderSetSelectedLayerType;
+        window.localCourseBannerBuilderOpenModalSidePanel = localCourseBannerBuilderOpenModalSidePanel;
+        window.localCourseBannerBuilderOpenModalSidePanelOnce = localCourseBannerBuilderOpenModalSidePanelOnce;
+        window.localCourseBannerBuilderSelectLayerType = localCourseBannerBuilderSelectLayerType;
+        window.localCourseBannerBuilderEnsureLayerTypeChoice = localCourseBannerBuilderEnsureLayerTypeChoice;
+        window.localCourseBannerBuilderEmbedLayerTypeChoiceInPreview = localCourseBannerBuilderEmbedLayerTypeChoiceInPreview;
+        window.localCourseBannerBuilderMoveLayerEssentialsUnderPreview = localCourseBannerBuilderMoveLayerEssentialsUnderPreview;
+        window.localCourseBannerBuilderEmbedEnabledToggleInLayerTypeChoice = localCourseBannerBuilderEmbedEnabledToggleInLayerTypeChoice;
+        window.localCourseBannerBuilderSyncLayerTypeChoice = localCourseBannerBuilderSyncLayerTypeChoice;
+        window.localCourseBannerBuilderSyncLayerInputModes = localCourseBannerBuilderSyncLayerInputModes;
+        window.localCourseBannerBuilderSyncOffsetFields = localCourseBannerBuilderSyncOffsetFields;
+        window.localCourseBannerBuilderApplyLayerPositionAnchorChange = localCourseBannerBuilderApplyLayerPositionAnchorChange;
+        window.localCourseBannerBuilderNormaliseNumericValue = localCourseBannerBuilderNormaliseNumericValue;
+        window.localCourseBannerBuilderClampPercent = localCourseBannerBuilderClampPercent;
+        window.localCourseBannerBuilderClampCropSize = localCourseBannerBuilderClampCropSize;
+        window.localCourseBannerBuilderNormaliseCropState = localCourseBannerBuilderNormaliseCropState;
+        window.localCourseBannerBuilderApplyCropToImageStyles = localCourseBannerBuilderApplyCropToImageStyles;
+        window.localCourseBannerBuilderApplyCropToLayerImage = localCourseBannerBuilderApplyCropToLayerImage;
+        window.localCourseBannerBuilderReadPreviewCropState = localCourseBannerBuilderReadPreviewCropState;
+        window.localCourseBannerBuilderGetCropInput = localCourseBannerBuilderGetCropInput;
+        window.localCourseBannerBuilderSetPreviewCropState = localCourseBannerBuilderSetPreviewCropState;
+        window.localCourseBannerBuilderGetCropEditSourceState = localCourseBannerBuilderGetCropEditSourceState;
+        window.localCourseBannerBuilderHasCropSourceState = localCourseBannerBuilderHasCropSourceState;
+        window.localCourseBannerBuilderCopyCropSourceState = localCourseBannerBuilderCopyCropSourceState;
+        window.localCourseBannerBuilderPreserveCropSourceState = localCourseBannerBuilderPreserveCropSourceState;
+        window.localCourseBannerBuilderGetStoredCropEditSourceState = localCourseBannerBuilderGetStoredCropEditSourceState;
+        window.localCourseBannerBuilderGetEditableCurrentPreviewImage = localCourseBannerBuilderGetEditableCurrentPreviewImage;
+        window.localCourseBannerBuilderGetLayerFormPreviewPanel = localCourseBannerBuilderGetLayerFormPreviewPanel;
+        window.localCourseBannerBuilderGetLayerFormPreviewImage = localCourseBannerBuilderGetLayerFormPreviewImage;
+        window.localCourseBannerBuilderSyncLayerFormFromCurrentPreviewLayer = localCourseBannerBuilderSyncLayerFormFromCurrentPreviewLayer;
+        window.localCourseBannerBuilderMoveModalPreviewLayerDepth = localCourseBannerBuilderMoveModalPreviewLayerDepth;
+        window.localCourseBannerBuilderWriteCropStateToForm = localCourseBannerBuilderWriteCropStateToForm;
+        window.localCourseBannerBuilderPrepareLayerFormForSubmit = localCourseBannerBuilderPrepareLayerFormForSubmit;
+        window.localCourseBannerBuilderShouldConfirmChildBorderDisable = localCourseBannerBuilderShouldConfirmChildBorderDisable;
+        window.localCourseBannerBuilderGetChildBorderDisableConfirmMessage = localCourseBannerBuilderGetChildBorderDisableConfirmMessage;
+        window.localCourseBannerBuilderShouldConfirmChildOverlayDisable = localCourseBannerBuilderShouldConfirmChildOverlayDisable;
+        window.localCourseBannerBuilderGetChildOverlayDisableConfirmMessage = localCourseBannerBuilderGetChildOverlayDisableConfirmMessage;
+        window.localCourseBannerBuilderGetPreviewCropState = localCourseBannerBuilderGetPreviewCropState;
+        window.localCourseBannerBuilderUpdateCropSelectionFrame = localCourseBannerBuilderUpdateCropSelectionFrame;
+        window.localCourseBannerBuilderEnterCropEditLayout = localCourseBannerBuilderEnterCropEditLayout;
+        window.localCourseBannerBuilderExitCropEditLayout = localCourseBannerBuilderExitCropEditLayout;
+        window.localCourseBannerBuilderEnsureCropEditor = localCourseBannerBuilderEnsureCropEditor;
+        window.localCourseBannerBuilderRefreshCropEditor = localCourseBannerBuilderRefreshCropEditor;
+        window.localCourseBannerBuilderRemoveCropEditor = localCourseBannerBuilderRemoveCropEditor;
+        window.localCourseBannerBuilderSyncPreviewCropFocusState = localCourseBannerBuilderSyncPreviewCropFocusState;
+        window.localCourseBannerBuilderToggleCropEditor = localCourseBannerBuilderToggleCropEditor;
+        window.localCourseBannerBuilderGetCropControlLayer = localCourseBannerBuilderGetCropControlLayer;
+        window.localCourseBannerBuilderGetCropSelectionCustomState = localCourseBannerBuilderGetCropSelectionCustomState;
+        window.localCourseBannerBuilderApplyCropSelectionCustomStateToForm = localCourseBannerBuilderApplyCropSelectionCustomStateToForm;
+        window.localCourseBannerBuilderSaveDraftPreviewLayerState = localCourseBannerBuilderSaveDraftPreviewLayerState;
+        window.localCourseBannerBuilderApplyModalCropPreviewState = localCourseBannerBuilderApplyModalCropPreviewState;
+        window.localCourseBannerBuilderApplyCropEditor = localCourseBannerBuilderApplyCropEditor;
+        window.localCourseBannerBuilderCancelCropEditor = localCourseBannerBuilderCancelCropEditor;
+        window.localCourseBannerBuilderStartCropInteraction = localCourseBannerBuilderStartCropInteraction;
+        window.localCourseBannerBuilderGetActivePreviewCropLayer = localCourseBannerBuilderGetActivePreviewCropLayer;
+        window.localCourseBannerBuilderConstrainCropResize = localCourseBannerBuilderConstrainCropResize;
+        window.localCourseBannerBuilderHandleCropPointerMove = localCourseBannerBuilderHandleCropPointerMove;
+        window.localCourseBannerBuilderStopCropInteraction = localCourseBannerBuilderStopCropInteraction;
+        window.localCourseBannerBuilderSyncCustomSizeFields = localCourseBannerBuilderSyncCustomSizeFields;
+        window.localCourseBannerBuilderBindPercentSliders = localCourseBannerBuilderBindPercentSliders;
+        window.localCourseBannerBuilderSyncPercentSliderValues = localCourseBannerBuilderSyncPercentSliderValues;
+        window.localCourseBannerBuilderSyncLinkedCustomSizeInputs = localCourseBannerBuilderSyncLinkedCustomSizeInputs;
+        window.localCourseBannerBuilderUpgradeRanges = localCourseBannerBuilderUpgradeRanges;
+        window.localCourseBannerBuilderUpgradeNumberInputs = localCourseBannerBuilderUpgradeNumberInputs;
+        window.localCourseBannerBuilderNormaliseHexColor = localCourseBannerBuilderNormaliseHexColor;
+        window.localCourseBannerBuilderUpgradeColorPickers = localCourseBannerBuilderUpgradeColorPickers;
+        window.localCourseBannerBuilderParseColor = localCourseBannerBuilderParseColor;
+        window.localCourseBannerBuilderIsBorderPreviewControl = localCourseBannerBuilderIsBorderPreviewControl;
+        window.localCourseBannerBuilderScheduleBorderPreviewSync = localCourseBannerBuilderScheduleBorderPreviewSync;
+        window.localCourseBannerBuilderSyncBorderPreview = localCourseBannerBuilderSyncBorderPreview;
+        window.localCourseBannerBuilderGetPreviewObjectPosition = localCourseBannerBuilderGetPreviewObjectPosition;
+        window.localCourseBannerBuilderGetPreviewZIndex = localCourseBannerBuilderGetPreviewZIndex;
+        window.localCourseBannerBuilderIsLayerPreviewInteractionVisible = localCourseBannerBuilderIsLayerPreviewInteractionVisible;
+        window.localCourseBannerBuilderGetPreviewZIndexBand = localCourseBannerBuilderGetPreviewZIndexBand;
+        window.localCourseBannerBuilderGetOverlayOrderingContext = localCourseBannerBuilderGetOverlayOrderingContext;
+        window.localCourseBannerBuilderPreviewHasOverlay = localCourseBannerBuilderPreviewHasOverlay;
+        window.localCourseBannerBuilderGetPreviewImageZIndexBase = localCourseBannerBuilderGetPreviewImageZIndexBase;
+        window.localCourseBannerBuilderGetOverlayTitleZIndex = localCourseBannerBuilderGetOverlayTitleZIndex;
+        window.localCourseBannerBuilderGetDraftPreviewZIndex = localCourseBannerBuilderGetDraftPreviewZIndex;
+        window.localCourseBannerBuilderGetSelectionPercent = localCourseBannerBuilderGetSelectionPercent;
+        window.localCourseBannerBuilderSyncPreviewSelectionOutline = localCourseBannerBuilderSyncPreviewSelectionOutline;
+        window.localCourseBannerBuilderSyncModalPreviewSelectionOutline = localCourseBannerBuilderSyncModalPreviewSelectionOutline;
+        window.localCourseBannerBuilderSyncSourcePreviewSelectionOutline = localCourseBannerBuilderSyncSourcePreviewSelectionOutline;
+        window.localCourseBannerBuilderBuildDynamicPreviewImageStyle = localCourseBannerBuilderBuildDynamicPreviewImageStyle;
+        window.localCourseBannerBuilderAppendPreviewPositionStyles = localCourseBannerBuilderAppendPreviewPositionStyles;
+        window.localCourseBannerBuilderGetPreviewLayerCentre = localCourseBannerBuilderGetPreviewLayerCentre;
+        window.localCourseBannerBuilderAppendPreviewLayerPositionStyles = localCourseBannerBuilderAppendPreviewLayerPositionStyles;
+        window.localCourseBannerBuilderCancelActivePreviewCropInScope = localCourseBannerBuilderCancelActivePreviewCropInScope;
+        window.localCourseBannerBuilderGetCustomPreviewBox = localCourseBannerBuilderGetCustomPreviewBox;
+        window.localCourseBannerBuilderGetEffectivePreviewImageDimensions = localCourseBannerBuilderGetEffectivePreviewImageDimensions;
+        window.localCourseBannerBuilderGetLayerEffectiveImageAspect = localCourseBannerBuilderGetLayerEffectiveImageAspect;
+        window.localCourseBannerBuilderGetClosestAspectPreviewBox = localCourseBannerBuilderGetClosestAspectPreviewBox;
+        window.localCourseBannerBuilderApplyClosestKeepAspectToLayerForm = localCourseBannerBuilderApplyClosestKeepAspectToLayerForm;
+        window.localCourseBannerBuilderApplyClosestKeepAspectToSourcePreview = localCourseBannerBuilderApplyClosestKeepAspectToSourcePreview;
+        window.localCourseBannerBuilderAppendPreviewBoxStyles = localCourseBannerBuilderAppendPreviewBoxStyles;
+        window.localCourseBannerBuilderGetPreviewFrameAspect = localCourseBannerBuilderGetPreviewFrameAspect;
+        window.localCourseBannerBuilderGetContainedPreviewBox = localCourseBannerBuilderGetContainedPreviewBox;
+        window.localCourseBannerBuilderGetOriginalPreviewBox = localCourseBannerBuilderGetOriginalPreviewBox;
+        window.localCourseBannerBuilderNormaliseDraftPreviewUrl = localCourseBannerBuilderNormaliseDraftPreviewUrl;
+        window.localCourseBannerBuilderGetDraftPreviewFileIdentity = localCourseBannerBuilderGetDraftPreviewFileIdentity;
+        window.localCourseBannerBuilderGetDraftPreviewIndexMap = localCourseBannerBuilderGetDraftPreviewIndexMap;
+        window.localCourseBannerBuilderSetDraftPreviewIndexMap = localCourseBannerBuilderSetDraftPreviewIndexMap;
+        window.localCourseBannerBuilderGetStableDraftPreviewIndex = localCourseBannerBuilderGetStableDraftPreviewIndex;
+        window.localCourseBannerBuilderIsDraftFilemanagerBusy = localCourseBannerBuilderIsDraftFilemanagerBusy;
+        window.localCourseBannerBuilderGetVisibleDraftFileItems = localCourseBannerBuilderGetVisibleDraftFileItems;
+        window.localCourseBannerBuilderGetDraftPreviewFilesFromCache = localCourseBannerBuilderGetDraftPreviewFilesFromCache;
+        window.localCourseBannerBuilderSetDraftPreviewFilesCache = localCourseBannerBuilderSetDraftPreviewFilesCache;
+        window.localCourseBannerBuilderDisableDraftFilemanagerAlternateViews = localCourseBannerBuilderDisableDraftFilemanagerAlternateViews;
+        window.localCourseBannerBuilderClearDraftPreviewFilesCache = localCourseBannerBuilderClearDraftPreviewFilesCache;
+        window.localCourseBannerBuilderRefreshDraftPreviewFileList = localCourseBannerBuilderRefreshDraftPreviewFileList;
+        window.localCourseBannerBuilderClampPreviewOffset = localCourseBannerBuilderClampPreviewOffset;
+        window.localCourseBannerBuilderIsPersistedImageLayerEdit = localCourseBannerBuilderIsPersistedImageLayerEdit;
+        window.localCourseBannerBuilderRememberCurrentPreviewImageUrl = localCourseBannerBuilderRememberCurrentPreviewImageUrl;
+        window.localCourseBannerBuilderForgetCurrentPreviewImageUrl = localCourseBannerBuilderForgetCurrentPreviewImageUrl;
+        window.localCourseBannerBuilderDraftFilemanagerHasVisibleContent = localCourseBannerBuilderDraftFilemanagerHasVisibleContent;
+        window.localCourseBannerBuilderGetPreviewImageUrl = localCourseBannerBuilderGetPreviewImageUrl;
+        window.localCourseBannerBuilderGetPreviewContextToggle = localCourseBannerBuilderGetPreviewContextToggle;
+        window.localCourseBannerBuilderEnsurePreviewContextTitle = localCourseBannerBuilderEnsurePreviewContextTitle;
+        window.localCourseBannerBuilderSyncPreviewTitleSafeArea = localCourseBannerBuilderSyncPreviewTitleSafeArea;
+        window.localCourseBannerBuilderSyncContextPreviewVisibility = localCourseBannerBuilderSyncContextPreviewVisibility;
+        window.localCourseBannerBuilderUpdatePreviewAspectLockButton = localCourseBannerBuilderUpdatePreviewAspectLockButton;
+        window.localCourseBannerBuilderTogglePreviewAspectLock = localCourseBannerBuilderTogglePreviewAspectLock;
+        window.localCourseBannerBuilderSyncCurrentImagePreview = localCourseBannerBuilderSyncCurrentImagePreview;
+        window.localCourseBannerBuilderRefreshCurrentPreviewLayer = localCourseBannerBuilderRefreshCurrentPreviewLayer;
+        window.localCourseBannerBuilderSyncLayerBannerPreview = localCourseBannerBuilderSyncLayerBannerPreview;
+        window.localCourseBannerBuilderDebugInteractionCost = localCourseBannerBuilderDebugInteractionCost;
+        window.localCourseBannerBuilderMaybeUpdateInteractionGuides = localCourseBannerBuilderMaybeUpdateInteractionGuides;
+        window.localCourseBannerBuilderRoundPreviewPercent = localCourseBannerBuilderRoundPreviewPercent;
+        window.localCourseBannerBuilderSetPreviewFieldValue = localCourseBannerBuilderSetPreviewFieldValue;
+        window.localCourseBannerBuilderRunPreviewInteractionFieldBatch = localCourseBannerBuilderRunPreviewInteractionFieldBatch;
+        window.localCourseBannerBuilderRecenterPreviewImage = localCourseBannerBuilderRecenterPreviewImage;
+        window.localCourseBannerBuilderRecenterAllLayerPreviewImages = localCourseBannerBuilderRecenterAllLayerPreviewImages;
+        window.localCourseBannerBuilderRecenterSourcePreviewImage = localCourseBannerBuilderRecenterSourcePreviewImage;
+        window.localCourseBannerBuilderRecenterAllSourcePreviewImages = localCourseBannerBuilderRecenterAllSourcePreviewImages;
+        window.localCourseBannerBuilderApplyFitToLayerFormPreview = localCourseBannerBuilderApplyFitToLayerFormPreview;
+        window.localCourseBannerBuilderApplyFillBannerToLayerFormPreview = localCourseBannerBuilderApplyFillBannerToLayerFormPreview;
+        window.localCourseBannerBuilderFitSelectedLayerPreviewImageToFrame = localCourseBannerBuilderFitSelectedLayerPreviewImageToFrame;
+        window.localCourseBannerBuilderFillSelectedLayerPreviewImageToBanner = localCourseBannerBuilderFillSelectedLayerPreviewImageToBanner;
+        window.localCourseBannerBuilderFitSelectedSourcePreviewImageToFrame = localCourseBannerBuilderFitSelectedSourcePreviewImageToFrame;
+        window.localCourseBannerBuilderFillSelectedSourcePreviewImageToBanner = localCourseBannerBuilderFillSelectedSourcePreviewImageToBanner;
+        window.localCourseBannerBuilderPushSelectedSourcePreviewLayerBehind = localCourseBannerBuilderPushSelectedSourcePreviewLayerBehind;
+        window.localCourseBannerBuilderPullSelectedSourcePreviewLayerForward = localCourseBannerBuilderPullSelectedSourcePreviewLayerForward;
+        window.localCourseBannerBuilderSyncSourcePreviewTopLayerButton = localCourseBannerBuilderSyncSourcePreviewTopLayerButton;
+        window.localCourseBannerBuilderSyncSourcePreviewAboveOverlayButton = localCourseBannerBuilderSyncSourcePreviewAboveOverlayButton;
+        window.localCourseBannerBuilderSourceHasDirectDecorativeLayer = localCourseBannerBuilderSourceHasDirectDecorativeLayer;
+        window.localCourseBannerBuilderSyncSourcePreviewInheritedDepthButtons = localCourseBannerBuilderSyncSourcePreviewInheritedDepthButtons;
+        window.localCourseBannerBuilderSyncSourcePreviewCenterFixedButton = localCourseBannerBuilderSyncSourcePreviewCenterFixedButton;
+        window.localCourseBannerBuilderToggleSourcePreviewCenterFixed = localCourseBannerBuilderToggleSourcePreviewCenterFixed;
+        window.localCourseBannerBuilderToggleModalPreviewCenterFixed = localCourseBannerBuilderToggleModalPreviewCenterFixed;
+        window.localCourseBannerBuilderSyncSourcePreviewKeepAspectButton = localCourseBannerBuilderSyncSourcePreviewKeepAspectButton;
+        window.localCourseBannerBuilderSyncSourcePreviewOpacityButton = localCourseBannerBuilderSyncSourcePreviewOpacityButton;
+        window.localCourseBannerBuilderSyncSourcePreviewFitButton = localCourseBannerBuilderSyncSourcePreviewFitButton;
+        window.localCourseBannerBuilderSyncSourcePreviewFillButton = localCourseBannerBuilderSyncSourcePreviewFillButton;
+        window.localCourseBannerBuilderSyncSourcePreviewCropButtons = localCourseBannerBuilderSyncSourcePreviewCropButtons;
+        window.localCourseBannerBuilderSyncSourcePreviewOrderButtons = localCourseBannerBuilderSyncSourcePreviewOrderButtons;
+        window.localCourseBannerBuilderSyncSourcePreviewDeleteButton = localCourseBannerBuilderSyncSourcePreviewDeleteButton;
+        window.localCourseBannerBuilderGetSourcePreviewThumbnailSignature = localCourseBannerBuilderGetSourcePreviewThumbnailSignature;
+        window.localCourseBannerBuilderUpdateSourcePreviewThumbnailSelection = localCourseBannerBuilderUpdateSourcePreviewThumbnailSelection;
+        window.localCourseBannerBuilderIsSourcePreviewLayerHiddenInPreview = localCourseBannerBuilderIsSourcePreviewLayerHiddenInPreview;
+        window.localCourseBannerBuilderSetSourcePreviewLayerVisibleInPreview = localCourseBannerBuilderSetSourcePreviewLayerVisibleInPreview;
+        window.localCourseBannerBuilderSyncSourcePreviewThumbnailVisibilityButton = localCourseBannerBuilderSyncSourcePreviewThumbnailVisibilityButton;
+        window.localCourseBannerBuilderUpdateSourcePreviewVisibilityToggle = localCourseBannerBuilderUpdateSourcePreviewVisibilityToggle;
+        window.localCourseBannerBuilderToggleSourcePreviewThumbnailVisibility = localCourseBannerBuilderToggleSourcePreviewThumbnailVisibility;
+        window.localCourseBannerBuilderToggleAllSourcePreviewImageVisibility = localCourseBannerBuilderToggleAllSourcePreviewImageVisibility;
+        window.localCourseBannerBuilderSetSourcePreviewInheritedLayersVisible = localCourseBannerBuilderSetSourcePreviewInheritedLayersVisible;
+        window.localCourseBannerBuilderSyncSourcePreviewInheritedLayersButton = localCourseBannerBuilderSyncSourcePreviewInheritedLayersButton;
+        window.localCourseBannerBuilderToggleSourcePreviewInheritedLayers = localCourseBannerBuilderToggleSourcePreviewInheritedLayers;
+        window.localCourseBannerBuilderSyncSourcePreviewThumbnails = localCourseBannerBuilderSyncSourcePreviewThumbnails;
+        window.localCourseBannerBuilderUpdateSourcePreviewFilmstripNav = localCourseBannerBuilderUpdateSourcePreviewFilmstripNav;
+        window.localCourseBannerBuilderScrollSourcePreviewFilmstrip = localCourseBannerBuilderScrollSourcePreviewFilmstrip;
+        window.localCourseBannerBuilderSelectSourcePreviewThumbnail = localCourseBannerBuilderSelectSourcePreviewThumbnail;
+        window.localCourseBannerBuilderDeleteSelectedPreviewLayer = localCourseBannerBuilderDeleteSelectedPreviewLayer;
+        window.localCourseBannerBuilderReadLayerFormPreviewState = localCourseBannerBuilderReadLayerFormPreviewState;
+        window.localCourseBannerBuilderReadLayerPreviewStateFromLayer = localCourseBannerBuilderReadLayerPreviewStateFromLayer;
+        window.localCourseBannerBuilderSyncCurrentLayerDataFromForm = localCourseBannerBuilderSyncCurrentLayerDataFromForm;
+        window.localCourseBannerBuilderApplyLayerFormPreviewState = localCourseBannerBuilderApplyLayerFormPreviewState;
+        window.localCourseBannerBuilderGetDraftFileInfo = localCourseBannerBuilderGetDraftFileInfo;
+        window.localCourseBannerBuilderDeleteDraftFileFromServer = localCourseBannerBuilderDeleteDraftFileFromServer;
+        window.localCourseBannerBuilderScheduleDraftPreviewRefresh = localCourseBannerBuilderScheduleDraftPreviewRefresh;
+        window.localCourseBannerBuilderScheduleAllOpenDraftPreviewRefresh = localCourseBannerBuilderScheduleAllOpenDraftPreviewRefresh;
+        window.localCourseBannerBuilderSuppressDeletedDraftPreviewUrl = localCourseBannerBuilderSuppressDeletedDraftPreviewUrl;
+        window.localCourseBannerBuilderIsDraftPreviewUrlSuppressed = localCourseBannerBuilderIsDraftPreviewUrlSuppressed;
+        window.localCourseBannerBuilderMarkDraftFileItemDeleted = localCourseBannerBuilderMarkDraftFileItemDeleted;
+        window.localCourseBannerBuilderMarkDraftFilemanagerSelectedFilesDeleted = localCourseBannerBuilderMarkDraftFilemanagerSelectedFilesDeleted;
+        window.localCourseBannerBuilderMarkDraftFilemanagerDeletionClick = localCourseBannerBuilderMarkDraftFilemanagerDeletionClick;
+        window.localCourseBannerBuilderClearDraftPreviewState = localCourseBannerBuilderClearDraftPreviewState;
+        window.localCourseBannerBuilderPruneDraftFilemanagerEmptyState = localCourseBannerBuilderPruneDraftFilemanagerEmptyState;
+        window.localCourseBannerBuilderReindexDraftPreviewSettings = localCourseBannerBuilderReindexDraftPreviewSettings;
+        window.localCourseBannerBuilderGetDraftPreviewFiles = localCourseBannerBuilderGetDraftPreviewFiles;
+        window.localCourseBannerBuilderGetDraftPreviewSettings = localCourseBannerBuilderGetDraftPreviewSettings;
+        window.localCourseBannerBuilderSetDraftPreviewSettings = localCourseBannerBuilderSetDraftPreviewSettings;
+        window.localCourseBannerBuilderGetDefaultDraftPreviewState = localCourseBannerBuilderGetDefaultDraftPreviewState;
+        window.localCourseBannerBuilderResetLayerFormCropState = localCourseBannerBuilderResetLayerFormCropState;
+        window.localCourseBannerBuilderClearLayerPreviewCropState = localCourseBannerBuilderClearLayerPreviewCropState;
+        window.localCourseBannerBuilderGetDraftPreviewSignature = localCourseBannerBuilderGetDraftPreviewSignature;
+        window.localCourseBannerBuilderEnsureDraftPreviewSelection = localCourseBannerBuilderEnsureDraftPreviewSelection;
+        window.localCourseBannerBuilderMirrorDraftSelectionVisual = localCourseBannerBuilderMirrorDraftSelectionVisual;
+        window.localCourseBannerBuilderGetDraftSelectionVisualLayer = localCourseBannerBuilderGetDraftSelectionVisualLayer;
+        window.localCourseBannerBuilderSyncDraftSelectionShellState = localCourseBannerBuilderSyncDraftSelectionShellState;
+        window.localCourseBannerBuilderApplyDraftVisualLayerState = localCourseBannerBuilderApplyDraftVisualLayerState;
+        window.localCourseBannerBuilderRenderDraftUploadPreview = localCourseBannerBuilderRenderDraftUploadPreview;
+        window.localCourseBannerBuilderSaveActiveDraftPreviewState = localCourseBannerBuilderSaveActiveDraftPreviewState;
+        window.localCourseBannerBuilderCommitActiveDraftCropBeforeSwitch = localCourseBannerBuilderCommitActiveDraftCropBeforeSwitch;
+        window.localCourseBannerBuilderSelectDraftPreviewLayer = localCourseBannerBuilderSelectDraftPreviewLayer;
+        window.localCourseBannerBuilderDeleteSelectedDraftPreviewLayer = localCourseBannerBuilderDeleteSelectedDraftPreviewLayer;
+        window.localCourseBannerBuilderSyncDraftUploadPreview = localCourseBannerBuilderSyncDraftUploadPreview;
+        window.localCourseBannerBuilderSyncStandalonePreviewLayer = localCourseBannerBuilderSyncStandalonePreviewLayer;
+        window.localCourseBannerBuilderEnsurePreviewDragMode = localCourseBannerBuilderEnsurePreviewDragMode;
+        window.localCourseBannerBuilderEnsurePreviewCustomMode = localCourseBannerBuilderEnsurePreviewCustomMode;
+        window.localCourseBannerBuilderClampPreviewSize = localCourseBannerBuilderClampPreviewSize;
+        window.localCourseBannerBuilderSetModalResizeField = localCourseBannerBuilderSetModalResizeField;
+        window.localCourseBannerBuilderApplyModalResizeState = localCourseBannerBuilderApplyModalResizeState;
+        window.localCourseBannerBuilderHandleModalResizePointerMove = localCourseBannerBuilderHandleModalResizePointerMove;
+        window.localCourseBannerBuilderStopModalResizeInteraction = localCourseBannerBuilderStopModalResizeInteraction;
+        window.localCourseBannerBuilderStartModalResizeInteraction = localCourseBannerBuilderStartModalResizeInteraction;
+        window.localCourseBannerBuilderHandleModalResizeHandlePointerDown = localCourseBannerBuilderHandleModalResizeHandlePointerDown;
+        window.localCourseBannerBuilderEnsurePreviewGuideLayer = localCourseBannerBuilderEnsurePreviewGuideLayer;
+        window.localCourseBannerBuilderClearPreviewGuides = localCourseBannerBuilderClearPreviewGuides;
+        window.localCourseBannerBuilderGetPreviewGuideLayer = localCourseBannerBuilderGetPreviewGuideLayer;
+        window.localCourseBannerBuilderGetPreviewGuideFitMode = localCourseBannerBuilderGetPreviewGuideFitMode;
+        window.localCourseBannerBuilderGetPreviewGuideCrop = localCourseBannerBuilderGetPreviewGuideCrop;
+        window.localCourseBannerBuilderApplyPreviewGuideCropRect = localCourseBannerBuilderApplyPreviewGuideCropRect;
+        window.localCourseBannerBuilderGetRectInFrame = localCourseBannerBuilderGetRectInFrame;
+        window.localCourseBannerBuilderGetPreviewGuideRawRect = localCourseBannerBuilderGetPreviewGuideRawRect;
+        window.localCourseBannerBuilderGetLayerRectInFrame = localCourseBannerBuilderGetLayerRectInFrame;
+        window.localCourseBannerBuilderPreviewRectsOverlap = localCourseBannerBuilderPreviewRectsOverlap;
+        window.localCourseBannerBuilderIsPreviewSnapEnabled = localCourseBannerBuilderIsPreviewSnapEnabled;
+        window.localCourseBannerBuilderSyncPreviewSnapButtons = localCourseBannerBuilderSyncPreviewSnapButtons;
+        window.localCourseBannerBuilderTogglePreviewSnap = localCourseBannerBuilderTogglePreviewSnap;
+        window.localCourseBannerBuilderIsOneShotPreviewToolbarAction = localCourseBannerBuilderIsOneShotPreviewToolbarAction;
+        window.localCourseBannerBuilderTriggerPreviewActionFeedback = localCourseBannerBuilderTriggerPreviewActionFeedback;
+        window.localCourseBannerBuilderTitleHexToRgba = localCourseBannerBuilderTitleHexToRgba;
+        window.localCourseBannerBuilderSyncColourInput = localCourseBannerBuilderSyncColourInput;
+        window.localCourseBannerBuilderBindColourInputs = localCourseBannerBuilderBindColourInputs;
+        window.localCourseBannerBuilderReadTitleValue = localCourseBannerBuilderReadTitleValue;
+        window.localCourseBannerBuilderReadTitleFlag = localCourseBannerBuilderReadTitleFlag;
+        window.localCourseBannerBuilderSetTitleField = localCourseBannerBuilderSetTitleField;
+        window.localCourseBannerBuilderSyncTitleSliderOutput = localCourseBannerBuilderSyncTitleSliderOutput;
+        window.localCourseBannerBuilderSyncTitleColorPickers = localCourseBannerBuilderSyncTitleColorPickers;
+        window.localCourseBannerBuilderCaptureTitleState = localCourseBannerBuilderCaptureTitleState;
+        window.localCourseBannerBuilderReadTitleInheritStates = localCourseBannerBuilderReadTitleInheritStates;
+        window.localCourseBannerBuilderApplyTitleState = localCourseBannerBuilderApplyTitleState;
+        window.localCourseBannerBuilderSyncTitleFrameTypeButtons = localCourseBannerBuilderSyncTitleFrameTypeButtons;
+        window.localCourseBannerBuilderSyncTitleAlignButtons = localCourseBannerBuilderSyncTitleAlignButtons;
+        window.localCourseBannerBuilderPushTitleUndo = localCourseBannerBuilderPushTitleUndo;
+        window.localCourseBannerBuilderSyncTitleToggleButtons = localCourseBannerBuilderSyncTitleToggleButtons;
+        window.localCourseBannerBuilderSetTitleStyleMode = localCourseBannerBuilderSetTitleStyleMode;
+        window.localCourseBannerBuilderMarkTitleStyleCustom = localCourseBannerBuilderMarkTitleStyleCustom;
+        window.localCourseBannerBuilderSyncTitleSnapButton = localCourseBannerBuilderSyncTitleSnapButton;
+        window.localCourseBannerBuilderToggleTitleSnap = localCourseBannerBuilderToggleTitleSnap;
+        window.localCourseBannerBuilderSnapTitlePercent = localCourseBannerBuilderSnapTitlePercent;
+        window.localCourseBannerBuilderUpdateTitleGuides = localCourseBannerBuilderUpdateTitleGuides;
+        window.localCourseBannerBuilderSyncTitleToolbar = localCourseBannerBuilderSyncTitleToolbar;
+        window.localCourseBannerBuilderClearTitlePreviewSelection = localCourseBannerBuilderClearTitlePreviewSelection;
+        window.localCourseBannerBuilderToggleTitleSidePanel = localCourseBannerBuilderToggleTitleSidePanel;
+        window.localCourseBannerBuilderGetInlineFrameGapEm = localCourseBannerBuilderGetInlineFrameGapEm;
+        window.localCourseBannerBuilderGetFirstTitlePreviewLine = localCourseBannerBuilderGetFirstTitlePreviewLine;
+        window.localCourseBannerBuilderTitlePreviewContainsLine = localCourseBannerBuilderTitlePreviewContainsLine;
+        window.localCourseBannerBuilderNormaliseCombinedActivityPreviewLines = localCourseBannerBuilderNormaliseCombinedActivityPreviewLines;
+        window.localCourseBannerBuilderReadActivityTitleMode = localCourseBannerBuilderReadActivityTitleMode;
+        window.localCourseBannerBuilderIsActivityBothTitlePreview = localCourseBannerBuilderIsActivityBothTitlePreview;
+        window.localCourseBannerBuilderBuildTitlePreviewText = localCourseBannerBuilderBuildTitlePreviewText;
+        window.localCourseBannerBuilderApplyTitlePreviewPosition = localCourseBannerBuilderApplyTitlePreviewPosition;
+        window.localCourseBannerBuilderGetBannerTitlePreviewZIndex = localCourseBannerBuilderGetBannerTitlePreviewZIndex;
+        window.localCourseBannerBuilderGetResponsiveTitleFontCss = localCourseBannerBuilderGetResponsiveTitleFontCss;
+        window.localCourseBannerBuilderGetTitleTextTransformOrigin = localCourseBannerBuilderGetTitleTextTransformOrigin;
+        window.localCourseBannerBuilderGetTitleFramePaddingCss = localCourseBannerBuilderGetTitleFramePaddingCss;
+        window.localCourseBannerBuilderBuildScaledTitleTextNode = localCourseBannerBuilderBuildScaledTitleTextNode;
+        window.localCourseBannerBuilderCaptureTitlePreviewVisualCenter = localCourseBannerBuilderCaptureTitlePreviewVisualCenter;
+        window.localCourseBannerBuilderRestoreTitlePreviewVisualCenter = localCourseBannerBuilderRestoreTitlePreviewVisualCenter;
+        window.localCourseBannerBuilderApplyTextDecorationToTitleNodes = localCourseBannerBuilderApplyTextDecorationToTitleNodes;
+        window.localCourseBannerBuilderUpdateTitlePreview = localCourseBannerBuilderUpdateTitlePreview;
+        window.localCourseBannerBuilderSetTitleContextToggleButton = localCourseBannerBuilderSetTitleContextToggleButton;
+        window.localCourseBannerBuilderSyncTitleContextLayers = localCourseBannerBuilderSyncTitleContextLayers;
+        window.localCourseBannerBuilderSyncTitlePreviewLineToggle = localCourseBannerBuilderSyncTitlePreviewLineToggle;
+        window.localCourseBannerBuilderToggleTitlePreviewLineCount = localCourseBannerBuilderToggleTitlePreviewLineCount;
+        window.localCourseBannerBuilderToggleTitleContextLayers = localCourseBannerBuilderToggleTitleContextLayers;
+        window.localCourseBannerBuilderBindTitleEditor = localCourseBannerBuilderBindTitleEditor;
+        window.localCourseBannerBuilderBindTitleEditors = localCourseBannerBuilderBindTitleEditors;
+        window.localCourseBannerBuilderAddPreviewGuide = localCourseBannerBuilderAddPreviewGuide;
+        window.localCourseBannerBuilderMaybeAddPreviewGuide = localCourseBannerBuilderMaybeAddPreviewGuide;
+        window.localCourseBannerBuilderPreviewSnapCandidate = localCourseBannerBuilderPreviewSnapCandidate;
+        window.localCourseBannerBuilderGetPreviewGuideTargets = localCourseBannerBuilderGetPreviewGuideTargets;
+        window.localCourseBannerBuilderFindPreviewSnap = localCourseBannerBuilderFindPreviewSnap;
+        window.localCourseBannerBuilderUpdatePreviewGuides = localCourseBannerBuilderUpdatePreviewGuides;
+        window.localCourseBannerBuilderApplyPreviewDrag = localCourseBannerBuilderApplyPreviewDrag;
+        window.localCourseBannerBuilderApplyPreviewResize = localCourseBannerBuilderApplyPreviewResize;
+        window.localCourseBannerBuilderStopPreviewInteraction = localCourseBannerBuilderStopPreviewInteraction;
+        window.localCourseBannerBuilderHandlePreviewPointerMove = localCourseBannerBuilderHandlePreviewPointerMove;
+        window.localCourseBannerBuilderStartPreviewInteraction = localCourseBannerBuilderStartPreviewInteraction;
+        window.localCourseBannerBuilderGetLayerPreviewFrame = localCourseBannerBuilderGetLayerPreviewFrame;
+        window.localCourseBannerBuilderIsLayerPreviewImageLayerVisible = localCourseBannerBuilderIsLayerPreviewImageLayerVisible;
+        window.localCourseBannerBuilderGetCurrentLayerPreviewResizeHandleAtPoint = localCourseBannerBuilderGetCurrentLayerPreviewResizeHandleAtPoint;
+        window.localCourseBannerBuilderSelectLayerModalPreviewLayer = localCourseBannerBuilderSelectLayerModalPreviewLayer;
+        window.localCourseBannerBuilderClearLayerModalPreviewSelection = localCourseBannerBuilderClearLayerModalPreviewSelection;
+        window.localCourseBannerBuilderGetLayerPreviewZIndex = localCourseBannerBuilderGetLayerPreviewZIndex;
+        window.localCourseBannerBuilderResolveDraftPreviewInteractionLayer = localCourseBannerBuilderResolveDraftPreviewInteractionLayer;
+        window.localCourseBannerBuilderGetTopLayerPreviewImageLayerAtPoint = localCourseBannerBuilderGetTopLayerPreviewImageLayerAtPoint;
+        window.localCourseBannerBuilderHandleLayerModalPreviewPointerDown = localCourseBannerBuilderHandleLayerModalPreviewPointerDown;
+        window.localCourseBannerBuilderBindLayerPreviewEvents = localCourseBannerBuilderBindLayerPreviewEvents;
+        window.localCourseBannerBuilderGetSourceVisualEditorRoots = localCourseBannerBuilderGetSourceVisualEditorRoots;
+        window.localCourseBannerBuilderIsSourcePreviewReadonly = localCourseBannerBuilderIsSourcePreviewReadonly;
+        window.localCourseBannerBuilderIsSourcePreviewLayerEnabled = localCourseBannerBuilderIsSourcePreviewLayerEnabled;
+        window.localCourseBannerBuilderIsSourcePreviewLayerSelectable = localCourseBannerBuilderIsSourcePreviewLayerSelectable;
+        window.localCourseBannerBuilderGetFirstEnabledSourcePreviewLayer = localCourseBannerBuilderGetFirstEnabledSourcePreviewLayer;
+        window.localCourseBannerBuilderGetSelectedSourcePreviewLayer = localCourseBannerBuilderGetSelectedSourcePreviewLayer;
+        window.localCourseBannerBuilderGetCurrentSourcePreviewCropLayer = localCourseBannerBuilderGetCurrentSourcePreviewCropLayer;
+        window.localCourseBannerBuilderGetActionableSourcePreviewLayer = localCourseBannerBuilderGetActionableSourcePreviewLayer;
+        window.localCourseBannerBuilderGetSelectedSourcePreviewResizeHandleAtPoint = localCourseBannerBuilderGetSelectedSourcePreviewResizeHandleAtPoint;
+        window.localCourseBannerBuilderGetPreviewResizeHandleAtPoint = localCourseBannerBuilderGetPreviewResizeHandleAtPoint;
+        window.localCourseBannerBuilderIsPointOnPreviewLayerSelectionChrome = localCourseBannerBuilderIsPointOnPreviewLayerSelectionChrome;
+        window.localCourseBannerBuilderSuppressNextSourcePreviewClick = localCourseBannerBuilderSuppressNextSourcePreviewClick;
+        window.localCourseBannerBuilderGetSourcePreviewLayerState = localCourseBannerBuilderGetSourcePreviewLayerState;
+        window.localCourseBannerBuilderGetPreviewImageAlphaCacheKey = localCourseBannerBuilderGetPreviewImageAlphaCacheKey;
+        window.localCourseBannerBuilderGetPreviewImageAlphaData = localCourseBannerBuilderGetPreviewImageAlphaData;
+        window.localCourseBannerBuilderIsSourcePreviewLayerOpaqueAtPoint = localCourseBannerBuilderIsSourcePreviewLayerOpaqueAtPoint;
+        window.localCourseBannerBuilderGetTopSourcePreviewLayerAtPoint = localCourseBannerBuilderGetTopSourcePreviewLayerAtPoint;
+        window.localCourseBannerBuilderGetSourcePreviewEventLayer = localCourseBannerBuilderGetSourcePreviewEventLayer;
+        window.localCourseBannerBuilderEnsureSourcePreviewCustomMode = localCourseBannerBuilderEnsureSourcePreviewCustomMode;
+        window.localCourseBannerBuilderIsPreviewNudgeEvent = localCourseBannerBuilderIsPreviewNudgeEvent;
+        window.localCourseBannerBuilderIsPreviewNudgeVisible = localCourseBannerBuilderIsPreviewNudgeVisible;
+        window.localCourseBannerBuilderGetActivePreviewModal = localCourseBannerBuilderGetActivePreviewModal;
+        window.localCourseBannerBuilderFlashPreviewGuides = localCourseBannerBuilderFlashPreviewGuides;
+        window.localCourseBannerBuilderNudgeSourcePreviewLayer = localCourseBannerBuilderNudgeSourcePreviewLayer;
+        window.localCourseBannerBuilderNudgeLayerModalPreview = localCourseBannerBuilderNudgeLayerModalPreview;
+        window.localCourseBannerBuilderNudgeTitlePreview = localCourseBannerBuilderNudgeTitlePreview;
+        window.localCourseBannerBuilderNudgeActivePreviewSelection = localCourseBannerBuilderNudgeActivePreviewSelection;
+        window.localCourseBannerBuilderGetSourcePreviewCustomInteractionState = localCourseBannerBuilderGetSourcePreviewCustomInteractionState;
+        window.localCourseBannerBuilderSetSourcePreviewLayerState = localCourseBannerBuilderSetSourcePreviewLayerState;
+        window.localCourseBannerBuilderBuildSourcePreviewPayload = localCourseBannerBuilderBuildSourcePreviewPayload;
+        window.localCourseBannerBuilderSyncSourcePreviewPayload = localCourseBannerBuilderSyncSourcePreviewPayload;
+        window.localCourseBannerBuilderReadJson = localCourseBannerBuilderReadJson;
+        window.localCourseBannerBuilderBuildSourcePreviewHistorySnapshot = localCourseBannerBuilderBuildSourcePreviewHistorySnapshot;
+        window.localCourseBannerBuilderUpdateSourcePreviewHistoryButtons = localCourseBannerBuilderUpdateSourcePreviewHistoryButtons;
+        window.localCourseBannerBuilderEnsureSourcePreviewHistory = localCourseBannerBuilderEnsureSourcePreviewHistory;
+        window.localCourseBannerBuilderPushSourcePreviewHistory = localCourseBannerBuilderPushSourcePreviewHistory;
+        window.localCourseBannerBuilderPushSourcePreviewHistoryFromControl = localCourseBannerBuilderPushSourcePreviewHistoryFromControl;
+        window.localCourseBannerBuilderApplySourcePreviewHistorySnapshot = localCourseBannerBuilderApplySourcePreviewHistorySnapshot;
+        window.localCourseBannerBuilderUndoSourcePreviewChange = localCourseBannerBuilderUndoSourcePreviewChange;
+        window.localCourseBannerBuilderRedoSourcePreviewChange = localCourseBannerBuilderRedoSourcePreviewChange;
+        window.localCourseBannerBuilderSyncThumbnailBadge = localCourseBannerBuilderSyncThumbnailBadge;
+        window.localCourseBannerBuilderUpdateSourcePreviewRow = localCourseBannerBuilderUpdateSourcePreviewRow;
+        window.localCourseBannerBuilderSyncLayerRowOrderLockState = localCourseBannerBuilderSyncLayerRowOrderLockState;
+        window.localCourseBannerBuilderEnsureLayerRowOrderLockHelp = localCourseBannerBuilderEnsureLayerRowOrderLockHelp;
+        window.localCourseBannerBuilderMoveSourcePreviewLayerRowToTop = localCourseBannerBuilderMoveSourcePreviewLayerRowToTop;
+        window.localCourseBannerBuilderSyncSourcePreviewLayer = localCourseBannerBuilderSyncSourcePreviewLayer;
+        window.localCourseBannerBuilderSyncSourcePreviewOrder = localCourseBannerBuilderSyncSourcePreviewOrder;
+        window.localCourseBannerBuilderSyncSourcePreviewOverlayOrdering = localCourseBannerBuilderSyncSourcePreviewOverlayOrdering;
+        window.localCourseBannerBuilderSelectSourcePreviewLayer = localCourseBannerBuilderSelectSourcePreviewLayer;
+        window.localCourseBannerBuilderClearSourcePreviewSelection = localCourseBannerBuilderClearSourcePreviewSelection;
+        window.localCourseBannerBuilderInitSourceVisualEditor = localCourseBannerBuilderInitSourceVisualEditor;
+        window.localCourseBannerBuilderStartSourcePreviewInteraction = localCourseBannerBuilderStartSourcePreviewInteraction;
+        window.localCourseBannerBuilderHandleSourcePreviewPointerMove = localCourseBannerBuilderHandleSourcePreviewPointerMove;
+        window.localCourseBannerBuilderStopSourcePreviewInteraction = localCourseBannerBuilderStopSourcePreviewInteraction;
+        window.localCourseBannerBuilderSyncDetailsCollapseIcons = localCourseBannerBuilderSyncDetailsCollapseIcons;
+        window.localCourseBannerBuilderSyncDashedControls = localCourseBannerBuilderSyncDashedControls;
+        window.localCourseBannerBuilderApplyFetchedFormValues = localCourseBannerBuilderApplyFetchedFormValues;
+        window.localCourseBannerBuilderIsFetchedBorderOnlyForm = localCourseBannerBuilderIsFetchedBorderOnlyForm;
+        window.localCourseBannerBuilderValidateLayerForm = localCourseBannerBuilderValidateLayerForm;
+        window.localCourseBannerBuilderBindLayerFormEvents = localCourseBannerBuilderBindLayerFormEvents;
+        window.localCourseBannerBuilderToggleCheckboxInput = localCourseBannerBuilderToggleCheckboxInput;
+        window.localCourseBannerBuilderSetActionButtonContent = localCourseBannerBuilderSetActionButtonContent;
+        window.localCourseBannerBuilderGetJsString = localCourseBannerBuilderGetJsString;
+        window.localCourseBannerBuilderSyncBinaryOptionButton = localCourseBannerBuilderSyncBinaryOptionButton;
+        window.localCourseBannerBuilderEnhanceBinaryOptionButtons = localCourseBannerBuilderEnhanceBinaryOptionButtons;
+        window.localCourseBannerBuilderSyncModalPreviewActionButtons = localCourseBannerBuilderSyncModalPreviewActionButtons;
+        window.localCourseBannerBuilderLayoutModalPreviewActionButtons = localCourseBannerBuilderLayoutModalPreviewActionButtons;
+        window.localCourseBannerBuilderSyncModalPreviewCenterFixedButton = localCourseBannerBuilderSyncModalPreviewCenterFixedButton;
+        window.localCourseBannerBuilderIsPreviewImageLayerOrderLocked = localCourseBannerBuilderIsPreviewImageLayerOrderLocked;
+        window.localCourseBannerBuilderSyncModalPreviewCropButtons = localCourseBannerBuilderSyncModalPreviewCropButtons;
+        window.localCourseBannerBuilderSetPreviewIconPopover = localCourseBannerBuilderSetPreviewIconPopover;
+        window.localCourseBannerBuilderConfigurePreviewIconButton = localCourseBannerBuilderConfigurePreviewIconButton;
+        window.localCourseBannerBuilderCreatePreviewIconButton = localCourseBannerBuilderCreatePreviewIconButton;
+        window.localCourseBannerBuilderCreateImageOpacityPanel = localCourseBannerBuilderCreateImageOpacityPanel;
+        window.localCourseBannerBuilderToggleOpacityPanel = localCourseBannerBuilderToggleOpacityPanel;
+        window.localCourseBannerBuilderSetOpacityPanelValue = localCourseBannerBuilderSetOpacityPanelValue;
+        window.localCourseBannerBuilderSyncModalImageOpacityInputFromLayer = localCourseBannerBuilderSyncModalImageOpacityInputFromLayer;
+        window.localCourseBannerBuilderApplyModalImageOpacity = localCourseBannerBuilderApplyModalImageOpacity;
+        window.localCourseBannerBuilderEscapeSelectorId = localCourseBannerBuilderEscapeSelectorId;
+        window.localCourseBannerBuilderBuildModalPreviewSnapshot = localCourseBannerBuilderBuildModalPreviewSnapshot;
+        window.localCourseBannerBuilderEnsureModalPreviewHistory = localCourseBannerBuilderEnsureModalPreviewHistory;
+        window.localCourseBannerBuilderScheduleOverlayPreviewSync = localCourseBannerBuilderScheduleOverlayPreviewSync;
+        window.localCourseBannerBuilderPushModalPreviewHistory = localCourseBannerBuilderPushModalPreviewHistory;
+        window.localCourseBannerBuilderPushModalPreviewHistoryFromControl = localCourseBannerBuilderPushModalPreviewHistoryFromControl;
+        window.localCourseBannerBuilderIsOverlayLayerForm = localCourseBannerBuilderIsOverlayLayerForm;
+        window.localCourseBannerBuilderSyncOverlayAppearanceControlValues = localCourseBannerBuilderSyncOverlayAppearanceControlValues;
+        window.localCourseBannerBuilderApplyModalPreviewSnapshotSilently = localCourseBannerBuilderApplyModalPreviewSnapshotSilently;
+        window.localCourseBannerBuilderApplyModalPreviewSnapshot = localCourseBannerBuilderApplyModalPreviewSnapshot;
+        window.localCourseBannerBuilderUpdateModalPreviewHistoryButtons = localCourseBannerBuilderUpdateModalPreviewHistoryButtons;
+        window.localCourseBannerBuilderEnsureModalOpacityControls = localCourseBannerBuilderEnsureModalOpacityControls;
+        window.localCourseBannerBuilderCloseOtherModalSidePanels = localCourseBannerBuilderCloseOtherModalSidePanels;
+        window.localCourseBannerBuilderEnhanceModalSidePanelLinkedRanges = localCourseBannerBuilderEnhanceModalSidePanelLinkedRanges;
+        window.localCourseBannerBuilderEnsureModalImageControls = localCourseBannerBuilderEnsureModalImageControls;
+        window.localCourseBannerBuilderEnsureModalOverlayControls = localCourseBannerBuilderEnsureModalOverlayControls;
+        window.localCourseBannerBuilderGetOverlayControlRow = localCourseBannerBuilderGetOverlayControlRow;
+        window.localCourseBannerBuilderSetOverlayStyleMode = localCourseBannerBuilderSetOverlayStyleMode;
+        window.localCourseBannerBuilderMarkOverlayCustom = localCourseBannerBuilderMarkOverlayCustom;
+        window.localCourseBannerBuilderSyncUnifiedOverlayAppearance = localCourseBannerBuilderSyncUnifiedOverlayAppearance;
+        window.localCourseBannerBuilderInitialiseUnifiedOverlayAppearance = localCourseBannerBuilderInitialiseUnifiedOverlayAppearance;
+        window.localCourseBannerBuilderInsertAfter = localCourseBannerBuilderInsertAfter;
+        window.localCourseBannerBuilderHideElementRow = localCourseBannerBuilderHideElementRow;
+        window.localCourseBannerBuilderHideOverlayLegacyLabels = localCourseBannerBuilderHideOverlayLegacyLabels;
+        window.localCourseBannerBuilderCreateOverlaySideTitle = localCourseBannerBuilderCreateOverlaySideTitle;
+        window.localCourseBannerBuilderEnsureOverlayAppearanceControls = localCourseBannerBuilderEnsureOverlayAppearanceControls;
+        window.localCourseBannerBuilderCreateOverlayToggleButton = localCourseBannerBuilderCreateOverlayToggleButton;
+        window.localCourseBannerBuilderSyncOverlayToggleButton = localCourseBannerBuilderSyncOverlayToggleButton;
+        window.localCourseBannerBuilderToggleOverlayOrderingButton = localCourseBannerBuilderToggleOverlayOrderingButton;
+        window.localCourseBannerBuilderApplyOverlayInheritance = localCourseBannerBuilderApplyOverlayInheritance;
+        window.localCourseBannerBuilderEnhanceOverlaySidePanelControls = localCourseBannerBuilderEnhanceOverlaySidePanelControls;
+        window.localCourseBannerBuilderParseOverlayTitleStyle = localCourseBannerBuilderParseOverlayTitleStyle;
+        window.localCourseBannerBuilderApplyLayerOverlayTitleStyle = localCourseBannerBuilderApplyLayerOverlayTitleStyle;
+        window.localCourseBannerBuilderSyncModalOverlayPreview = localCourseBannerBuilderSyncModalOverlayPreview;
+        window.localCourseBannerBuilderSyncOverlaySlideshowPreviewToggleForTarget = localCourseBannerBuilderSyncOverlaySlideshowPreviewToggleForTarget;
+        window.localCourseBannerBuilderEnsureModalBorderControls = localCourseBannerBuilderEnsureModalBorderControls;
+        window.localCourseBannerBuilderSyncBorderStyleChoice = localCourseBannerBuilderSyncBorderStyleChoice;
+        window.localCourseBannerBuilderEnsureBorderStyleChoice = localCourseBannerBuilderEnsureBorderStyleChoice;
+        window.localCourseBannerBuilderEnsureLayerModalFooter = localCourseBannerBuilderEnsureLayerModalFooter;
+        window.localCourseBannerBuilderUndoModalPreviewChange = localCourseBannerBuilderUndoModalPreviewChange;
+        window.localCourseBannerBuilderRedoModalPreviewChange = localCourseBannerBuilderRedoModalPreviewChange;
+        window.localCourseBannerBuilderEnhanceModalPreviewActions = localCourseBannerBuilderEnhanceModalPreviewActions;
+        window.localCourseBannerBuilderSyncBorderSidePicker = localCourseBannerBuilderSyncBorderSidePicker;
+        window.localCourseBannerBuilderEnhanceBorderSidePicker = localCourseBannerBuilderEnhanceBorderSidePicker;
+        window.localCourseBannerBuilderGetPopoverElements = localCourseBannerBuilderGetPopoverElements;
+        window.localCourseBannerBuilderGetPopoverTrigger = localCourseBannerBuilderGetPopoverTrigger;
+        window.localCourseBannerBuilderDisposeBootstrapPopover = localCourseBannerBuilderDisposeBootstrapPopover;
+        window.localCourseBannerBuilderPrepareHoverPopoverNode = localCourseBannerBuilderPrepareHoverPopoverNode;
+        window.localCourseBannerBuilderGetHoverPopoverPayload = localCourseBannerBuilderGetHoverPopoverPayload;
+        window.localCourseBannerBuilderPlaceHoverPopover = localCourseBannerBuilderPlaceHoverPopover;
+        window.localCourseBannerBuilderShowHoverPopover = localCourseBannerBuilderShowHoverPopover;
+        window.localCourseBannerBuilderHideHoverPopover = localCourseBannerBuilderHideHoverPopover;
+        window.localCourseBannerBuilderHandlePopoverMouseEnter = localCourseBannerBuilderHandlePopoverMouseEnter;
+        window.localCourseBannerBuilderHandlePopoverMouseLeave = localCourseBannerBuilderHandlePopoverMouseLeave;
+        window.localCourseBannerBuilderHandlePopoverFocus = localCourseBannerBuilderHandlePopoverFocus;
+        window.localCourseBannerBuilderHandlePopoverClick = localCourseBannerBuilderHandlePopoverClick;
+        window.localCourseBannerBuilderBindDelegatedPopovers = localCourseBannerBuilderBindDelegatedPopovers;
+        window.localCourseBannerBuilderInitPopovers = localCourseBannerBuilderInitPopovers;
+        window.localCourseBannerBuilderPrimeHelpBubbles = localCourseBannerBuilderPrimeHelpBubbles;
+        window.localCourseBannerBuilderDismissOpenPopovers = localCourseBannerBuilderDismissOpenPopovers;
+        window.localCourseBannerBuilderToggleInlineSetting = localCourseBannerBuilderToggleInlineSetting;
+        window.localCourseBannerBuilderShowModal = localCourseBannerBuilderShowModal;
+        window.localCourseBannerBuilderIsNativeAdmin = localCourseBannerBuilderIsNativeAdmin;
+        window.localCourseBannerBuilderGetOpenModal = localCourseBannerBuilderGetOpenModal;
+        window.localCourseBannerBuilderForceHideModal = localCourseBannerBuilderForceHideModal;
+        window.localCourseBannerBuilderHideModal = localCourseBannerBuilderHideModal;
+        window.localCourseBannerBuilderConfirmAction = localCourseBannerBuilderConfirmAction;
+        window.localCourseBannerBuilderGetAddImageLayerDropModal = localCourseBannerBuilderGetAddImageLayerDropModal;
+        window.localCourseBannerBuilderDragHasFiles = localCourseBannerBuilderDragHasFiles;
+        window.localCourseBannerBuilderGetModalDropFilemanagerContainer = localCourseBannerBuilderGetModalDropFilemanagerContainer;
+        window.localCourseBannerBuilderEnsureModalDropOverlay = localCourseBannerBuilderEnsureModalDropOverlay;
+        window.localCourseBannerBuilderSetModalDropOverlay = localCourseBannerBuilderSetModalDropOverlay;
+        window.localCourseBannerBuilderHideAllModalDropOverlays = localCourseBannerBuilderHideAllModalDropOverlays;
+        window.localCourseBannerBuilderForwardModalDropToFilemanager = localCourseBannerBuilderForwardModalDropToFilemanager;
+        window.localCourseBannerBuilderRestoreCreateLayerModal = localCourseBannerBuilderRestoreCreateLayerModal;
+        window.localCourseBannerBuilderLoadCreateLayerModal = localCourseBannerBuilderLoadCreateLayerModal;
+        window.localCourseBannerBuilderFindFetchedLayerModal = localCourseBannerBuilderFindFetchedLayerModal;
+        window.localCourseBannerBuilderPrepareDynamicLayerModal = localCourseBannerBuilderPrepareDynamicLayerModal;
+        window.localCourseBannerBuilderSafelyPrepareDynamicLayerModal = localCourseBannerBuilderSafelyPrepareDynamicLayerModal;
+        window.localCourseBannerBuilderAlignModalActionButtons = localCourseBannerBuilderAlignModalActionButtons;
+        window.localCourseBannerBuilderRehydrateSelectedSourceContent = localCourseBannerBuilderRehydrateSelectedSourceContent;
+        window.localCourseBannerBuilderSyncLayerModalAfterContextChange = localCourseBannerBuilderSyncLayerModalAfterContextChange;
+        window.localCourseBannerBuilderRemoveLayerFromLayerModals = localCourseBannerBuilderRemoveLayerFromLayerModals;
+        window.localCourseBannerBuilderRemoveOwnSourceLayersFromLayerModals = localCourseBannerBuilderRemoveOwnSourceLayersFromLayerModals;
+        window.localCourseBannerBuilderDeleteAllLayers = localCourseBannerBuilderDeleteAllLayers;
+        window.localCourseBannerBuilderReplaceSelectedSourceContentFromDeleteResponse = localCourseBannerBuilderReplaceSelectedSourceContentFromDeleteResponse;
+        window.localCourseBannerBuilderDeleteSelectedLayers = localCourseBannerBuilderDeleteSelectedLayers;
+        window.localCourseBannerBuilderEnhanceAccordions = localCourseBannerBuilderEnhanceAccordions;
+        window.localCourseBannerBuilderLoadLayerModal = localCourseBannerBuilderLoadLayerModal;
+        window.localCourseBannerBuilderSyncStickyHeader = localCourseBannerBuilderSyncStickyHeader;
+        window.localCourseBannerBuilderRunInitStep = localCourseBannerBuilderRunInitStep;
+    }
+
+    return {
+        init: function () {
+            // The legacy page script is executed when this AMD module is loaded.
+        }
+    };
+});

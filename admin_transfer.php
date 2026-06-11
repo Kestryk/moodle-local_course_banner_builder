@@ -56,6 +56,7 @@ $PAGE->set_url($url);
 $PAGE->set_context(context_system::instance());
 $PAGE->set_title(get_string('exportimport', 'local_course_banner_builder'));
 $PAGE->set_heading(get_string('exportimport', 'local_course_banner_builder'));
+$PAGE->requires->css('/local/course_banner_builder/styles.css');
 
 if (optional_param('deleteallpluginsettings', 0, PARAM_BOOL) && confirm_sesskey()) {
     \local_course_banner_builder\manager::delete_all_plugin_configuration();
