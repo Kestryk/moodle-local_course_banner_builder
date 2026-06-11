@@ -9694,8 +9694,6 @@ class manager {
      * @return void
      */
     public static function delete_all_plugin_configuration(): void {
-        global $DB;
-
         self::delete_all_configuration();
         self::delete_source_content(self::get_site_source());
 
@@ -9704,14 +9702,7 @@ class manager {
         $fs->delete_area_files($context->id, 'local_course_banner_builder', self::FILEAREA);
         $fs->delete_area_files($context->id, 'local_course_banner_builder', self::CARD_FILEAREA);
 
-        $DB->delete_records_select(
-            'config_plugins',
-            'plugin = :plugin AND name <> :versionname',
-            [
-                'plugin' => 'local_course_banner_builder',
-                'versionname' => 'version',
-            ]
-        );
+        self::delete_plugin_config_values();
         set_config('slideshow_course_enabled', 0, 'local_course_banner_builder');
         set_config('slideshow_site_enabled', 0, 'local_course_banner_builder');
 
@@ -10677,17 +10668,16 @@ class manager {
      * @return array
      */
     protected static function export_plugin_settings_configuration(): array {
-        global $DB;
-
         $settings = [];
-        $records = $DB->get_records('config_plugins', ['plugin' => 'local_course_banner_builder'], 'name ASC');
-        foreach ($records as $record) {
-            $name = (string)$record->name;
+        $config = get_config('local_course_banner_builder');
+        foreach ((array)$config as $name => $value) {
+            $name = (string)$name;
             if ($name === 'version') {
                 continue;
             }
-            $settings[$name] = $record->value;
+            $settings[$name] = $value;
         }
+        ksort($settings);
 
         return [
             'settings' => $settings,
@@ -10996,16 +10986,13 @@ class manager {
      * @return void
      */
     protected static function delete_plugin_config_values(): void {
-        global $DB;
-
-        $DB->delete_records_select(
-            'config_plugins',
-            'plugin = :plugin AND name <> :versionname',
-            [
-                'plugin' => 'local_course_banner_builder',
-                'versionname' => 'version',
-            ]
-        );
+        $config = get_config('local_course_banner_builder');
+        foreach ((array)$config as $name => $value) {
+            if ((string)$name === 'version') {
+                continue;
+            }
+            unset_config((string)$name, 'local_course_banner_builder');
+        }
     }
 
     /**
