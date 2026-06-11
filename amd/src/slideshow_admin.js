@@ -22,7 +22,15 @@
  */
 define([], function () {
 
-document.addEventListener('DOMContentLoaded', function () {
+var localCourseBannerBuilderSlideshowOnReady = function (callback) {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', callback);
+        return;
+    }
+    callback();
+};
+
+localCourseBannerBuilderSlideshowOnReady(function () {
     document.addEventListener('change', function (e) {
         var formatInput = e.target && e.target.closest ?
             e.target.closest('[data-banner-format-modal="1"] input[name="bannerformat"]') :

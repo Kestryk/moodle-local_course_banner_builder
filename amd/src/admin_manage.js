@@ -22,6 +22,14 @@
  */
 define([], function () {
 
+var localCourseBannerBuilderOnReady = function (callback) {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', callback);
+        return;
+    }
+    callback();
+};
+
 document.addEventListener('change', function (e) {
     var formatInput = e.target && e.target.closest ?
         e.target.closest('.local-course-banner-builder-format-modal input[name="bannerformat"]') :
@@ -17991,7 +17999,7 @@ function localCourseBannerBuilderRunInitStep(label, callback) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', function () {
+localCourseBannerBuilderOnReady(function () {
     var filemanager = document.querySelector('#fitem_id_bannerimage_filemanager');
     var addlayermodal = document.getElementById('local-course-banner-builder-add-layer-modal');
     if (addlayermodal) {
