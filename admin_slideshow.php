@@ -46,8 +46,8 @@ try {
 
 $PAGE->requires->css('/local/course_banner_builder/styles.css');
 $PAGE->requires->js_init_code("
-document.addEventListener('DOMContentLoaded', function() {
-    document.addEventListener('change', function(e) {
+document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('change', function (e) {
         var formatInput = e.target && e.target.closest ?
             e.target.closest('[data-banner-format-modal=\"1\"] input[name=\"bannerformat\"]') :
             null;
@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!modal) {
             return;
         }
-        Array.prototype.slice.call(modal.querySelectorAll('.local-course-banner-builder-format-card')).forEach(function(card) {
+        Array.prototype.slice.call(modal.querySelectorAll('.local-course-banner-builder-format-card')).forEach(function (card) {
             card.classList.remove('is-selected');
         });
         var selectedCard = formatInput.closest('.local-course-banner-builder-format-card');
@@ -67,13 +67,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     var activeTip = null;
-    var removeTip = function() {
+    var removeTip = function () {
         if (activeTip) {
             activeTip.remove();
             activeTip = null;
         }
     };
-    var showTip = function(node) {
+    var showTip = function (node) {
         removeTip();
         var content = node.getAttribute('data-content') || '';
         if (!content) {
@@ -91,24 +91,24 @@ document.addEventListener('DOMContentLoaded', function() {
         activeTip.style.top = Math.max(window.scrollY + 8, top) + 'px';
         activeTip.style.left = Math.max(window.scrollX + 8, Math.min(window.scrollX + window.innerWidth - tiprect.width - 8, left)) + 'px';
     };
-    document.querySelectorAll('[data-local-slideshow-help=\"1\"]').forEach(function(node) {
-        node.addEventListener('mouseenter', function() { showTip(node); });
-        node.addEventListener('focus', function() { showTip(node); });
+    document.querySelectorAll('[data-local-slideshow-help=\"1\"]').forEach(function (node) {
+        node.addEventListener('mouseenter', function () { showTip(node); });
+        node.addEventListener('focus', function () { showTip(node); });
         node.addEventListener('mouseleave', removeTip);
         node.addEventListener('blur', removeTip);
-        node.addEventListener('click', function(e) {
+        node.addEventListener('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
         });
     });
-    document.querySelectorAll('[data-local-slideshow-action-help=\"1\"]').forEach(function(node) {
-        node.addEventListener('mouseenter', function() { showTip(node); });
+    document.querySelectorAll('[data-local-slideshow-action-help=\"1\"]').forEach(function (node) {
+        node.addEventListener('mouseenter', function () { showTip(node); });
         node.addEventListener('mouseleave', removeTip);
-        node.addEventListener('click', function() { removeTip(); });
+        node.addEventListener('click', function () { removeTip(); });
     });
-    document.querySelectorAll('[data-local-slideshow-toggle-button=\"1\"]').forEach(function(button) {
+    document.querySelectorAll('[data-local-slideshow-toggle-button=\"1\"]').forEach(function (button) {
         var input = document.querySelector(button.getAttribute('data-target-input'));
-        var sync = function() {
+        var sync = function () {
             var enabled = input && input.value === '1';
             button.classList.toggle('btn-primary', enabled);
             button.classList.toggle('btn-outline-secondary', !enabled);
@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 warning.hidden = !(enabled && warning.getAttribute('data-banner-active') === '0');
             }
         };
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function () {
             if (!input) {
                 return;
             }
@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         sync();
     });
-    var syncColourInput = function(input) {
+    var syncColourInput = function (input) {
         if (!input || input.type !== 'color') {
             return;
         }
@@ -143,9 +143,9 @@ document.addEventListener('DOMContentLoaded', function() {
         input.style.setProperty('--local-course-banner-builder-selected-color', value);
         input.style.backgroundColor = value;
     };
-    document.querySelectorAll('[data-slideshow-color-input=\"1\"]').forEach(function(colorInput) {
+    document.querySelectorAll('[data-slideshow-color-input=\"1\"]').forEach(function (colorInput) {
         var textInput = document.querySelector(colorInput.getAttribute('data-hex-target'));
-        var normalise = function(value) {
+        var normalise = function (value) {
             value = (value || '').trim();
             if (value.charAt(0) !== '#') {
                 value = '#' + value;
@@ -153,11 +153,11 @@ document.addEventListener('DOMContentLoaded', function() {
             return /^#[0-9a-fA-F]{6}$/.test(value) ? value.toUpperCase() : '';
         };
         if (textInput) {
-            colorInput.addEventListener('input', function() {
+            colorInput.addEventListener('input', function () {
                 textInput.value = colorInput.value.toUpperCase();
                 syncColourInput(colorInput);
             });
-            textInput.addEventListener('input', function() {
+            textInput.addEventListener('input', function () {
                 var value = normalise(textInput.value);
                 if (value) {
                     colorInput.value = value;
@@ -166,13 +166,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         }
-        colorInput.addEventListener('change', function() {
+        colorInput.addEventListener('change', function () {
             syncColourInput(colorInput);
         });
         syncColourInput(colorInput);
     });
     document.querySelectorAll('input[type=\"color\"]').forEach(syncColourInput);
-    var slideshowSyncShadowVector = function(root, target) {
+    var slideshowSyncShadowVector = function (root, target) {
         if (!root || !target) {
             return;
         }
@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var directionInput = root.querySelector('[name=\"' + target + 'shadowdirection\"]');
         var distance = parseFloat(distanceInput && distanceInput.value ? distanceInput.value : '0') || 0;
         var direction = ((parseFloat(directionInput && directionInput.value ? directionInput.value : '90') || 0) * Math.PI) / 180;
-        root.querySelectorAll('[data-slideshow-overlay-preview=\"1\"]').forEach(function(preview) {
+        root.querySelectorAll('[data-slideshow-overlay-preview=\"1\"]').forEach(function (preview) {
             preview.style.setProperty(
                 '--local-course-banner-builder-slideshow-' + target + '-shadow-x',
                 (Math.cos(direction) * distance).toFixed(2) + 'px'
@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function() {
             );
         });
         if (target === 'label') {
-            root.querySelectorAll('[data-slideshow-label-sample=\"1\"]').forEach(function(sample) {
+            root.querySelectorAll('[data-slideshow-label-sample=\"1\"]').forEach(function (sample) {
                 sample.style.setProperty(
                     '--local-course-banner-builder-slideshow-label-shadow-x',
                     (Math.cos(direction) * distance).toFixed(2) + 'px'
@@ -203,12 +203,12 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     };
-    var slideshowSyncDesignInput = function(input) {
+    var slideshowSyncDesignInput = function (input) {
         if (!input) {
             return;
         }
         var root = input.closest('[data-slideshow-overlay-settings=\"1\"]');
-        var syncLocalDesignValue = function(source) {
+        var syncLocalDesignValue = function (source) {
             var unit = source.getAttribute('data-slideshow-design-unit') || '';
             var outputSelector = source.getAttribute('data-slideshow-design-output') || '';
             var output = outputSelector ? document.querySelector(outputSelector) : null;
@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (unit) {
             value = value + unit;
         }
-        root.querySelectorAll('[data-slideshow-overlay-preview=\"1\"]').forEach(function(preview) {
+        root.querySelectorAll('[data-slideshow-overlay-preview=\"1\"]').forEach(function (preview) {
             preview.style.setProperty(variable, value);
             if (variable.indexOf('shadow-color') !== -1) {
                 var raw = String(value || '#000000').replace('#', '');
@@ -258,7 +258,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         if (variable.indexOf('--local-course-banner-builder-slideshow-label-') === 0) {
-            root.querySelectorAll('[data-slideshow-label-sample=\"1\"]').forEach(function(sample) {
+            root.querySelectorAll('[data-slideshow-label-sample=\"1\"]').forEach(function (sample) {
                 sample.style.setProperty(variable, value);
             });
         }
@@ -266,9 +266,9 @@ document.addEventListener('DOMContentLoaded', function() {
             slideshowSyncShadowVector(root, variable.indexOf('-label-') !== -1 ? 'label' : 'action');
         }
     };
-    document.querySelectorAll('[data-slideshow-design-number-for]').forEach(function(number) {
+    document.querySelectorAll('[data-slideshow-design-number-for]').forEach(function (number) {
         var range = document.querySelector(number.getAttribute('data-slideshow-design-number-for') || '');
-        number.addEventListener('input', function() {
+        number.addEventListener('input', function () {
             if (!range) {
                 return;
             }
@@ -279,7 +279,7 @@ document.addEventListener('DOMContentLoaded', function() {
             slideshowSyncDesignInput(range);
         });
     });
-    document.querySelectorAll('[data-slideshow-side-proxy-for]').forEach(function(input) {
+    document.querySelectorAll('[data-slideshow-side-proxy-for]').forEach(function (input) {
         var root = input.closest('[data-slideshow-overlay-settings=\"1\"]');
         var realInput = root ? root.querySelector('[name=\"' + input.getAttribute('data-slideshow-side-proxy-for') + '\"]') : null;
             if (realInput) {
@@ -291,23 +291,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     syncColourInput(input);
                 }
         }
-        input.addEventListener('input', function() {
+        input.addEventListener('input', function () {
             slideshowSyncDesignInput(input);
         });
-        input.addEventListener('change', function() {
+        input.addEventListener('change', function () {
             slideshowSyncDesignInput(input);
         });
     });
-    document.querySelectorAll('[data-slideshow-design-input=\"1\"]').forEach(function(input) {
-        input.addEventListener('input', function() {
+    document.querySelectorAll('[data-slideshow-design-input=\"1\"]').forEach(function (input) {
+        input.addEventListener('input', function () {
             slideshowSyncDesignInput(input);
         });
-        input.addEventListener('change', function() {
+        input.addEventListener('change', function () {
             slideshowSyncDesignInput(input);
         });
         slideshowSyncDesignInput(input);
     });
-    var slideshowSetSidePanelVisible = function(panel, visible) {
+    var slideshowSetSidePanelVisible = function (panel, visible) {
         if (!panel) {
             return;
         }
@@ -318,20 +318,20 @@ document.addEventListener('DOMContentLoaded', function() {
         panel.dataset.slideshowPanelVisible = visible ? '1' : '0';
         if (visible) {
             panel.hidden = false;
-            window.requestAnimationFrame(function() {
+            window.requestAnimationFrame(function () {
                 panel.classList.remove('is-collapsed');
             });
             return;
         }
         panel.classList.add('is-collapsed');
-        panel.dataset.slideshowPanelTimer = String(window.setTimeout(function() {
+        panel.dataset.slideshowPanelTimer = String(window.setTimeout(function () {
             if (panel.classList.contains('is-collapsed')) {
                 panel.hidden = true;
             }
             delete panel.dataset.slideshowPanelTimer;
         }, 300));
     };
-    var slideshowGetSidePanelRoot = function(node) {
+    var slideshowGetSidePanelRoot = function (node) {
         if (!node || !node.closest) {
             return null;
         }
@@ -339,11 +339,11 @@ document.addEventListener('DOMContentLoaded', function() {
             node.closest('.local-course-banner-builder-slideshow-preview-modal') ||
             node.closest('.modal');
     };
-    var slideshowSyncSidePanelButtons = function(root) {
+    var slideshowSyncSidePanelButtons = function (root) {
         if (!root) {
             return;
         }
-        root.querySelectorAll('[data-action=\"local-course-banner-builder-toggle-slideshow-side-panel\"]').forEach(function(button) {
+        root.querySelectorAll('[data-action=\"local-course-banner-builder-toggle-slideshow-side-panel\"]').forEach(function (button) {
             var target = button.getAttribute('data-slideshow-side-panel-target');
             var panel = target ? root.querySelector('[data-slideshow-side-panel=\"' + target + '\"]') : null;
             var active = !!(panel && (
@@ -358,7 +358,7 @@ document.addEventListener('DOMContentLoaded', function() {
             button.setAttribute('aria-pressed', active ? 'true' : 'false');
         });
     };
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         var sideButton = e.target.closest('[data-action=\"local-course-banner-builder-toggle-slideshow-side-panel\"]');
         if (!sideButton) {
             return;
@@ -369,7 +369,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!root || !target) {
             return;
         }
-        root.querySelectorAll('[data-slideshow-side-panel]').forEach(function(panel) {
+        root.querySelectorAll('[data-slideshow-side-panel]').forEach(function (panel) {
             var isTarget = panel.getAttribute('data-slideshow-side-panel') === target;
             var isOpen = panel.dataset.slideshowPanelVisible === '1' ||
                 (!panel.hidden && !panel.classList.contains('is-collapsed'));
@@ -377,12 +377,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         slideshowSyncSidePanelButtons(root);
     });
-    document.querySelectorAll('[data-slideshow-overlay-settings=\"1\"]').forEach(function(panel) {
+    document.querySelectorAll('[data-slideshow-overlay-settings=\"1\"]').forEach(function (panel) {
         var color = panel.querySelector('[data-slideshow-overlay-color=\"1\"]');
         var opacity = panel.querySelector('[data-slideshow-overlay-opacity=\"1\"]');
         var previews = Array.prototype.slice.call(panel.querySelectorAll('[data-slideshow-overlay-preview=\"1\"]'));
         var output = panel.querySelector('[data-slideshow-overlay-opacity-output=\"1\"]');
-        var sync = function() {
+        var sync = function () {
             if (!previews.length || !color || !opacity) {
                 return;
             }
@@ -392,7 +392,7 @@ document.addEventListener('DOMContentLoaded', function() {
             var g = parseInt(raw.substring(2, 4), 16) || 0;
             var b = parseInt(raw.substring(4, 6), 16) || 0;
             var percent = Math.max(0, Math.min(85, parseInt(opacity.value || '38', 10)));
-            previews.forEach(function(preview) {
+            previews.forEach(function (preview) {
                 preview.style.setProperty('--local-course-banner-builder-slideshow-overlay-rgb', r + ', ' + g + ', ' + b);
                 preview.style.setProperty('--local-course-banner-builder-slideshow-overlay-opacity', (percent / 100).toFixed(2));
             });
@@ -408,8 +408,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         sync();
     });
-    document.querySelectorAll('[data-slideshow-label-color-settings=\"1\"]').forEach(function(panel) {
-        var sync = function(input) {
+    document.querySelectorAll('[data-slideshow-label-color-settings=\"1\"]').forEach(function (panel) {
+        var sync = function (input) {
             if (!input) {
                 return;
             }
@@ -418,7 +418,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!variable) {
                 return;
             }
-            context.querySelectorAll('[data-slideshow-overlay-preview=\"1\"]').forEach(function(preview) {
+            context.querySelectorAll('[data-slideshow-overlay-preview=\"1\"]').forEach(function (preview) {
                 preview.style.setProperty(variable, input.value || '#000000');
                 if (variable.indexOf('-shadow') !== -1) {
                     var raw = String(input.value || '#000000').replace('#', '');
@@ -441,20 +441,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         };
-        panel.querySelectorAll('[data-slideshow-label-var]').forEach(function(input) {
-            input.addEventListener('input', function() {
+        panel.querySelectorAll('[data-slideshow-label-var]').forEach(function (input) {
+            input.addEventListener('input', function () {
                 sync(input);
             });
             sync(input);
         });
     });
-    document.querySelectorAll('[data-slideshow-text-settings=\"1\"]').forEach(function(panel) {
+    document.querySelectorAll('[data-slideshow-text-settings=\"1\"]').forEach(function (panel) {
         var availableFonts = [
             'Arial', 'Trebuchet MS', 'Verdana', 'Tahoma', 'Georgia', 'Times New Roman', 'Garamond',
             'Palatino Linotype', 'Segoe UI', 'Helvetica Neue', 'Courier New', 'Lucida Console',
             'Open Sans', 'Lato', 'Montserrat', 'Poppins', 'Merriweather', 'Playfair Display'
         ];
-        var getFormatSizeScale = function(format, kind) {
+        var getFormatSizeScale = function (format, kind) {
             if (format === 'standard') {
                 return 1.24;
             }
@@ -466,42 +466,42 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             return 1;
         };
-        var buildTitleSize = function(percent, format) {
+        var buildTitleSize = function (percent, format) {
             var scale = Math.max(25, Math.min(100, parseInt(percent || '100', 10))) / 100;
             scale = scale * getFormatSizeScale(format || '', 'title');
             return 'clamp(' + (10 * scale).toFixed(3) + 'cqh, min(' + (28 * scale).toFixed(3) +
                 'cqh, ' + (3.4 * scale).toFixed(3) + 'cqw), ' + (36 * scale).toFixed(3) + 'cqh)';
         };
-        var buildBodySize = function(percent, format) {
+        var buildBodySize = function (percent, format) {
             var scale = Math.max(25, Math.min(100, parseInt(percent || '100', 10))) / 100;
             scale = scale * getFormatSizeScale(format || '', 'body');
             return 'clamp(' + (5.5 * scale).toFixed(3) + 'cqh, min(' + (14 * scale).toFixed(3) +
                 'cqh, ' + (1.7 * scale).toFixed(3) + 'cqw), ' + (19 * scale).toFixed(3) + 'cqh)';
         };
-        var buildLabelSize = function(percent, format) {
+        var buildLabelSize = function (percent, format) {
             var scale = Math.max(25, Math.min(100, parseInt(percent || '100', 10))) / 100;
             scale = scale * getFormatSizeScale(format || '', 'label');
             return 'clamp(' + (3.5 * scale).toFixed(3) + 'cqh, min(' + (6.4 * scale).toFixed(3) +
                 'cqh, ' + (0.82 * scale).toFixed(3) + 'cqw), ' + (8.4 * scale).toFixed(3) + 'cqh)';
         };
-        var buildActionSize = function(percent, format) {
+        var buildActionSize = function (percent, format) {
             var scale = Math.max(25, Math.min(100, parseInt(percent || '100', 10))) / 100;
             scale = scale * getFormatSizeScale(format || '', 'action');
             return 'clamp(' + (6 * scale).toFixed(3) + 'cqh, min(' + (13 * scale).toFixed(3) +
                 'cqh, ' + (1.6 * scale).toFixed(3) + 'cqw), ' + (18 * scale).toFixed(3) + 'cqh)';
         };
-        var buildActionWidth = function(percent, format) {
+        var buildActionWidth = function (percent, format) {
             var scale = Math.max(25, Math.min(100, parseInt(percent || '100', 10))) / 100;
             scale = scale * getFormatSizeScale(format || '', 'actionwidth');
             return 'clamp(' + (10 * scale).toFixed(3) + 'cqw, ' + (18 * scale).toFixed(3) + 'cqw, ' + (34 * scale).toFixed(3) + 'cqw)';
         };
-        var buildActionHeight = function(percent, format) {
+        var buildActionHeight = function (percent, format) {
             var scale = Math.max(25, Math.min(100, parseInt(percent || '100', 10))) / 100;
             scale = scale * getFormatSizeScale(format || '', 'actionheight');
             return 'clamp(' + (10 * scale).toFixed(3) + 'cqh, min(' + (22 * scale).toFixed(3) +
                 'cqh, ' + (2.7 * scale).toFixed(3) + 'cqw), ' + (34 * scale).toFixed(3) + 'cqh)';
         };
-        var sync = function(input) {
+        var sync = function (input) {
             var variable = input.getAttribute('data-slideshow-text-var');
             var previews = Array.prototype.slice.call(panel.closest('[data-slideshow-overlay-settings=\"1\"]').querySelectorAll('[data-slideshow-overlay-preview=\"1\"]'));
             var output = panel.querySelector('[data-slideshow-text-output-for=\"' + input.name + '\"]');
@@ -513,7 +513,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (number && number !== document.activeElement) {
                 number.value = input.value;
             }
-            previews.forEach(function(preview) {
+            previews.forEach(function (preview) {
                 var format = preview.getAttribute('data-banner-format') || '';
                 if (input.getAttribute('data-slideshow-text-size') === 'title') {
                     value = buildTitleSize(input.value, format);
@@ -538,18 +538,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
         };
-        panel.querySelectorAll('[data-slideshow-text-var]').forEach(function(input) {
-            input.addEventListener('input', function() {
+        panel.querySelectorAll('[data-slideshow-text-var]').forEach(function (input) {
+            input.addEventListener('input', function () {
                 sync(input);
             });
-            input.addEventListener('change', function() {
+            input.addEventListener('change', function () {
                 sync(input);
             });
             sync(input);
         });
-        panel.querySelectorAll('[data-slideshow-size-number-for]').forEach(function(input) {
+        panel.querySelectorAll('[data-slideshow-size-number-for]').forEach(function (input) {
             var range = panel.querySelector('[name=\"' + input.getAttribute('data-slideshow-size-number-for') + '\"]');
-            input.addEventListener('input', function() {
+            input.addEventListener('input', function () {
                 if (!range) {
                     return;
                 }
@@ -558,16 +558,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 sync(range);
             });
         });
-        panel.querySelectorAll('[data-slideshow-font-family=\"1\"]').forEach(function(select) {
+        panel.querySelectorAll('[data-slideshow-font-family=\"1\"]').forEach(function (select) {
             if (!document.fonts || typeof document.fonts.check !== 'function') {
                 return;
             }
-            Array.prototype.slice.call(select.options).forEach(function(option) {
+            Array.prototype.slice.call(select.options).forEach(function (option) {
                 var raw = option.getAttribute('data-font-value') || '';
                 if (!raw) {
                     return;
                 }
-                var family = availableFonts.find(function(candidate) {
+                var family = availableFonts.find(function (candidate) {
                     return raw.indexOf(candidate) !== -1;
                 });
                 if (!family) {
@@ -591,18 +591,18 @@ document.addEventListener('DOMContentLoaded', function() {
         body: 'bodyfontsize',
         action: 'actionsize'
     };
-    var slideshowPreviewReadJson = function(value, fallback) {
+    var slideshowPreviewReadJson = function (value, fallback) {
         try {
             return value ? JSON.parse(value) : fallback;
         } catch (error) {
             return fallback;
         }
     };
-    var slideshowPreviewGetPreview = function(scope) {
+    var slideshowPreviewGetPreview = function (scope) {
         var root = scope && scope.closest ? scope.closest('[data-slideshow-overlay-settings=\"1\"]') : null;
         return root ? root.querySelector('[data-slideshow-overlay-preview=\"1\"][data-slideshow-preview-editor=\"1\"]') : null;
     };
-    var slideshowPreviewApplyPosition = function(preview, key, x, y) {
+    var slideshowPreviewApplyPosition = function (preview, key, x, y) {
         if (!preview) {
             return;
         }
@@ -622,14 +622,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     };
-    var slideshowNormaliseAlignment = function(value) {
+    var slideshowNormaliseAlignment = function (value) {
         return ['left', 'center', 'right'].indexOf(value) !== -1 ? value : 'center';
     };
-    var slideshowAlignmentTranslateX = function(value) {
+    var slideshowAlignmentTranslateX = function (value) {
         value = slideshowNormaliseAlignment(value);
         return '-50%';
     };
-    var slideshowAlignmentFlexValue = function(value) {
+    var slideshowAlignmentFlexValue = function (value) {
         value = slideshowNormaliseAlignment(value);
         if (value === 'left') {
             return 'flex-start';
@@ -639,13 +639,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return 'center';
     };
-    var slideshowSyncSideAlignmentButtons = function(panel, target) {
+    var slideshowSyncSideAlignmentButtons = function (panel, target) {
         if (!panel) {
             return;
         }
         var input = panel.querySelector('[data-slideshow-alignment-input=\"' + target + '\"]');
         var value = input ? slideshowNormaliseAlignment(input.value || 'center') : 'center';
-        panel.querySelectorAll('[data-slideshow-align-target=\"' + target + '\"]').forEach(function(button) {
+        panel.querySelectorAll('[data-slideshow-align-target=\"' + target + '\"]').forEach(function (button) {
             var active = button.getAttribute('data-slideshow-align') === value;
             button.classList.toggle('active', active);
             button.classList.toggle('btn-primary', active);
@@ -653,7 +653,7 @@ document.addEventListener('DOMContentLoaded', function() {
             button.setAttribute('aria-pressed', active ? 'true' : 'false');
         });
     };
-    var slideshowApplyAlignment = function(panel, target, value) {
+    var slideshowApplyAlignment = function (panel, target, value) {
         if (!panel) {
             return;
         }
@@ -663,7 +663,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ? '--local-course-banner-builder-slideshow-label-items-align'
             : '--local-course-banner-builder-slideshow-' + target + '-text-align';
         var cssvalue = target === 'label' ? slideshowAlignmentFlexValue(value) : value;
-        panel.querySelectorAll('[data-slideshow-overlay-preview=\"1\"]').forEach(function(preview) {
+        panel.querySelectorAll('[data-slideshow-overlay-preview=\"1\"]').forEach(function (preview) {
             preview.style.setProperty(variable, cssvalue);
             if (target === 'label') {
                 preview.style.setProperty(
@@ -684,7 +684,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     var slideshowPreviewGuideThreshold = 5;
     var slideshowPreviewGuideMargin = 12;
-    var slideshowPreviewEnsureGuideLayer = function(preview) {
+    var slideshowPreviewEnsureGuideLayer = function (preview) {
         if (!preview) {
             return null;
         }
@@ -698,20 +698,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return layer;
     };
-    var slideshowPreviewClearGuides = function(preview) {
+    var slideshowPreviewClearGuides = function (preview) {
         var layer = preview ? preview.querySelector(':scope > [data-preview-guides-layer=\"1\"]') : null;
         if (layer) {
             layer.innerHTML = '';
             layer.hidden = true;
         }
     };
-    var slideshowPreviewIsSnapEnabled = function(preview) {
+    var slideshowPreviewIsSnapEnabled = function (preview) {
         var panel = preview ? preview.closest('[data-slideshow-overlay-settings=\"1\"]') : null;
         return !(panel && panel.getAttribute('data-preview-snap-enabled') === '0');
     };
-    var slideshowPreviewSyncSnapButtons = function(scope) {
+    var slideshowPreviewSyncSnapButtons = function (scope) {
         var root = scope || document;
-        Array.prototype.slice.call(root.querySelectorAll('[data-action=\"local-course-banner-builder-toggle-slideshow-preview-snap\"]')).forEach(function(button) {
+        Array.prototype.slice.call(root.querySelectorAll('[data-action=\"local-course-banner-builder-toggle-slideshow-preview-snap\"]')).forEach(function (button) {
             var preview = slideshowPreviewGetPreview(button);
             var enabled = slideshowPreviewIsSnapEnabled(preview);
             button.classList.remove('btn-primary');
@@ -722,18 +722,18 @@ document.addEventListener('DOMContentLoaded', function() {
             button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
         });
     };
-    var slideshowPreviewPulseButton = function(button) {
+    var slideshowPreviewPulseButton = function (button) {
         if (!button) {
             return;
         }
         button.classList.remove('local-course-banner-builder-preview-action-feedback');
         void button.offsetWidth;
         button.classList.add('local-course-banner-builder-preview-action-feedback');
-        window.setTimeout(function() {
+        window.setTimeout(function () {
             button.classList.remove('local-course-banner-builder-preview-action-feedback');
         }, 260);
     };
-    var slideshowPreviewRectInFrame = function(frameRect, node) {
+    var slideshowPreviewRectInFrame = function (frameRect, node) {
         var rect = node.getBoundingClientRect();
         return {
             left: rect.left - frameRect.left,
@@ -744,12 +744,12 @@ document.addEventListener('DOMContentLoaded', function() {
             centerY: rect.top - frameRect.top + (rect.height / 2)
         };
     };
-    var slideshowPreviewRectsOverlap = function(a, b, margin) {
+    var slideshowPreviewRectsOverlap = function (a, b, margin) {
         margin = margin || 0;
         return !(a.right + margin < b.left || a.left - margin > b.right ||
             a.bottom + margin < b.top || a.top - margin > b.bottom);
     };
-    var slideshowPreviewAddGuide = function(layer, orientation, position, kind) {
+    var slideshowPreviewAddGuide = function (layer, orientation, position, kind) {
         if (!layer || !isFinite(position)) {
             return;
         }
@@ -763,7 +763,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         layer.appendChild(line);
     };
-    var slideshowPreviewMaybeAddGuide = function(layer, orientation, activeValue, targetValue, kind, seen) {
+    var slideshowPreviewMaybeAddGuide = function (layer, orientation, activeValue, targetValue, kind, seen) {
         if (Math.abs(activeValue - targetValue) > slideshowPreviewGuideThreshold) {
             return;
         }
@@ -774,7 +774,7 @@ document.addEventListener('DOMContentLoaded', function() {
         seen[key] = true;
         slideshowPreviewAddGuide(layer, orientation, targetValue, kind);
     };
-    var slideshowPreviewSnapCandidate = function(best, axis, delta, priority) {
+    var slideshowPreviewSnapCandidate = function (best, axis, delta, priority) {
         if (Math.abs(delta) > slideshowPreviewGuideThreshold) {
             return best;
         }
@@ -785,7 +785,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return best;
     };
-    var slideshowPreviewFindSnap = function(preview, active, rawRect) {
+    var slideshowPreviewFindSnap = function (preview, active, rawRect) {
         if (!preview || !active || !rawRect) {
             return {dx: 0, dy: 0};
         }
@@ -793,7 +793,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var best = {};
         best = slideshowPreviewSnapCandidate(best, 'x', (frameRect.width / 2) - rawRect.centerX, 3);
         best = slideshowPreviewSnapCandidate(best, 'y', (frameRect.height / 2) - rawRect.centerY, 3);
-        Array.prototype.slice.call(preview.querySelectorAll('[data-slideshow-preview-draggable]')).forEach(function(target) {
+        Array.prototype.slice.call(preview.querySelectorAll('[data-slideshow-preview-draggable]')).forEach(function (target) {
             if (target === active) {
                 return;
             }
@@ -805,12 +805,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 {value: rawRect.centerX, priority: 2},
                 {value: rawRect.left, priority: 1},
                 {value: rawRect.right, priority: 1}
-            ].forEach(function(activeValue) {
+            ].forEach(function (activeValue) {
                 [
                     {value: targetRect.centerX, priority: activeValue.priority === 2 ? 2 : 1},
                     {value: targetRect.left, priority: 1},
                     {value: targetRect.right, priority: 1}
-                ].forEach(function(targetValue) {
+                ].forEach(function (targetValue) {
                     best = slideshowPreviewSnapCandidate(
                         best,
                         'x',
@@ -823,12 +823,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 {value: rawRect.centerY, priority: 2},
                 {value: rawRect.top, priority: 1},
                 {value: rawRect.bottom, priority: 1}
-            ].forEach(function(activeValue) {
+            ].forEach(function (activeValue) {
                 [
                     {value: targetRect.centerY, priority: activeValue.priority === 2 ? 2 : 1},
                     {value: targetRect.top, priority: 1},
                     {value: targetRect.bottom, priority: 1}
-                ].forEach(function(targetValue) {
+                ].forEach(function (targetValue) {
                     best = slideshowPreviewSnapCandidate(
                         best,
                         'y',
@@ -840,7 +840,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         return {dx: best.x ? best.x.delta : 0, dy: best.y ? best.y.delta : 0};
     };
-    var slideshowPreviewUpdateGuides = function(preview, active) {
+    var slideshowPreviewUpdateGuides = function (preview, active) {
         if (!preview || !active) {
             slideshowPreviewClearGuides(preview);
             return;
@@ -862,7 +862,7 @@ document.addEventListener('DOMContentLoaded', function() {
             layer, 'horizontal', activeRect.centerY, frameRect.height / 2,
             'frame local-course-banner-builder-preview-guide--center', seen
         );
-        Array.prototype.slice.call(preview.querySelectorAll('[data-slideshow-preview-draggable]')).forEach(function(target) {
+        Array.prototype.slice.call(preview.querySelectorAll('[data-slideshow-preview-draggable]')).forEach(function (target) {
             if (target === active) {
                 return;
             }
@@ -874,12 +874,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 {value: activeRect.left, type: 'edge'},
                 {value: activeRect.centerX, type: 'center'},
                 {value: activeRect.right, type: 'edge'}
-            ].forEach(function(activeValue) {
+            ].forEach(function (activeValue) {
                 [
                     {value: targetRect.left, type: 'edge'},
                     {value: targetRect.centerX, type: 'center'},
                     {value: targetRect.right, type: 'edge'}
-                ].forEach(function(targetValue) {
+                ].forEach(function (targetValue) {
                     slideshowPreviewMaybeAddGuide(
                         layer,
                         'vertical',
@@ -895,12 +895,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 {value: activeRect.top, type: 'edge'},
                 {value: activeRect.centerY, type: 'center'},
                 {value: activeRect.bottom, type: 'edge'}
-            ].forEach(function(activeValue) {
+            ].forEach(function (activeValue) {
                 [
                     {value: targetRect.top, type: 'edge'},
                     {value: targetRect.centerY, type: 'center'},
                     {value: targetRect.bottom, type: 'edge'}
-                ].forEach(function(targetValue) {
+                ].forEach(function (targetValue) {
                     slideshowPreviewMaybeAddGuide(
                         layer,
                         'horizontal',
@@ -917,7 +917,7 @@ document.addEventListener('DOMContentLoaded', function() {
             layer.hidden = true;
         }
     };
-    var slideshowPreviewApplySize = function(preview, key, value, edge) {
+    var slideshowPreviewApplySize = function (preview, key, value, edge) {
         var root = preview ? preview.closest('[data-slideshow-overlay-settings=\"1\"]') : null;
         var inputname = slideshowPreviewSizeInputs[key];
         if (key === 'action' && edge) {
@@ -933,30 +933,30 @@ document.addEventListener('DOMContentLoaded', function() {
             range.dispatchEvent(new Event('input', {bubbles: true}));
         }
     };
-    var slideshowSyncLabelOrientation = function(panel, value) {
+    var slideshowSyncLabelOrientation = function (panel, value) {
         if (!panel) {
             return;
         }
         value = value === 'column' ? 'column' : 'row';
-        panel.querySelectorAll('[data-slideshow-overlay-preview=\"1\"]').forEach(function(preview) {
+        panel.querySelectorAll('[data-slideshow-overlay-preview=\"1\"]').forEach(function (preview) {
             preview.style.setProperty('--local-course-banner-builder-slideshow-label-orientation', value);
         });
         var input = panel.querySelector('[data-slideshow-label-orientation-input]');
         if (input) {
             input.value = value;
         }
-        panel.querySelectorAll('[data-slideshow-label-orientation-option]').forEach(function(button) {
+        panel.querySelectorAll('[data-slideshow-label-orientation-option]').forEach(function (button) {
             var active = button.getAttribute('data-slideshow-label-orientation-option') === value;
             button.classList.toggle('active', active);
             button.classList.toggle('btn-primary', active);
             button.classList.toggle('btn-outline-secondary', !active);
             button.setAttribute('aria-pressed', active ? 'true' : 'false');
         });
-        panel.querySelectorAll('[data-action=\"local-course-banner-builder-toggle-slideshow-label-orientation\"] i').forEach(function(icon) {
+        panel.querySelectorAll('[data-action=\"local-course-banner-builder-toggle-slideshow-label-orientation\"] i').forEach(function (icon) {
             icon.className = 'fa ' + (value === 'column' ? 'fa-grip-lines-vertical' : 'fa-grip-lines');
         });
     };
-    var slideshowSyncCornerStyle = function(panel, target, value) {
+    var slideshowSyncCornerStyle = function (panel, target, value) {
         if (!panel) {
             return;
         }
@@ -965,29 +965,29 @@ document.addEventListener('DOMContentLoaded', function() {
         var variable = target === 'label'
             ? '--local-course-banner-builder-slideshow-label-radius'
             : '--local-course-banner-builder-slideshow-action-radius';
-        panel.querySelectorAll('[data-slideshow-overlay-preview=\"1\"]').forEach(function(preview) {
+        panel.querySelectorAll('[data-slideshow-overlay-preview=\"1\"]').forEach(function (preview) {
             preview.style.setProperty(variable, value === 'square' ? '0.28rem' : '999px');
         });
-        panel.querySelectorAll('[data-slideshow-corner-input=\"' + target + '\"]').forEach(function(input) {
+        panel.querySelectorAll('[data-slideshow-corner-input=\"' + target + '\"]').forEach(function (input) {
             input.value = value;
         });
-        panel.querySelectorAll('[data-slideshow-corner-option=\"' + target + '\"]').forEach(function(button) {
+        panel.querySelectorAll('[data-slideshow-corner-option=\"' + target + '\"]').forEach(function (button) {
             var active = button.getAttribute('data-slideshow-corner-value') === value;
             button.classList.toggle('active', active);
             button.classList.toggle('btn-primary', active);
             button.classList.toggle('btn-outline-secondary', !active);
             button.setAttribute('aria-pressed', active ? 'true' : 'false');
         });
-        panel.querySelectorAll('[data-slideshow-corner-target=\"' + target + '\"] i').forEach(function(icon) {
+        panel.querySelectorAll('[data-slideshow-corner-target=\"' + target + '\"] i').forEach(function (icon) {
             icon.className = 'fa ' + (value === 'square' ? 'fa-square' : 'fa-circle');
         });
         if (target === 'label') {
-            panel.querySelectorAll('[data-slideshow-label-sample=\"1\"]').forEach(function(sample) {
+            panel.querySelectorAll('[data-slideshow-label-sample=\"1\"]').forEach(function (sample) {
                 sample.style.setProperty(variable, value === 'square' ? '0.28rem' : '999px');
             });
         }
     };
-    var slideshowGetTextDecoration = function(underline, strike) {
+    var slideshowGetTextDecoration = function (underline, strike) {
         var value = [];
         if (underline) {
             value.push('underline');
@@ -997,12 +997,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return value.length ? value.join(' ') : 'none';
     };
-    var slideshowApplyTextStyle = function(panel, target) {
+    var slideshowApplyTextStyle = function (panel, target) {
         if (!panel) {
             return;
         }
         target = ['title', 'body', 'action', 'label'].indexOf(target) !== -1 ? target : 'title';
-        var get = function(style) {
+        var get = function (style) {
             var input = panel.querySelector('[data-slideshow-text-style-input=\"' + target + style + '\"]');
             return input && input.value === '1';
         };
@@ -1011,7 +1011,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var underline = get('underline');
         var strike = get('strike');
         var allcaps = get('allcaps');
-        panel.querySelectorAll('[data-slideshow-overlay-preview=\"1\"]').forEach(function(preview) {
+        panel.querySelectorAll('[data-slideshow-overlay-preview=\"1\"]').forEach(function (preview) {
             preview.style.setProperty('--local-course-banner-builder-slideshow-' + target + '-font-weight',
                 bold ? (target === 'title' ? '800' : '700') : '400');
             preview.style.setProperty('--local-course-banner-builder-slideshow-' + target + '-font-style',
@@ -1021,10 +1021,10 @@ document.addEventListener('DOMContentLoaded', function() {
             preview.style.setProperty('--local-course-banner-builder-slideshow-' + target + '-text-transform',
                 allcaps ? 'uppercase' : 'none');
         });
-        ['bold', 'italic', 'underline', 'strike', 'allcaps'].forEach(function(style) {
+        ['bold', 'italic', 'underline', 'strike', 'allcaps'].forEach(function (style) {
             var input = panel.querySelector('[data-slideshow-text-style-input=\"' + target + style + '\"]');
             var active = input && input.value === '1';
-            panel.querySelectorAll('[data-slideshow-text-style-buttons=\"' + target + '\"] [data-slideshow-text-style=\"' + style + '\"]').forEach(function(button) {
+            panel.querySelectorAll('[data-slideshow-text-style-buttons=\"' + target + '\"] [data-slideshow-text-style=\"' + style + '\"]').forEach(function (button) {
                 button.classList.toggle('active', active);
                 button.classList.toggle('btn-primary', active);
                 button.classList.toggle('btn-outline-secondary', !active);
@@ -1036,52 +1036,52 @@ document.addEventListener('DOMContentLoaded', function() {
             slideshowPreviewSyncButtons(preview);
         }
     };
-    var slideshowPreviewCaptureTextStyles = function(panel) {
+    var slideshowPreviewCaptureTextStyles = function (panel) {
         var styles = {};
         if (!panel) {
             return styles;
         }
-        panel.querySelectorAll('[data-slideshow-text-style-input]').forEach(function(input) {
+        panel.querySelectorAll('[data-slideshow-text-style-input]').forEach(function (input) {
             styles[input.getAttribute('data-slideshow-text-style-input')] = input.value === '1' ? '1' : '0';
         });
         return styles;
     };
-    var slideshowPreviewApplyTextStyles = function(panel, styles) {
+    var slideshowPreviewApplyTextStyles = function (panel, styles) {
         if (!panel || !styles) {
             return;
         }
-        panel.querySelectorAll('[data-slideshow-text-style-input]').forEach(function(input) {
+        panel.querySelectorAll('[data-slideshow-text-style-input]').forEach(function (input) {
             var key = input.getAttribute('data-slideshow-text-style-input');
             if (Object.prototype.hasOwnProperty.call(styles, key)) {
                 input.value = styles[key] === '1' ? '1' : '0';
             }
         });
-        ['title', 'body', 'action', 'label'].forEach(function(target) {
+        ['title', 'body', 'action', 'label'].forEach(function (target) {
             slideshowApplyTextStyle(panel, target);
         });
     };
-    var slideshowPreviewCaptureAlignments = function(panel) {
+    var slideshowPreviewCaptureAlignments = function (panel) {
         var alignments = {};
         if (!panel) {
             return alignments;
         }
-        panel.querySelectorAll('[data-slideshow-alignment-input]').forEach(function(input) {
+        panel.querySelectorAll('[data-slideshow-alignment-input]').forEach(function (input) {
             alignments[input.getAttribute('data-slideshow-alignment-input')] =
                 slideshowNormaliseAlignment(input.value || 'center');
         });
         return alignments;
     };
-    var slideshowPreviewApplyAlignments = function(panel, alignments) {
+    var slideshowPreviewApplyAlignments = function (panel, alignments) {
         if (!panel || !alignments) {
             return;
         }
-        ['title', 'body', 'label'].forEach(function(target) {
+        ['title', 'body', 'label'].forEach(function (target) {
             if (Object.prototype.hasOwnProperty.call(alignments, target)) {
                 slideshowApplyAlignment(panel, target, alignments[target]);
             }
         });
     };
-    var slideshowPreviewCaptureState = function(preview) {
+    var slideshowPreviewCaptureState = function (preview) {
         var panel = preview.closest('[data-slideshow-overlay-settings=\"1\"]');
         return {
             label: {
@@ -1104,8 +1104,8 @@ document.addEventListener('DOMContentLoaded', function() {
             alignments: slideshowPreviewCaptureAlignments(panel)
         };
     };
-    var slideshowPreviewApplyState = function(preview, state) {
-        ['label', 'title', 'body', 'action'].forEach(function(key) {
+    var slideshowPreviewApplyState = function (preview, state) {
+        ['label', 'title', 'body', 'action'].forEach(function (key) {
             if (state && state[key]) {
                 slideshowPreviewApplyPosition(preview, key, state[key].x, state[key].y);
             }
@@ -1113,7 +1113,7 @@ document.addEventListener('DOMContentLoaded', function() {
         slideshowPreviewApplyTextStyles(preview.closest('[data-slideshow-overlay-settings=\"1\"]'), state ? state.textStyles : null);
         slideshowPreviewApplyAlignments(preview.closest('[data-slideshow-overlay-settings=\"1\"]'), state ? state.alignments : null);
     };
-    var slideshowPreviewSyncButtons = function(preview) {
+    var slideshowPreviewSyncButtons = function (preview) {
         if (!preview) {
             return;
         }
@@ -1135,7 +1135,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         var selectedKey = selected ? selected.getAttribute('data-slideshow-preview-draggable') : '';
         var textSelected = ['title', 'body', 'action', 'label'].indexOf(selectedKey) !== -1;
-        root.querySelectorAll('[data-action=\"local-course-banner-builder-toggle-selected-slideshow-text-style\"]').forEach(function(button) {
+        root.querySelectorAll('[data-action=\"local-course-banner-builder-toggle-selected-slideshow-text-style\"]').forEach(function (button) {
             button.classList.toggle('d-none', !textSelected);
             button.disabled = !textSelected;
             if (!textSelected) {
@@ -1150,7 +1150,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var orientation = (root.querySelector('[data-slideshow-label-orientation-input]') || {}).value || 'row';
         var alignmentSelected = selectedKey === 'title' || selectedKey === 'body' ||
             (selectedKey === 'label' && orientation === 'column');
-        root.querySelectorAll('[data-action=\"local-course-banner-builder-set-selected-slideshow-alignment\"]').forEach(function(button) {
+        root.querySelectorAll('[data-action=\"local-course-banner-builder-set-selected-slideshow-alignment\"]').forEach(function (button) {
             if (button.hasAttribute('data-slideshow-align-target')) {
                 return;
             }
@@ -1166,7 +1166,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         slideshowPreviewSyncSnapButtons(root);
     };
-    var slideshowPreviewUsesCircleActiveState = function(button) {
+    var slideshowPreviewUsesCircleActiveState = function (button) {
         if (!button) {
             return false;
         }
@@ -1174,7 +1174,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return action === 'local-course-banner-builder-toggle-selected-slideshow-text-style' ||
             action === 'local-course-banner-builder-set-selected-slideshow-alignment';
     };
-    var slideshowPreviewSetToolbarButtonActive = function(button, active) {
+    var slideshowPreviewSetToolbarButtonActive = function (button, active) {
         if (!button) {
             return;
         }
@@ -1188,15 +1188,15 @@ document.addEventListener('DOMContentLoaded', function() {
         );
         button.setAttribute('aria-pressed', active ? 'true' : 'false');
     };
-    var slideshowPreviewSyncToolbarOnNextFrame = function(preview) {
+    var slideshowPreviewSyncToolbarOnNextFrame = function (preview) {
         if (!preview) {
             return;
         }
-        window.requestAnimationFrame(function() {
+        window.requestAnimationFrame(function () {
             slideshowPreviewSyncButtons(preview);
         });
     };
-    var slideshowPreviewPushUndo = function(preview) {
+    var slideshowPreviewPushUndo = function (preview) {
         var undoStack = slideshowPreviewReadJson(preview.dataset.previewUndoStack || '[]', []);
         undoStack.push(slideshowPreviewCaptureState(preview));
         if (undoStack.length > 40) {
@@ -1206,7 +1206,7 @@ document.addEventListener('DOMContentLoaded', function() {
         preview.dataset.previewRedoStack = '[]';
         slideshowPreviewSyncButtons(preview);
     };
-    var slideshowPreviewOpenSidePanelForSelection = function(root, key) {
+    var slideshowPreviewOpenSidePanelForSelection = function (root, key) {
         var target = {
             label: 'labelshape',
             title: 'titletext',
@@ -1216,26 +1216,26 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!root || !target) {
             return;
         }
-        root.querySelectorAll('[data-slideshow-side-panel]').forEach(function(panel) {
+        root.querySelectorAll('[data-slideshow-side-panel]').forEach(function (panel) {
             var active = panel.getAttribute('data-slideshow-side-panel') === target;
             slideshowSetSidePanelVisible(panel, active);
         });
         slideshowSyncSidePanelButtons(root);
     };
-    var slideshowPreviewSelect = function(preview, key) {
+    var slideshowPreviewSelect = function (preview, key) {
         if (!preview) {
             return;
         }
-        Array.prototype.slice.call(preview.querySelectorAll('[data-slideshow-preview-draggable]')).forEach(function(node) {
+        Array.prototype.slice.call(preview.querySelectorAll('[data-slideshow-preview-draggable]')).forEach(function (node) {
             node.classList.toggle(slideshowPreviewSelectionClass, node.getAttribute('data-slideshow-preview-draggable') === key);
         });
         slideshowPreviewSyncButtons(preview);
         slideshowPreviewOpenSidePanelForSelection(preview.closest('[data-slideshow-overlay-settings=\"1\"]'), key);
     };
-    document.querySelectorAll('[data-slideshow-overlay-preview=\"1\"][data-slideshow-preview-editor=\"1\"]').forEach(function(preview) {
+    document.querySelectorAll('[data-slideshow-overlay-preview=\"1\"][data-slideshow-preview-editor=\"1\"]').forEach(function (preview) {
         preview.dataset.previewUndoStack = '[]';
         preview.dataset.previewRedoStack = '[]';
-        preview.addEventListener('pointerdown', function(event) {
+        preview.addEventListener('pointerdown', function (event) {
             var target = event.target.closest('[data-slideshow-preview-draggable]');
             if (!target) {
                 slideshowPreviewSelect(preview, '');
@@ -1286,7 +1286,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         slideshowPreviewSyncButtons(preview);
     });
-    document.addEventListener('keydown', function(event) {
+    document.addEventListener('keydown', function (event) {
         var keys = {
             ArrowLeft: [-1, 0],
             ArrowRight: [1, 0],
@@ -1304,7 +1304,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         var selectedPreview = null;
         var selected = null;
-        Array.prototype.slice.call(document.querySelectorAll('[data-slideshow-overlay-preview=\"1\"][data-slideshow-preview-editor=\"1\"]')).some(function(preview) {
+        Array.prototype.slice.call(document.querySelectorAll('[data-slideshow-overlay-preview=\"1\"][data-slideshow-preview-editor=\"1\"]')).some(function (preview) {
             var candidate = preview.querySelector('.' + slideshowPreviewSelectionClass);
             if (candidate && preview.offsetParent !== null) {
                 selectedPreview = preview;
@@ -1333,28 +1333,28 @@ document.addEventListener('DOMContentLoaded', function() {
             state[key].y + ((delta[1] * step) / Math.max(1, rect.height)) * 100
         );
         slideshowPreviewUpdateGuides(selectedPreview, selected);
-        window.setTimeout(function() {
+        window.setTimeout(function () {
             slideshowPreviewClearGuides(selectedPreview);
         }, 450);
     });
-    document.querySelectorAll('[data-slideshow-label-orientation-option]').forEach(function(button) {
-        button.addEventListener('click', function(e) {
+    document.querySelectorAll('[data-slideshow-label-orientation-option]').forEach(function (button) {
+        button.addEventListener('click', function (e) {
             e.preventDefault();
             var panel = button.closest('[data-slideshow-overlay-settings=\"1\"]');
             slideshowSyncLabelOrientation(panel, button.getAttribute('data-slideshow-label-orientation-option'));
         });
     });
-    document.querySelectorAll('[data-slideshow-label-orientation-input]').forEach(function(input) {
-        input.addEventListener('change', function() {
+    document.querySelectorAll('[data-slideshow-label-orientation-input]').forEach(function (input) {
+        input.addEventListener('change', function () {
             slideshowSyncLabelOrientation(input.closest('[data-slideshow-overlay-settings=\"1\"]'), input.value);
         });
         slideshowSyncLabelOrientation(input.closest('[data-slideshow-overlay-settings=\"1\"]'), input.value);
     });
-    document.querySelectorAll('[data-action=\"local-course-banner-builder-toggle-slideshow-label-orientation\"]').forEach(function(button) {
-        button.addEventListener('pointerdown', function(e) {
+    document.querySelectorAll('[data-action=\"local-course-banner-builder-toggle-slideshow-label-orientation\"]').forEach(function (button) {
+        button.addEventListener('pointerdown', function (e) {
             e.stopPropagation();
         });
-        button.addEventListener('click', function(e) {
+        button.addEventListener('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
             var panel = button.closest('[data-slideshow-overlay-settings=\"1\"]');
@@ -1362,8 +1362,8 @@ document.addEventListener('DOMContentLoaded', function() {
             slideshowSyncLabelOrientation(panel, input && input.value === 'column' ? 'row' : 'column');
         });
     });
-    document.querySelectorAll('[data-slideshow-corner-option]').forEach(function(button) {
-        button.addEventListener('click', function(e) {
+    document.querySelectorAll('[data-slideshow-corner-option]').forEach(function (button) {
+        button.addEventListener('click', function (e) {
             e.preventDefault();
             var panel = button.closest('[data-slideshow-overlay-settings=\"1\"]');
             slideshowSyncCornerStyle(
@@ -1373,8 +1373,8 @@ document.addEventListener('DOMContentLoaded', function() {
             );
         });
     });
-    document.querySelectorAll('[data-slideshow-corner-input]').forEach(function(input) {
-        input.addEventListener('change', function() {
+    document.querySelectorAll('[data-slideshow-corner-input]').forEach(function (input) {
+        input.addEventListener('change', function () {
             slideshowSyncCornerStyle(
                 input.closest('[data-slideshow-overlay-settings=\"1\"]'),
                 input.getAttribute('data-slideshow-corner-input'),
@@ -1387,11 +1387,11 @@ document.addEventListener('DOMContentLoaded', function() {
             input.value
         );
     });
-    document.querySelectorAll('[data-action=\"local-course-banner-builder-toggle-slideshow-corners\"]').forEach(function(button) {
-        button.addEventListener('pointerdown', function(e) {
+    document.querySelectorAll('[data-action=\"local-course-banner-builder-toggle-slideshow-corners\"]').forEach(function (button) {
+        button.addEventListener('pointerdown', function (e) {
             e.stopPropagation();
         });
-        button.addEventListener('click', function(e) {
+        button.addEventListener('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
             var panel = button.closest('[data-slideshow-overlay-settings=\"1\"]');
@@ -1400,7 +1400,7 @@ document.addEventListener('DOMContentLoaded', function() {
             slideshowSyncCornerStyle(panel, target, input && input.value === 'square' ? 'rounded' : 'square');
         });
     });
-    document.addEventListener('pointermove', function(event) {
+    document.addEventListener('pointermove', function (event) {
         if (!slideshowPreviewDrag) {
             return;
         }
@@ -1454,7 +1454,7 @@ document.addEventListener('DOMContentLoaded', function() {
         );
         slideshowPreviewUpdateGuides(slideshowPreviewDrag.preview, slideshowPreviewDrag.target);
     });
-    var slideshowPreviewStopDrag = function() {
+    var slideshowPreviewStopDrag = function () {
         if (!slideshowPreviewDrag) {
             return;
         }
@@ -1464,8 +1464,8 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     document.addEventListener('pointerup', slideshowPreviewStopDrag);
     document.addEventListener('pointercancel', slideshowPreviewStopDrag);
-    document.querySelectorAll('[data-action=\"local-course-banner-builder-reset-slideshow-overlay\"]').forEach(function(button) {
-        button.addEventListener('click', function(e) {
+    document.querySelectorAll('[data-action=\"local-course-banner-builder-reset-slideshow-overlay\"]').forEach(function (button) {
+        button.addEventListener('click', function (e) {
             e.preventDefault();
             var panel = button.closest('[data-slideshow-overlay-settings=\"1\"]');
             if (!panel) {
@@ -1483,26 +1483,26 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-    document.querySelectorAll('[data-action=\"local-course-banner-builder-reset-slideshow-labels\"]').forEach(function(button) {
-        button.addEventListener('click', function(e) {
+    document.querySelectorAll('[data-action=\"local-course-banner-builder-reset-slideshow-labels\"]').forEach(function (button) {
+        button.addEventListener('click', function (e) {
             e.preventDefault();
             var panel = button.closest('[data-slideshow-overlay-settings=\"1\"]');
             if (!panel) {
                 return;
             }
-            panel.querySelectorAll('[data-slideshow-label-var][data-default-value]').forEach(function(input) {
+            panel.querySelectorAll('[data-slideshow-label-var][data-default-value]').forEach(function (input) {
                 input.value = input.getAttribute('data-default-value') || '#000000';
                 input.dispatchEvent(new Event('input', {bubbles: true}));
             });
-            panel.querySelectorAll('[data-slideshow-text-size=\"label\"][data-default-value]').forEach(function(input) {
+            panel.querySelectorAll('[data-slideshow-text-size=\"label\"][data-default-value]').forEach(function (input) {
                 input.value = input.getAttribute('data-default-value') || '100';
                 input.dispatchEvent(new Event('input', {bubbles: true}));
             });
-            panel.querySelectorAll('[name=\"labeltextsize\"][data-default-value]').forEach(function(input) {
+            panel.querySelectorAll('[name=\"labeltextsize\"][data-default-value]').forEach(function (input) {
                 input.value = input.getAttribute('data-default-value') || '100';
                 input.dispatchEvent(new Event('input', {bubbles: true}));
             });
-            panel.querySelectorAll('[data-slideshow-design-input=\"1\"][data-default-value]').forEach(function(input) {
+            panel.querySelectorAll('[data-slideshow-design-input=\"1\"][data-default-value]').forEach(function (input) {
                 if (!input.name || input.name.indexOf('label') !== 0) {
                     return;
                 }
@@ -1530,15 +1530,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-    document.querySelectorAll('[data-action=\"local-course-banner-builder-reset-slideshow-text\"]').forEach(function(button) {
-        button.addEventListener('click', function(e) {
+    document.querySelectorAll('[data-action=\"local-course-banner-builder-reset-slideshow-text\"]').forEach(function (button) {
+        button.addEventListener('click', function (e) {
             e.preventDefault();
             var panel = button.closest('[data-slideshow-overlay-settings=\"1\"]');
             var preview = slideshowPreviewGetPreview(button);
             if (!panel || !preview) {
                 return;
             }
-            panel.querySelectorAll('[data-slideshow-text-var][data-default-value]').forEach(function(input) {
+            panel.querySelectorAll('[data-slideshow-text-var][data-default-value]').forEach(function (input) {
                 if (input.getAttribute('data-slideshow-text-size') === 'label') {
                     return;
                 }
@@ -1546,7 +1546,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 input.dispatchEvent(new Event('input', {bubbles: true}));
                 input.dispatchEvent(new Event('change', {bubbles: true}));
             });
-            panel.querySelectorAll('[data-slideshow-design-input=\"1\"][data-default-value]').forEach(function(input) {
+            panel.querySelectorAll('[data-slideshow-design-input=\"1\"][data-default-value]').forEach(function (input) {
                 if (input.name && input.name.indexOf('label') === 0) {
                     return;
                 }
@@ -1554,11 +1554,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 input.dispatchEvent(new Event('input', {bubbles: true}));
                 input.dispatchEvent(new Event('change', {bubbles: true}));
             });
-            panel.querySelectorAll('[data-slideshow-text-style-input][data-default-value]').forEach(function(input) {
+            panel.querySelectorAll('[data-slideshow-text-style-input][data-default-value]').forEach(function (input) {
                 input.value = input.getAttribute('data-default-value') || '0';
                 slideshowApplyTextStyle(panel, input.getAttribute('data-slideshow-text-style-target'));
             });
-            panel.querySelectorAll('[data-slideshow-alignment-input][data-default-value]').forEach(function(input) {
+            panel.querySelectorAll('[data-slideshow-alignment-input][data-default-value]').forEach(function (input) {
                 var target = input.getAttribute('data-slideshow-alignment-input');
                 if (target === 'label') {
                     return;
@@ -1570,24 +1570,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 actioncorners.value = actioncorners.getAttribute('data-default-value') || 'rounded';
                 actioncorners.dispatchEvent(new Event('change', {bubbles: true}));
             }
-            ['title', 'body', 'action'].forEach(function(key) {
+            ['title', 'body', 'action'].forEach(function (key) {
                 slideshowPreviewApplyPosition(preview, key, slideshowPreviewDefaults[key].x, slideshowPreviewDefaults[key].y);
             });
             slideshowPreviewSelect(preview, '');
         });
     });
-    document.querySelectorAll('[data-slideshow-text-style-input]').forEach(function(input) {
+    document.querySelectorAll('[data-slideshow-text-style-input]').forEach(function (input) {
         slideshowApplyTextStyle(input.closest('[data-slideshow-overlay-settings=\"1\"]'), input.getAttribute('data-slideshow-text-style-target'));
     });
-    document.querySelectorAll('[data-slideshow-alignment-input]').forEach(function(input) {
+    document.querySelectorAll('[data-slideshow-alignment-input]').forEach(function (input) {
         slideshowApplyAlignment(
             input.closest('[data-slideshow-overlay-settings=\"1\"]'),
             input.getAttribute('data-slideshow-alignment-input'),
             input.value || input.getAttribute('data-default-value') || 'center'
         );
     });
-    document.querySelectorAll('[data-action=\"local-course-banner-builder-toggle-slideshow-text-style\"]').forEach(function(button) {
-        button.addEventListener('click', function(e) {
+    document.querySelectorAll('[data-action=\"local-course-banner-builder-toggle-slideshow-text-style\"]').forEach(function (button) {
+        button.addEventListener('click', function (e) {
             e.preventDefault();
             var panel = button.closest('[data-slideshow-overlay-settings=\"1\"]');
             var target = button.getAttribute('data-slideshow-text-style-target');
@@ -1604,8 +1604,8 @@ document.addEventListener('DOMContentLoaded', function() {
             slideshowApplyTextStyle(panel, target);
         });
     });
-    document.querySelectorAll('[data-action=\"local-course-banner-builder-toggle-selected-slideshow-text-style\"]').forEach(function(button) {
-        button.addEventListener('click', function(e) {
+    document.querySelectorAll('[data-action=\"local-course-banner-builder-toggle-selected-slideshow-text-style\"]').forEach(function (button) {
+        button.addEventListener('click', function (e) {
             e.preventDefault();
             var preview = slideshowPreviewGetPreview(button);
             var panel = button.closest('[data-slideshow-overlay-settings=\"1\"]');
@@ -1628,8 +1628,8 @@ document.addEventListener('DOMContentLoaded', function() {
             slideshowPreviewPulseButton(button);
         });
     });
-    document.querySelectorAll('[data-action=\"local-course-banner-builder-set-selected-slideshow-alignment\"]').forEach(function(button) {
-        button.addEventListener('click', function(e) {
+    document.querySelectorAll('[data-action=\"local-course-banner-builder-set-selected-slideshow-alignment\"]').forEach(function (button) {
+        button.addEventListener('click', function (e) {
             e.preventDefault();
             var preview = slideshowPreviewGetPreview(button);
             var panel = button.closest('[data-slideshow-overlay-settings=\"1\"]');
@@ -1651,7 +1651,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 slideshowPreviewSyncButtons(preview);
                 panel.querySelectorAll(
                     '[data-action=\"local-course-banner-builder-set-selected-slideshow-alignment\"]'
-                ).forEach(function(item) {
+                ).forEach(function (item) {
                     if (item.hasAttribute('data-slideshow-align-target')) {
                         return;
                     }
@@ -1666,8 +1666,8 @@ document.addEventListener('DOMContentLoaded', function() {
             slideshowPreviewPulseButton(button);
         });
     });
-    document.querySelectorAll('[data-action=\"local-course-banner-builder-toggle-slideshow-preview-snap\"]').forEach(function(button) {
-        button.addEventListener('click', function(e) {
+    document.querySelectorAll('[data-action=\"local-course-banner-builder-toggle-slideshow-preview-snap\"]').forEach(function (button) {
+        button.addEventListener('click', function (e) {
             e.preventDefault();
             var panel = button.closest('[data-slideshow-overlay-settings=\"1\"]');
             if (!panel) {
@@ -1680,8 +1680,8 @@ document.addEventListener('DOMContentLoaded', function() {
             slideshowPreviewPulseButton(button);
         });
     });
-    document.querySelectorAll('[data-action=\"local-course-banner-builder-reset-slideshow-all\"]').forEach(function(button) {
-        button.addEventListener('click', function(e) {
+    document.querySelectorAll('[data-action=\"local-course-banner-builder-reset-slideshow-all\"]').forEach(function (button) {
+        button.addEventListener('click', function (e) {
             e.preventDefault();
             var panel = button.closest('[data-slideshow-overlay-settings=\"1\"]');
             if (!panel) {
@@ -1691,7 +1691,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 'local-course-banner-builder-reset-slideshow-overlay',
                 'local-course-banner-builder-reset-slideshow-text',
                 'local-course-banner-builder-reset-slideshow-labels'
-            ].forEach(function(action) {
+            ].forEach(function (action) {
                 var target = panel.querySelector('[data-action=\"' + action + '\"]');
                 if (target && target !== button) {
                     target.click();
@@ -1699,8 +1699,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
-    document.querySelectorAll('[data-action=\"local-course-banner-builder-slideshow-preview-undo\"]').forEach(function(button) {
-        button.addEventListener('click', function(e) {
+    document.querySelectorAll('[data-action=\"local-course-banner-builder-slideshow-preview-undo\"]').forEach(function (button) {
+        button.addEventListener('click', function (e) {
             e.preventDefault();
             var preview = slideshowPreviewGetPreview(button);
             if (!preview) {
@@ -1719,8 +1719,8 @@ document.addEventListener('DOMContentLoaded', function() {
             slideshowPreviewSyncButtons(preview);
         });
     });
-    document.querySelectorAll('[data-action=\"local-course-banner-builder-slideshow-preview-redo\"]').forEach(function(button) {
-        button.addEventListener('click', function(e) {
+    document.querySelectorAll('[data-action=\"local-course-banner-builder-slideshow-preview-redo\"]').forEach(function (button) {
+        button.addEventListener('click', function (e) {
             e.preventDefault();
             var preview = slideshowPreviewGetPreview(button);
             if (!preview) {
@@ -1739,8 +1739,8 @@ document.addEventListener('DOMContentLoaded', function() {
             slideshowPreviewSyncButtons(preview);
         });
     });
-    document.querySelectorAll('[data-action=\"local-course-banner-builder-slideshow-preview-recenter-element\"]').forEach(function(button) {
-        button.addEventListener('click', function(e) {
+    document.querySelectorAll('[data-action=\"local-course-banner-builder-slideshow-preview-recenter-element\"]').forEach(function (button) {
+        button.addEventListener('click', function (e) {
             e.preventDefault();
             var preview = slideshowPreviewGetPreview(button);
             if (!preview) {
@@ -1757,8 +1757,8 @@ document.addEventListener('DOMContentLoaded', function() {
             slideshowPreviewPulseButton(button);
         });
     });
-    document.querySelectorAll('[data-action=\"local-course-banner-builder-slideshow-preview-recenter-all\"]').forEach(function(button) {
-        button.addEventListener('click', function(e) {
+    document.querySelectorAll('[data-action=\"local-course-banner-builder-slideshow-preview-recenter-all\"]').forEach(function (button) {
+        button.addEventListener('click', function (e) {
             e.preventDefault();
             var preview = slideshowPreviewGetPreview(button);
             if (!preview) {
@@ -1770,25 +1770,25 @@ document.addEventListener('DOMContentLoaded', function() {
             slideshowPreviewPulseButton(button);
         });
     });
-    document.querySelectorAll('.local-course-banner-builder-slideshow-preview-toolbar [data-toggle=\"popover\"]').forEach(function(button) {
-        button.addEventListener('click', function() {
+    document.querySelectorAll('.local-course-banner-builder-slideshow-preview-toolbar [data-toggle=\"popover\"]').forEach(function (button) {
+        button.addEventListener('click', function () {
             if (window.jQuery && window.jQuery.fn && window.jQuery.fn.popover) {
                 window.jQuery(button).popover('hide');
             }
             button.removeAttribute('aria-describedby');
-            document.querySelectorAll('.popover').forEach(function(popover) {
+            document.querySelectorAll('.popover').forEach(function (popover) {
                 popover.remove();
             });
         });
     });
-    document.querySelectorAll('form.local-course-banner-builder-slideshow-card').forEach(function(form) {
-        form.addEventListener('submit', function(event) {
+    document.querySelectorAll('form.local-course-banner-builder-slideshow-card').forEach(function (form) {
+        form.addEventListener('submit', function (event) {
             var submitter = event.submitter || document.activeElement;
             if (!submitter || !submitter.closest('.local-course-banner-builder-slideshow-actions') ||
                     submitter.name === 'defaultsettings') {
                 return;
             }
-            form.querySelectorAll('[data-slideshow-bulk-clone=\"1\"]').forEach(function(node) {
+            form.querySelectorAll('[data-slideshow-bulk-clone=\"1\"]').forEach(function (node) {
                 node.remove();
             });
             var saveAll = document.createElement('input');
@@ -1797,13 +1797,13 @@ document.addEventListener('DOMContentLoaded', function() {
             saveAll.value = '1';
             saveAll.setAttribute('data-slideshow-bulk-clone', '1');
             form.appendChild(saveAll);
-            document.querySelectorAll('form.local-course-banner-builder-slideshow-card').forEach(function(source) {
+            document.querySelectorAll('form.local-course-banner-builder-slideshow-card').forEach(function (source) {
                 var contextInput = source.querySelector('input[name=\"context\"]');
                 var context = contextInput ? contextInput.value : '';
                 if (!context) {
                     return;
                 }
-                source.querySelectorAll('input[name], select[name], textarea[name]').forEach(function(field) {
+                source.querySelectorAll('input[name], select[name], textarea[name]').forEach(function (field) {
                     var name = field.name;
                     if (['sesskey', 'updateslideshow', 'context'].indexOf(name) !== -1) {
                         return;
@@ -1822,8 +1822,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
-    document.querySelectorAll('[data-action=\"local-course-banner-builder-save-all-slideshows\"]').forEach(function(button) {
-        button.addEventListener('click', function(e) {
+    document.querySelectorAll('[data-action=\"local-course-banner-builder-save-all-slideshows\"]').forEach(function (button) {
+        button.addEventListener('click', function (e) {
             e.preventDefault();
             var form = document.querySelector('form.local-course-banner-builder-slideshow-card');
             if (!form) {
@@ -1907,7 +1907,7 @@ function local_course_banner_builder_clean_slideshow_values(array $values): arra
 if (optional_param('updateslideshow', 0, PARAM_BOOL) && confirm_sesskey()) {
     $context = required_param('context', PARAM_ALPHA);
     if (optional_param('saveallslideshows', 0, PARAM_BOOL)) {
-        $bulk = $_POST['slideshowbulk'] ?? [];
+        $bulk = optional_param_array('slideshowbulk', [], PARAM_RAW);
         foreach ([manager::SLIDESHOW_CONTEXT_COURSE, manager::SLIDESHOW_CONTEXT_SITE] as $bulkcontext) {
             if (!empty($bulk[$bulkcontext]) && is_array($bulk[$bulkcontext])) {
                 manager::set_slideshow_config(
@@ -2453,13 +2453,13 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
     $titlefontfamily = (string)($config['titlefontfamily'] ?? manager::SLIDESHOW_DEFAULT_TITLE_FONT_FAMILY);
     $bodyfontfamily = (string)($config['bodyfontfamily'] ?? manager::SLIDESHOW_DEFAULT_BODY_FONT_FAMILY);
     $styledefaults = manager::get_default_slideshow_style_values();
-    $stylenumber = static function(string $field) use ($config, $styledefaults): int {
+    $stylenumber = static function (string $field) use ($config, $styledefaults): int {
         return (int)($config[$field] ?? $styledefaults[$field]);
     };
-    $stylestring = static function(string $field) use ($config, $styledefaults): string {
+    $stylestring = static function (string $field) use ($config, $styledefaults): string {
         return (string)($config[$field] ?? $styledefaults[$field]);
     };
-    $stylergb = static function(string $hex): string {
+    $stylergb = static function (string $hex): string {
         $hex = ltrim($hex, '#');
         if (!preg_match('/^[0-9a-f]{6}$/i', $hex)) {
             return '0, 0, 0';
@@ -2632,7 +2632,7 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
         $previewstyle .= ' --local-course-banner-builder-slideshow-label-' . s($type) . '-shadow-rgb: ' .
             s($stylergb((string)($colors['shadow'] ?? '#000000'))) . ';';
     }
-    $previewtoolbarbutton = static function(string $iconclass, string $label, string $action, array $extra = []): string {
+    $previewtoolbarbutton = static function (string $iconclass, string $label, string $action, array $extra = []): string {
         return html_writer::tag(
             'button',
             html_writer::tag('i', '', ['class' => 'fa ' . $iconclass, 'aria-hidden' => 'true']) .
@@ -2647,7 +2647,7 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
             ] + $extra
         );
     };
-    $resizehandles = static function(): string {
+    $resizehandles = static function (): string {
         $html = '';
         foreach (['top', 'right', 'bottom', 'left'] as $edge) {
             $html .= html_writer::span('', 'local-course-banner-builder-preview-resize-handle local-course-banner-builder-preview-resize-handle--' . $edge, [
@@ -2657,7 +2657,7 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
         }
         return $html;
     };
-    $cornertoggle = static function(string $target, string $label): string {
+    $cornertoggle = static function (string $target, string $label): string {
         return html_writer::tag('button', html_writer::tag('i', '', [
             'class' => 'fa fa-square',
             'aria-hidden' => 'true',
@@ -2670,7 +2670,7 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
             'title' => $label,
         ]);
     };
-    $textstylebuttons = static function(string $target, array $values): string {
+    $textstylebuttons = static function (string $target, array $values): string {
         if ($target === 'title') {
             $defaults = [
                 'bold' => manager::SLIDESHOW_DEFAULT_TITLE_BOLD,
@@ -2751,7 +2751,7 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
         }
         return $html;
     };
-    $textstyletoolbar = static function(string $target, array $values): string {
+    $textstyletoolbar = static function (string $target, array $values): string {
         $icons = [
             'bold' => 'fa-bold',
             'italic' => 'fa-italic',
@@ -2787,7 +2787,7 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
         }
         return $html . html_writer::end_div();
     };
-    $sidepanel = static function(string $key, string $content): string {
+    $sidepanel = static function (string $key, string $content): string {
         return html_writer::div(
             $content,
             'local-course-banner-builder-preview-opacity-panel ' .
@@ -2799,7 +2799,7 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
             ]
         );
     };
-    $sidepanelbutton = static function(string $key, string $icon, string $label): string {
+    $sidepanelbutton = static function (string $key, string $icon, string $label): string {
         return html_writer::tag('button', html_writer::tag('i', '', [
             'class' => 'fa ' . $icon . ' me-2',
             'aria-hidden' => 'true',
@@ -2811,7 +2811,7 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
             'aria-expanded' => 'false',
         ]);
     };
-    $slidercontrol = static function(
+    $slidercontrol = static function (
         string $name,
         string $label,
         float $value,
@@ -2870,7 +2870,7 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
                 'local-course-banner-builder-slideshow-side-slider'
             );
     };
-    $colorcontrol = static function(string $name, string $label, string $value, string $cssvar, ?string $default = null): string {
+    $colorcontrol = static function (string $name, string $label, string $value, string $cssvar, ?string $default = null): string {
         $id = $name . '-' . uniqid();
         $hexid = $name . '-hex-' . uniqid();
         return html_writer::tag('label', $label, ['for' => $id, 'class' => 'local-course-banner-builder-slideshow-side-title']) .
@@ -2894,7 +2894,7 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
                 'aria-label' => $label,
             ]);
     };
-    $proxycolorcontrol = static function(string $target, string $label, string $value): string {
+    $proxycolorcontrol = static function (string $target, string $label, string $value): string {
         $id = $target . '-proxy-' . uniqid();
         $hexid = $target . '-proxy-hex-' . uniqid();
         return html_writer::tag('label', $label, ['for' => $id, 'class' => 'local-course-banner-builder-slideshow-side-title']) .
@@ -2915,7 +2915,7 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
                 'aria-label' => $label,
             ]);
     };
-    $fontcontrol = static function(
+    $fontcontrol = static function (
         string $name,
         string $label,
         string $value,
@@ -2925,7 +2925,7 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
         return html_writer::div($label, 'local-course-banner-builder-slideshow-side-title') .
             local_course_banner_builder_render_slideshow_font_select($name, $value, $cssvar, $default);
     };
-    $proxyfontcontrol = static function(string $target, string $label, string $value): string {
+    $proxyfontcontrol = static function (string $target, string $label, string $value): string {
         $html = html_writer::div($label, 'local-course-banner-builder-slideshow-side-title');
         $html .= html_writer::start_tag('select', [
             'class' => 'form-control local-course-banner-builder-font-family-select',
@@ -2944,7 +2944,7 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
         }
         return $html . html_writer::end_tag('select');
     };
-    $cornerswitch = static function(string $target, string $inputname, string $current): string {
+    $cornerswitch = static function (string $target, string $inputname, string $current): string {
         $html = html_writer::div(get_string('slideshowtogglecorners', 'local_course_banner_builder'),
             'local-course-banner-builder-slideshow-side-title');
         $html .= html_writer::start_div('btn-group local-course-banner-builder-slideshow-corner-buttons', ['role' => 'group']);
@@ -2968,7 +2968,7 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
         ]);
         return $html;
     };
-    $orientationbuttons = static function(string $current): string {
+    $orientationbuttons = static function (string $current): string {
         $html = html_writer::div(get_string('slideshowlabelorientation', 'local_course_banner_builder'),
             'local-course-banner-builder-slideshow-side-title');
         $html .= html_writer::start_div('btn-group local-course-banner-builder-slideshow-label-orientation-buttons', [
@@ -2985,7 +2985,7 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
         }
         return $html . html_writer::end_div();
     };
-    $alignmentbuttons = static function(string $current, string $target = 'label'): string {
+    $alignmentbuttons = static function (string $current, string $target = 'label'): string {
         $html = html_writer::div(get_string('slideshowlabelalignment', 'local_course_banner_builder'),
             'local-course-banner-builder-slideshow-side-title');
         $html .= html_writer::start_div('btn-group local-course-banner-builder-slideshow-label-alignment-buttons', [
@@ -3749,7 +3749,7 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
     if ($context !== manager::SLIDESHOW_CONTEXT_SITE) {
         unset($labeldefaults['courseorigin']);
     }
-    $labelcolourfield = static function(
+    $labelcolourfield = static function (
         string $type,
         string $role,
         string $label,

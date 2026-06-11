@@ -80,8 +80,10 @@ if ($action === 'export' && confirm_sesskey()) {
 if (optional_param('importconfig', 0, PARAM_BOOL) && confirm_sesskey()) {
     try {
         $uploaded = $_FILES['configarchive'] ?? null;
-        if (is_array($uploaded) && empty($uploaded['error']) && !empty($uploaded['tmp_name']) &&
-                is_uploaded_file($uploaded['tmp_name'])) {
+        if (
+            is_array($uploaded) && empty($uploaded['error']) && !empty($uploaded['tmp_name']) &&
+                is_uploaded_file($uploaded['tmp_name'])
+        ) {
             $filename = (string)($uploaded['name'] ?? '');
             if (strtolower(pathinfo($filename, PATHINFO_EXTENSION)) === 'zip') {
                 \local_course_banner_builder\manager::import_configuration_archive(

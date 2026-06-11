@@ -694,7 +694,7 @@ class manager {
         $items = [];
         foreach ($records as $record) {
             $pathids = array_values(array_filter(array_map('intval', explode('/', trim((string)$record->path, '/')))));
-            $pathsort = implode('/', array_map(static function(int $pathid): string {
+            $pathsort = implode('/', array_map(static function (int $pathid): string {
                 return sprintf('%010d', $pathid);
             }, $pathids));
             $depth = max(0, count($pathids) - 1);
@@ -733,7 +733,7 @@ class manager {
             ];
         }
 
-        usort($items, static function(array $a, array $b): int {
+        usort($items, static function (array $a, array $b): int {
             return $a['pathsort'] <=> $b['pathsort'];
         });
 
@@ -1343,19 +1343,19 @@ class manager {
             }
         }
         $styledefaults = self::get_default_slideshow_style_values();
-        $percentstyle = static function(string $field) use ($prefix, $styledefaults): int {
+        $percentstyle = static function (string $field) use ($prefix, $styledefaults): int {
             $value = get_config('local_course_banner_builder', $prefix . $field);
             return max(0, min(100, (int)($value === false ? $styledefaults[$field] : $value)));
         };
-        $rangestyle = static function(string $field, int $max) use ($prefix, $styledefaults): int {
+        $rangestyle = static function (string $field, int $max) use ($prefix, $styledefaults): int {
             $value = get_config('local_course_banner_builder', $prefix . $field);
             return max(0, min($max, (int)($value === false ? $styledefaults[$field] : $value)));
         };
-        $colourstyle = static function(string $field) use ($prefix, $styledefaults): string {
+        $colourstyle = static function (string $field) use ($prefix, $styledefaults): string {
             $value = get_config('local_course_banner_builder', $prefix . $field);
             return self::normalise_slideshow_overlay_color((string)($value === false ? $styledefaults[$field] : $value));
         };
-        $fontstyle = static function(string $field) use ($prefix, $styledefaults): string {
+        $fontstyle = static function (string $field) use ($prefix, $styledefaults): string {
             $value = get_config('local_course_banner_builder', $prefix . $field);
             return self::normalise_slideshow_font_family((string)($value === false ? $styledefaults[$field] : $value));
         };
@@ -2874,7 +2874,7 @@ class manager {
      * @return array
      */
     protected static function extract_border_sides_from_form_data(\stdClass $data): array {
-        $postedgroup = $_POST['bordersidesgroup'] ?? null;
+        $postedgroup = optional_param_array('bordersidesgroup', [], PARAM_RAW);
         if (is_array($postedgroup) && !empty($postedgroup)) {
             $sides = [];
             foreach ($postedgroup as $key => $value) {
@@ -2913,10 +2913,11 @@ class manager {
             return [];
         }
 
-        if (!empty($_POST['bordersidesvalue'])) {
-            return self::normalise_border_sides(array_filter(array_map('trim', explode(',', (string)$_POST['bordersidesvalue']))));
+        $postedvalue = optional_param('bordersidesvalue', null, PARAM_RAW_TRIMMED);
+        if ($postedvalue !== null && $postedvalue !== '') {
+            return self::normalise_border_sides(array_filter(array_map('trim', explode(',', (string)$postedvalue))));
         }
-        if (array_key_exists('bordersidesvalue', $_POST)) {
+        if ($postedvalue !== null) {
             return [];
         }
 
@@ -4504,8 +4505,8 @@ class manager {
             'hasoverlay' => $hasoverlay ? 1 : 0,
             'bordersidesvalue_data' => $data->bordersidesvalue ?? null,
             'bordersidesgroup_data' => $data->bordersidesgroup ?? null,
-            'post_bordersidesvalue' => $_POST['bordersidesvalue'] ?? null,
-            'post_bordersidesgroup' => $_POST['bordersidesgroup'] ?? null,
+            'post_bordersidesvalue' => optional_param('bordersidesvalue', null, PARAM_RAW_TRIMMED),
+            'post_bordersidesgroup' => optional_param_array('bordersidesgroup', [], PARAM_RAW),
         ]);
         $borderconflict = self::get_source_border_conflict_state($source, $elementid);
         if ($hasborder && !empty($borderconflict['blocked'])) {
@@ -4637,7 +4638,7 @@ class manager {
                     (float)$cropstate[$property];
                 continue;
             }
-            if (!array_key_exists($property, $_POST)) {
+            if (optional_param($property, null, PARAM_RAW) === null) {
                 continue;
             }
             $default = $cropfield === 'widthpercent' || $cropfield === 'heightpercent' ? 100.0 : 0.0;
@@ -5914,7 +5915,7 @@ class manager {
      * @return array
      */
     protected static function sort_exported_preview_layers(array $layers): array {
-        usort($layers, static function(array $a, array $b): int {
+        usort($layers, static function (array $a, array $b): int {
             $zcompare = ((int)($a['zindex'] ?? 0)) <=> ((int)($b['zindex'] ?? 0));
             if ($zcompare !== 0) {
                 return $zcompare;
@@ -6008,7 +6009,7 @@ class manager {
             'currentisoverlaylayer' => !empty($record->overlayenabled) ? 1 : 0,
             'sourcehasborderlayer' => !empty(self::get_source_border_conflict_state($source, (int)$record->id)['blocked']) ? 1 : 0,
             'sourcehasoverlaylayer' => !empty(self::get_source_overlay_conflict_state($source, (int)$record->id)['blocked']) ? 1 : 0,
-            'bordersidesvalue' => implode(',', array_values(array_filter($bordersides, static function(string $side): bool {
+            'bordersidesvalue' => implode(',', array_values(array_filter($bordersides, static function (string $side): bool {
                 return $side !== 'all';
             }))),
             'name' => $record->name ?? '',
@@ -6163,7 +6164,7 @@ class manager {
             }
 
             $pathids = array_filter(array_map('intval', explode('/', trim((string)$category->path, '/'))));
-            $pathsort = implode('/', array_map(static function(int $pathid): string {
+            $pathsort = implode('/', array_map(static function (int $pathid): string {
                 return sprintf('%010d', $pathid);
             }, $pathids));
             $depth = max(0, count($pathids) - 1);
@@ -6664,8 +6665,8 @@ class manager {
             $children[$parentkey][] = $key;
         }
 
-        $sortkeys = static function(array &$keys) use ($bykey): void {
-            usort($keys, static function(string $a, string $b) use ($bykey): int {
+        $sortkeys = static function (array &$keys) use ($bykey): void {
+            usort($keys, static function (string $a, string $b) use ($bykey): int {
                 $aname = (string)($bykey[$a]['categoryname'] ?? $a);
                 $bname = (string)($bykey[$b]['categoryname'] ?? $b);
                 $namecompare = strcasecmp($aname, $bname);
@@ -6682,7 +6683,7 @@ class manager {
 
         $branchlabels = [];
         $branchheads = [];
-        $assignbranch = function(string $parentkey, string $label) use (&$assignbranch, &$branchlabels, $children): void {
+        $assignbranch = function (string $parentkey, string $label) use (&$assignbranch, &$branchlabels, $children): void {
             foreach ($children[$parentkey] ?? [] as $childkey) {
                 $branchlabels[$childkey] = $label;
                 $assignbranch($childkey, $label);
@@ -6718,7 +6719,7 @@ class manager {
         $ordered = [];
         $visited = [];
         $rootindex = 0;
-        $walk = function(string $key, int $level, int $rootid) use (
+        $walk = function (string $key, int $level, int $rootid) use (
             &$walk,
             &$ordered,
             &$visited,
@@ -7061,7 +7062,7 @@ class manager {
         global $DB;
 
         $courses = [];
-        $addcourse = static function(\stdClass $course) use (&$courses): void {
+        $addcourse = static function (\stdClass $course) use (&$courses): void {
             if (!empty($course->id)) {
                 $courses[(int)$course->id] = $course;
             }
@@ -8535,7 +8536,7 @@ class manager {
             return reset($imagerecords);
         }
 
-        usort($imagerecords, static function(\stdClass $a, \stdClass $b): int {
+        usort($imagerecords, static function (\stdClass $a, \stdClass $b): int {
             $sortcompare = ((int)$a->sortorder) <=> ((int)$b->sortorder);
             if ($sortcompare !== 0) {
                 return $sortcompare;
@@ -8567,7 +8568,7 @@ class manager {
     protected static function sort_layer_specs(array $layerspecs): array {
         $overlayrecord = self::get_active_overlay_record_from_layer_specs($layerspecs);
 
-        usort($layerspecs, static function(array $a, array $b) use ($overlayrecord): int {
+        usort($layerspecs, static function (array $a, array $b) use ($overlayrecord): int {
             $arecord = $a['record'];
             $brecord = $b['record'];
             $aband = self::get_layer_draw_band($arecord, $overlayrecord);
@@ -8880,7 +8881,7 @@ class manager {
         $sides = self::normalise_border_sides(explode(',', (string)($record->bordersides ?? 'top,right,bottom,left')));
         $sidesvalue = count($sides) === 4
             ? get_string('bordersides:all', 'local_course_banner_builder')
-            : implode(', ', array_map(static function(string $side): string {
+            : implode(', ', array_map(static function (string $side): string {
                 return get_string('bordersides:' . $side, 'local_course_banner_builder');
             }, $sides));
         $bordercolor = self::normalise_color_string((string)($record->bordercolor ?? '#FFFFFF'));
@@ -10025,7 +10026,7 @@ class manager {
             }
             $parts[] = clean_param($part, PARAM_FILE);
         }
-        return implode('/', array_filter($parts, static function(string $part): bool {
+        return implode('/', array_filter($parts, static function (string $part): bool {
             return $part !== '';
         }));
     }
@@ -10086,7 +10087,7 @@ class manager {
                 continue;
             }
             $prefix = 'bannertitle_' . $context . '_';
-            $getconfig = static function(string $field, $default) use ($prefix) {
+            $getconfig = static function (string $field, $default) use ($prefix) {
                 $value = get_config('local_course_banner_builder', $prefix . $field);
                 return $value === false || $value === null || $value === '' ? $default : $value;
             };
@@ -10629,7 +10630,7 @@ class manager {
            ORDER BY f.categoryid, f.sortorder, f.id",
             $params
         );
-        $categoryids = array_unique(array_map(static function(\stdClass $record): int {
+        $categoryids = array_unique(array_map(static function (\stdClass $record): int {
             return (int)$record->categoryid;
         }, $records));
 
@@ -11079,7 +11080,7 @@ class manager {
             if (array_key_exists('enabledcustomfields', $data['settings'])) {
                 $enabledcustomfields = array_filter(array_map('intval', explode(',', (string)$data['settings']['enabledcustomfields'])));
                 $enabledcustomfields = array_values(array_unique(array_filter(array_map(
-                    static function(int $fieldid) use ($fieldmap): int {
+                    static function (int $fieldid) use ($fieldmap): int {
                         return (int)($fieldmap[$fieldid] ?? $fieldid);
                     },
                     $enabledcustomfields
@@ -13270,7 +13271,6 @@ class manager {
      * @param int $x
      * @param int $y
      * @param int $size
-     * @param int $innerradius
      * @param int $color
      * @param string $corner
      * @param float $fade

@@ -429,18 +429,18 @@ class manage_banner_form extends \moodleform {
                 );
             }
             $titleprefix = 'bannertitle_' . $titlecontext . '_';
-            $titlegetconfig = static function(string $name, $default) use ($titleprefix) {
+            $titlegetconfig = static function (string $name, $default) use ($titleprefix) {
                 $value = get_config('local_course_banner_builder', $titleprefix . $name);
                 return $value === false || $value === null || $value === '' ? $default : $value;
             };
-            $titlehex = static function($value, string $default = '#FFFFFF'): string {
+            $titlehex = static function ($value, string $default = '#FFFFFF'): string {
                 $value = (string)$value;
                 return preg_match('/^#[0-9a-f]{6}$/i', $value) ? strtoupper($value) : $default;
             };
-            $titlenum = static function(string $name, float $default, float $min, float $max) use ($titlegetconfig): float {
+            $titlenum = static function (string $name, float $default, float $min, float $max) use ($titlegetconfig): float {
                 return max($min, min($max, (float)$titlegetconfig($name, $default)));
             };
-            $titlebool = static function(string $name, bool $default = false) use ($titlegetconfig): bool {
+            $titlebool = static function (string $name, bool $default = false) use ($titlegetconfig): bool {
                 return (bool)$titlegetconfig($name, $default ? 1 : 0);
             };
             $titlestyle = [
@@ -1216,13 +1216,13 @@ class manage_banner_form extends \moodleform {
                 : \local_course_banner_builder\manager::get_course_banner_format()
         );
         $styledefaults = \local_course_banner_builder\manager::get_default_slideshow_style_values();
-        $stylenumber = static function(string $field) use ($config, $styledefaults): int {
+        $stylenumber = static function (string $field) use ($config, $styledefaults): int {
             return (int)($config[$field] ?? $styledefaults[$field]);
         };
-        $stylestring = static function(string $field) use ($config, $styledefaults): string {
+        $stylestring = static function (string $field) use ($config, $styledefaults): string {
             return (string)($config[$field] ?? $styledefaults[$field]);
         };
-        $stylergb = static function(string $hex): string {
+        $stylergb = static function (string $hex): string {
             $hex = ltrim($hex, '#');
             if (!preg_match('/^[0-9a-f]{6}$/i', $hex)) {
                 return '0, 0, 0';
@@ -1230,7 +1230,7 @@ class manage_banner_form extends \moodleform {
             return hexdec(substr($hex, 0, 2)) . ', ' . hexdec(substr($hex, 2, 2)) . ', ' .
                 hexdec(substr($hex, 4, 2));
         };
-        $fontclamp = static function(string $kind, int $percent, string $format): string {
+        $fontclamp = static function (string $kind, int $percent, string $format): string {
             $scale = max(25, min(100, $percent)) / 100;
             if ($format === \local_course_banner_builder\manager::BANNER_FORMAT_STANDARD) {
                 $scale *= 1.24;
@@ -1649,7 +1649,7 @@ class manage_banner_form extends \moodleform {
             $wrapperattributes['style'] = (string)$options['style'];
         }
 
-        $renderpart = function(string $type, string $name, string $class) use ($sidestyles, $dynamic): string {
+        $renderpart = function (string $type, string $name, string $class) use ($sidestyles, $dynamic): string {
             $attributes = [];
             if ($dynamic) {
                 $attributes['data-border-preview-' . $type] = $name;

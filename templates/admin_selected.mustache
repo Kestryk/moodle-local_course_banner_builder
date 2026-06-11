@@ -26,7 +26,7 @@
                         <div class="local-course-banner-builder-summary-meta-row" data-inline-setting-row="1">
                             <dt>{{label}}</dt>
                             <dd>
-                                <form method="post" action="" class="local-course-banner-builder-summary-inline-form">
+                                <form method="post" class="local-course-banner-builder-summary-inline-form">
                                     <input type="hidden" name="sesskey" value="{{sesskey}}">
                                     <input type="hidden" name="updatesourcesettingfield" value="1">
                                     <input type="hidden" name="fieldname" value="{{fieldname}}">
@@ -42,12 +42,12 @@
                                     </div>
                                     {{^isreadonly}}
                                     <div class="local-course-banner-builder-summary-inline-edit">
-                                        <label class="sr-only" for="{{fieldid}}">{{label}}</label>
+                                        <label class="sr-only" for="local-course-banner-builder-summary-field-{{fieldname}}">{{label}}</label>
                                         {{#usesourcedropdown}}
-                                            <input type="hidden" id="{{fieldid}}" name="fieldvalue" value="{{selectedvalue}}" data-inline-setting-select="1" data-initial-value="{{selectedvalue}}" disabled>
+                                            <input type="hidden" id="local-course-banner-builder-summary-field-{{fieldname}}" name="fieldvalue" value="{{selectedvalue}}" data-inline-setting-select="1" data-initial-value="{{selectedvalue}}" disabled>
                                             <div class="dropdown local-course-banner-builder-source-dropdown local-course-banner-builder-summary-source-dropdown"
                                                  data-source-dropdown="summary-sourceparent"
-                                                 data-input="#{{fieldid}}">
+                                                 data-input="#local-course-banner-builder-summary-field-{{fieldname}}">
                                                 <button type="button"
                                                     class="btn btn-outline-primary btn-sm dropdown-toggle local-course-banner-builder-source-dropdown-toggle"
                                                     data-toggle="dropdown"
@@ -62,9 +62,9 @@
                                                             class="form-control form-control-sm"
                                                             placeholder="{{#str}}searchsourcesplaceholder, local_course_banner_builder{{/str}}"
                                                             data-action="local-course-banner-builder-filter-sources"
-                                                            data-target="#{{optionsid}}">
+                                                            data-target="#local-course-banner-builder-summary-options-{{fieldname}}">
                                                     </div>
-                                                    <div class="local-course-banner-builder-source-dropdown-options" id="{{optionsid}}">
+                                                    <div class="local-course-banner-builder-source-dropdown-options" id="local-course-banner-builder-summary-options-{{fieldname}}">
                                                         {{#options}}
                                                             <button type="button"
                                                                 class="dropdown-item local-course-banner-builder-source-option {{#selected}}active{{/selected}}"
@@ -80,7 +80,7 @@
                                             </div>
                                         {{/usesourcedropdown}}
                                         {{^usesourcedropdown}}
-                                            <select id="{{fieldid}}" class="custom-select custom-select-sm" name="fieldvalue" data-inline-setting-select="1" data-initial-value="{{#options}}{{#selected}}{{value}}{{/selected}}{{/options}}" disabled title="{{helptext}}">
+                                            <select id="local-course-banner-builder-summary-field-{{fieldname}}" class="custom-select custom-select-sm" name="fieldvalue" data-inline-setting-select="1" data-initial-value="{{#options}}{{#selected}}{{value}}{{/selected}}{{/options}}" disabled title="{{helptext}}">
                                                 {{#options}}
                                                     <option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>
                                                 {{/options}}
@@ -102,7 +102,7 @@
             {{/hassummaryfields}}
             {{#candeletecategory}}
                 <p class="mb-0">
-                    <form method="post" action="" class="d-inline">
+                    <form method="post" class="d-inline">
                         <input type="hidden" name="sesskey" value="{{sesskey}}">
                         {{#sourcekey}}<input type="hidden" name="deletesourcecontent" value="{{sourcekey}}">{{/sourcekey}}
                         {{^sourcekey}}<input type="hidden" name="deletecategorycontent" value="{{categoryid}}">{{/sourcekey}}
@@ -115,7 +115,7 @@
                         </button>
                     </form>
                     {{#candeleteimages}}
-                        <form method="post" action="" class="d-inline">
+                        <form method="post" class="d-inline">
                             <input type="hidden" name="sesskey" value="{{sesskey}}">
                             {{#sourcekey}}<input type="hidden" name="deletesourceimages" value="{{sourcekey}}">{{/sourcekey}}
                             {{^sourcekey}}<input type="hidden" name="deletecategoryimages" value="{{categoryid}}">{{/sourcekey}}
@@ -149,20 +149,27 @@
         {{{sourcevisualeditorhtml}}}
     {{/sourcevisualeditorhtml}}
     <div class="local-course-banner-builder-table-heading">
-        <h3 class="h6 local-course-banner-builder-table-title">
-            {{sourcelayerslistlabel}}
-        </h3>
+        {{#sourcelayerslistlabel}}
+            <h3 class="h6 local-course-banner-builder-table-title">
+                {{sourcelayerslistlabel}}
+            </h3>
+        {{/sourcelayerslistlabel}}
+        {{^sourcelayerslistlabel}}
+            <h3 class="h6 local-course-banner-builder-table-title">
+                {{#str}}layers, local_course_banner_builder{{/str}}
+            </h3>
+        {{/sourcelayerslistlabel}}
         <span class="local-course-banner-builder-table-heading-spacer" aria-hidden="true"></span>
     </div>
     {{#haslayertable}}
         {{#haselements}}
-            <form id="local-course-banner-builder-bulk-delete" method="post" action="">
+            <form id="local-course-banner-builder-bulk-delete" method="post">
                 <input type="hidden" name="sesskey" value="{{sesskey}}">
                 <input type="hidden" name="categoryid" value="{{categoryid}}">
                 <input type="hidden" name="sourcekey" value="{{sourcekey}}">
                 <input type="hidden" name="deleteselectedlayers" value="1">
             </form>
-            <form id="local-course-banner-builder-bulk-update" method="post" action="">
+            <form id="local-course-banner-builder-bulk-update" method="post">
                 <input type="hidden" name="sesskey" value="{{sesskey}}">
                 <input type="hidden" name="categoryid" value="{{categoryid}}">
                 <input type="hidden" name="sourcekey" value="{{sourcekey}}">
@@ -552,7 +559,7 @@
             </p>
         {{/haselements}}
         {{#haselements}}
-            <form id="local-course-banner-builder-delete-all-layers" method="post" action="">
+            <form id="local-course-banner-builder-delete-all-layers" method="post">
                 <input type="hidden" name="sesskey" value="{{sesskey}}">
                 <input type="hidden" name="categoryid" value="{{categoryid}}">
                 <input type="hidden" name="sourcekey" value="{{sourcekey}}">

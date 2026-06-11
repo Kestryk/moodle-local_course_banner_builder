@@ -1537,8 +1537,8 @@ class hook_callbacks {
      */
     protected static function get_native_course_banner_mount_script(): string {
         return <<<JS
-(function() {
-    const findScrollFrame = function(shell) {
+(function () {
+    const findScrollFrame = function (shell) {
         const page = document.getElementById('page');
         if (page && page.contains(shell) && page.classList.contains('drawers')) {
             return page;
@@ -1555,7 +1555,7 @@ class hook_callbacks {
         return document.documentElement;
     };
 
-    const measureScrollbarWidth = function() {
+    const measureScrollbarWidth = function () {
         const probe = document.createElement('div');
         probe.style.cssText = 'position:absolute;top:-9999px;left:-9999px;width:100px;height:100px;overflow:scroll;visibility:hidden;';
         document.body.appendChild(probe);
@@ -1564,7 +1564,7 @@ class hook_callbacks {
         return width;
     };
 
-    const alignFullWidthBanner = function(shell) {
+    const alignFullWidthBanner = function (shell) {
         const navbar = document.querySelector('.navbar.fixed-top, nav.fixed-top, header.navbar, .primary-navigation');
         if (!shell) {
             return;
@@ -1605,7 +1605,7 @@ class hook_callbacks {
             shell.style.setProperty('margin-right', '0px', 'important');
             shell.style.setProperty('padding-left', '0px', 'important');
             shell.style.setProperty('padding-right', '0px', 'important');
-            window.requestAnimationFrame(function() {
+            window.requestAnimationFrame(function () {
                 const rect = shell.getBoundingClientRect();
                 const delta = targetLeft - rect.left;
                 if (Math.abs(delta) > 0.5) {
@@ -1617,7 +1617,7 @@ class hook_callbacks {
             return;
         }
         shell.style.setProperty('--local-course-banner-builder-fullwidth-nav-offset', '0px');
-        window.requestAnimationFrame(function() {
+        window.requestAnimationFrame(function () {
             const gap = Math.round(shell.getBoundingClientRect().top - navbar.getBoundingClientRect().bottom);
             if (gap !== 0) {
                 shell.style.setProperty('--local-course-banner-builder-fullwidth-nav-offset', Math.min(0, -gap) + 'px');
@@ -1625,7 +1625,7 @@ class hook_callbacks {
         });
     };
 
-    const mount = function() {
+    const mount = function () {
         const shell = document.getElementById('local-course-banner-builder-native-shell');
         if (!shell) {
             return;
@@ -1654,8 +1654,8 @@ class hook_callbacks {
             shell.classList.add('local-course-banner-builder-native-shell--mounted');
             if (isFullWidthTop) {
                 alignFullWidthBanner(shell);
-                [80, 320, 900, 1800].forEach(function(delay) {
-                    window.setTimeout(function() {
+                [80, 320, 900, 1800].forEach(function (delay) {
+                    window.setTimeout(function () {
                         alignFullWidthBanner(shell);
                     }, delay);
                 });
@@ -1684,8 +1684,8 @@ JS;
      */
     protected static function get_site_banner_mount_script(): string {
         return <<<JS
-(function() {
-    const findScrollFrame = function(shell) {
+(function () {
+    const findScrollFrame = function (shell) {
         const page = document.getElementById('page');
         if (page && page.contains(shell) && page.classList.contains('drawers')) {
             return page;
@@ -1702,7 +1702,7 @@ JS;
         return document.documentElement;
     };
 
-    const measureScrollbarWidth = function() {
+    const measureScrollbarWidth = function () {
         const probe = document.createElement('div');
         probe.style.cssText = 'position:absolute;top:-9999px;left:-9999px;width:100px;height:100px;overflow:scroll;visibility:hidden;';
         document.body.appendChild(probe);
@@ -1711,7 +1711,7 @@ JS;
         return width;
     };
 
-    const alignFullWidthBanner = function(shell) {
+    const alignFullWidthBanner = function (shell) {
         const navbar = document.querySelector('.navbar.fixed-top, nav.fixed-top, header.navbar, .primary-navigation');
         if (!shell) {
             return;
@@ -1752,7 +1752,7 @@ JS;
             shell.style.setProperty('margin-right', '0px', 'important');
             shell.style.setProperty('padding-left', '0px', 'important');
             shell.style.setProperty('padding-right', '0px', 'important');
-            window.requestAnimationFrame(function() {
+            window.requestAnimationFrame(function () {
                 const rect = shell.getBoundingClientRect();
                 const delta = targetLeft - rect.left;
                 if (Math.abs(delta) > 0.5) {
@@ -1764,7 +1764,7 @@ JS;
             return;
         }
         shell.style.setProperty('--local-course-banner-builder-fullwidth-nav-offset', '0px');
-        window.requestAnimationFrame(function() {
+        window.requestAnimationFrame(function () {
             const gap = Math.round(shell.getBoundingClientRect().top - navbar.getBoundingClientRect().bottom);
             if (gap !== 0) {
                 shell.style.setProperty('--local-course-banner-builder-fullwidth-nav-offset', Math.min(0, -gap) + 'px');
@@ -1772,7 +1772,7 @@ JS;
         });
     };
 
-    const mount = function() {
+    const mount = function () {
         const shell = document.getElementById('local-course-banner-builder-site-shell');
         if (!shell) {
             return;
@@ -1793,8 +1793,8 @@ JS;
             shell.classList.add('local-course-banner-builder-native-shell--mounted');
             if (isFullWidthTop) {
                 alignFullWidthBanner(shell);
-                [80, 320, 900, 1800].forEach(function(delay) {
-                    window.setTimeout(function() {
+                [80, 320, 900, 1800].forEach(function (delay) {
+                    window.setTimeout(function () {
                         alignFullWidthBanner(shell);
                     }, delay);
                 });
@@ -1840,7 +1840,7 @@ JS;
         }
 
         return <<<JS
-(function() {
+(function () {
     const payload = {$json};
     if (!payload || !payload.enabled || !Array.isArray(payload.slides) || !payload.slides.length) {
         return;
@@ -1861,7 +1861,7 @@ JS;
             '[data-region="course-banner"]'
         ];
 
-    const isVisibleBanner = function(target) {
+    const isVisibleBanner = function (target) {
         if (!target || target.closest('.local-course-banner-builder-slideshow')) {
             return false;
         }
@@ -1873,14 +1873,14 @@ JS;
             style.visibility !== 'hidden';
     };
 
-    const createIcon = function(name) {
+    const createIcon = function (name) {
         const icon = document.createElement('i');
         icon.className = 'icon fa fa-' + name + ' fa-fw local-course-banner-builder-slideshow-label-icon';
         icon.setAttribute('aria-hidden', 'true');
         return icon;
     };
 
-    const createText = function(tag, className, text) {
+    const createText = function (tag, className, text) {
         const node = document.createElement(tag);
         node.className = className;
         node.textContent = text || '';
@@ -1896,7 +1896,7 @@ JS;
         quiz: ['mod_quiz', 'monologo', 'question-circle']
     };
 
-    const createActivityIcon = function(type) {
+    const createActivityIcon = function (type) {
         const definition = activityIconMap[type];
         if (!definition) {
             return null;
@@ -1910,7 +1910,7 @@ JS;
             icon.src = M.util.image_url(definition[1], definition[0]);
             icon.alt = '';
             icon.setAttribute('aria-hidden', 'true');
-            icon.addEventListener('error', function() {
+            icon.addEventListener('error', function () {
                 icon.replaceWith(createIcon(definition[2]));
             }, {once: true});
             return icon;
@@ -1918,7 +1918,7 @@ JS;
         return createIcon(definition[2]);
     };
 
-    const createLabel = function(type, text, withIcon) {
+    const createLabel = function (type, text, withIcon) {
         const label = document.createElement('div');
         label.className = 'local-course-banner-builder-slideshow-label local-course-banner-builder-slideshow-label--' + type;
         const icon = withIcon ? createActivityIcon(type) : null;
@@ -1931,7 +1931,7 @@ JS;
         return label;
     };
 
-    const buildSlide = function(slide, index) {
+    const buildSlide = function (slide, index) {
         const isEmpty = !!slide.empty;
         const rawType = String(slide.type || 'generic').toLowerCase();
         const type = rawType.replace(/[^a-z0-9_-]/g, '') || 'generic';
@@ -1983,7 +1983,7 @@ JS;
         return node;
     };
 
-    const activate = function(root, index, direction) {
+    const activate = function (root, index, direction) {
         const slides = Array.prototype.slice.call(root.querySelectorAll('[data-slideshow-slide]'));
         const dots = Array.prototype.slice.call(root.querySelectorAll('[data-slideshow-dot]'));
         if (!slides.length) {
@@ -1997,17 +1997,17 @@ JS;
             host.classList.toggle('local-course-banner-builder-slideshow-nonbanner-active', next !== 0);
         }
         root.classList.toggle('is-empty-active', !!(payload.slides[next] && payload.slides[next].empty));
-        slides.forEach(function(slide, slideIndex) {
+        slides.forEach(function (slide, slideIndex) {
             const active = slideIndex === next;
             slide.classList.toggle('is-active', active);
             slide.setAttribute('aria-hidden', active ? 'false' : 'true');
         });
-        dots.forEach(function(dot, dotIndex) {
+        dots.forEach(function (dot, dotIndex) {
             dot.classList.toggle('is-active', dotIndex === next);
         });
     };
 
-    const buildSlideshow = function(target) {
+    const buildSlideshow = function (target) {
         const old = target.querySelector(':scope > .local-course-banner-builder-slideshow');
         if (old) {
             old.remove();
@@ -2026,7 +2026,7 @@ JS;
             '--local-course-banner-builder-slideshow-overlay-opacity',
             String(payload.overlayOpacity || 0.38)
         );
-        const getFormatSizeScale = function(format, kind) {
+        const getFormatSizeScale = function (format, kind) {
             if (format === 'standard') {
                 return 1.24;
             }
@@ -2041,7 +2041,7 @@ JS;
         const format = target.getAttribute('data-banner-format') ||
             (target.closest('[data-banner-format]') ? target.closest('[data-banner-format]').getAttribute('data-banner-format') : '') ||
             'standard';
-        const buildTitleSize = function(percent) {
+        const buildTitleSize = function (percent) {
             const value = Math.max(25, Math.min(100, parseInt(percent || 100, 10)));
             const scale = value / 100 * getFormatSizeScale(format, 'title');
             return 'clamp(' + (10 * scale).toFixed(3) + 'cqh, ' +
@@ -2049,7 +2049,7 @@ JS;
                 (3.4 * scale).toFixed(3) + 'cqw), ' +
                 (36 * scale).toFixed(3) + 'cqh)';
         };
-        const buildBodySize = function(percent) {
+        const buildBodySize = function (percent) {
             const value = Math.max(25, Math.min(100, parseInt(percent || 100, 10)));
             const scale = value / 100 * getFormatSizeScale(format, 'body');
             return 'clamp(' + (5.5 * scale).toFixed(3) + 'cqh, ' +
@@ -2057,7 +2057,7 @@ JS;
                 (1.7 * scale).toFixed(3) + 'cqw), ' +
                 (19 * scale).toFixed(3) + 'cqh)';
         };
-        const buildLabelSize = function(percent) {
+        const buildLabelSize = function (percent) {
             const value = Math.max(25, Math.min(100, parseInt(percent || 100, 10)));
             const scale = value / 100 * getFormatSizeScale(format, 'label');
             return 'clamp(' + (3.5 * scale).toFixed(3) + 'cqh, ' +
@@ -2065,7 +2065,7 @@ JS;
                 (0.82 * scale).toFixed(3) + 'cqw), ' +
                 (8.4 * scale).toFixed(3) + 'cqh)';
         };
-        const buildActionSize = function(percent) {
+        const buildActionSize = function (percent) {
             const value = Math.max(25, Math.min(100, parseInt(percent || 100, 10)));
             const scale = value / 100 * getFormatSizeScale(format, 'action');
             return 'clamp(' + (6 * scale).toFixed(3) + 'cqh, ' +
@@ -2073,14 +2073,14 @@ JS;
                 (1.6 * scale).toFixed(3) + 'cqw), ' +
                 (18 * scale).toFixed(3) + 'cqh)';
         };
-        const buildActionWidth = function(percent) {
+        const buildActionWidth = function (percent) {
             const value = Math.max(25, Math.min(100, parseInt(percent || 100, 10)));
             const scale = value / 100 * getFormatSizeScale(format, 'actionwidth');
             return 'clamp(' + (10 * scale).toFixed(3) + 'cqw, ' +
                 (18 * scale).toFixed(3) + 'cqw, ' +
                 (34 * scale).toFixed(3) + 'cqw)';
         };
-        const buildActionHeight = function(percent) {
+        const buildActionHeight = function (percent) {
             const value = Math.max(25, Math.min(100, parseInt(percent || 100, 10)));
             const scale = value / 100 * getFormatSizeScale(format, 'actionheight');
             return 'clamp(' + (10 * scale).toFixed(3) + 'cqh, ' +
@@ -2132,7 +2132,7 @@ JS;
             '--local-course-banner-builder-slideshow-action-radius',
             payload.actionCorners === 'square' ? '0.28rem' : '999px'
         );
-        const colourToRgb = function(value) {
+        const colourToRgb = function (value) {
             const raw = String(value || '#000000').replace('#', '');
             if (!/^[0-9a-f]{6}$/i.test(raw)) {
                 return '0, 0, 0';
@@ -2143,19 +2143,19 @@ JS;
                 parseInt(raw.substring(4, 6), 16) || 0
             ].join(', ');
         };
-        const setDesignVariable = function(target, key, value, suffix) {
+        const setDesignVariable = function (target, key, value, suffix) {
             root.style.setProperty(
                 '--local-course-banner-builder-slideshow-' + target + '-' + key,
                 String(value) + (suffix || '')
             );
         };
-        const setShadowVector = function(target, distance, direction) {
+        const setShadowVector = function (target, distance, direction) {
             const radians = ((parseFloat(direction || 90) || 0) * Math.PI) / 180;
             const offset = parseFloat(distance || 0) || 0;
             setDesignVariable(target, 'shadow-x', (Math.cos(radians) * offset).toFixed(2), 'px');
             setDesignVariable(target, 'shadow-y', (Math.sin(radians) * offset).toFixed(2), 'px');
         };
-        ['action', 'label'].forEach(function(target) {
+        ['action', 'label'].forEach(function (target) {
             setDesignVariable(target, 'opacity', Math.max(0, Math.min(100, payload[target + 'Opacity'] || 100)) / 100);
             setDesignVariable(target, 'border-width', payload[target + 'BorderWidth'] || 0, 'px');
             setDesignVariable(target, 'radius', payload[target + 'Radius'] || 0, 'px');
@@ -2243,7 +2243,7 @@ JS;
             '--local-course-banner-builder-slideshow-body-text-transform',
             payload.bodyAllCaps ? 'uppercase' : 'none'
         );
-        ['action', 'label'].forEach(function(target) {
+        ['action', 'label'].forEach(function (target) {
             const decoration = [];
             if (payload[target + 'Underline']) {
                 decoration.push('underline');
@@ -2301,7 +2301,7 @@ JS;
             String(payload.labelY || 10) + '%'
         );
         if (payload.labelColors) {
-            Object.keys(payload.labelColors).forEach(function(type) {
+            Object.keys(payload.labelColors).forEach(function (type) {
                 const safeType = String(type).replace(/[^a-z0-9_-]/g, '');
                 const colours = payload.labelColors[type] || {};
                 if (safeType && colours.background) {
@@ -2335,7 +2335,7 @@ JS;
             });
         }
 
-        payload.slides.forEach(function(slide, index) {
+        payload.slides.forEach(function (slide, index) {
             root.appendChild(buildSlide(slide, index));
         });
 
@@ -2345,7 +2345,7 @@ JS;
             previous.className = 'local-course-banner-builder-slideshow-nav local-course-banner-builder-slideshow-nav--prev';
             previous.setAttribute('aria-label', (payload.strings && payload.strings.previous) || 'Previous slide');
             previous.appendChild(createIcon('chevron-left'));
-            previous.addEventListener('click', function() {
+            previous.addEventListener('click', function () {
                 activate(root, parseInt(root.dataset.slideshowIndex || '0', 10) - 1, 'backward');
             });
             root.appendChild(previous);
@@ -2355,7 +2355,7 @@ JS;
             next.className = 'local-course-banner-builder-slideshow-nav local-course-banner-builder-slideshow-nav--next';
             next.setAttribute('aria-label', (payload.strings && payload.strings.next) || 'Next slide');
             next.appendChild(createIcon('chevron-right'));
-            next.addEventListener('click', function() {
+            next.addEventListener('click', function () {
                 activate(root, parseInt(root.dataset.slideshowIndex || '0', 10) + 1, 'forward');
             });
             root.appendChild(next);
@@ -2364,13 +2364,13 @@ JS;
         if (payload.slides.length > 1 && payload.dots) {
             const dots = document.createElement('div');
             dots.className = 'local-course-banner-builder-slideshow-dots';
-            payload.slides.forEach(function(slide, index) {
+            payload.slides.forEach(function (slide, index) {
                 const dot = document.createElement('button');
                 dot.type = 'button';
                 dot.className = 'local-course-banner-builder-slideshow-dot' + (index === 0 ? ' is-active' : '');
                 dot.setAttribute('data-slideshow-dot', String(index));
                 dot.setAttribute('aria-label', ((payload.strings && payload.strings.slide) || 'Slide') + ' ' + (index + 1));
-                dot.addEventListener('click', function() {
+                dot.addEventListener('click', function () {
                     const current = parseInt(root.dataset.slideshowIndex || '0', 10);
                     activate(root, index, index >= current ? 'forward' : 'backward');
                 });
@@ -2385,18 +2385,18 @@ JS;
         target.setAttribute(processedAttribute, context);
 
         let timer = null;
-        const stop = function() {
+        const stop = function () {
             if (timer) {
                 window.clearInterval(timer);
                 timer = null;
             }
         };
-        const start = function() {
+        const start = function () {
             stop();
             if (!payload.autoplay || payload.slides.length < 2) {
                 return;
             }
-            timer = window.setInterval(function() {
+            timer = window.setInterval(function () {
                 activate(root, parseInt(root.dataset.slideshowIndex || '0', 10) + 1, 'forward');
             }, Math.max(1000, parseInt(payload.delay || 7000, 10)));
         };
@@ -2407,17 +2407,17 @@ JS;
         start();
     };
 
-    const findTargets = function() {
+    const findTargets = function () {
         const targets = [];
-        selectors.forEach(function(selector) {
-            document.querySelectorAll(selector).forEach(function(target) {
+        selectors.forEach(function (selector) {
+            document.querySelectorAll(selector).forEach(function (target) {
                 if (targets.indexOf(target) === -1 && isVisibleBanner(target)) {
                     targets.push(target);
                 }
             });
         });
         if (context === 'course') {
-            const native = targets.find(function(target) {
+            const native = targets.find(function (target) {
                 return target.classList.contains('local-course-banner-builder-native-course-banner');
             });
             return native ? [native] : targets.slice(0, 1);
@@ -2425,8 +2425,8 @@ JS;
         return targets.slice(0, 1);
     };
 
-    const install = function() {
-        findTargets().forEach(function(target) {
+    const install = function () {
+        findTargets().forEach(function (target) {
             if (target.getAttribute(processedAttribute) === context &&
                 target.querySelector(':scope > .local-course-banner-builder-slideshow')) {
                 return;
@@ -2460,7 +2460,7 @@ JS;
         }
 
         return <<<JS
-(function() {
+(function () {
     const payload = {$json};
     if (!payload || !payload.courseid) {
         return;
@@ -2468,7 +2468,7 @@ JS;
 
     const bannerClass = 'local-course-banner-builder-native-course-banner';
 
-    const appendOverlays = function(banner) {
+    const appendOverlays = function (banner) {
         if (!banner) {
             return;
         }
@@ -2494,7 +2494,7 @@ JS;
                 ['right', 'local-course-banner-builder-fixed-border-side local-course-banner-builder-fixed-border-side-right'],
                 ['bottom', 'local-course-banner-builder-fixed-border-side local-course-banner-builder-fixed-border-side-bottom'],
                 ['left', 'local-course-banner-builder-fixed-border-side local-course-banner-builder-fixed-border-side-left']
-            ].forEach(function(entry) {
+            ].forEach(function (entry) {
                 const side = document.createElement('div');
                 side.className = entry[1];
                 side.setAttribute('aria-hidden', 'true');
@@ -2502,7 +2502,7 @@ JS;
                 border.appendChild(side);
             });
 
-            ['top-left', 'top-right', 'bottom-right', 'bottom-left'].forEach(function(name) {
+            ['top-left', 'top-right', 'bottom-right', 'bottom-left'].forEach(function (name) {
                 const corner = document.createElement('div');
                 corner.className = 'local-course-banner-builder-fixed-border-corner local-course-banner-builder-fixed-border-corner-' + name;
                 corner.setAttribute('aria-hidden', 'true');
@@ -2516,7 +2516,7 @@ JS;
             host.appendChild(border);
         }
 
-        (payload.overlays || []).forEach(function(overlay) {
+        (payload.overlays || []).forEach(function (overlay) {
             const wrapper = document.createElement('div');
             wrapper.className = 'local-course-banner-builder-fixed-overlay';
             wrapper.setAttribute('aria-hidden', 'true');
@@ -2534,7 +2534,7 @@ JS;
         });
     };
 
-    const findAnchor = function() {
+    const findAnchor = function () {
         const courseHeader = document.getElementById('course-header');
         if (courseHeader) {
             return {element: courseHeader, mode: 'append'};
@@ -2553,7 +2553,7 @@ JS;
         return null;
     };
 
-    const inject = function() {
+    const inject = function () {
         if (document.querySelector('.' + bannerClass + '[data-course-banner-builder-native="1"]')) {
             appendOverlays(document.querySelector('.' + bannerClass + '[data-course-banner-builder-native="1"]'));
             return;
@@ -2586,12 +2586,12 @@ JS;
         return true;
     };
 
-    const schedule = function(delay) {
+    const schedule = function (delay) {
         window.setTimeout(inject, delay);
     };
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             inject();
             schedule(150);
             schedule(600);
