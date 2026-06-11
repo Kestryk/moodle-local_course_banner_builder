@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/course_banner_builder/db" VERSION="20260417" COMMENT="XMLDB file for Moodle local/course_banner_builder"
+<XMLDB PATH="local/course_banner_builder/db" VERSION="20260611" COMMENT="XMLDB file for Moodle local/course_banner_builder"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="local_course_banner_elements" COMMENT="Course banner image elements">
+    <TABLE NAME="local_course_banner_builder_elements" COMMENT="Course banner image elements">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="categoryid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Course category id"/>
@@ -66,7 +66,7 @@
         <INDEX NAME="sourcekey-sort" UNIQUE="false" FIELDS="sourcekey, sortorder"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_course_banner_order" COMMENT="Reserved order configuration for banner elements">
+    <TABLE NAME="local_course_banner_builder_order" COMMENT="Reserved order configuration for banner elements">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="categoryid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>

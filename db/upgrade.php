@@ -813,5 +813,21 @@ function xmldb_local_course_banner_builder_upgrade(int $oldversion): bool {
         upgrade_plugin_savepoint(true, 2026060302, 'local', 'course_banner_builder');
     }
 
+    if ($oldversion < 2026061100) {
+        $oldtable = new xmldb_table('local_course_banner_elements');
+        $newtable = new xmldb_table('local_course_banner_builder_elements');
+        if ($dbman->table_exists($oldtable) && !$dbman->table_exists($newtable)) {
+            $dbman->rename_table($oldtable, 'local_course_banner_builder_elements');
+        }
+
+        $oldtable = new xmldb_table('local_course_banner_order');
+        $newtable = new xmldb_table('local_course_banner_builder_order');
+        if ($dbman->table_exists($oldtable) && !$dbman->table_exists($newtable)) {
+            $dbman->rename_table($oldtable, 'local_course_banner_builder_order');
+        }
+
+        upgrade_plugin_savepoint(true, 2026061100, 'local', 'course_banner_builder');
+    }
+
     return true;
 }
