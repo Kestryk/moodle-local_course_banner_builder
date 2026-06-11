@@ -7041,13 +7041,17 @@ class manager {
                 'sourcetype' => self::SOURCE_TYPE_CUSTOMFIELD,
             ]);
             if ($hascustomfieldsources) {
-                $courses = $DB->get_records('course', null, '', 'id, category');
-                foreach ($courses as $course) {
-                    try {
-                        self::sync_course_overview_image($course);
-                    } catch (\Throwable $e) {
-                        debugging('Course banner sync failed for course ' . $course->id . ': ' . $e->getMessage(), DEBUG_DEVELOPER);
+                $courserecordset = $DB->get_recordset('course', null, '', 'id, category');
+                try {
+                    foreach ($courserecordset as $course) {
+                        try {
+                            self::sync_course_overview_image($course);
+                        } catch (\Throwable $e) {
+                            debugging('Course banner sync failed for course ' . $course->id . ': ' . $e->getMessage(), DEBUG_DEVELOPER);
+                        }
                     }
+                } finally {
+                    $courserecordset->close();
                 }
             }
         }
@@ -7091,8 +7095,13 @@ class manager {
                 'sourcetype' => self::SOURCE_TYPE_CUSTOMFIELD,
             ]);
             if ($hascustomfieldsources) {
-                foreach ($DB->get_records('course', null, '', 'id, category') as $course) {
-                    $addcourse($course);
+                $courserecordset = $DB->get_recordset('course', null, '', 'id, category');
+                try {
+                    foreach ($courserecordset as $course) {
+                        $addcourse($course);
+                    }
+                } finally {
+                    $courserecordset->close();
                 }
             }
         }
@@ -9682,8 +9691,13 @@ class manager {
             self::sync_course_overview_image($course);
         }
         if ($hadcustomfieldsources) {
-            foreach ($DB->get_records('course', null, '', 'id, category') as $course) {
-                self::sync_course_overview_image($course);
+            $courserecordset = $DB->get_recordset('course', null, '', 'id, category');
+            try {
+                foreach ($courserecordset as $course) {
+                    self::sync_course_overview_image($course);
+                }
+            } finally {
+                $courserecordset->close();
             }
         }
     }
