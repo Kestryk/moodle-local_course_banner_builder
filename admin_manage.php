@@ -1743,13 +1743,13 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
 }
 
 $categoryid = optional_param('categoryid', 0, PARAM_INT);
-$sourcekey = optional_param('sourcekey', '', PARAM_RAW_TRIMMED);
+$sourcekey = optional_param('sourcekey', '', PARAM_TEXT);
 $elementid = optional_param('elementid', 0, PARAM_INT);
 $deleteelementid = optional_param('deleteelementid', 0, PARAM_INT);
 $deletecategorycontent = optional_param('deletecategorycontent', 0, PARAM_INT);
 $deletecategoryimages = optional_param('deletecategoryimages', 0, PARAM_INT);
-$deletesourcecontent = optional_param('deletesourcecontent', '', PARAM_RAW_TRIMMED);
-$deletesourceimages = optional_param('deletesourceimages', '', PARAM_RAW_TRIMMED);
+$deletesourcecontent = optional_param('deletesourcecontent', '', PARAM_TEXT);
+$deletesourceimages = optional_param('deletesourceimages', '', PARAM_TEXT);
 $confirmdeletecategory = optional_param('confirmdeletecategory', 0, PARAM_BOOL);
 $confirmdeleteimages = optional_param('confirmdeleteimages', 0, PARAM_BOOL);
 $savecategorysettings = optional_param('savecategorysettings', 0, PARAM_BOOL);
@@ -2496,7 +2496,7 @@ if ($updatepreviewlayers && confirm_sesskey() && $selectedsource) {
             \core\output\notification::NOTIFY_WARNING
         );
     }
-    $payload = optional_param('previewlayerpayload', '', PARAM_RAW);
+    $payload = optional_param('previewlayerpayload', '', PARAM_TEXT);
     $payloaddata = json_decode($payload, true);
     \local_course_banner_builder\manager::update_source_visual_editor_layers(
         $selectedsource,
@@ -2510,7 +2510,7 @@ if ($updatepreviewlayers && confirm_sesskey() && $selectedsource) {
 
 if ($updatesourcesettingfield && confirm_sesskey() && $selectedsource) {
     $fieldname = required_param('fieldname', PARAM_ALPHAEXT);
-    $fieldvalue = required_param('fieldvalue', PARAM_RAW_TRIMMED);
+    $fieldvalue = required_param('fieldvalue', PARAM_TEXT);
     \local_course_banner_builder\manager::update_source_setting_field($selectedsource, $fieldname, $fieldvalue);
     redirect(
         new moodle_url($adminpagepath, $selectedsourceparams),
@@ -2519,8 +2519,8 @@ if ($updatesourcesettingfield && confirm_sesskey() && $selectedsource) {
 }
 
 if ($updatesourceparentfield && confirm_sesskey()) {
-    $targetsourcekey = required_param('sourcekey', PARAM_RAW_TRIMMED);
-    $fieldvalue = required_param('fieldvalue', PARAM_RAW_TRIMMED);
+    $targetsourcekey = required_param('sourcekey', PARAM_TEXT);
+    $fieldvalue = required_param('fieldvalue', PARAM_TEXT);
     $targetsource = \local_course_banner_builder\manager::resolve_source($targetsourcekey);
     if ($targetsource) {
         \local_course_banner_builder\manager::update_source_setting_field($targetsource, 'sourceparentkey', $fieldvalue);
@@ -2567,7 +2567,7 @@ if ($savecategorysettings && confirm_sesskey() && $selectedsource) {
         \local_course_banner_builder\manager::CUSTOMFIELD_PRIORITY_CATEGORY,
         PARAM_ALPHA
     );
-    $sourceparentkey = optional_param('sourceparentkey', '', PARAM_RAW_TRIMMED);
+    $sourceparentkey = optional_param('sourceparentkey', '', PARAM_TEXT);
     $sourceisroot = optional_param('sourceisroot', 0, PARAM_BOOL);
     if (\local_course_banner_builder\manager::is_site_source($selectedsource)) {
         $customfieldpriority = \local_course_banner_builder\manager::CUSTOMFIELD_PRIORITY_CATEGORY;
@@ -2611,14 +2611,17 @@ if ($data = $form->get_data()) {
     }
     foreach (['enabled', 'leftpercent', 'toppercent', 'widthpercent', 'heightpercent'] as $cropfield) {
         $fieldname = 'imagecrop' . $cropfield;
-        if (optional_param($fieldname, null, PARAM_RAW) !== null) {
+        $submitted = $cropfield === 'enabled' ?
+            optional_param($fieldname, null, PARAM_BOOL) :
+            optional_param($fieldname, null, PARAM_FLOAT);
+        if ($submitted !== null) {
             $defaultvalue = in_array($cropfield, ['widthpercent', 'heightpercent'], true) ? 100 : 0;
             $data->{$fieldname} = $cropfield === 'enabled' ?
-                optional_param($fieldname, 0, PARAM_BOOL) :
+                $submitted :
                 optional_param($fieldname, $defaultvalue, PARAM_FLOAT);
         }
     }
-    $previewcropstate = optional_param('previewcropstate', '', PARAM_RAW_TRIMMED);
+    $previewcropstate = optional_param('previewcropstate', '', PARAM_TEXT);
     if ($previewcropstate !== '') {
         $cropstate = json_decode($previewcropstate, true);
         if (is_array($cropstate)) {

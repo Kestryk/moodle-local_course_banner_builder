@@ -1889,12 +1889,12 @@ function local_course_banner_builder_clean_slideshow_values(array $values): arra
         'label_siteannouncements_background', 'label_siteannouncements_text',
         'label_assignments_background', 'label_assignments_text',
         'label_quizzes_background', 'label_quizzes_text'] as $field) {
-        $clean[$field] = clean_param($values[$field] ?? '', PARAM_RAW_TRIMMED);
+        $clean[$field] = clean_param($values[$field] ?? '', PARAM_TEXT);
     }
     foreach (manager::get_default_slideshow_label_colors() as $type => $defaults) {
         foreach (['background', 'text', 'border', 'shadow'] as $role) {
             $field = 'label_' . $type . '_' . $role;
-            $clean[$field] = clean_param($values[$field] ?? ($defaults[$role] ?? ''), PARAM_RAW_TRIMMED);
+            $clean[$field] = clean_param($values[$field] ?? ($defaults[$role] ?? ''), PARAM_TEXT);
         }
     }
     foreach (['labelorientation', 'labelcorners', 'actioncorners', 'titlealign', 'bodyalign', 'labelalign'] as $field) {
@@ -1907,7 +1907,7 @@ function local_course_banner_builder_clean_slideshow_values(array $values): arra
 if (optional_param('updateslideshow', 0, PARAM_BOOL) && confirm_sesskey()) {
     $context = required_param('context', PARAM_ALPHA);
     if (optional_param('saveallslideshows', 0, PARAM_BOOL)) {
-        $bulk = optional_param_array('slideshowbulk', [], PARAM_RAW);
+        $bulk = optional_param_array('slideshowbulk', [], PARAM_TEXT);
         foreach ([manager::SLIDESHOW_CONTEXT_COURSE, manager::SLIDESHOW_CONTEXT_SITE] as $bulkcontext) {
             if (!empty($bulk[$bulkcontext]) && is_array($bulk[$bulkcontext])) {
                 manager::set_slideshow_config(
@@ -1945,7 +1945,7 @@ if (optional_param('updateslideshow', 0, PARAM_BOOL) && confirm_sesskey()) {
                 ? manager::SLIDESHOW_DEFAULT_OVERLAY_COLOR
                 : ($defaultall
                     ? manager::SLIDESHOW_DEFAULT_OVERLAY_COLOR
-                    : optional_param('overlaycolor', manager::SLIDESHOW_DEFAULT_OVERLAY_COLOR, PARAM_RAW_TRIMMED)),
+                    : optional_param('overlaycolor', manager::SLIDESHOW_DEFAULT_OVERLAY_COLOR, PARAM_TEXT)),
             'overlayopacity' => $defaultoverlay
                 ? (int)(manager::SLIDESHOW_DEFAULT_OVERLAY_OPACITY * 100)
                 : ($defaultall
@@ -1986,16 +1986,16 @@ if (optional_param('updateslideshow', 0, PARAM_BOOL) && confirm_sesskey()) {
                 : optional_param('labelcorners', manager::SLIDESHOW_DEFAULT_LABEL_CORNERS, PARAM_ALPHA),
             'titlecolor' => $defaulttext || $defaultall
                 ? manager::SLIDESHOW_DEFAULT_TITLE_COLOR
-                : optional_param('titlecolor', manager::SLIDESHOW_DEFAULT_TITLE_COLOR, PARAM_RAW_TRIMMED),
+                : optional_param('titlecolor', manager::SLIDESHOW_DEFAULT_TITLE_COLOR, PARAM_TEXT),
             'bodycolor' => $defaulttext || $defaultall
                 ? manager::SLIDESHOW_DEFAULT_BODY_COLOR
-                : optional_param('bodycolor', manager::SLIDESHOW_DEFAULT_BODY_COLOR, PARAM_RAW_TRIMMED),
+                : optional_param('bodycolor', manager::SLIDESHOW_DEFAULT_BODY_COLOR, PARAM_TEXT),
             'titlefontfamily' => $defaulttext || $defaultall
                 ? manager::SLIDESHOW_DEFAULT_TITLE_FONT_FAMILY
-                : optional_param('titlefontfamily', manager::SLIDESHOW_DEFAULT_TITLE_FONT_FAMILY, PARAM_RAW_TRIMMED),
+                : optional_param('titlefontfamily', manager::SLIDESHOW_DEFAULT_TITLE_FONT_FAMILY, PARAM_TEXT),
             'bodyfontfamily' => $defaulttext || $defaultall
                 ? manager::SLIDESHOW_DEFAULT_BODY_FONT_FAMILY
-                : optional_param('bodyfontfamily', manager::SLIDESHOW_DEFAULT_BODY_FONT_FAMILY, PARAM_RAW_TRIMMED),
+                : optional_param('bodyfontfamily', manager::SLIDESHOW_DEFAULT_BODY_FONT_FAMILY, PARAM_TEXT),
             'titlealign' => $defaulttext || $defaultall
                 ? manager::SLIDESHOW_DEFAULT_TITLE_ALIGN
                 : optional_param('titlealign', manager::SLIDESHOW_DEFAULT_TITLE_ALIGN, PARAM_ALPHA),
@@ -2052,41 +2052,41 @@ if (optional_param('updateslideshow', 0, PARAM_BOOL) && confirm_sesskey()) {
             'label_forums_background' => $defaultlabels
                 ? $defaults['forums']['background']
                 : ($defaultall ? $defaults['forums']['background']
-                    : optional_param('label_forums_background', $defaults['forums']['background'], PARAM_RAW_TRIMMED)),
+                    : optional_param('label_forums_background', $defaults['forums']['background'], PARAM_TEXT)),
             'label_forums_text' => $defaultlabels
                 ? $defaults['forums']['text']
                 : ($defaultall ? $defaults['forums']['text']
-                    : optional_param('label_forums_text', $defaults['forums']['text'], PARAM_RAW_TRIMMED)),
+                    : optional_param('label_forums_text', $defaults['forums']['text'], PARAM_TEXT)),
             'label_siteannouncements_background' => $defaultlabels
                 ? $defaults['siteannouncements']['background']
                 : ($defaultall ? $defaults['siteannouncements']['background']
-                    : optional_param('label_siteannouncements_background', $defaults['siteannouncements']['background'], PARAM_RAW_TRIMMED)),
+                    : optional_param('label_siteannouncements_background', $defaults['siteannouncements']['background'], PARAM_TEXT)),
             'label_siteannouncements_text' => $defaultlabels
                 ? $defaults['siteannouncements']['text']
                 : ($defaultall ? $defaults['siteannouncements']['text']
-                    : optional_param('label_siteannouncements_text', $defaults['siteannouncements']['text'], PARAM_RAW_TRIMMED)),
+                    : optional_param('label_siteannouncements_text', $defaults['siteannouncements']['text'], PARAM_TEXT)),
             'label_assignments_background' => $defaultlabels
                 ? $defaults['assignments']['background']
                 : ($defaultall ? $defaults['assignments']['background']
-                    : optional_param('label_assignments_background', $defaults['assignments']['background'], PARAM_RAW_TRIMMED)),
+                    : optional_param('label_assignments_background', $defaults['assignments']['background'], PARAM_TEXT)),
             'label_assignments_text' => $defaultlabels
                 ? $defaults['assignments']['text']
                 : ($defaultall ? $defaults['assignments']['text']
-                    : optional_param('label_assignments_text', $defaults['assignments']['text'], PARAM_RAW_TRIMMED)),
+                    : optional_param('label_assignments_text', $defaults['assignments']['text'], PARAM_TEXT)),
             'label_quizzes_background' => $defaultlabels
                 ? $defaults['quizzes']['background']
                 : ($defaultall ? $defaults['quizzes']['background']
-                    : optional_param('label_quizzes_background', $defaults['quizzes']['background'], PARAM_RAW_TRIMMED)),
+                    : optional_param('label_quizzes_background', $defaults['quizzes']['background'], PARAM_TEXT)),
             'label_quizzes_text' => $defaultlabels
                 ? $defaults['quizzes']['text']
                 : ($defaultall ? $defaults['quizzes']['text']
-                    : optional_param('label_quizzes_text', $defaults['quizzes']['text'], PARAM_RAW_TRIMMED)),
+                    : optional_param('label_quizzes_text', $defaults['quizzes']['text'], PARAM_TEXT)),
         ];
         foreach ($defaults as $type => $colours) {
             foreach (['background', 'text', 'border', 'shadow'] as $role) {
                 $slideshowvalues['label_' . $type . '_' . $role] = ($defaultlabels || $defaultall)
                     ? $colours[$role]
-                    : optional_param('label_' . $type . '_' . $role, $colours[$role], PARAM_RAW_TRIMMED);
+                    : optional_param('label_' . $type . '_' . $role, $colours[$role], PARAM_TEXT);
             }
         }
         foreach ($styledefaults as $field => $defaultvalue) {
@@ -2097,7 +2097,7 @@ if (optional_param('updateslideshow', 0, PARAM_BOOL) && confirm_sesskey()) {
             } else {
                 $slideshowvalues[$field] = ($defaulttext || $defaultlabels || $defaultall)
                     ? $defaultvalue
-                    : optional_param($field, $defaultvalue, PARAM_RAW_TRIMMED);
+                    : optional_param($field, $defaultvalue, PARAM_TEXT);
             }
         }
         manager::set_slideshow_config($context, $slideshowvalues);
