@@ -2975,9 +2975,8 @@ class manager {
      * @return void
      */
     protected static function debug_log(string $label, $payload): void {
-        global $CFG;
-
-        $filepath = $CFG->tempdir . DIRECTORY_SEPARATOR . self::DEBUG_LOG_FILE;
+        $tempdir = make_temp_directory('local_course_banner_builder');
+        $filepath = $tempdir . DIRECTORY_SEPARATOR . self::DEBUG_LOG_FILE;
         $line = '[' . date('c') . '] ' . $label . ': ' . json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . PHP_EOL;
         @file_put_contents($filepath, $line, FILE_APPEND);
     }
@@ -9880,14 +9879,12 @@ class manager {
      * @return string Absolute path to the temporary ZIP file.
      */
     public static function create_configuration_export_zip(array $sections = [], array $options = []): string {
-        global $CFG;
-
         if (!class_exists('\ZipArchive')) {
             throw new \coding_exception('The PHP ZipArchive extension is required to export banner settings with files.');
         }
 
-        make_temp_directory('local_course_banner_builder');
-        $filepath = tempnam($CFG->tempdir . DIRECTORY_SEPARATOR . 'local_course_banner_builder', 'cbb_export_');
+        $tempdir = make_temp_directory('local_course_banner_builder');
+        $filepath = tempnam($tempdir, 'cbb_export_');
         if ($filepath === false) {
             throw new \coding_exception('Could not create a temporary export file.');
         }
