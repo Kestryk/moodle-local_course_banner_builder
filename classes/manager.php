@@ -2492,7 +2492,7 @@ class manager {
      * @return \stdClass|null
      */
     public static function resolve_source_from_request(string $sourcekey = '', int $categoryid = 0): ?\stdClass {
-        $sourcekey = clean_param($sourcekey, PARAM_RAW_TRIMMED);
+        $sourcekey = clean_param($sourcekey, PARAM_TEXT);
         if ($sourcekey === '' && $categoryid > 0) {
             $sourcekey = self::get_category_source_key($categoryid);
         }
@@ -2874,7 +2874,7 @@ class manager {
      * @return array
      */
     protected static function extract_border_sides_from_form_data(\stdClass $data): array {
-        $postedgroup = optional_param_array('bordersidesgroup', [], PARAM_RAW);
+        $postedgroup = optional_param_array('bordersidesgroup', [], PARAM_TEXT);
         if (is_array($postedgroup) && !empty($postedgroup)) {
             $sides = [];
             foreach ($postedgroup as $key => $value) {
@@ -2913,7 +2913,7 @@ class manager {
             return [];
         }
 
-        $postedvalue = optional_param('bordersidesvalue', null, PARAM_RAW_TRIMMED);
+        $postedvalue = optional_param('bordersidesvalue', null, PARAM_TEXT);
         if ($postedvalue !== null && $postedvalue !== '') {
             return self::normalise_border_sides(array_filter(array_map('trim', explode(',', (string)$postedvalue))));
         }
@@ -4505,8 +4505,8 @@ class manager {
             'hasoverlay' => $hasoverlay ? 1 : 0,
             'bordersidesvalue_data' => $data->bordersidesvalue ?? null,
             'bordersidesgroup_data' => $data->bordersidesgroup ?? null,
-            'post_bordersidesvalue' => optional_param('bordersidesvalue', null, PARAM_RAW_TRIMMED),
-            'post_bordersidesgroup' => optional_param_array('bordersidesgroup', [], PARAM_RAW),
+            'post_bordersidesvalue' => optional_param('bordersidesvalue', null, PARAM_TEXT),
+            'post_bordersidesgroup' => optional_param_array('bordersidesgroup', [], PARAM_TEXT),
         ]);
         $borderconflict = self::get_source_border_conflict_state($source, $elementid);
         if ($hasborder && !empty($borderconflict['blocked'])) {
@@ -4623,7 +4623,7 @@ class manager {
      */
     protected static function apply_request_crop_state(\stdClass $data): void {
         $cropstate = [];
-        $rawstate = optional_param('previewcropstate', '', PARAM_RAW_TRIMMED);
+        $rawstate = optional_param('previewcropstate', '', PARAM_TEXT);
         if ($rawstate !== '') {
             $decoded = json_decode($rawstate, true);
             if (is_array($decoded)) {
@@ -4638,11 +4638,14 @@ class manager {
                     (float)$cropstate[$property];
                 continue;
             }
-            if (optional_param($property, null, PARAM_RAW) === null) {
+            $submitted = $cropfield === 'enabled' ?
+                optional_param($property, null, PARAM_BOOL) :
+                optional_param($property, null, PARAM_FLOAT);
+            if ($submitted === null) {
                 continue;
             }
             $default = $cropfield === 'widthpercent' || $cropfield === 'heightpercent' ? 100.0 : 0.0;
-            $data->{$property} = $cropfield === 'enabled' ? optional_param($property, 0, PARAM_BOOL) :
+            $data->{$property} = $cropfield === 'enabled' ? $submitted :
                 optional_param($property, $default, PARAM_FLOAT);
         }
     }
