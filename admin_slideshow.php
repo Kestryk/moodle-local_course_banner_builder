@@ -44,7 +44,6 @@ try {
     $PAGE->set_heading(get_string('pluginname', 'local_course_banner_builder'));
 }
 
-$PAGE->requires->css('/local/course_banner_builder/styles.css');
 $PAGE->requires->js_init_code("
 document.addEventListener('DOMContentLoaded', function () {
     document.addEventListener('change', function (e) {
