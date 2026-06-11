@@ -660,13 +660,7 @@ $string['topimageenabled'] = 'Image above border';
 $string['topimageenabled_help_short'] = 'Image that is pushed above the border.';
 $string['tour:coursebanners:add:content'] = 'Use Add layer for one image, several images at once, or a border-only layer. Multi-upload keeps every draft image in the modal preview so you can review order, size, and position before saving.';
 $string['tour:coursebanners:add:title'] = 'Add layers';
-$string['tour:coursebanners:composition:content'] = '<p>This choice changes the real generated banner, not only the editor.</p>' .
-    '<div class="local-course-banner-builder-tour-mode-grid">' .
-    '<div class="local-course-banner-builder-tour-mode"><strong>Cumulative</strong>' .
-    '<span>Every enabled layer is rendered together, from the lowest order to the top layer.</span></div>' .
-    '<div class="local-course-banner-builder-tour-mode"><strong>Random</strong>' .
-    '<span>One enabled image layer from this source is picked when the banner is generated.</span></div>' .
-    '</div><p>Use random when a course should receive one visual variation from a set, for example one mascot, one season image, or one campaign graphic, without stacking all images at once.</p>';
+$string['tour:coursebanners:composition:content'] = '<p>This choice changes the real generated banner, not only the editor.</p><div class="local-course-banner-builder-tour-mode-grid"><div class="local-course-banner-builder-tour-mode"><strong>Cumulative</strong><span>Every enabled layer is rendered together, from the lowest order to the top layer.</span></div><div class="local-course-banner-builder-tour-mode"><strong>Random</strong><span>One enabled image layer from this source is picked when the banner is generated.</span></div></div><p>Use random when a course should receive one visual variation from a set, for example one mascot, one season image, or one campaign graphic, without stacking all images at once.</p>';
 $string['tour:coursebanners:composition:title'] = 'Random or cumulative?';
 $string['tour:coursebanners:current:addlayer:content'] = '<p>This step explains Add a layer. Use it to understand the related controls and how they affect the final banner before saving.</p>';
 $string['tour:coursebanners:current:addlayer:title'] = 'Add a layer';
@@ -707,63 +701,30 @@ $string['tour:coursebanners:filmstrip:content'] = 'The filmstrip is a fast selec
 $string['tour:coursebanners:filmstrip:title'] = 'Filmstrip';
 $string['tour:coursebanners:format:content'] = 'The format controls the visual ratio used by the real course banner and by every preview. Use the compact formats when the banner sits above a title, and keep the editor preview as the reference for percentages.';
 $string['tour:coursebanners:format:title'] = 'Banner format';
-$string['tour:coursebanners:intro:content'] = '<p>This page is the workshop for course banners.</p>' .
-    '<div class="local-course-banner-builder-tour-card">' .
-    '<span class="local-course-banner-builder-tour-kicker">Source chain</span>' .
-    '<p>Pick a source, adjust its rules, then let enabled layers compose the final course image.</p>' .
-    '<div class="local-course-banner-builder-tour-chip-row">' .
-    '<span class="local-course-banner-builder-tour-chip">Category</span>' .
-    '<span class="local-course-banner-builder-tour-chip">Custom field</span>' .
-    '<span class="local-course-banner-builder-tour-chip">Inherited parent</span>' .
-    '</div></div>';
+$string['tour:coursebanners:intro:content'] = '<p>This page is the workshop for course banners.</p><div class="local-course-banner-builder-tour-card"><span class="local-course-banner-builder-tour-kicker">Source chain</span><p>Pick a source, adjust its rules, then let enabled layers compose the final course image.</p><div class="local-course-banner-builder-tour-chip-row"><span class="local-course-banner-builder-tour-chip">Category</span><span class="local-course-banner-builder-tour-chip">Custom field</span><span class="local-course-banner-builder-tour-chip">Inherited parent</span></div></div>';
 $string['tour:coursebanners:intro:title'] = 'What this page controls';
-$string['tour:coursebanners:layers:content'] = '<p>The layer table is the calm, structured side of the editor.</p>' .
-    '<ul class="local-course-banner-builder-tour-list">' .
-    '<li>Rename layers and toggle whether they render.</li>' .
-    '<li>Edit sizing overrides or open the full modal.</li>' .
-    '<li>Delete safely when a layer is no longer needed.</li>' .
-    '</ul>';
+$string['tour:coursebanners:layers:content'] = '<p>The layer table is the calm, structured side of the editor.</p><ul class="local-course-banner-builder-tour-list"><li>Rename layers and toggle whether they render.</li><li>Edit sizing overrides or open the full modal.</li><li>Delete safely when a layer is no longer needed.</li></ul>';
 $string['tour:coursebanners:layers:title'] = 'Layer table';
 $string['tour:coursebanners:name'] = 'Course banner builder - course sources';
 $string['tour:coursebanners:nav:content'] = 'These shortcuts move between course banners, the site banner, and slideshow settings. They do not change the current source data; they only open the related administration view.';
 $string['tour:coursebanners:nav:title'] = 'Switching admin views';
 $string['tour:coursebanners:performance:content'] = 'Generated course thumbnails are stored as Moodle files and reused. Course card replacement runs lazily near the viewport, so many visible courses should not force every generated image to load immediately.';
 $string['tour:coursebanners:performance:title'] = 'Performance notes';
-$string['tour:coursebanners:preview:content'] = '<p>The visual editor is the closest match to the generated banner.</p>' .
-    '<div class="local-course-banner-builder-tour-preview">' .
-    '<span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--one"></span>' .
-    '<span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--two"></span>' .
-    '<span class="local-course-banner-builder-tour-preview-border"></span>' .
-    '</div><p>Drag layers, resize handles, use snap guides, reorder, then save when the composition feels right.</p>';
+$string['tour:coursebanners:preview:content'] = '<p>The visual editor is the closest match to the generated banner.</p><div class="local-course-banner-builder-tour-preview"><span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--one"></span><span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--two"></span><span class="local-course-banner-builder-tour-preview-border"></span></div><p>Drag layers, resize handles, use snap guides, reorder, then save when the composition feels right.</p>';
 $string['tour:coursebanners:preview:title'] = 'Visual editor';
 $string['tour:coursebanners:save:content'] = 'Bulk actions save table edits, delete selected layers, or delete all layers from the current source. Deleting all layers keeps the source settings but removes its visual contribution.';
 $string['tour:coursebanners:save:title'] = 'Bulk actions';
 $string['tour:coursebanners:selected:content'] = 'The selected source is the working area. It shows whether the source is a root, inherits another source, contributes layers to children, or short-circuits the chain. Always check this area before editing layers.';
 $string['tour:coursebanners:selected:title'] = 'Selected source';
-$string['tour:coursebanners:settings:content'] = '<p>Source settings are the rules behind the canvas.</p>' .
-    '<ul class="local-course-banner-builder-tour-list">' .
-    '<li><strong>Composition</strong> decides whether layers stack or rotate randomly.</li>' .
-    '<li><strong>Sizing</strong> sets the default behavior for new image layers.</li>' .
-    '<li><strong>Parent source</strong> and inheritance define the source chain.</li>' .
-    '</ul><p>Save them once before adding layers, so modals have a stable context.</p>';
+$string['tour:coursebanners:settings:content'] = '<p>Source settings are the rules behind the canvas.</p><ul class="local-course-banner-builder-tour-list"><li><strong>Composition</strong> decides whether layers stack or rotate randomly.</li><li><strong>Sizing</strong> sets the default behavior for new image layers.</li><li><strong>Parent source</strong> and inheritance define the source chain.</li></ul><p>Save them once before adding layers, so modals have a stable context.</p>';
 $string['tour:coursebanners:settings:title'] = 'Source settings';
 $string['tour:coursebanners:sources:content'] = 'The source list shows the hierarchy, parent source, source type, layer count, composition mode, sizing mode, thumbnails, and actions. Scroll horizontally on small screens and expand chains when needed.';
 $string['tour:coursebanners:sources:title'] = 'Configured sources';
-$string['tour:coursebanners:toolbar:content'] = '<p>The toolbar appears around the visual editor when an action is available.</p>' .
-    '<div class="local-course-banner-builder-tour-toolbar">' .
-    '<span class="local-course-banner-builder-tour-tool"><i class="fa fa-undo" aria-hidden="true"></i></span>' .
-    '<span class="local-course-banner-builder-tour-tool"><i class="fa fa-magnet" aria-hidden="true"></i></span>' .
-    '<span class="local-course-banner-builder-tour-tool"><i class="fa fa-compress" aria-hidden="true"></i></span>' .
-    '<span class="local-course-banner-builder-tour-tool"><i class="fa fa-arrows-alt" aria-hidden="true"></i></span>' .
-    '<span class="local-course-banner-builder-tour-tool"><i class="fa fa-eye-slash" aria-hidden="true"></i></span>' .
-    '</div><p>It handles undo, snap, fit, layer order, visibility, and other context-sensitive actions.</p>';
+$string['tour:coursebanners:toolbar:content'] = '<p>The toolbar appears around the visual editor when an action is available.</p><div class="local-course-banner-builder-tour-toolbar"><span class="local-course-banner-builder-tour-tool"><i class="fa fa-undo" aria-hidden="true"></i></span><span class="local-course-banner-builder-tour-tool"><i class="fa fa-magnet" aria-hidden="true"></i></span><span class="local-course-banner-builder-tour-tool"><i class="fa fa-compress" aria-hidden="true"></i></span><span class="local-course-banner-builder-tour-tool"><i class="fa fa-arrows-alt" aria-hidden="true"></i></span><span class="local-course-banner-builder-tour-tool"><i class="fa fa-eye-slash" aria-hidden="true"></i></span></div><p>It handles undo, snap, fit, layer order, visibility, and other context-sensitive actions.</p>';
 $string['tour:coursebanners:toolbar:title'] = 'Preview toolbar';
 $string['tour:layermodals:add:content'] = 'Open the modal from Add layer. The form can save one image, multiple image drafts, or a border-only layer depending on the file manager and border controls.';
 $string['tour:layermodals:add:title'] = 'Opening the add modal';
-$string['tour:layermodals:border:content'] = '<p>A border layer frames the whole banner or selected sides.</p>' .
-    '<div class="local-course-banner-builder-tour-preview">' .
-    '<span class="local-course-banner-builder-tour-preview-border"></span>' .
-    '</div><p>Adjust color, style, width, opacity, fade, dashed length, sides, and inner rounding.</p>';
+$string['tour:layermodals:border:content'] = '<p>A border layer frames the whole banner or selected sides.</p><div class="local-course-banner-builder-tour-preview"><span class="local-course-banner-builder-tour-preview-border"></span></div><p>Adjust color, style, width, opacity, fade, dashed length, sides, and inner rounding.</p>';
 $string['tour:layermodals:border:title'] = 'Border-only layers';
 $string['tour:layermodals:current:border:content'] = '<p>This step explains Border layer. Use it to understand the related controls and how they affect the final banner before saving.</p>';
 $string['tour:layermodals:current:border:title'] = 'Border layer';
@@ -794,29 +755,16 @@ $string['tour:layermodals:file:content'] = 'Upload web images through the Moodle
 $string['tour:layermodals:file:title'] = 'File manager';
 $string['tour:layermodals:identity:content'] = 'Layer name helps future maintenance, sort order controls render order, and enabled controls whether the layer contributes to previews and generated images.';
 $string['tour:layermodals:identity:title'] = 'Name, order, and enabled state';
-$string['tour:layermodals:intro:content'] = '<p>Layer modals are small editing rooms for one job at a time.</p>' .
-    '<div class="local-course-banner-builder-tour-card">' .
-    '<span class="local-course-banner-builder-tour-kicker">Modal scope</span>' .
-    '<p>Add images, edit an image layer, or tune the dedicated border while keeping the source ratio.</p>' .
-    '</div>';
+$string['tour:layermodals:intro:content'] = '<p>Layer modals are small editing rooms for one job at a time.</p><div class="local-course-banner-builder-tour-card"><span class="local-course-banner-builder-tour-kicker">Modal scope</span><p>Add images, edit an image layer, or tune the dedicated border while keeping the source ratio.</p></div>';
 $string['tour:layermodals:intro:title'] = 'How layer modals work';
 $string['tour:layermodals:multi:content'] = 'When several files are present, select each thumbnail, check its position, and delete unwanted drafts before saving. Draft edits are stored in hidden JSON until submit.';
 $string['tour:layermodals:multi:title'] = 'Multiple drafts';
 $string['tour:layermodals:name'] = 'Course banner builder - layer and border modals';
-$string['tour:layermodals:preview:content'] = '<p>The modal preview uses the same banner ratio as the source.</p>' .
-    '<div class="local-course-banner-builder-tour-preview">' .
-    '<span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--one"></span>' .
-    '<span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--two"></span>' .
-    '</div><p>Use Show other layers to compare the current edit with existing and inherited layers.</p>';
+$string['tour:layermodals:preview:content'] = '<p>The modal preview uses the same banner ratio as the source.</p><div class="local-course-banner-builder-tour-preview"><span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--one"></span><span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--two"></span></div><p>Use Show other layers to compare the current edit with existing and inherited layers.</p>';
 $string['tour:layermodals:preview:title'] = 'Modal preview';
 $string['tour:layermodals:save:content'] = 'Saving creates or updates Moodle records and generated files. If validation warns that neither an image nor a border is active, add content before submitting.';
 $string['tour:layermodals:save:title'] = 'Saving safely';
-$string['tour:layermodals:size:content'] = '<p>Pick the behavior before fine tuning percentages.</p>' .
-    '<ul class="local-course-banner-builder-tour-list">' .
-    '<li><strong>Fit to preview</strong> keeps the whole image visible.</li>' .
-    '<li><strong>Fill banner</strong> covers the full frame.</li>' .
-    '<li><strong>Custom</strong> unlocks width, height, offsets, and aspect preservation.</li>' .
-    '</ul>';
+$string['tour:layermodals:size:content'] = '<p>Pick the behavior before fine tuning percentages.</p><ul class="local-course-banner-builder-tour-list"><li><strong>Fit to preview</strong> keeps the whole image visible.</li><li><strong>Fill banner</strong> covers the full frame.</li><li><strong>Custom</strong> unlocks width, height, offsets, and aspect preservation.</li></ul>';
 $string['tour:layermodals:size:title'] = 'Sizing and position';
 $string['tour:layermodals_site:description'] = 'Detailed tour of the site add/edit layer modal workflow.';
 $string['tour:layermodals_site:name'] = 'Course banner builder - site layer and border modals';
@@ -934,12 +882,7 @@ $string['tour:slideshow:labels:title'] = 'Labels and action button';
 $string['tour:slideshow:name'] = 'Course banner builder - slideshow';
 $string['tour:slideshow:overlay:content'] = 'Overlay color and opacity improve readability on busy images. The preview updates immediately so you can keep text readable without hiding the banner.';
 $string['tour:slideshow:overlay:title'] = 'Overlay background';
-$string['tour:slideshow:preview:content'] = '<p>The preview shows sample content in the selected banner format.</p>' .
-    '<div class="local-course-banner-builder-tour-preview">' .
-    '<span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--two"></span>' .
-    '<span class="local-course-banner-builder-tour-chip" style="position:absolute;left:10%;top:18%;">COURSE101</span>' .
-    '<span style="position:absolute;left:10%;top:50%;font-weight:700;">Upcoming activity</span>' .
-    '</div><p>Drag title, body, label, and action positions to store percentage values.</p>';
+$string['tour:slideshow:preview:content'] = '<p>The preview shows sample content in the selected banner format.</p><div class="local-course-banner-builder-tour-preview"><span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--two"></span><span class="local-course-banner-builder-tour-chip" style="position:absolute;left:10%;top:18%;">COURSE101</span><span style="position:absolute;left:10%;top:50%;font-weight:700;">Upcoming activity</span></div><p>Drag title, body, label, and action positions to store percentage values.</p>';
 $string['tour:slideshow:preview:title'] = 'Interactive preview';
 $string['tour:slideshow:save:content'] = 'Save all slideshow settings after editing. The plugin stores configuration, not personal data, and real slide content is fetched from existing Moodle activities.';
 $string['tour:slideshow:save:title'] = 'Save slideshow settings';
