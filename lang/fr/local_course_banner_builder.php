@@ -660,13 +660,7 @@ $string['topimageenabled'] = 'Image au-dessus de la bordure';
 $string['topimageenabled_help_short'] = 'Image qui est poussÃ©e au dessus de la bordure.';
 $string['tour:coursebanners:add:content'] = 'Ajouter un calque permet d envoyer une image, plusieurs images ou une bordure seule. Le multi-upload garde chaque brouillon dans l apercu de la modale avant sauvegarde.';
 $string['tour:coursebanners:add:title'] = 'Ajouter des calques';
-$string['tour:coursebanners:composition:content'] = '<p>Ce choix change la vraie banniere generee, pas seulement l editeur.</p>' .
-    '<div class="local-course-banner-builder-tour-mode-grid">' .
-    '<div class="local-course-banner-builder-tour-mode"><strong>Cumulatif</strong>' .
-    '<span>Tous les calques actifs sont rendus ensemble, du plus bas au plus haut.</span></div>' .
-    '<div class="local-course-banner-builder-tour-mode"><strong>Aleatoire</strong>' .
-    '<span>Une seule image active de cette source est choisie quand la banniere est generee.</span></div>' .
-    '</div><p>Utilisez aleatoire pour donner a un cours une variation visuelle parmi plusieurs images, par exemple une mascotte, une saison ou une campagne, sans empiler toutes les images.</p>';
+$string['tour:coursebanners:composition:content'] = '<p>Ce choix change la vraie banniere generee, pas seulement l editeur.</p><div class="local-course-banner-builder-tour-mode-grid"><div class="local-course-banner-builder-tour-mode"><strong>Cumulatif</strong><span>Tous les calques actifs sont rendus ensemble, du plus bas au plus haut.</span></div><div class="local-course-banner-builder-tour-mode"><strong>Aleatoire</strong><span>Une seule image active de cette source est choisie quand la banniere est generee.</span></div></div><p>Utilisez aleatoire pour donner a un cours une variation visuelle parmi plusieurs images, par exemple une mascotte, une saison ou une campagne, sans empiler toutes les images.</p>';
 $string['tour:coursebanners:composition:title'] = 'Aleatoire ou cumulatif ?';
 $string['tour:coursebanners:current:addlayer:content'] = '<p>Cette Ã©tape explique lâ€™ajout dâ€™images, bordures ou overlays et la rÃ¨gle dâ€™une seule bordure et dâ€™un seul overlay actifs par chaÃ®ne. Elle aide Ã  comprendre les contrÃ´les associÃ©s et leur effet sur le rendu final avant dâ€™enregistrer.</p>';
 $string['tour:coursebanners:current:addlayer:title'] = 'Ajouter un calque';
@@ -707,63 +701,30 @@ $string['tour:coursebanners:filmstrip:content'] = 'La bande de vignettes selecti
 $string['tour:coursebanners:filmstrip:title'] = 'Vignettes';
 $string['tour:coursebanners:format:content'] = 'Le format controle le ratio utilise par la vraie banniere de cours et par tous les apercus. Les formats compacts servent aux bannieres au-dessus du titre. Les positions et tailles restent calculees en pourcentage.';
 $string['tour:coursebanners:format:title'] = 'Format de banniere';
-$string['tour:coursebanners:intro:content'] = '<p>Cette page est l atelier des bannieres de cours.</p>' .
-    '<div class="local-course-banner-builder-tour-card">' .
-    '<span class="local-course-banner-builder-tour-kicker">Chaine de sources</span>' .
-    '<p>Choisissez une source, ajustez ses regles, puis laissez les calques actifs composer l image finale.</p>' .
-    '<div class="local-course-banner-builder-tour-chip-row">' .
-    '<span class="local-course-banner-builder-tour-chip">Categorie</span>' .
-    '<span class="local-course-banner-builder-tour-chip">Champ personnalise</span>' .
-    '<span class="local-course-banner-builder-tour-chip">Parent herite</span>' .
-    '</div></div>';
+$string['tour:coursebanners:intro:content'] = '<p>Cette page est l atelier des bannieres de cours.</p><div class="local-course-banner-builder-tour-card"><span class="local-course-banner-builder-tour-kicker">Chaine de sources</span><p>Choisissez une source, ajustez ses regles, puis laissez les calques actifs composer l image finale.</p><div class="local-course-banner-builder-tour-chip-row"><span class="local-course-banner-builder-tour-chip">Categorie</span><span class="local-course-banner-builder-tour-chip">Champ personnalise</span><span class="local-course-banner-builder-tour-chip">Parent herite</span></div></div>';
 $string['tour:coursebanners:intro:title'] = 'Role de cette page';
-$string['tour:coursebanners:layers:content'] = '<p>La table est le cote pose et structure de l editeur.</p>' .
-    '<ul class="local-course-banner-builder-tour-list">' .
-    '<li>Renommer les calques et choisir s ils sont actifs.</li>' .
-    '<li>Ajuster les surcharges ou ouvrir la modale complete.</li>' .
-    '<li>Supprimer proprement ce qui ne sert plus.</li>' .
-    '</ul>';
+$string['tour:coursebanners:layers:content'] = '<p>La table est le cote pose et structure de l editeur.</p><ul class="local-course-banner-builder-tour-list"><li>Renommer les calques et choisir s ils sont actifs.</li><li>Ajuster les surcharges ou ouvrir la modale complete.</li><li>Supprimer proprement ce qui ne sert plus.</li></ul>';
 $string['tour:coursebanners:layers:title'] = 'Table des calques';
 $string['tour:coursebanners:name'] = 'Course banner builder - sources de cours';
 $string['tour:coursebanners:nav:content'] = 'Ces raccourcis ouvrent les vues bannieres de cours, banniere site et diaporama. Ils ne modifient pas les donnees de la source actuelle.';
 $string['tour:coursebanners:nav:title'] = 'Navigation admin';
 $string['tour:coursebanners:performance:content'] = 'Les vignettes de cours generees sont stockees comme fichiers Moodle et reutilisees. Le remplacement des cartes se charge pres de la zone visible pour limiter les images chargees.';
 $string['tour:coursebanners:performance:title'] = 'Performance';
-$string['tour:coursebanners:preview:content'] = '<p>L editeur visuel est le reflet le plus proche de la banniere generee.</p>' .
-    '<div class="local-course-banner-builder-tour-preview">' .
-    '<span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--one"></span>' .
-    '<span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--two"></span>' .
-    '<span class="local-course-banner-builder-tour-preview-border"></span>' .
-    '</div><p>Deplacez, redimensionnez, aimantez, changez l ordre, puis sauvegardez quand la composition est juste.</p>';
+$string['tour:coursebanners:preview:content'] = '<p>L editeur visuel est le reflet le plus proche de la banniere generee.</p><div class="local-course-banner-builder-tour-preview"><span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--one"></span><span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--two"></span><span class="local-course-banner-builder-tour-preview-border"></span></div><p>Deplacez, redimensionnez, aimantez, changez l ordre, puis sauvegardez quand la composition est juste.</p>';
 $string['tour:coursebanners:preview:title'] = 'Editeur visuel';
 $string['tour:coursebanners:save:content'] = 'Les actions groupees enregistrent les editions de table, suppriment les calques selectionnes ou suppriment tous les calques de la source.';
 $string['tour:coursebanners:save:title'] = 'Actions groupees';
 $string['tour:coursebanners:selected:content'] = 'La source selectionnee est la zone de travail. Elle indique si la source est racine, herite d une autre source, transmet ses calques aux enfants ou coupe la chaine.';
 $string['tour:coursebanners:selected:title'] = 'Source selectionnee';
-$string['tour:coursebanners:settings:content'] = '<p>Les reglages de source sont les regles derriere le canvas.</p>' .
-    '<ul class="local-course-banner-builder-tour-list">' .
-    '<li><strong>Composition</strong> decide si les calques s empilent ou tournent aleatoirement.</li>' .
-    '<li><strong>Taille</strong> donne le comportement par defaut des nouveaux calques image.</li>' .
-    '<li><strong>Source parente</strong> et heritage definissent la chaine de sources.</li>' .
-    '</ul><p>Enregistrez-les une fois avant d ajouter des calques.</p>';
+$string['tour:coursebanners:settings:content'] = '<p>Les reglages de source sont les regles derriere le canvas.</p><ul class="local-course-banner-builder-tour-list"><li><strong>Composition</strong> decide si les calques s empilent ou tournent aleatoirement.</li><li><strong>Taille</strong> donne le comportement par defaut des nouveaux calques image.</li><li><strong>Source parente</strong> et heritage definissent la chaine de sources.</li></ul><p>Enregistrez-les une fois avant d ajouter des calques.</p>';
 $string['tour:coursebanners:settings:title'] = 'Reglages de source';
 $string['tour:coursebanners:sources:content'] = 'La liste montre hierarchie, parent, type, nombre de calques, mode de composition, mode de taille, vignettes et actions. Sur petit ecran, utilisez le scroll horizontal.';
 $string['tour:coursebanners:sources:title'] = 'Sources configurees';
-$string['tour:coursebanners:toolbar:content'] = '<p>La barre d outils apparait autour de l editeur quand une action est disponible.</p>' .
-    '<div class="local-course-banner-builder-tour-toolbar">' .
-    '<span class="local-course-banner-builder-tour-tool"><i class="fa fa-undo" aria-hidden="true"></i></span>' .
-    '<span class="local-course-banner-builder-tour-tool"><i class="fa fa-magnet" aria-hidden="true"></i></span>' .
-    '<span class="local-course-banner-builder-tour-tool"><i class="fa fa-compress" aria-hidden="true"></i></span>' .
-    '<span class="local-course-banner-builder-tour-tool"><i class="fa fa-arrows-alt" aria-hidden="true"></i></span>' .
-    '<span class="local-course-banner-builder-tour-tool"><i class="fa fa-eye-slash" aria-hidden="true"></i></span>' .
-    '</div><p>Elle sert a annuler, aimanter, ajuster, ordonner et afficher ou masquer le contexte.</p>';
+$string['tour:coursebanners:toolbar:content'] = '<p>La barre d outils apparait autour de l editeur quand une action est disponible.</p><div class="local-course-banner-builder-tour-toolbar"><span class="local-course-banner-builder-tour-tool"><i class="fa fa-undo" aria-hidden="true"></i></span><span class="local-course-banner-builder-tour-tool"><i class="fa fa-magnet" aria-hidden="true"></i></span><span class="local-course-banner-builder-tour-tool"><i class="fa fa-compress" aria-hidden="true"></i></span><span class="local-course-banner-builder-tour-tool"><i class="fa fa-arrows-alt" aria-hidden="true"></i></span><span class="local-course-banner-builder-tour-tool"><i class="fa fa-eye-slash" aria-hidden="true"></i></span></div><p>Elle sert a annuler, aimanter, ajuster, ordonner et afficher ou masquer le contexte.</p>';
 $string['tour:coursebanners:toolbar:title'] = 'Barre d outils';
 $string['tour:layermodals:add:content'] = 'Ouvrez la modale avec Ajouter un calque. Le formulaire peut enregistrer une image, plusieurs brouillons image ou une bordure seule.';
 $string['tour:layermodals:add:title'] = 'Ouvrir la modale';
-$string['tour:layermodals:border:content'] = '<p>Un calque bordure encadre toute la banniere ou seulement certains cotes.</p>' .
-    '<div class="local-course-banner-builder-tour-preview">' .
-    '<span class="local-course-banner-builder-tour-preview-border"></span>' .
-    '</div><p>Reglez couleur, style, largeur, opacite, fondu, pointilles, cotes et coins internes.</p>';
+$string['tour:layermodals:border:content'] = '<p>Un calque bordure encadre toute la banniere ou seulement certains cotes.</p><div class="local-course-banner-builder-tour-preview"><span class="local-course-banner-builder-tour-preview-border"></span></div><p>Reglez couleur, style, largeur, opacite, fondu, pointilles, cotes et coins internes.</p>';
 $string['tour:layermodals:border:title'] = 'Calque bordure';
 $string['tour:layermodals:current:border:content'] = '<p>Cette Ã©tape explique Calque de bordure. Elle aide Ã  comprendre les contrÃ´les associÃ©s et leur effet sur le rendu final avant dâ€™enregistrer.</p>';
 $string['tour:layermodals:current:border:title'] = 'Calque de bordure';
@@ -794,29 +755,16 @@ $string['tour:layermodals:file:content'] = 'Envoyez des images web via le gestio
 $string['tour:layermodals:file:title'] = 'Gestionnaire de fichiers';
 $string['tour:layermodals:identity:content'] = 'Le nom facilite la maintenance, l ordre controle le rendu et l activation decide si le calque contribue aux apercus et images generees.';
 $string['tour:layermodals:identity:title'] = 'Nom, ordre et activation';
-$string['tour:layermodals:intro:content'] = '<p>Les modales sont de petites salles d edition, avec un objectif clair.</p>' .
-    '<div class="local-course-banner-builder-tour-card">' .
-    '<span class="local-course-banner-builder-tour-kicker">Portee de la modale</span>' .
-    '<p>Ajouter des images, modifier un calque image ou regler la bordure dediee en gardant le ratio de la source.</p>' .
-    '</div>';
+$string['tour:layermodals:intro:content'] = '<p>Les modales sont de petites salles d edition, avec un objectif clair.</p><div class="local-course-banner-builder-tour-card"><span class="local-course-banner-builder-tour-kicker">Portee de la modale</span><p>Ajouter des images, modifier un calque image ou regler la bordure dediee en gardant le ratio de la source.</p></div>';
 $string['tour:layermodals:intro:title'] = 'Fonctionnement des modales';
 $string['tour:layermodals:multi:content'] = 'Avec plusieurs fichiers, selectionnez chaque vignette, controlez sa position et supprimez les brouillons inutiles avant sauvegarde.';
 $string['tour:layermodals:multi:title'] = 'Plusieurs brouillons';
 $string['tour:layermodals:name'] = 'Course banner builder - modales de calques';
-$string['tour:layermodals:preview:content'] = '<p>L apercu de modale reprend le ratio de la source.</p>' .
-    '<div class="local-course-banner-builder-tour-preview">' .
-    '<span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--one"></span>' .
-    '<span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--two"></span>' .
-    '</div><p>Utilisez Afficher les autres calques pour comparer avec l existant et l herite.</p>';
+$string['tour:layermodals:preview:content'] = '<p>L apercu de modale reprend le ratio de la source.</p><div class="local-course-banner-builder-tour-preview"><span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--one"></span><span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--two"></span></div><p>Utilisez Afficher les autres calques pour comparer avec l existant et l herite.</p>';
 $string['tour:layermodals:preview:title'] = 'Apercu de modale';
 $string['tour:layermodals:save:content'] = 'La sauvegarde cree ou met a jour les enregistrements Moodle. Si l alerte indique qu aucune image ou bordure n est active, ajoutez un contenu avant de soumettre.';
 $string['tour:layermodals:save:title'] = 'Sauvegarder';
-$string['tour:layermodals:size:content'] = '<p>Choisissez le comportement avant de regler les pourcentages.</p>' .
-    '<ul class="local-course-banner-builder-tour-list">' .
-    '<li><strong>Fit to preview</strong> garde toute l image visible.</li>' .
-    '<li><strong>Fill banner</strong> couvre tout le cadre.</li>' .
-    '<li><strong>Custom</strong> ouvre largeur, hauteur, espacements et conservation des proportions.</li>' .
-    '</ul>';
+$string['tour:layermodals:size:content'] = '<p>Choisissez le comportement avant de regler les pourcentages.</p><ul class="local-course-banner-builder-tour-list"><li><strong>Fit to preview</strong> garde toute l image visible.</li><li><strong>Fill banner</strong> couvre tout le cadre.</li><li><strong>Custom</strong> ouvre largeur, hauteur, espacements et conservation des proportions.</li></ul>';
 $string['tour:layermodals:size:title'] = 'Taille et position';
 $string['tour:layermodals_site:description'] = 'Visite detaillee du flux d ajout et d edition de calques site.';
 $string['tour:layermodals_site:name'] = 'Course banner builder - modales des calques site';
@@ -934,12 +882,7 @@ $string['tour:slideshow:labels:title'] = 'Labels et bouton';
 $string['tour:slideshow:name'] = 'Course banner builder - diaporama';
 $string['tour:slideshow:overlay:content'] = 'La couleur et l opacite d overlay ameliorent la lisibilite sur les images chargees. L apercu se met a jour immediatement.';
 $string['tour:slideshow:overlay:title'] = 'Fond de lisibilite';
-$string['tour:slideshow:preview:content'] = '<p>L apercu montre un exemple dans le format choisi.</p>' .
-    '<div class="local-course-banner-builder-tour-preview">' .
-    '<span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--two"></span>' .
-    '<span class="local-course-banner-builder-tour-chip" style="position:absolute;left:10%;top:18%;">COURSE101</span>' .
-    '<span style="position:absolute;left:10%;top:50%;font-weight:700;">Activite a venir</span>' .
-    '</div><p>Deplacez titre, corps, label et bouton pour enregistrer leurs positions en pourcentage.</p>';
+$string['tour:slideshow:preview:content'] = '<p>L apercu montre un exemple dans le format choisi.</p><div class="local-course-banner-builder-tour-preview"><span class="local-course-banner-builder-tour-preview-layer local-course-banner-builder-tour-preview-layer--two"></span><span class="local-course-banner-builder-tour-chip" style="position:absolute;left:10%;top:18%;">COURSE101</span><span style="position:absolute;left:10%;top:50%;font-weight:700;">Activite a venir</span></div><p>Deplacez titre, corps, label et bouton pour enregistrer leurs positions en pourcentage.</p>';
 $string['tour:slideshow:preview:title'] = 'Apercu interactif';
 $string['tour:slideshow:save:content'] = 'Enregistrez tous les reglages apres modification. Le plugin stocke la configuration et lit les contenus depuis les activites Moodle existantes.';
 $string['tour:slideshow:save:title'] = 'Enregistrer le diaporama';
