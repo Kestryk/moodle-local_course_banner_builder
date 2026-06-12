@@ -2492,7 +2492,7 @@ class manager {
      * @return \stdClass|null
      */
     public static function resolve_source_from_request(string $sourcekey = '', int $categoryid = 0): ?\stdClass {
-        $sourcekey = clean_param($sourcekey, PARAM_RAW_TRIMMED);
+        $sourcekey = clean_param($sourcekey, PARAM_TEXT);
         if ($sourcekey === '' && $categoryid > 0) {
             $sourcekey = self::get_category_source_key($categoryid);
         }
@@ -2874,7 +2874,10 @@ class manager {
      * @return array
      */
     protected static function extract_border_sides_from_form_data(\stdClass $data): array {
-        $postedgroup = optional_param_array('bordersidesgroup', [], PARAM_RAW);
+        $submitted = data_submitted();
+        $postedgroup = $submitted && !empty($submitted->bordersidesgroup) && is_array($submitted->bordersidesgroup)
+            ? $submitted->bordersidesgroup
+            : [];
         if (is_array($postedgroup) && !empty($postedgroup)) {
             $sides = [];
             foreach ($postedgroup as $key => $value) {
@@ -2913,7 +2916,7 @@ class manager {
             return [];
         }
 
-        $postedvalue = optional_param('bordersidesvalue', null, PARAM_RAW_TRIMMED);
+        $postedvalue = optional_param('bordersidesvalue', null, PARAM_TEXT);
         if ($postedvalue !== null && $postedvalue !== '') {
             return self::normalise_border_sides(array_filter(array_map('trim', explode(',', (string)$postedvalue))));
         }
@@ -2975,9 +2978,8 @@ class manager {
      * @return void
      */
     protected static function debug_log(string $label, $payload): void {
-        global $CFG;
-
-        $filepath = $CFG->tempdir . DIRECTORY_SEPARATOR . self::DEBUG_LOG_FILE;
+        $tempdir = make_temp_directory('local_course_banner_builder');
+        $filepath = $tempdir . DIRECTORY_SEPARATOR . self::DEBUG_LOG_FILE;
         $line = '[' . date('c') . '] ' . $label . ': ' . json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . PHP_EOL;
         @file_put_contents($filepath, $line, FILE_APPEND);
     }
@@ -4496,6 +4498,7 @@ class manager {
         if ($elementid && !empty($data->currentisoverlaylayer)) {
             $data->overlayenabled = 1;
         }
+        $submitted = data_submitted();
         $hasborder = !empty($data->borderenabled) && !empty($data->isenabled);
         $hasoverlay = !empty($data->overlayenabled) && !empty($data->isenabled);
         self::debug_log('save_source_banner_input', [
@@ -4505,8 +4508,8 @@ class manager {
             'hasoverlay' => $hasoverlay ? 1 : 0,
             'bordersidesvalue_data' => $data->bordersidesvalue ?? null,
             'bordersidesgroup_data' => $data->bordersidesgroup ?? null,
-            'post_bordersidesvalue' => optional_param('bordersidesvalue', null, PARAM_RAW_TRIMMED),
-            'post_bordersidesgroup' => optional_param_array('bordersidesgroup', [], PARAM_RAW),
+            'post_bordersidesvalue' => optional_param('bordersidesvalue', null, PARAM_TEXT),
+            'post_bordersidesgroup' => $submitted && !empty($submitted->bordersidesgroup) ? $submitted->bordersidesgroup : [],
         ]);
         $borderconflict = self::get_source_border_conflict_state($source, $elementid);
         if ($hasborder && !empty($borderconflict['blocked'])) {
@@ -4623,7 +4626,7 @@ class manager {
      */
     protected static function apply_request_crop_state(\stdClass $data): void {
         $cropstate = [];
-        $rawstate = optional_param('previewcropstate', '', PARAM_RAW_TRIMMED);
+        $rawstate = optional_param('previewcropstate', '', PARAM_RAW);
         if ($rawstate !== '') {
             $decoded = json_decode($rawstate, true);
             if (is_array($decoded)) {
@@ -4638,7 +4641,10 @@ class manager {
                     (float)$cropstate[$property];
                 continue;
             }
-            if (optional_param($property, null, PARAM_RAW) === null) {
+            $presence = $cropfield === 'enabled'
+                ? optional_param($property, null, PARAM_BOOL)
+                : optional_param($property, null, PARAM_FLOAT);
+            if ($presence === null) {
                 continue;
             }
             $default = $cropfield === 'widthpercent' || $cropfield === 'heightpercent' ? 100.0 : 0.0;
@@ -6496,6 +6502,44 @@ class manager {
     }
 
     /**
+     * Format a hierarchy depth as an uppercase roman numeral.
+     *
+     * @param int $level
+     * @return string
+     */
+    protected static function format_hierarchy_level_roman(int $level): string {
+        if ($level <= 0) {
+            return '';
+        }
+
+        $map = [
+            1000 => 'M',
+            900 => 'CM',
+            500 => 'D',
+            400 => 'CD',
+            100 => 'C',
+            90 => 'XC',
+            50 => 'L',
+            40 => 'XL',
+            10 => 'X',
+            9 => 'IX',
+            5 => 'V',
+            4 => 'IV',
+            1 => 'I',
+        ];
+        $remaining = min($level, 3999);
+        $roman = '';
+        foreach ($map as $value => $symbol) {
+            while ($remaining >= $value) {
+                $roman .= $symbol;
+                $remaining -= $value;
+            }
+        }
+
+        return $roman;
+    }
+
+    /**
      * Build a readable category path name directly from DB records.
      *
      * @param \stdClass $category
@@ -6736,17 +6780,26 @@ class manager {
             $childkeys = $children[$key] ?? [];
             $parentkey = (string)($item['sourceparentkey'] ?? '');
             $item['hierarchylevel'] = $level;
-            $item['hierarchyarrows'] = $level > 0 ? implode(' ', array_fill(0, $level, '|')) : '';
+            $item['hierarchyarrows'] = $level > 0 ? self::format_hierarchy_level_roman($level) : '';
             $item['hierarchylevelmarkers'] = [];
-            for ($levelmarker = 0; $levelmarker < $level; $levelmarker++) {
+            $visiblemarkers = min($level, 4);
+            for ($levelmarker = 0; $levelmarker < $visiblemarkers; $levelmarker++) {
                 $item['hierarchylevelmarkers'][] = [
                     'style' => 'left: ' . number_format(0.92 + ($levelmarker * 0.48), 2, '.', '') . 'rem;',
+                    'markerclass' => '',
+                ];
+            }
+            if ($level > 4) {
+                $item['hierarchylevelmarkers'][] = [
+                    'style' => 'left: ' . number_format(0.92 + (4 * 0.48), 2, '.', '') . 'rem;',
+                    'markerclass' => ' local-course-banner-builder-hierarchy-level-line--overflow',
                 ];
             }
             $item['hierarchylabel'] = $level === 0
                 ? get_string('rootcategory', 'local_course_banner_builder')
                 : '';
             $item['isrootrow'] = $level === 0;
+            $item['islevelrow'] = $level > 0;
             $item['haschildren'] = !empty($childkeys);
             $item['sourcekeyhash'] = md5($key);
             $item['parentkeyhash'] = $parentkey !== '' ? md5($parentkey) : '';
@@ -9880,19 +9933,12 @@ class manager {
      * @return string Absolute path to the temporary ZIP file.
      */
     public static function create_configuration_export_zip(array $sections = [], array $options = []): string {
-        global $CFG;
-
         if (!class_exists('\ZipArchive')) {
             throw new \coding_exception('The PHP ZipArchive extension is required to export banner settings with files.');
         }
 
-        make_temp_directory('local_course_banner_builder');
-        $filepath = tempnam($CFG->tempdir . DIRECTORY_SEPARATOR . 'local_course_banner_builder', 'cbb_export_');
-        if ($filepath === false) {
-            throw new \coding_exception('Could not create a temporary export file.');
-        }
-        $zippath = $filepath . '.zip';
-        @rename($filepath, $zippath);
+        $requestdir = make_request_directory();
+        $zippath = $requestdir . DIRECTORY_SEPARATOR . 'cbb_export.zip';
 
         $export = self::export_configuration($sections, $options);
         $export['archiveformat'] = 'zip-with-manifest-and-files';

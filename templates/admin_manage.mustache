@@ -77,7 +77,7 @@
                         {{#rowstyle}} style="{{rowstyle}}"{{/rowstyle}}>
                         <td class="local-course-banner-builder-hierarchy-cell">
                             {{#hierarchylevelmarkers}}
-                                <span class="local-course-banner-builder-hierarchy-level-line" style="{{style}}" aria-hidden="true"></span>
+                                <span class="local-course-banner-builder-hierarchy-level-line{{markerclass}}" style="{{style}}" aria-hidden="true"></span>
                             {{/hierarchylevelmarkers}}
                             {{#haschildren}}
                                 <button type="button"
@@ -94,7 +94,7 @@
                                     <div class="local-course-banner-builder-branch-label">{{branchlabel}}</div>
                                 </div>
                             {{/hasbranchlabel}}
-                            <span class="local-course-banner-builder-hierarchy">
+                            <span class="local-course-banner-builder-hierarchy{{#islevelrow}} local-course-banner-builder-hierarchy--level{{/islevelrow}}{{#isrootrow}} local-course-banner-builder-hierarchy--root{{/isrootrow}}">
                                 {{hierarchyarrows}}{{#isrootrow}}<strong>{{hierarchylabel}}</strong>{{/isrootrow}}{{^isrootrow}}{{hierarchylabel}}{{/isrootrow}}
                             </span>
                             {{#isisolated}}

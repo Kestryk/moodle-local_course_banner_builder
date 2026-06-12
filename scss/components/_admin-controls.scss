@@ -485,6 +485,17 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
     pointer-events: none;
 }
 
+.local-course-banner-builder-hierarchy-level-line--overflow {
+    background: transparent !important;
+    background-image: none !important;
+    border-left: 3px dashed var(--local-course-banner-chain-border, rgba(15, 108, 191, 0.82));
+    border-radius: 0;
+    width: 0;
+    top: 2.5rem;
+    bottom: 2.5rem;
+    opacity: 0.42;
+}
+
 .local-course-banner-builder-group-start .local-course-banner-builder-hierarchy-level-line {
     top: 0.86rem;
 }
@@ -493,10 +504,16 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
     bottom: 0.86rem;
 }
 
+.local-course-banner-builder-group-start .local-course-banner-builder-hierarchy-level-line--overflow,
+.local-course-banner-builder-group-end .local-course-banner-builder-hierarchy-level-line--overflow {
+    top: 2.5rem;
+    bottom: 2.5rem;
+}
+
 
 .local-course-banner-builder-hierarchy-topline {
     position: absolute;
-    top: 0.18rem;
+    top: 0.52rem;
     left: 50%;
     display: flex;
     justify-content: center;
@@ -583,10 +600,48 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
     vertical-align: middle;
 }
 
-.local-course-banner-builder-hierarchy strong {
+.local-course-banner-builder-hierarchy--level {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    width: 1.45rem;
+    height: 1.45rem;
+    padding: 0;
+    border: 1px solid rgba(15, 108, 191, 0.28);
+    border-radius: 999px;
+    background: rgba(15, 108, 191, 0.08);
+    color: #264861;
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1.45rem;
+    letter-spacing: 0;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.local-course-banner-builder-hierarchy-cell > .local-course-banner-builder-hierarchy--level {
+    width: 1.45rem;
+    min-width: 1.45rem;
+    max-width: 1.45rem;
+    height: 1.45rem;
+    min-height: 1.45rem;
+    max-height: 1.45rem;
+    flex: 0 0 1.45rem;
+}
+
+.local-course-banner-builder-hierarchy--root {
+    color: #264861;
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1.05;
+}
+
+.local-course-banner-builder-hierarchy--root strong {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: inherit;
 }
 
 .local-course-banner-builder-configured-sources-table td:nth-child(8) .local-course-banner-builder-thumb-list {

@@ -613,6 +613,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     overscroll-behavior: contain;
+    scrollbar-gutter: stable;
 }
 
 .local-course-banner-builder-slideshow-modal-preview {
@@ -625,10 +626,12 @@
     z-index: 12;
     display: block;
     min-width: 0;
+    width: 100%;
     padding: 0 0 0.65rem;
     background: var(--bs-body-bg, #fff);
     border-bottom: 1px solid var(--bs-border-color, #dee2e6);
     isolation: isolate;
+    contain: layout paint;
 }
 
 .local-course-banner-builder-slideshow-preview-main::before {
@@ -657,7 +660,10 @@
     width: 18rem;
     min-width: 0;
     max-height: none;
-    overflow: visible;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
     padding-right: 0.15rem;
 }
 

@@ -71,7 +71,7 @@ class manage_banner_form extends \moodleform {
         $mform->setDefault('categoryid', $selectedcategoryid);
 
         $mform->addElement('hidden', 'sourcekey', (string)($this->_customdata['sourcekey'] ?? ''), ['id' => 'id_sourcekey']);
-        $mform->setType('sourcekey', PARAM_RAW_TRIMMED);
+        $mform->setType('sourcekey', PARAM_TEXT);
 
         $mform->addElement('hidden', 'elementid', $elementid, ['id' => 'id_elementid']);
         $mform->setType('elementid', PARAM_INT);
@@ -102,7 +102,7 @@ class manage_banner_form extends \moodleform {
         $mform->setType('currentisoverlaylayer', PARAM_INT);
 
         $mform->addElement('hidden', 'bordersidesvalue', '', ['id' => 'id_bordersidesvalue']);
-        $mform->setType('bordersidesvalue', PARAM_RAW_TRIMMED);
+        $mform->setType('bordersidesvalue', PARAM_TEXT);
         $mform->setDefault('bordersidesvalue', 'top,right,bottom,left');
 
         $mform->addElement('text', 'name', get_string('layername', 'local_course_banner_builder'));
@@ -565,7 +565,7 @@ class manage_banner_form extends \moodleform {
                 '',
                 false
             );
-            $mform->setType('overlaybannercolor', PARAM_RAW_TRIMMED);
+            $mform->setType('overlaybannercolor', PARAM_TEXT);
             $mform->setDefault('overlaybannercolor', '#000000');
             $mform->addElement('text', 'overlaybanneropacity', get_string('overlayopacity', 'local_course_banner_builder'), [
                 'size' => 6,
@@ -580,7 +580,7 @@ class manage_banner_form extends \moodleform {
             $mform->setDefault('overlaybanneropacity', 25);
             $this->add_percent_slider_static($mform, 'overlaybanneropacity', 0, 100, 1);
             $mform->addElement('hidden', 'overlayslideshowcolor', '#000000', ['id' => 'id_overlayslideshowcolor']);
-            $mform->setType('overlayslideshowcolor', PARAM_RAW_TRIMMED);
+            $mform->setType('overlayslideshowcolor', PARAM_TEXT);
             $mform->setDefault('overlayslideshowcolor', '#000000');
             $mform->addElement('hidden', 'overlayslideshowopacity', 38, ['id' => 'id_overlayslideshowopacity']);
             $mform->setType('overlayslideshowopacity', PARAM_FLOAT);
@@ -686,7 +686,7 @@ class manage_banner_form extends \moodleform {
             '',
             false
         );
-        $mform->setType('bordercolor', PARAM_RAW_TRIMMED);
+        $mform->setType('bordercolor', PARAM_TEXT);
         $mform->setDefault('bordercolor', '#56B9C0');
         $mform->addHelpButton('bordercolorgroup', 'bordercolor', 'local_course_banner_builder');
 
