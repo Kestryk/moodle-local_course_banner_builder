@@ -105,10 +105,50 @@ function local_course_banner_builder_clean_slideshow_values(array $values): arra
     return $clean;
 }
 
+/**
+ * Get bulk slideshow settings from a submitted Moodle form.
+ *
+ * Moodle optional_param_array() only supports flat arrays, while the bulk
+ * slideshow form posts values grouped by slideshow context.
+ *
+ * @return array
+ */
+function local_course_banner_builder_get_submitted_slideshow_bulk(): array {
+    $submitted = data_submitted();
+    if (!$submitted || empty($submitted->slideshowbulk) || !is_array($submitted->slideshowbulk)) {
+        return [];
+    }
+
+    $bulk = [];
+    foreach ($submitted->slideshowbulk as $context => $values) {
+        if (!is_array($values)) {
+            continue;
+        }
+        $cleancontext = clean_param($context, PARAM_ALPHA);
+        if ($cleancontext !== (string)$context) {
+            continue;
+        }
+
+        $cleanvalues = [];
+        foreach ($values as $field => $value) {
+            if (!is_scalar($value)) {
+                continue;
+            }
+            if (!preg_match('/^[a-z0-9_]+$/i', (string)$field)) {
+                continue;
+            }
+            $cleanvalues[(string)$field] = $value;
+        }
+        $bulk[$cleancontext] = $cleanvalues;
+    }
+
+    return $bulk;
+}
+
 if (optional_param('updateslideshow', 0, PARAM_BOOL) && confirm_sesskey()) {
     $context = required_param('context', PARAM_ALPHA);
     if (optional_param('saveallslideshows', 0, PARAM_BOOL)) {
-        $bulk = optional_param_array('slideshowbulk', [], PARAM_TEXT);
+        $bulk = local_course_banner_builder_get_submitted_slideshow_bulk();
         foreach ([manager::SLIDESHOW_CONTEXT_COURSE, manager::SLIDESHOW_CONTEXT_SITE] as $bulkcontext) {
             if (!empty($bulk[$bulkcontext]) && is_array($bulk[$bulkcontext])) {
                 manager::set_slideshow_config(

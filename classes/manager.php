@@ -2874,7 +2874,10 @@ class manager {
      * @return array
      */
     protected static function extract_border_sides_from_form_data(\stdClass $data): array {
-        $postedgroup = optional_param_array('bordersidesgroup', [], PARAM_TEXT);
+        $submitted = data_submitted();
+        $postedgroup = $submitted && !empty($submitted->bordersidesgroup) && is_array($submitted->bordersidesgroup)
+            ? $submitted->bordersidesgroup
+            : [];
         if (is_array($postedgroup) && !empty($postedgroup)) {
             $sides = [];
             foreach ($postedgroup as $key => $value) {
@@ -4495,6 +4498,7 @@ class manager {
         if ($elementid && !empty($data->currentisoverlaylayer)) {
             $data->overlayenabled = 1;
         }
+        $submitted = data_submitted();
         $hasborder = !empty($data->borderenabled) && !empty($data->isenabled);
         $hasoverlay = !empty($data->overlayenabled) && !empty($data->isenabled);
         self::debug_log('save_source_banner_input', [
@@ -4505,7 +4509,7 @@ class manager {
             'bordersidesvalue_data' => $data->bordersidesvalue ?? null,
             'bordersidesgroup_data' => $data->bordersidesgroup ?? null,
             'post_bordersidesvalue' => optional_param('bordersidesvalue', null, PARAM_TEXT),
-            'post_bordersidesgroup' => optional_param_array('bordersidesgroup', [], PARAM_TEXT),
+            'post_bordersidesgroup' => $submitted && !empty($submitted->bordersidesgroup) ? $submitted->bordersidesgroup : [],
         ]);
         $borderconflict = self::get_source_border_conflict_state($source, $elementid);
         if ($hasborder && !empty($borderconflict['blocked'])) {
@@ -6498,6 +6502,44 @@ class manager {
     }
 
     /**
+     * Format a hierarchy depth as an uppercase roman numeral.
+     *
+     * @param int $level
+     * @return string
+     */
+    protected static function format_hierarchy_level_roman(int $level): string {
+        if ($level <= 0) {
+            return '';
+        }
+
+        $map = [
+            1000 => 'M',
+            900 => 'CM',
+            500 => 'D',
+            400 => 'CD',
+            100 => 'C',
+            90 => 'XC',
+            50 => 'L',
+            40 => 'XL',
+            10 => 'X',
+            9 => 'IX',
+            5 => 'V',
+            4 => 'IV',
+            1 => 'I',
+        ];
+        $remaining = min($level, 3999);
+        $roman = '';
+        foreach ($map as $value => $symbol) {
+            while ($remaining >= $value) {
+                $roman .= $symbol;
+                $remaining -= $value;
+            }
+        }
+
+        return $roman;
+    }
+
+    /**
      * Build a readable category path name directly from DB records.
      *
      * @param \stdClass $category
@@ -6738,17 +6780,26 @@ class manager {
             $childkeys = $children[$key] ?? [];
             $parentkey = (string)($item['sourceparentkey'] ?? '');
             $item['hierarchylevel'] = $level;
-            $item['hierarchyarrows'] = $level > 0 ? implode(' ', array_fill(0, $level, '|')) : '';
+            $item['hierarchyarrows'] = $level > 0 ? self::format_hierarchy_level_roman($level) : '';
             $item['hierarchylevelmarkers'] = [];
-            for ($levelmarker = 0; $levelmarker < $level; $levelmarker++) {
+            $visiblemarkers = min($level, 4);
+            for ($levelmarker = 0; $levelmarker < $visiblemarkers; $levelmarker++) {
                 $item['hierarchylevelmarkers'][] = [
                     'style' => 'left: ' . number_format(0.92 + ($levelmarker * 0.48), 2, '.', '') . 'rem;',
+                    'markerclass' => '',
+                ];
+            }
+            if ($level > 4) {
+                $item['hierarchylevelmarkers'][] = [
+                    'style' => 'left: ' . number_format(0.92 + (4 * 0.48), 2, '.', '') . 'rem;',
+                    'markerclass' => ' local-course-banner-builder-hierarchy-level-line--overflow',
                 ];
             }
             $item['hierarchylabel'] = $level === 0
                 ? get_string('rootcategory', 'local_course_banner_builder')
                 : '';
             $item['isrootrow'] = $level === 0;
+            $item['islevelrow'] = $level > 0;
             $item['haschildren'] = !empty($childkeys);
             $item['sourcekeyhash'] = md5($key);
             $item['parentkeyhash'] = $parentkey !== '' ? md5($parentkey) : '';
@@ -9886,13 +9937,8 @@ class manager {
             throw new \coding_exception('The PHP ZipArchive extension is required to export banner settings with files.');
         }
 
-        $tempdir = make_temp_directory('local_course_banner_builder');
-        $filepath = tempnam($tempdir, 'cbb_export_');
-        if ($filepath === false) {
-            throw new \coding_exception('Could not create a temporary export file.');
-        }
-        $zippath = $filepath . '.zip';
-        @rename($filepath, $zippath);
+        $requestdir = make_request_directory();
+        $zippath = $requestdir . DIRECTORY_SEPARATOR . 'cbb_export.zip';
 
         $export = self::export_configuration($sections, $options);
         $export['archiveformat'] = 'zip-with-manifest-and-files';
