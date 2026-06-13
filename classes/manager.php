@@ -2838,7 +2838,7 @@ class manager {
         }
 
         $reference = max(1, min($width, $height));
-        $thumbnailpercent = min(8.0, $percent * 0.35);
+        $thumbnailpercent = min(10.0, $percent * 0.45);
         return max(1, (int)round($reference * $thumbnailpercent / 100));
     }
 
@@ -7580,7 +7580,7 @@ class manager {
      */
     protected static function get_layers_revision(array $layerspecs): string {
         $layerspecs = self::sort_layer_specs($layerspecs);
-        $parts = ['render:15:' . self::CARD_CANVAS_WIDTH . 'x' . self::CARD_CANVAS_HEIGHT];
+        $parts = ['render:17:' . self::CARD_CANVAS_WIDTH . 'x' . self::CARD_CANVAS_HEIGHT];
         foreach ($layerspecs as $position => $layerspec) {
             $record = $layerspec['record'];
             $file = self::get_banner_image_file($record);
@@ -11890,7 +11890,6 @@ class manager {
             $record = $layerspec['record'];
             $cardrecord = clone $record;
             if (!empty($record->borderenabled)) {
-                $cardrecord->borderinnerrounded = 0;
                 $cardrecord->bordersides = 'top,right,bottom,left';
             }
             $layerspec['record'] = $cardrecord;
@@ -12716,6 +12715,9 @@ class manager {
         }
 
         if ($fitmode === self::FIT_MODE_CUSTOM) {
+            if ($cardmode) {
+                $record = self::get_course_card_scaled_image_record($record, $fitmode);
+            }
             return self::copy_layer_custom($canvas, $layer, $record, $width, $height, $layerwidth, $layerheight, $anchor);
         }
 
@@ -12766,6 +12768,38 @@ class manager {
         );
 
         return $customwidth >= 90.0 && $customheight >= 90.0;
+    }
+
+    /**
+     * Slightly enlarge non-background custom layers in generated course cards.
+     *
+     * Moodle cards have more vertical room than the 4:1 banner editor, so small
+     * positioned logos and decorations can become too discreet. Keep true
+     * background layers untouched because they already cover the card.
+     *
+     * @param \stdClass $record
+     * @param string $fitmode
+     * @return \stdClass
+     */
+    protected static function get_course_card_scaled_image_record(\stdClass $record, string $fitmode): \stdClass {
+        if (self::should_cover_course_card_layer($record, $fitmode)) {
+            return $record;
+        }
+
+        $scaledrecord = clone $record;
+        $scale = 1.08;
+        $scaledrecord->customwidthpercent = self::normalise_percentage(
+            (float)($record->customwidthpercent ?? 100) * $scale,
+            0.0,
+            self::CUSTOM_SIZE_PERCENT_MAX
+        );
+        $scaledrecord->customheightpercent = self::normalise_percentage(
+            (float)($record->customheightpercent ?? 100) * $scale,
+            0.0,
+            self::CUSTOM_SIZE_PERCENT_MAX
+        );
+
+        return $scaledrecord;
     }
 
     /**
@@ -13174,7 +13208,14 @@ class manager {
         ];
         $innerwidth = max(0, ($outerright - $outerleft + 1) - $activewidths['left'] - $activewidths['right']);
         $innerheight = max(0, ($outerbottom - $outertop + 1) - $activewidths['top'] - $activewidths['bottom']);
-        $innerradius = $rounded ? max(0, min($borderwidth, (int)floor($innerwidth / 2), (int)floor($innerheight / 2))) : 0;
+        $radiusfactor = $cardmode ? 2.6 : 1.0;
+        $innerradius = $rounded
+            ? max(0, min(
+                (int)round($borderwidth * $radiusfactor),
+                (int)floor($innerwidth / 2),
+                (int)floor($innerheight / 2)
+            ))
+            : 0;
         if ($rounded && $innerradius <= 0) {
             $rounded = false;
         }
