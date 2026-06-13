@@ -7580,7 +7580,7 @@ class manager {
      */
     protected static function get_layers_revision(array $layerspecs): string {
         $layerspecs = self::sort_layer_specs($layerspecs);
-        $parts = ['render:11:' . self::CARD_CANVAS_WIDTH . 'x' . self::CARD_CANVAS_HEIGHT];
+        $parts = ['render:15:' . self::CARD_CANVAS_WIDTH . 'x' . self::CARD_CANVAS_HEIGHT];
         foreach ($layerspecs as $position => $layerspec) {
             $record = $layerspec['record'];
             $file = self::get_banner_image_file($record);
@@ -11884,93 +11884,24 @@ class manager {
         string $filename
     ): ?string {
         $layerspecs = self::sort_layer_specs($layerspecs);
-        $imagelayers = [];
-        $borderrecords = [];
-        $overlayrecords = [];
+        $cardlayerspecs = [];
 
         foreach ($layerspecs as $layerspec) {
             $record = $layerspec['record'];
-            if (self::record_overlay_targets_banner($record)) {
-                $overlayrecords[] = $record;
-            }
+            $cardrecord = clone $record;
             if (!empty($record->borderenabled)) {
-                $borderrecord = clone $record;
-                $borderrecord->borderinnerrounded = 0;
-                $borderrecord->bordersides = 'top,right,bottom,left';
-                $borderrecords[] = $borderrecord;
+                $cardrecord->borderinnerrounded = 0;
+                $cardrecord->bordersides = 'top,right,bottom,left';
             }
-            if (self::get_banner_image_file($record)) {
-                $imagerecord = clone $record;
-                $imagerecord->borderenabled = 0;
-                $imagelayers[] = $layerspec;
-                $imagelayers[array_key_last($imagelayers)]['record'] = $imagerecord;
-            }
+            $layerspec['record'] = $cardrecord;
+            $cardlayerspecs[] = $layerspec;
         }
 
-        if (empty($imagelayers) && empty($borderrecords) && empty($overlayrecords)) {
+        if (empty($cardlayerspecs)) {
             return null;
         }
 
-        $canvas = imagecreatetruecolor($width, $height);
-        if (!$canvas) {
-            return null;
-        }
-
-        imagealphablending($canvas, false);
-        imagesavealpha($canvas, true);
-        $transparent = imagecolorallocatealpha($canvas, 0, 0, 0, 127);
-        imagefilledrectangle($canvas, 0, 0, $width, $height, $transparent);
-        imagealphablending($canvas, true);
-
-        if (!empty($imagelayers)) {
-            $bannerpath = self::build_composite_image(
-                $imagelayers,
-                self::DEFAULT_CANVAS_WIDTH,
-                self::DEFAULT_CANVAS_HEIGHT,
-                'course_card_banner_' . sha1($filename) . '.png',
-                false
-            );
-            if ($bannerpath) {
-                $banner = imagecreatefrompng($bannerpath);
-                @unlink($bannerpath);
-                if ($banner) {
-                    self::copy_layer_cover(
-                        $canvas,
-                        $banner,
-                        $width,
-                        $height,
-                        imagesx($banner),
-                        imagesy($banner)
-                    );
-                    imagedestroy($banner);
-                }
-            }
-        }
-
-        foreach ($overlayrecords as $overlayrecord) {
-            self::draw_layer_overlay($canvas, $overlayrecord, $width, $height);
-        }
-
-        foreach ($borderrecords as $borderrecord) {
-            self::draw_layer_border(
-                $canvas,
-                $borderrecord,
-                ['x' => 0, 'y' => 0, 'width' => $width, 'height' => $height],
-                $width,
-                $height,
-                true
-            );
-        }
-
-        imagealphablending($canvas, false);
-        imagesavealpha($canvas, true);
-
-        $tempdir = make_temp_directory('local_course_banner_builder');
-        $filepath = $tempdir . DIRECTORY_SEPARATOR . $filename;
-        imagepng($canvas, $filepath);
-        imagedestroy($canvas);
-
-        return $filepath;
+        return self::build_composite_image($cardlayerspecs, $width, $height, $filename, true);
     }
 
     /**
@@ -12772,6 +12703,18 @@ class manager {
             );
         }
 
+        if ($cardmode && self::should_cover_course_card_layer($record, $fitmode)) {
+            return self::copy_layer_cover(
+                $canvas,
+                $layer,
+                $width,
+                $height,
+                $layerwidth,
+                $layerheight,
+                self::POSITION_CENTER
+            );
+        }
+
         if ($fitmode === self::FIT_MODE_CUSTOM) {
             return self::copy_layer_custom($canvas, $layer, $record, $width, $height, $layerwidth, $layerheight, $anchor);
         }
@@ -12792,6 +12735,37 @@ class manager {
             'width' => $layerwidth,
             'height' => $layerheight,
         ];
+    }
+
+    /**
+     * Whether a large custom layer should behave as a card background.
+     *
+     * Banner backgrounds are often positioned outside the 4:1 editing frame to
+     * crop an interesting area. Applying those offsets literally to square
+     * Moodle cards can leave most of the card empty, so only full-frame custom
+     * layers are promoted to cover the card thumbnail.
+     *
+     * @param \stdClass $record
+     * @param string $fitmode
+     * @return bool
+     */
+    protected static function should_cover_course_card_layer(\stdClass $record, string $fitmode): bool {
+        if ($fitmode !== self::FIT_MODE_CUSTOM) {
+            return false;
+        }
+
+        $customwidth = self::normalise_percentage(
+            (float)($record->customwidthpercent ?? 100),
+            0.0,
+            self::CUSTOM_SIZE_PERCENT_MAX
+        );
+        $customheight = self::normalise_percentage(
+            (float)($record->customheightpercent ?? 100),
+            0.0,
+            self::CUSTOM_SIZE_PERCENT_MAX
+        );
+
+        return $customwidth >= 90.0 && $customheight >= 90.0;
     }
 
     /**
