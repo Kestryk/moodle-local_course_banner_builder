@@ -28,13 +28,9 @@ require_once($CFG->libdir . '/adminlib.php');
 // phpcs:disable moodle.Files.LineLength.TooLong -- Form element attributes are clearer kept together.
 
 $action = optional_param('action', '', PARAM_ALPHA);
-$replaceall = optional_param('replaceall', 0, PARAM_BOOL);
 $exportsections = optional_param_array('exportsections', [], PARAM_ALPHAEXT);
-$importsections = optional_param_array('importsections', [], PARAM_ALPHAEXT);
 $exportincludecategories = optional_param('exportincludecategories', 1, PARAM_BOOL);
 $exportincludecustomfields = optional_param('exportincludecustomfields', 1, PARAM_BOOL);
-$importcreatecategories = optional_param('importcreatecategories', 1, PARAM_BOOL);
-$importcreatecustomfields = optional_param('importcreatecustomfields', 1, PARAM_BOOL);
 
 $url = new moodle_url('/local/course_banner_builder/admin_transfer.php');
 require_login();
@@ -58,6 +54,8 @@ $PAGE->set_title(get_string('exportimport', 'local_course_banner_builder'));
 $PAGE->set_heading(get_string('exportimport', 'local_course_banner_builder'));
 $PAGE->requires->css('/local/course_banner_builder/styles.css');
 
+$importform = new \local_course_banner_builder\form\import_configuration_form($url);
+
 if (optional_param('deleteallpluginsettings', 0, PARAM_BOOL) && confirm_sesskey()) {
     \local_course_banner_builder\manager::delete_all_plugin_configuration();
     redirect($url, get_string('allpluginsettingsdeleted', 'local_course_banner_builder'));
@@ -77,32 +75,27 @@ if ($action === 'export' && confirm_sesskey()) {
     exit;
 }
 
-if (optional_param('importconfig', 0, PARAM_BOOL) && confirm_sesskey()) {
+if ($importdata = $importform->get_data()) {
     try {
-        $uploaded = $_FILES['configarchive'] ?? null;
-        if (
-            is_array($uploaded) && empty($uploaded['error']) && !empty($uploaded['tmp_name']) &&
-                is_uploaded_file($uploaded['tmp_name'])
-        ) {
-            $filename = (string)($uploaded['name'] ?? '');
-            if (strtolower(pathinfo($filename, PATHINFO_EXTENSION)) === 'zip') {
-                \local_course_banner_builder\manager::import_configuration_archive(
-                    $uploaded['tmp_name'],
-                    (bool)$replaceall,
-                    $importsections,
-                    [
-                        \local_course_banner_builder\manager::IMPORT_OPTION_CREATE_CATEGORIES =>
-                            (bool)$importcreatecategories,
-                        \local_course_banner_builder\manager::IMPORT_OPTION_CREATE_CUSTOMFIELDS =>
-                            (bool)$importcreatecustomfields,
-                    ]
-                );
-            } else {
-                throw new coding_exception('Invalid course banner builder archive.');
-            }
-        } else {
+        $archivepath = $importform->save_temp_file('configarchive');
+        if (!$archivepath) {
             throw new coding_exception('Missing course banner builder archive.');
         }
+        $filename = (string)$importform->get_new_filename('configarchive');
+        if (strtolower(pathinfo($filename, PATHINFO_EXTENSION)) !== 'zip') {
+            throw new coding_exception('Invalid course banner builder archive.');
+        }
+        \local_course_banner_builder\manager::import_configuration_archive(
+            $archivepath,
+            !empty($importdata->replaceall),
+            \local_course_banner_builder\form\import_configuration_form::get_selected_sections($importdata),
+            [
+                \local_course_banner_builder\manager::IMPORT_OPTION_CREATE_CATEGORIES =>
+                    !empty($importdata->importcreatecategories),
+                \local_course_banner_builder\manager::IMPORT_OPTION_CREATE_CUSTOMFIELDS =>
+                    !empty($importdata->importcreatecustomfields),
+            ]
+        );
         redirect($url, get_string('importedconfig', 'local_course_banner_builder'));
     } catch (Throwable $e) {
         \core\notification::error(get_string('invalidimportpayload', 'local_course_banner_builder'));
@@ -214,57 +207,7 @@ echo html_writer::end_tag('form');
 
 echo $OUTPUT->heading(get_string('importconfig', 'local_course_banner_builder'), 3);
 echo html_writer::tag('p', get_string('importconfigdesc', 'local_course_banner_builder'));
-$archiveuploadlabel = get_string('importarchive', 'local_course_banner_builder');
-echo html_writer::start_tag('form', [
-    'method' => 'post',
-    'action' => $url->out(false),
-    'enctype' => 'multipart/form-data',
-]);
-echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]);
-echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'importconfig', 'value' => 1]);
-echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'importsections[]', 'value' => '__submitted']);
-echo html_writer::tag('label', $archiveuploadlabel, ['class' => 'form-label', 'for' => 'local-course-banner-builder-import-archive']);
-echo html_writer::empty_tag('input', [
-    'type' => 'file',
-    'name' => 'configarchive',
-    'id' => 'local-course-banner-builder-import-archive',
-    'class' => 'form-control mb-3',
-    'accept' => '.zip,application/zip',
-]);
-echo html_writer::checkbox('replaceall', 1, (bool)$replaceall, get_string('importconfigreplaceall', 'local_course_banner_builder'));
-echo html_writer::div('', 'mb-3');
-echo $OUTPUT->heading(get_string('importoptions', 'local_course_banner_builder'), 4);
-foreach (\local_course_banner_builder\manager::get_export_section_options() as $section => $label) {
-    echo html_writer::div(
-        html_writer::checkbox('importsections[]', $section, true, $label),
-        'form-check mb-2'
-    );
-}
-echo html_writer::div(
-    html_writer::checkbox(
-        'importcreatecategories',
-        1,
-        (bool)$importcreatecategories,
-        get_string('importcreatecategories', 'local_course_banner_builder')
-    ),
-    'form-check mb-2'
-);
-echo html_writer::div(
-    html_writer::checkbox(
-        'importcreatecustomfields',
-        1,
-        (bool)$importcreatecustomfields,
-        get_string('importcreatecustomfields', 'local_course_banner_builder')
-    ),
-    'form-check mb-2'
-);
-echo html_writer::empty_tag('br');
-echo html_writer::empty_tag('input', [
-    'type' => 'submit',
-    'value' => get_string('importconfig', 'local_course_banner_builder'),
-    'class' => 'btn btn-secondary mt-3',
-]);
-echo html_writer::end_tag('form');
+$importform->display();
 
 echo html_writer::end_div();
 echo $OUTPUT->footer();
