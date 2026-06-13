@@ -20,7 +20,7 @@
  * @copyright  2026 Kevin Jarniac
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define([], function () {
+define('local_course_banner_builder/slideshow_admin', [], function () {
 
 var localCourseBannerBuilderSlideshowOnReady = function (callback) {
     if (document.readyState === 'loading') {
