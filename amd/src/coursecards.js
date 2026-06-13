@@ -312,7 +312,7 @@ define(['core/config'], function (Config) {
                 markCardThumbnail(target, target.closest(ROOT_SELECTORS));
                 target.style.backgroundImage = 'url("' + loadableUrl + '")';
                 target.style.backgroundPosition = 'center center';
-                target.style.backgroundSize = 'cover';
+                target.style.backgroundSize = 'contain';
                 target.style.backgroundRepeat = 'no-repeat';
             });
         });
@@ -337,7 +337,7 @@ define(['core/config'], function (Config) {
                 target.loading = 'lazy';
                 target.decoding = 'async';
                 target.src = loadableUrl;
-                target.style.objectFit = 'cover';
+                target.style.objectFit = 'contain';
                 target.style.objectPosition = 'center center';
             });
         });
