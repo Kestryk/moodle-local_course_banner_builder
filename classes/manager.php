@@ -2838,7 +2838,7 @@ class manager {
         }
 
         $reference = max(1, min($width, $height));
-        $thumbnailpercent = min(10.5, $percent * 0.5);
+        $thumbnailpercent = min(11.0, $percent * 0.55);
         return max(1, (int)round($reference * $thumbnailpercent / 100));
     }
 
@@ -7580,7 +7580,7 @@ class manager {
      */
     protected static function get_layers_revision(array $layerspecs): string {
         $layerspecs = self::sort_layer_specs($layerspecs);
-        $parts = ['render:18:' . self::CARD_CANVAS_WIDTH . 'x' . self::CARD_CANVAS_HEIGHT];
+        $parts = ['render:19:' . self::CARD_CANVAS_WIDTH . 'x' . self::CARD_CANVAS_HEIGHT];
         foreach ($layerspecs as $position => $layerspec) {
             $record = $layerspec['record'];
             $file = self::get_banner_image_file($record);
@@ -12787,7 +12787,7 @@ class manager {
         }
 
         $scaledrecord = clone $record;
-        $scale = 1.12;
+        $scale = 1.16;
         $scaledrecord->customwidthpercent = self::normalise_percentage(
             (float)($record->customwidthpercent ?? 100) * $scale,
             0.0,
