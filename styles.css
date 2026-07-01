@@ -1043,7 +1043,7 @@
   min-width: 0;
   z-index: 80;
   white-space: pre;
-  pointer-events: auto;
+  pointer-events: auto !important;
   cursor: move;
 }
 
@@ -5045,6 +5045,7 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
   background: var(--bs-primary, #0f6cbf);
   border: 2px solid #fff;
   box-shadow: 0 0 0 1px rgba(15, 108, 191, 0.35);
+  z-index: 2;
 }
 
 .local-course-banner-builder-crop-box [data-preview-crop-handle=n],
@@ -5058,11 +5059,11 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 }
 
 .local-course-banner-builder-crop-box [data-preview-crop-handle=n] {
-  top: 0.2rem;
+  top: -0.42rem;
 }
 
 .local-course-banner-builder-crop-box [data-preview-crop-handle=s] {
-  bottom: 0.2rem;
+  bottom: -0.42rem;
 }
 
 .local-course-banner-builder-crop-box [data-preview-crop-handle=e],
@@ -5076,34 +5077,34 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 }
 
 .local-course-banner-builder-crop-box [data-preview-crop-handle=e] {
-  right: 0.2rem;
+  right: -0.42rem;
 }
 
 .local-course-banner-builder-crop-box [data-preview-crop-handle=w] {
-  left: 0.2rem;
+  left: -0.42rem;
 }
 
 .local-course-banner-builder-crop-box [data-preview-crop-handle=nw] {
-  left: 0.25rem;
-  top: 0.25rem;
+  left: -0.42rem;
+  top: -0.42rem;
   cursor: nwse-resize;
 }
 
 .local-course-banner-builder-crop-box [data-preview-crop-handle=ne] {
-  right: 0.25rem;
-  top: 0.25rem;
+  right: -0.42rem;
+  top: -0.42rem;
   cursor: nesw-resize;
 }
 
 .local-course-banner-builder-crop-box [data-preview-crop-handle=sw] {
-  left: 0.25rem;
-  bottom: 0.25rem;
+  left: -0.42rem;
+  bottom: -0.42rem;
   cursor: nesw-resize;
 }
 
 .local-course-banner-builder-crop-box [data-preview-crop-handle=se] {
-  right: 0.25rem;
-  bottom: 0.25rem;
+  right: -0.42rem;
+  bottom: -0.42rem;
   cursor: nwse-resize;
 }
 
@@ -6362,12 +6363,14 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
   inset: -0.5rem;
   background: radial-gradient(circle at 20% 35%, rgba(255, 193, 7, 0.4), transparent 20%), radial-gradient(circle at 78% 62%, rgba(13, 202, 240, 0.35), transparent 22%), linear-gradient(110deg, rgba(255, 255, 255, 0.15), rgba(0, 0, 0, 0.05));
   filter: blur(8px);
+  pointer-events: none;
 }
 
 .local-course-banner-builder-slideshow-admin-preview-overlay {
   position: absolute;
   inset: 0;
   background: rgba(var(--local-course-banner-builder-slideshow-overlay-rgb, 0, 0, 0), var(--local-course-banner-builder-slideshow-overlay-opacity, 0.38));
+  pointer-events: none;
 }
 
 .local-course-banner-builder-slideshow-admin-preview-content {

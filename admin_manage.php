@@ -1223,8 +1223,9 @@ function local_course_banner_builder_render_source_visual_editor_title_layer(arr
     $scaledtext = static function (string $value) use ($textscale, $align): string {
         $origin = $align === 'left' ? 'left center' : ($align === 'right' ? 'right center' : 'center center');
         return html_writer::span($value === '' ? '&nbsp;' : s($value), '', [
-            'style' => 'display: inline-block; line-height: 1; transform: scale(' . round($textscale, 4) .
-                '); transform-origin: ' . $origin . ';',
+            'data-title-render-node' => '1',
+            'style' => 'display: inline-block; line-height: 1; font-size: ' . round($textscale, 4) .
+                'em; transform-origin: ' . $origin . ';',
         ]);
     };
     $content = '';

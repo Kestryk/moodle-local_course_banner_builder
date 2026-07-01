@@ -3586,6 +3586,17 @@ function localCourseBannerBuilderEnsureCropEditor(layer) {
             '<span data-preview-crop-handle="sw"></span><span data-preview-crop-handle="se"></span>' +
             '</div>';
         layer.appendChild(editor);
+    } else {
+        var existingBox = editor.querySelector('[data-preview-crop-box="1"]');
+        if (existingBox) {
+            ['n', 'e', 's', 'w', 'nw', 'ne', 'sw', 'se'].forEach(function (handle) {
+                if (!existingBox.querySelector('[data-preview-crop-handle="' + handle + '"]')) {
+                    var node = document.createElement('span');
+                    node.setAttribute('data-preview-crop-handle', handle);
+                    existingBox.appendChild(node);
+                }
+            });
+        }
     }
     layer.classList.add('local-course-banner-builder-preview-image-layer--crop-editing');
     localCourseBannerBuilderSyncPreviewCropFocusState(layer, true);
@@ -3642,18 +3653,16 @@ function localCourseBannerBuilderRefreshCropEditor(layer) {
     var minTop = Math.max(0, frameRect.top - editorRect.top + gap);
     var maxTop = Math.min(editorRect.height - actionHeight, frameRect.bottom - editorRect.top - actionHeight - gap);
     var centerTop = boxTop + (boxHeight / 2) - (actionHeight / 2);
-    var actionsLeft = boxLeft + boxWidth + gap;
+    var rightLeft = boxLeft + boxWidth + gap;
+    var leftLeft = boxLeft - actionWidth - gap;
+    var canPlaceRight = rightLeft <= maxLeft;
+    var canPlaceLeft = leftLeft >= minLeft;
+    var actionsLeft = canPlaceRight ? rightLeft : leftLeft;
     var actionsTop = centerTop;
 
-    if (actionsLeft > maxLeft) {
-        actionsLeft = boxLeft - actionWidth - gap;
-    }
-    if (actionsLeft < minLeft || actionsLeft > maxLeft) {
-        actionsLeft = boxLeft + (boxWidth / 2) - (actionWidth / 2);
-        actionsTop = boxTop - actionHeight - gap;
-        if (actionsTop < minTop) {
-            actionsTop = boxTop + boxHeight + gap;
-        }
+    if (!canPlaceRight && !canPlaceLeft) {
+        var boxCenter = boxLeft + (boxWidth / 2);
+        actionsLeft = boxCenter < (editorRect.width / 2) ? maxLeft : minLeft;
     }
     actionsLeft = Math.max(minLeft, Math.min(maxLeft, actionsLeft));
     actionsTop = Math.max(minTop, Math.min(maxTop, actionsTop));
@@ -10471,10 +10480,11 @@ function localCourseBannerBuilderGetTitleFramePaddingCss(padding) {
 function localCourseBannerBuilderBuildScaledTitleTextNode(text, scale, align) {
     var node = document.createElement('span');
     node.setAttribute('data-title-render-node', '1');
-    node.textContent = text || 'u00a0';
+    node.textContent = text || '\u00a0';
     node.style.display = 'inline-block';
     node.style.lineHeight = '1';
-    node.style.transform = 'scale(' + scale.toFixed(4) + ')';
+    node.style.fontSize = scale.toFixed(4) + 'em';
+    node.style.transform = 'none';
     node.style.transformOrigin = localCourseBannerBuilderGetTitleTextTransformOrigin(align);
     node.style.verticalAlign = 'baseline';
     return node;
@@ -11106,13 +11116,18 @@ function localCourseBannerBuilderBindTitleEditor(form) {
     });
     var dragState = null;
     form.addEventListener('pointerdown', function (event) {
-        if (event.target.closest('.local-course-banner-builder-title-line-toggle')) {
+        var eventTarget = event.target && event.target.closest ? event.target :
+            (event.target && event.target.parentElement ? event.target.parentElement : null);
+        if (!eventTarget) {
             return;
         }
-        var target = event.target.closest('[data-title-preview-draggable="1"]');
+        if (eventTarget.closest('.local-course-banner-builder-title-line-toggle')) {
+            return;
+        }
+        var target = eventTarget.closest('[data-title-preview-draggable="1"]');
         var frame = form.querySelector('[data-title-preview-frame="1"]');
         if (!target || !frame || event.button !== 0) {
-            if (!target && frame && event.target.closest('[data-title-preview-frame="1"]')) {
+            if (!target && frame && eventTarget.closest('[data-title-preview-frame="1"]')) {
                 localCourseBannerBuilderClearTitlePreviewSelection(form);
             }
             return;
@@ -11121,7 +11136,7 @@ function localCourseBannerBuilderBindTitleEditor(form) {
         target.classList.add('local-course-banner-builder-slideshow-preview-draggable--selected');
         localCourseBannerBuilderPushTitleUndo(form);
         var frameRect = frame.getBoundingClientRect();
-        var handle = event.target.closest('[data-title-preview-resize-handle]');
+        var handle = eventTarget.closest('[data-title-preview-resize-handle]');
         if (handle) {
             dragState = {
                 mode: 'resize',
@@ -15794,7 +15809,7 @@ function localCourseBannerBuilderApplyLayerOverlayTitleStyle(titlePreview, overl
             .split(newline).forEach(function (line, index, lines) {
             var lineNode = document.createElement('span');
             lineNode.setAttribute('data-title-highlight-line', '1');
-            lineNode.appendChild(localCourseBannerBuilderBuildScaledTitleTextNode(line || 'u00a0', textScale, align));
+            lineNode.appendChild(localCourseBannerBuilderBuildScaledTitleTextNode(line || '\u00a0', textScale, align));
             lineNode.style.lineHeight = lineHeight + '%';
             lineNode.style.justifyContent = flexAlign;
             label.appendChild(lineNode);
@@ -17098,6 +17113,7 @@ function localCourseBannerBuilderShowModal(modal) {
     if (!modal) {
         return false;
     }
+    localCourseBannerBuilderBindTitleEditors(modal);
     if (typeof window.jQuery !== 'undefined' && typeof window.jQuery(modal).modal === 'function') {
         window.jQuery(modal).modal('show');
         return true;
@@ -18222,6 +18238,23 @@ localCourseBannerBuilderOnReady(function () {
             }
         });
     });
+    if (!document.documentElement.dataset.localCourseBannerBuilderTitleModalBound) {
+        document.addEventListener('shown.bs.modal', function (event) {
+            if (event.target && event.target.matches('.local-course-banner-builder-title-settings-modal')) {
+                localCourseBannerBuilderBindTitleEditors(event.target);
+            }
+        });
+        if (typeof window.jQuery !== 'undefined') {
+            window.jQuery(document).on(
+                'shown.bs.modal',
+                '.local-course-banner-builder-title-settings-modal',
+                function () {
+                    localCourseBannerBuilderBindTitleEditors(this);
+                }
+            );
+        }
+        document.documentElement.dataset.localCourseBannerBuilderTitleModalBound = '1';
+    }
     localCourseBannerBuilderRunInitStep('selection button', localCourseBannerBuilderSyncSelectionButton);
     localCourseBannerBuilderRunInitStep('layer sort orders', localCourseBannerBuilderSyncLayerSortOrders);
     localCourseBannerBuilderRunInitStep('bulk fields', localCourseBannerBuilderSyncBulkFields);
