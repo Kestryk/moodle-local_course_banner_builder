@@ -7689,8 +7689,8 @@ span[data-flexitour=container].orphan .modal-dialog {
 .local-course-banner-builder-admin--native .card,
 .local-course-banner-builder-admin--native .local-course-banner-builder-site-banner-status,
 .local-course-banner-builder-admin--native .local-course-banner-builder-slideshow-card {
-  background: linear-gradient(180deg, var(--easyedu-surface) 0%, #fbfcfe 100%);
-  border: 1px solid var(--easyedu-card-border);
+  background: linear-gradient(180deg, var(--easyedu-surface) 0%, color-mix(in srgb, var(--easyedu-surface) 94%, var(--easyedu-primary-soft) 6%) 100%);
+  border: 0.0625rem solid var(--easyedu-card-border);
   border-radius: var(--easyedu-card-radius);
   box-shadow: var(--easyedu-shadow-soft);
   color: var(--easyedu-text);
@@ -8543,7 +8543,7 @@ span[data-flexitour=container].orphan .modal-dialog {
 .modal[id^=local-course-banner-builder-] .local-course-banner-builder-title-side-actions button,
 .modal[id^=local-course-banner-builder-] .local-course-banner-builder-title-side-actions summary {
   background: var(--easyedu-surface);
-  border: 1px solid var(--easyedu-control-border);
+  border: 0.0625rem solid var(--easyedu-control-border);
   border-radius: var(--easyedu-control-radius);
   box-shadow: 0 0.12rem 0.32rem rgba(31, 42, 55, 0.035);
   color: var(--easyedu-text-muted);
@@ -8578,7 +8578,7 @@ span[data-flexitour=container].orphan .modal-dialog {
 .modal[id^=local-course-banner-builder-] .local-course-banner-builder-title-side-actions [open] > summary {
   background: var(--easyedu-primary);
   border-color: var(--easyedu-primary);
-  color: #fff;
+  color: var(--easyedu-surface);
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-linked-range-wrapper,
 .modal[id^=local-course-banner-builder-] .local-course-banner-builder-linked-range-wrapper {
@@ -8652,7 +8652,7 @@ span[data-flexitour=container].orphan .modal-dialog {
 .modal[id^=local-course-banner-builder-] .local-course-banner-builder-slideshow-color-field input[type=color],
 .modal[id^=local-course-banner-builder-] .local-course-banner-builder-color-field input[type=color] {
   background: var(--easyedu-surface);
-  border: 1px solid var(--easyedu-control-border);
+  border: 0.0625rem solid var(--easyedu-control-border);
   border-radius: 0.62rem;
   height: 2.35rem;
   padding: 0.18rem;
@@ -8709,7 +8709,7 @@ span[data-flexitour=container].orphan .modal-dialog {
 
 .modal[id^=local-course-banner-builder-] .modal-content,
 .modal[id^=local-course-banner-builder-] .local-course-banner-builder-layer-modal-content {
-  border: 1px solid var(--easyedu-modal-border);
+  border: 0.0625rem solid var(--easyedu-modal-border);
   border-radius: var(--easyedu-modal-radius);
   box-shadow: var(--easyedu-modal-shadow);
   overflow: hidden;
@@ -8717,7 +8717,7 @@ span[data-flexitour=container].orphan .modal-dialog {
 .modal[id^=local-course-banner-builder-] .modal-content .modal-header,
 .modal[id^=local-course-banner-builder-] .local-course-banner-builder-layer-modal-content .modal-header {
   background: var(--easyedu-modal-header-bg);
-  border-bottom: 1px solid var(--easyedu-modal-border);
+  border-bottom: 0.0625rem solid var(--easyedu-modal-border);
 }
 .modal[id^=local-course-banner-builder-] .modal-content .modal-title,
 .modal[id^=local-course-banner-builder-] .local-course-banner-builder-layer-modal-content .modal-title {
@@ -8727,7 +8727,7 @@ span[data-flexitour=container].orphan .modal-dialog {
 .modal[id^=local-course-banner-builder-] .modal-content .modal-footer,
 .modal[id^=local-course-banner-builder-] .local-course-banner-builder-layer-modal-content .modal-footer {
   background: var(--easyedu-surface);
-  border-top: 1px solid var(--easyedu-modal-border);
+  border-top: 0.0625rem solid var(--easyedu-modal-border);
 }
 .modal[id^=local-course-banner-builder-] .local-course-banner-builder-banner-preview-panel,
 .modal[id^=local-course-banner-builder-] .local-course-banner-builder-title-preview-panel,
@@ -8769,8 +8769,8 @@ span[data-flexitour=container].orphan .modal-dialog {
 }
 
 .local-course-banner-builder-slideshow-toggle {
-  background: linear-gradient(180deg, var(--easyedu-surface) 0%, #fbfcfe 100%);
-  border: 1px solid var(--easyedu-card-border);
+  background: linear-gradient(180deg, var(--easyedu-surface) 0%, color-mix(in srgb, var(--easyedu-surface) 94%, var(--easyedu-primary-soft) 6%) 100%);
+  border: 0.0625rem solid var(--easyedu-card-border);
   border-radius: var(--easyedu-card-radius);
   box-shadow: var(--easyedu-shadow-soft);
   color: var(--easyedu-text);
@@ -8805,8 +8805,8 @@ span[data-flexitour=container].orphan .modal-dialog {
 .local-course-banner-builder-chain-table .easyedu-source-chain__toggle,
 .local-course-banner-builder-chain-table [data-action*=toggle-source-chain] {
   background: var(--easyedu-primary-soft);
-  border: 1px solid color-mix(in srgb, var(--easyedu-primary) 24%, #fff 76%);
-  border-radius: 999px;
+  border: 0.0625rem solid color-mix(in srgb, var(--easyedu-primary) 24%, var(--easyedu-surface) 76%);
+  border-radius: 62.5rem;
   color: var(--easyedu-primary);
 }
 
