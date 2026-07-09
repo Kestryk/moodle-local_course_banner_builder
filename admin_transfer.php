@@ -131,13 +131,25 @@ echo html_writer::div(
         ['class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action']
     ) .
     html_writer::link(
+        new moodle_url('/local/course_banner_builder/admin_transfer.php'),
+        html_writer::tag('i', '', ['class' => 'fa fa-right-left me-2', 'aria-hidden' => 'true']) .
+            html_writer::span(get_string('transferconfig', 'local_course_banner_builder')),
+        [
+            'class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action active',
+            'aria-current' => 'page',
+        ]
+    ) .
+    html_writer::link(
         new moodle_url('/local/course_banner_builder/admin_manage.php', [
             'openformatmodal' => 1,
             'bannerformatcontext' => 'course',
         ]),
         html_writer::tag('i', '', ['class' => 'fa fa-columns me-2', 'aria-hidden' => 'true']) .
             html_writer::span(get_string('coursebannerformatbutton', 'local_course_banner_builder')),
-        ['class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action']
+        [
+            'class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action ' .
+                'local-course-banner-builder-admin-format-button',
+        ]
     ) .
     html_writer::link(
         new moodle_url('/local/course_banner_builder/admin_site.php', [
@@ -146,7 +158,10 @@ echo html_writer::div(
         ]),
         html_writer::tag('i', '', ['class' => 'fa fa-columns me-2', 'aria-hidden' => 'true']) .
             html_writer::span(get_string('sitebannerformatbutton', 'local_course_banner_builder')),
-        ['class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action']
+        [
+            'class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action ' .
+                'local-course-banner-builder-admin-format-button',
+        ]
     ) .
     html_writer::tag(
         'form',

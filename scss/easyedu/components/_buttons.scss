@@ -184,3 +184,122 @@
     bottom: 0.1rem;
   }
 }
+
+@mixin admin-primary-nav {
+  align-items: center;
+  background:
+    linear-gradient(180deg, var(--easyedu-surface) 0%, color-mix(in srgb, var(--easyedu-surface) 94%, var(--easyedu-primary-soft) 6%) 100%);
+  border: 1px solid var(--easyedu-card-border);
+  border-radius: var(--easyedu-card-radius);
+  box-shadow: var(--easyedu-shadow-soft);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  justify-content: flex-start;
+  margin: 0 0 1.1rem;
+  padding: 0.62rem;
+
+  .easyedu-guide__launcher {
+    margin-right: 0.15rem;
+  }
+
+  .easyedu-guide__launcher-label {
+    display: none;
+  }
+}
+
+@mixin admin-primary-nav-action($variant: default) {
+  @include action-button(regular);
+
+  & {
+    background: var(--easyedu-surface);
+    border: 1px solid var(--easyedu-control-border);
+    border-radius: var(--easyedu-control-radius);
+    box-shadow: 0 0.16rem 0.42rem rgba(31, 42, 55, 0.045);
+    color: var(--easyedu-text-muted);
+    font-weight: 720;
+    min-height: 2.42rem;
+    padding: 0.42rem 0.78rem;
+    text-decoration: none;
+    transform: translateY(0);
+    transition:
+      background-color var(--easyedu-motion-fast) var(--easyedu-motion-ease),
+      border-color var(--easyedu-motion-fast) var(--easyedu-motion-ease),
+      box-shadow var(--easyedu-motion-fast) var(--easyedu-motion-ease),
+      color var(--easyedu-motion-fast) var(--easyedu-motion-ease),
+      transform var(--easyedu-motion-fast) var(--easyedu-motion-ease);
+  }
+
+  .fa {
+    color: color-mix(in srgb, var(--easyedu-primary) 78%, var(--easyedu-text-muted) 22%);
+    font-size: 0.92rem;
+    width: 1rem;
+  }
+
+  &:hover,
+  &:focus-visible {
+    background: var(--easyedu-primary-soft);
+    border-color: color-mix(in srgb, var(--easyedu-primary) 34%, #fff 66%);
+    box-shadow:
+      0 0.24rem 0.58rem rgba(31, 68, 104, 0.09),
+      inset 0.22rem 0 0 var(--easyedu-primary);
+    color: var(--easyedu-primary-strong);
+    text-decoration: none;
+    transform: translateY(-0.02rem);
+  }
+
+  &.active,
+  &.is-active,
+  &[aria-current="page"],
+  &[aria-pressed="true"] {
+    background: var(--easyedu-primary-soft);
+    border-color: color-mix(in srgb, var(--easyedu-primary) 42%, #fff 58%);
+    box-shadow:
+      inset 0.24rem 0 0 var(--easyedu-primary),
+      0 0.42rem 0.95rem rgba(15, 108, 191, 0.12);
+    color: var(--easyedu-primary-strong);
+
+    .fa {
+      color: var(--easyedu-primary);
+    }
+  }
+
+  @if $variant == destructive {
+    & {
+      background: var(--easyedu-danger-soft);
+      border-color: color-mix(in srgb, var(--easyedu-danger) 28%, #fff 72%);
+      color: var(--easyedu-danger);
+    }
+
+    .fa {
+      color: var(--easyedu-danger);
+    }
+
+    &:hover,
+    &:focus-visible {
+      background: color-mix(in srgb, var(--easyedu-danger-soft) 74%, #fff 26%);
+      border-color: var(--easyedu-danger);
+      box-shadow:
+        0 0.24rem 0.58rem rgba(161, 43, 43, 0.08),
+        inset 0.22rem 0 0 var(--easyedu-danger);
+      color: var(--easyedu-danger);
+    }
+  } @else if $variant == format {
+    .fa {
+      color: color-mix(in srgb, var(--easyedu-accent) 76%, var(--easyedu-text-muted) 24%);
+    }
+
+    &:hover,
+    &:focus-visible,
+    &.active,
+    &.is-active,
+    &[aria-current="page"],
+    &[aria-pressed="true"] {
+      border-color: color-mix(in srgb, var(--easyedu-accent) 38%, #fff 62%);
+      box-shadow:
+        inset 0.22rem 0 0 var(--easyedu-accent),
+        0 0.32rem 0.82rem rgba(27, 127, 90, 0.1);
+      color: color-mix(in srgb, var(--easyedu-accent) 72%, var(--easyedu-text) 28%);
+    }
+  }
+}

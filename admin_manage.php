@@ -2738,18 +2738,29 @@ $deletepluginsettingsform = static function (string $action): string {
 };
 $coursebannersurl = new moodle_url('/local/course_banner_builder/admin_manage.php');
 $sitebannerurl = new moodle_url('/local/course_banner_builder/admin_site.php');
+$coursebuttonclasses = 'btn btn-outline-secondary local-course-banner-builder-dashed-action ' .
+    'local-course-banner-builder-admin-switch-button' . (!$issitebanneradmin ? ' active' : '');
+$sitebuttonclasses = 'btn btn-outline-secondary local-course-banner-builder-dashed-action ' .
+    'local-course-banner-builder-admin-switch-button' . ($issitebanneradmin ? ' active' : '');
+$coursebuttonattributes = ['class' => $coursebuttonclasses];
+$sitebuttonattributes = ['class' => $sitebuttonclasses];
+if (!$issitebanneradmin) {
+    $coursebuttonattributes['aria-current'] = 'page';
+} else {
+    $sitebuttonattributes['aria-current'] = 'page';
+}
 echo html_writer::div(
     html_writer::link(
         $coursebannersurl,
         html_writer::tag('i', '', ['class' => 'fa fa-image me-2', 'aria-hidden' => 'true']) .
             html_writer::span(get_string('managecoursebannersquick', 'local_course_banner_builder')),
-        ['class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action local-course-banner-builder-admin-switch-button']
+        $coursebuttonattributes
     ) .
     html_writer::link(
         $sitebannerurl,
         html_writer::tag('i', '', ['class' => 'fa fa-desktop me-2', 'aria-hidden' => 'true']) .
             html_writer::span(get_string('managesitebannerquick', 'local_course_banner_builder')),
-        ['class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action local-course-banner-builder-admin-switch-button']
+        $sitebuttonattributes
     ) .
     html_writer::link(
         new moodle_url('/local/course_banner_builder/admin_slideshow.php'),

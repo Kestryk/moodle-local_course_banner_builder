@@ -67,6 +67,16 @@
         gap: 0.6rem;
     }
 
+    .local-course-banner-builder-admin-switcher {
+        @include easyedu-buttons.admin-primary-nav;
+
+        justify-content: flex-start;
+
+        .local-course-banner-builder-admin-reset-form {
+            margin-left: auto;
+        }
+    }
+
     .local-course-banner-builder-dashed-action {
         border-style: solid !important;
         border-color: var(--easyedu-control-border);
@@ -93,6 +103,22 @@
                 background: color-mix(in srgb, var(--easyedu-danger-soft) 72%, #fff 28%);
                 color: var(--easyedu-danger);
             }
+        }
+    }
+
+    .local-course-banner-builder-admin-switcher {
+        .local-course-banner-builder-dashed-action {
+            @include easyedu-buttons.admin-primary-nav-action;
+        }
+
+        .local-course-banner-builder-admin-format-button,
+        [data-target*="format-modal"],
+        [data-bs-target*="format-modal"] {
+            @include easyedu-buttons.admin-primary-nav-action(format);
+        }
+
+        .local-course-banner-builder-admin-reset-button {
+            @include easyedu-buttons.admin-primary-nav-action(destructive);
         }
     }
 }
