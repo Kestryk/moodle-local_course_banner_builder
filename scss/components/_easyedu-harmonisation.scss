@@ -161,6 +161,35 @@
         @include easyedu-cbb.modal-with-preview;
     }
 
+    .modal-content {
+        box-shadow: var(--easyedu-modal-shadow);
+    }
+
+    .local-course-banner-builder-modal-preview-action-list .local-course-banner-builder-source-preview-button,
+    .local-course-banner-builder-slideshow-side-actions .local-course-banner-builder-source-preview-button,
+    .local-course-banner-builder-title-side-actions .local-course-banner-builder-source-preview-button {
+        border-color: var(--easyedu-control-border);
+        background: var(--easyedu-surface);
+        box-shadow: 0 0.12rem 0.32rem rgba(31, 42, 55, 0.035);
+        color: var(--easyedu-text-muted);
+
+        &:hover,
+        &:focus-visible {
+            border-color: var(--easyedu-control-focus-border);
+            background: var(--easyedu-primary-soft);
+            color: var(--easyedu-primary-strong);
+        }
+
+        &.btn-primary,
+        &.active,
+        &[aria-expanded="true"],
+        &[aria-pressed="true"] {
+            border-color: var(--easyedu-primary);
+            background: var(--easyedu-primary);
+            color: #fff;
+        }
+    }
+
     .local-course-banner-builder-banner-preview-panel,
     .local-course-banner-builder-title-preview-panel,
     .local-course-banner-builder-slideshow-admin-preview {
