@@ -1,0 +1,22 @@
+// Backward-compatible aggregator for the EasyEdu component mixins.
+//
+// Historical plugin SCSS imports `@use "../easyedu" as easyedu;` and calls
+// mixins such as `easyedu.object-card`. Keep forwarding every component family
+// from here so older plugins continue to compile while the kit is now easier to
+// read and synchronise between independent Moodle plugins.
+
+@forward "components/panels";
+@forward "components/cards";
+@forward "components/buttons";
+@forward "components/forms";
+@forward "components/menus";
+@forward "components/modals";
+@forward "components/feedback";
+@forward "components/overlays";
+@forward "components/guide";
+@forward "components/tooltips";
+@forward "components/tables";
+@forward "components/responsive";
+@forward "components/animations";
+@forward "components/pagination";
+@forward "components/course_banner_builder";

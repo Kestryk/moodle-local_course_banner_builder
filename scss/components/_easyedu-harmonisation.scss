@@ -1,0 +1,173 @@
+/* stylelint-disable -- Scoped EasyEdu visual adapter for existing Moodle/CCB markup. */
+// EasyEdu visual harmonisation layer.
+//
+// This file intentionally styles existing Course Banner Builder hooks without
+// changing DOM contracts used by preview/crop/drag JavaScript.
+
+@use "../easyedu/tokens" as easyedu-tokens;
+@use "../easyedu/components/buttons" as easyedu-buttons;
+@use "../easyedu/components/forms" as easyedu-forms;
+@use "../easyedu/components/menus" as easyedu-menus;
+@use "../easyedu/components/tooltips" as easyedu-tooltips;
+@use "../easyedu/components/course_banner_builder" as easyedu-cbb;
+
+.local-course-banner-builder-admin--native,
+.modal[id^="local-course-banner-builder-"] {
+    @include easyedu-tokens.token-defaults;
+}
+
+.local-course-banner-builder-admin--native {
+    color: var(--easyedu-text);
+
+    .card,
+    .local-course-banner-builder-site-banner-status,
+    .local-course-banner-builder-slideshow-card {
+        @include easyedu-cbb.admin-panel;
+    }
+
+    .generaltable.local-course-banner-builder-configured-sources-table,
+    .generaltable.local-course-banner-builder-layer-table,
+    .local-course-banner-builder-layer-table {
+        @include easyedu-cbb.layer-table;
+    }
+
+    .local-course-banner-builder-source-dropdown-menu {
+        @include easyedu-forms.dropdown-menu;
+    }
+
+    .local-course-banner-builder-source-option,
+    .local-course-banner-builder-source-dropdown-menu .dropdown-item {
+        @include easyedu-menus.menu-item;
+    }
+
+    .local-course-banner-builder-table-help-icon,
+    .local-course-banner-builder-help-dot {
+        @include easyedu-cbb.help-tooltip;
+    }
+
+    .local-course-banner-builder-help-bubble {
+        > summary {
+            @include easyedu-cbb.help-tooltip;
+        }
+
+        > div {
+            @include easyedu-tooltips.tooltip-surface(true);
+        }
+    }
+
+    .local-course-banner-builder-configured-source-tools,
+    .local-course-banner-builder-source-preview-primary-actions,
+    .local-course-banner-builder-bulk-action-row,
+    .local-course-banner-builder-slideshow-actions,
+    .local-course-banner-builder-slideshow-global-actions {
+        gap: 0.6rem;
+    }
+}
+
+.local-course-banner-builder-admin--native,
+.modal[id^="local-course-banner-builder-"] {
+    .local-course-banner-builder-source-preview-button,
+    .local-course-banner-builder-add-layer-primary,
+    .local-course-banner-builder-compact-save-button,
+    .local-course-banner-builder-slideshow-enable-button,
+    .local-course-banner-builder-title-footer-button {
+        @include easyedu-buttons.action-button;
+
+        & {
+            border-radius: var(--easyedu-control-radius);
+            font-weight: 700;
+        }
+    }
+
+    .local-course-banner-builder-source-preview-button.btn-outline-secondary,
+    .local-course-banner-builder-add-layer-primary.btn-outline-secondary,
+    .local-course-banner-builder-slideshow-enable-button.btn-outline-secondary {
+        background: var(--easyedu-surface);
+        border-color: var(--easyedu-control-border);
+        color: var(--easyedu-text-muted);
+    }
+
+    .local-course-banner-builder-source-preview-button.btn-primary,
+    .local-course-banner-builder-add-layer-primary.btn-primary,
+    .local-course-banner-builder-slideshow-enable-button.btn-primary {
+        background: var(--easyedu-primary);
+        border-color: var(--easyedu-primary);
+        color: #fff;
+    }
+
+    .local-course-banner-builder-source-preview-visibility-toggle,
+    .local-course-banner-builder-slideshow-preview-toolbar .btn,
+    .local-course-banner-builder-title-preview-toolbar .btn,
+    .local-course-banner-builder-modal-preview-icon-row .btn {
+        @include easyedu-buttons.icon-button(small);
+    }
+
+    .local-course-banner-builder-slideshow-preview-toolbar,
+    .local-course-banner-builder-title-preview-toolbar,
+    .local-course-banner-builder-source-preview-visibility-toggle-row,
+    .local-course-banner-builder-modal-preview-icon-row {
+        @include easyedu-cbb.banner-preview-toolbar;
+    }
+
+    .local-course-banner-builder-modal-preview-action-list,
+    .local-course-banner-builder-slideshow-side-actions,
+    .local-course-banner-builder-title-side-actions {
+        @include easyedu-cbb.banner-preview-side-actions;
+    }
+
+    .local-course-banner-builder-linked-range-wrapper {
+        @include easyedu-cbb.linked-range-number;
+    }
+
+    .local-course-banner-builder-title-color-field,
+    .local-course-banner-builder-slideshow-color-field,
+    .local-course-banner-builder-color-field {
+        @include easyedu-cbb.color-picker-field;
+    }
+}
+
+.modal[id^="local-course-banner-builder-"] {
+    .modal-content,
+    .local-course-banner-builder-layer-modal-content {
+        @include easyedu-cbb.modal-with-preview;
+    }
+
+    .local-course-banner-builder-banner-preview-panel,
+    .local-course-banner-builder-title-preview-panel,
+    .local-course-banner-builder-slideshow-admin-preview {
+        border-radius: var(--easyedu-card-radius);
+    }
+
+    .local-course-banner-builder-modal-preview-sticky-row,
+    .local-course-banner-builder-title-preview-panel {
+        background: var(--easyedu-surface);
+    }
+}
+
+.local-course-banner-builder-slideshow-admin-grid {
+    gap: 1.15rem;
+}
+
+.local-course-banner-builder-slideshow-section {
+    gap: 0.62rem;
+}
+
+.local-course-banner-builder-slideshow-toggle {
+    @include easyedu-cbb.admin-panel;
+
+    min-height: 2.45rem;
+    padding: 0.45rem 0.65rem;
+}
+
+.local-course-banner-builder-chain-table {
+    @include easyedu-cbb.source-chain;
+}
+
+.local-course-banner-builder-thumb-item,
+.local-course-banner-builder-admin-preview,
+.local-course-banner-builder-admin-layer-overlay-frame,
+.local-course-banner-builder-admin-layer-visual .local-course-banner-builder-border-preview-frame {
+    border-color: var(--easyedu-card-border);
+    border-radius: var(--easyedu-radius-sm);
+    box-shadow: 0 0.16rem 0.4rem rgba(31, 42, 55, 0.06);
+}

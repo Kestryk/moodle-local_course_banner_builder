@@ -1,0 +1,209 @@
+// EasyEdu data tables, preview reports and status rows.
+
+@mixin data-table {
+  background: var(--easyedu-surface);
+  border: 1px solid var(--easyedu-card-border);
+  border-radius: var(--easyedu-card-radius);
+  box-shadow: var(--easyedu-card-shadow);
+  overflow: hidden;
+  width: 100%;
+
+  table {
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 0;
+    width: 100%;
+  }
+
+  th {
+    background: var(--easyedu-table-header-bg);
+    border-bottom: 1px solid var(--easyedu-table-row-border);
+    color: var(--easyedu-text);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    padding: 0.62rem 0.7rem;
+    text-transform: uppercase;
+  }
+
+  td {
+    border-bottom: 1px solid var(--easyedu-table-row-border);
+    color: var(--easyedu-text-muted);
+    padding: 0.58rem 0.7rem;
+    vertical-align: top;
+  }
+
+  tbody tr:hover {
+    background: var(--easyedu-table-row-hover);
+  }
+
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
+}
+
+@mixin table-status-row($variant) {
+  @if $variant == success {
+    background: var(--easyedu-table-success-bg);
+  } @else if $variant == warning {
+    background: var(--easyedu-table-warning-bg);
+  } @else if $variant == error {
+    background: var(--easyedu-table-error-bg);
+  } @else {
+    background: var(--easyedu-table-row-hover);
+  }
+}
+
+@mixin preview-table {
+  @include data-table;
+
+  .easyedu-table__row--success {
+    @include table-status-row(success);
+  }
+
+  .easyedu-table__row--warning {
+    @include table-status-row(warning);
+  }
+
+  .easyedu-table__row--error {
+    @include table-status-row(error);
+  }
+}
+
+@mixin table-toolbar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  justify-content: space-between;
+  margin-bottom: 0.65rem;
+}
+
+@mixin report-summary-grid($columns: 2) {
+  display: grid;
+  gap: 0.6rem;
+  grid-template-columns: repeat($columns, minmax(0, 1fr));
+  margin-bottom: 0.95rem;
+}
+
+@mixin report-summary-item($background: var(--easyedu-surface-soft), $border: var(--easyedu-card-border), $text: var(--easyedu-text)) {
+  align-items: center;
+  background: $background;
+  border: 1px solid $border;
+  border-radius: 0.85rem;
+  color: $text;
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.7rem 0.8rem;
+
+  strong {
+    font-size: 1.18rem;
+    line-height: 1;
+  }
+}
+
+@mixin report-title($color: var(--easyedu-text-muted)) {
+  color: $color;
+  font-size: 0.76rem;
+  font-weight: 760;
+  letter-spacing: 0.04em;
+  margin: 1rem 0 0.45rem;
+  text-transform: uppercase;
+}
+
+@mixin report-list {
+  display: grid;
+  gap: 0.45rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    align-items: flex-start;
+    background: #fff;
+    border: 1px solid #e1e9f0;
+    border-radius: 0.72rem;
+    display: grid;
+    gap: 0.5rem;
+    grid-template-columns: auto minmax(0, 1fr);
+    line-height: 1.35;
+    padding: 0.62rem 0.72rem;
+  }
+
+  .fa {
+    align-items: center;
+    border-radius: 999px;
+    display: inline-flex;
+    font-size: 0.7rem;
+    height: 1.25rem;
+    justify-content: center;
+    margin-top: 0.05rem;
+    width: 1.25rem;
+  }
+}
+
+@mixin preview-notice($color: var(--easyedu-primary)) {
+  align-items: flex-start;
+  background:
+    radial-gradient(circle at 2rem 1.5rem, color-mix(in srgb, #{$color} 8%, transparent), transparent 7rem),
+    linear-gradient(180deg, #f7fbff 0%, #eef6fc 100%);
+  border: 1px solid color-mix(in srgb, #{$color} 16%, #d7e5f2 84%);
+  border-radius: 0.85rem;
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  padding: 0.85rem;
+
+  > .fa {
+    align-items: center;
+    background: color-mix(in srgb, #{$color} 10%, #fff 90%);
+    border: 1px solid color-mix(in srgb, #{$color} 16%, #d4e4f2 84%);
+    border-radius: 0.75rem;
+    color: $color;
+    display: inline-flex;
+    height: 2.2rem;
+    justify-content: center;
+    width: 2.2rem;
+  }
+
+  strong {
+    color: var(--easyedu-text);
+    display: block;
+    font-weight: 720;
+    margin-bottom: 0.15rem;
+  }
+
+  p {
+    color: var(--easyedu-text-muted);
+    line-height: 1.42;
+  }
+}
+
+@mixin preview-toolbar {
+  align-items: center;
+  background: var(--easyedu-surface-soft);
+  border: 1px solid #e3eaf2;
+  border-radius: 0.85rem;
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: auto minmax(16rem, 1fr) auto;
+  padding: 0.72rem;
+}
+
+@mixin preview-table-wrap {
+  border: 1px solid #dce6ef;
+  border-radius: 0.9rem;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+@mixin preview-status($background, $text) {
+  background: $background;
+  border-radius: 999px;
+  color: $text;
+  display: inline-flex;
+  font-size: 0.74rem;
+  font-weight: 650;
+  line-height: 1.25;
+  padding: 0.25rem 0.55rem;
+}

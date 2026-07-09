@@ -1,0 +1,443 @@
+// EasyEdu object cards and identity rails.
+//
+// Use `object-card` for draggable/selectable entities such as participants,
+// groups, layers, banners or any object manipulated by the user. Use
+// `identity-rail` when the card needs a coloured left rail with a masked icon.
+//
+// Theme override tokens:
+// --easyedu-surface, --easyedu-card-border, --easyedu-card-radius,
+// --easyedu-card-shadow, --easyedu-identity-border-width,
+// --easyedu-identity-size, --easyedu-identity-icon-color.
+
+@mixin object-card($identity-color) {
+  background: var(--easyedu-surface);
+  border: 1px solid var(--easyedu-card-border);
+  border-left: var(--easyedu-identity-border-width) solid $identity-color;
+  border-radius: var(--easyedu-card-radius);
+  box-shadow: var(--easyedu-card-shadow);
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.22s ease,
+    transform 0.22s ease;
+
+  &:hover {
+    border-color: color-mix(in srgb, #{$identity-color} 32%, var(--easyedu-card-border) 68%);
+    box-shadow: var(--easyedu-shadow-soft);
+  }
+}
+
+@mixin identity-rail($icon, $icon-color: var(--easyedu-identity-icon-color)) {
+  &::before {
+    align-items: center;
+    background-color: $icon-color;
+    content: "";
+    display: inline-flex;
+    height: var(--easyedu-identity-size);
+    justify-content: center;
+    left: calc(var(--easyedu-identity-border-width) / -2);
+    line-height: 1;
+    mask-image: $icon;
+    mask-position: center;
+    mask-repeat: no-repeat;
+    mask-size: contain;
+    pointer-events: none;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.16s ease;
+    width: var(--easyedu-identity-size);
+    z-index: 3;
+    -webkit-mask-image: $icon;
+    -webkit-mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+  }
+}
+
+// Foundation for cards whose identity rail becomes a light outlined rail when
+// expanded. This is useful for containers such as groupings, folders or layer
+// groups where the open state should feel like a parent frame rather than a
+// draggable object.
+@mixin open-identity-rail-base($surface: var(--easyedu-surface-soft), $border: var(--easyedu-border-strong)) {
+  &::after {
+    background: $surface;
+    border: 0.1rem solid $border;
+    border-radius: 0.72rem 0 0 0.72rem;
+    bottom: -1px;
+    box-sizing: border-box;
+    content: "";
+    display: none;
+    left: calc((var(--easyedu-identity-border-width) * -1) + 1px);
+    pointer-events: none;
+    position: absolute;
+    top: -1px;
+    width: calc(var(--easyedu-identity-border-width) - 1px);
+    z-index: 2;
+  }
+}
+
+@mixin open-identity-rail-state(
+  $surface: var(--easyedu-surface-soft),
+  $border: var(--easyedu-border-strong),
+  $icon-color: var(--easyedu-text-muted)
+) {
+  border-left-color: $surface;
+
+  &::before {
+    background-color: $icon-color;
+    left: calc(var(--easyedu-identity-border-width) / -2);
+  }
+
+  &::after {
+    background: $surface;
+    border-color: $border;
+    display: block;
+  }
+}
+
+@mixin card-header-row {
+  align-items: center;
+  display: flex;
+  gap: 0.55rem;
+  min-width: 0;
+
+  > :first-child {
+    min-width: 0;
+  }
+}
+
+@mixin card-title {
+  color: var(--easyedu-text);
+  font-size: 0.98rem;
+  font-weight: 720;
+  line-height: 1.25;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Use when a card needs to show related objects as pills on the title line
+// without letting those pills push action buttons or counts to a second line.
+@mixin related-tags-inline($max-width: min(34%, 13rem)) {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 1 auto;
+  flex-wrap: nowrap;
+  margin: 0;
+  max-width: $max-width;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+
+  > * {
+    box-sizing: border-box;
+    flex: 0 0 auto;
+    max-width: min(100%, 12rem);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+// Summary pill used when related tags cannot safely fit on one card line.
+// It can display either a count ("3 groupings") or a compact "+2" label.
+@mixin related-tags-summary(
+  $bg: var(--easyedu-grouping-soft),
+  $border: color-mix(in srgb, var(--easyedu-grouping) 24%, #fff 76%),
+  $text: var(--easyedu-grouping)
+) {
+  align-items: center;
+  background: $bg;
+  border: 1px solid $border;
+  border-radius: 999px;
+  color: $text;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 0.72rem;
+  font-weight: 660;
+  gap: 0.32rem;
+  justify-content: center;
+  line-height: 1.2;
+  max-width: none;
+  min-width: max-content;
+  padding: 0.2rem 0.58rem;
+  text-decoration: none;
+  transition:
+    background-color var(--easyedu-motion-fast) ease,
+    border-color var(--easyedu-motion-fast) ease,
+    box-shadow var(--easyedu-motion-fast) ease,
+    color var(--easyedu-motion-fast) ease;
+
+  &:hover,
+  &:focus-visible {
+    background: color-mix(in srgb, #{$bg} 72%, #fff 28%);
+    border-color: color-mix(in srgb, #{$border} 78%, #000 22%);
+    box-shadow: 0 0 0 0.16rem color-mix(in srgb, #{$text} 14%, transparent);
+    color: color-mix(in srgb, #{$text} 86%, #000 14%);
+    outline: 0;
+    text-decoration: none;
+  }
+}
+
+@mixin related-tags-summary-icon {
+  font-size: 0.7rem;
+  transition: transform var(--easyedu-motion-fast) ease;
+}
+
+@mixin related-tags-expanded-icon {
+  transform: rotate(180deg);
+}
+
+// Revealed row containing all related tags. Keep it separate from the card title
+// line so dense cards do not break when tag names are long.
+@mixin related-tags-details($offset: 1.85rem) {
+  align-items: center;
+  animation: easyedu-content-open 0.26s ease both;
+  display: grid;
+  gap: 0.18rem;
+  margin: 0.1rem 0 0.55rem $offset;
+  max-width: calc(100% - #{$offset});
+  min-width: 0;
+  overflow: hidden;
+  padding: 0.25rem 0 0;
+}
+
+@mixin related-tags-details-list {
+  align-items: center;
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  min-width: 0;
+
+  > * {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+}
+
+// Shared motion for cards that switch between compact and detailed density.
+// Plugins still decide the exact grid, avatar and metadata layout.
+@mixin density-transition {
+  transition:
+    background-color var(--easyedu-motion-fast) ease,
+    border-color var(--easyedu-motion-fast) ease,
+    box-shadow var(--easyedu-motion-normal) ease,
+    transform var(--easyedu-motion-normal) ease,
+    grid-template-columns 0.46s var(--easyedu-motion-ease),
+    gap 0.38s var(--easyedu-motion-ease),
+    max-height 0.52s var(--easyedu-motion-ease),
+    min-height 0.42s var(--easyedu-motion-ease),
+    padding 0.42s var(--easyedu-motion-ease);
+  will-change: max-height, padding;
+}
+
+@mixin selectable-card($identity-color) {
+  cursor: pointer;
+
+  &.is-selected,
+  &[aria-selected="true"] {
+    background: color-mix(in srgb, #{$identity-color} 13%, var(--easyedu-surface) 87%);
+    border-color: color-mix(in srgb, #{$identity-color} 48%, var(--easyedu-card-border) 52%);
+    border-left-color: $identity-color;
+    box-shadow: 0 0.45rem 1.1rem color-mix(in srgb, #{$identity-color} 18%, transparent);
+  }
+}
+
+@mixin expanded-card {
+  overflow: hidden;
+  transition:
+    background-color var(--easyedu-motion-normal) var(--easyedu-motion-ease),
+    border-color var(--easyedu-motion-normal) var(--easyedu-motion-ease),
+    box-shadow var(--easyedu-motion-normal) var(--easyedu-motion-ease),
+    max-height var(--easyedu-motion-slow) var(--easyedu-motion-ease);
+
+  &.is-expanded {
+    box-shadow: var(--easyedu-shadow);
+  }
+}
+
+// List preview inside a card where the first items stay visible and the rest is
+// hinted by a soft fade plus a reveal toggle. The plugin owns which child items
+// are hidden/collapsed; the kit owns the motion and smoke/fade surface.
+@mixin preview-fade-list(
+  $collapsed-height: 4.2rem,
+  $expanded-height: 36rem,
+  $fade-color: var(--easyedu-surface-soft),
+  $fade-height: 2.45rem
+) {
+  display: block;
+  list-style: none;
+  max-height: $expanded-height;
+  overflow: hidden;
+  position: relative;
+  transition:
+    max-height var(--easyedu-motion-normal) var(--easyedu-motion-ease),
+    margin var(--easyedu-motion-fast) ease;
+  will-change: max-height;
+
+  &::after {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, #{$fade-color} 0%, transparent) 0%,
+      color-mix(in srgb, #{$fade-color} 78%, transparent) 48%,
+      color-mix(in srgb, #{$fade-color} 98%, transparent) 100%
+    );
+    border-radius: 0 0 0.62rem 0.62rem;
+    bottom: 0;
+    box-shadow: inset 0 -0.35rem 0.55rem color-mix(in srgb, #{$fade-color} 20%, transparent);
+    content: "";
+    height: $fade-height;
+    left: 0;
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    right: 0;
+    transition: opacity var(--easyedu-motion-fast) ease;
+    z-index: 2;
+  }
+
+  &.has-extra-items:not(.is-expanded),
+  &.has-extra-members:not(.is-expanded),
+  &.has-extra-groups:not(.is-expanded) {
+    max-height: $collapsed-height;
+
+    &::after {
+      opacity: 1;
+    }
+  }
+
+  &.is-expanded {
+    max-height: $expanded-height;
+  }
+}
+
+@mixin drag-handle($color: var(--easyedu-identity-icon-color)) {
+  &::after {
+    background: $color;
+    content: "";
+    height: 0.95rem;
+    left: calc(var(--easyedu-identity-border-width) / -2);
+    mask-image: var(--easyedu-drag-handle);
+    mask-position: center;
+    mask-repeat: no-repeat;
+    mask-size: contain;
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    transition: opacity var(--easyedu-motion-fast) ease;
+    width: 0.7rem;
+    z-index: 4;
+    -webkit-mask-image: var(--easyedu-drag-handle);
+    -webkit-mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+  }
+
+  &:hover::before {
+    opacity: 0;
+  }
+
+  &:hover::after {
+    opacity: 0.92;
+  }
+}
+
+@mixin disabled-card {
+  filter: saturate(0.72);
+  opacity: 0.58;
+  pointer-events: none;
+}
+
+// Wide, quiet chevron used at the bottom of a card to reveal hidden content.
+// The hover treatment deliberately uses only soft top/bottom rules so the card
+// itself remains visually calm.
+@mixin card-reveal-toggle($line-color: var(--easyedu-card-border), $text-color: var(--easyedu-text-muted)) {
+  align-items: center;
+  background: transparent;
+  background-repeat: no-repeat;
+  background-size: 0 1px, 0 1px;
+  border: 0;
+  border-radius: 0.28rem;
+  color: $text-color;
+  display: flex;
+  height: 1.55rem;
+  justify-content: center;
+  margin: 0.48rem auto 0;
+  padding: 0;
+  position: relative;
+  transition:
+    background-size var(--easyedu-motion-fast) ease,
+    box-shadow var(--easyedu-motion-fast) ease,
+    color var(--easyedu-motion-fast) ease,
+    transform var(--easyedu-motion-fast) ease;
+  width: 100%;
+
+  &:hover,
+  &:focus-visible {
+    background: transparent;
+    background-image:
+      linear-gradient(90deg, transparent 0%, color-mix(in srgb, #{$line-color} 28%, transparent) 7%, #{$line-color} 20%, #{$line-color} 80%, color-mix(in srgb, #{$line-color} 28%, transparent) 93%, transparent 100%),
+      linear-gradient(90deg, transparent 0%, color-mix(in srgb, #{$line-color} 28%, transparent) 7%, #{$line-color} 20%, #{$line-color} 80%, color-mix(in srgb, #{$line-color} 28%, transparent) 93%, transparent 100%);
+    background-position: center top, center bottom;
+    background-repeat: no-repeat;
+    background-size: min(34rem, 96%) 1px, min(34rem, 96%) 1px;
+    color: $text-color;
+    outline: 0;
+  }
+
+  &:focus:not(:focus-visible) {
+    box-shadow: none;
+  }
+
+  .fa {
+    align-items: center;
+    display: inline-flex;
+    height: 1rem;
+    justify-content: center;
+    transition: transform var(--easyedu-motion-fast) ease;
+    width: 1rem;
+  }
+
+  &::before,
+  &::after {
+    background-image: radial-gradient(circle, currentColor 1px, transparent 1.2px);
+    background-size: 0.24rem 0.24rem;
+    content: "";
+    height: 0.72rem;
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: opacity var(--easyedu-motion-fast) ease;
+    width: 1rem;
+  }
+
+  &::before {
+    left: 0.85rem;
+  }
+
+  &::after {
+    right: 0.85rem;
+  }
+
+  &:hover::before,
+  &:hover::after,
+  &:focus-visible::before,
+  &:focus-visible::after {
+    opacity: 0.28;
+  }
+
+  &.is-expanded .fa,
+  &[aria-expanded="true"] .fa {
+    transform: rotate(180deg);
+  }
+}

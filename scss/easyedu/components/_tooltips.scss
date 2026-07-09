@@ -1,0 +1,61 @@
+// EasyEdu hover-only help bubbles.
+//
+// Use this for custom plugin help bubbles when native browser `title` would
+// duplicate the information or provide too little styling control.
+
+@mixin tooltip-surface($long: false) {
+  background:
+    radial-gradient(circle at 1.2rem 0.6rem, var(--easyedu-tooltip-glow), transparent 5.5rem),
+    var(--easyedu-tooltip-bg);
+  border: 1px solid var(--easyedu-tooltip-border);
+  border-radius: 0.64rem;
+  box-shadow: var(--easyedu-tooltip-shadow);
+  color: var(--easyedu-tooltip-text);
+  font-size: if($long, 0.76rem, 0.74rem);
+  font-weight: if($long, 560, 680);
+  line-height: if($long, 1.35, 1.2);
+  max-width: if($long, 19rem, 14rem);
+  padding: if($long, 0.48rem 0.58rem, 0.34rem 0.46rem);
+}
+
+@mixin hover-help-host {
+  position: relative;
+
+  &::after {
+    @include tooltip-surface;
+
+    bottom: calc(100% + 0.45rem);
+    content: attr(data-easyedu-hover-help);
+    left: 50%;
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    transform: translate(-50%, 0.2rem);
+    transition:
+      opacity var(--easyedu-motion-fast) var(--easyedu-motion-ease),
+      transform var(--easyedu-motion-fast) var(--easyedu-motion-ease);
+    white-space: normal;
+    z-index: 1065;
+  }
+
+  &:hover::after,
+  &:focus-visible::after {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@mixin help-icon {
+  align-items: center;
+  background: var(--easyedu-primary-soft);
+  border: 1px solid color-mix(in srgb, var(--easyedu-primary) 24%, #fff 76%);
+  border-radius: 999px;
+  color: var(--easyedu-primary);
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 800;
+  height: 1.35rem;
+  justify-content: center;
+  line-height: 1;
+  width: 1.35rem;
+}

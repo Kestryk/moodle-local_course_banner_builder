@@ -1,0 +1,111 @@
+// EasyEdu panels and filter shells.
+//
+// Use these mixins for large management containers, side-by-side columns and
+// filter boxes. They intentionally emit CSS only where a plugin includes them,
+// so each Moodle plugin can keep its own root selector.
+//
+// Theme override tokens:
+// --easyedu-surface, --easyedu-surface-soft, --easyedu-border,
+// --easyedu-radius, --easyedu-shadow, --easyedu-shadow-soft.
+
+@mixin panel-shell {
+  background: var(--easyedu-surface);
+  border: 1px solid var(--easyedu-border);
+  border-radius: calc(var(--easyedu-radius) + 0.2rem);
+  box-shadow: var(--easyedu-shadow);
+  min-width: 0;
+  overflow: visible;
+  position: relative;
+}
+
+@mixin filter-shell {
+  background: var(--easyedu-surface-soft);
+  border: 1px solid var(--easyedu-filter-border);
+  border-radius: var(--easyedu-radius);
+  box-shadow: var(--easyedu-shadow-soft);
+  min-width: 0;
+  padding: 0.75rem;
+}
+
+@mixin panel-header($accent: var(--easyedu-primary)) {
+  align-items: flex-start;
+  border-top: 0.35rem solid $accent;
+  display: flex;
+  gap: 0.8rem;
+  justify-content: space-between;
+  padding: 1rem 1rem 0.8rem;
+}
+
+@mixin panel-title {
+  color: var(--easyedu-text);
+  font-size: 1.08rem;
+  font-weight: 780;
+  line-height: 1.25;
+  margin: 0;
+}
+
+@mixin panel-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+@mixin split-layout($left: minmax(22rem, 0.95fr), $right: minmax(28rem, 1.35fr)) {
+  align-items: stretch;
+  display: grid;
+  gap: 1.35rem;
+  grid-template-columns: $left $right;
+  min-width: 0;
+}
+
+// Floating contextual panel used for "clear selection", compact guided state or
+// any small persistent action. Keep this narrow on desktop; mobile trays should
+// use the dedicated responsive mixin instead.
+@mixin sticky-selection-panel($accent: var(--easyedu-primary), $bottom: 1.45rem, $left: 1.25rem) {
+  align-items: stretch;
+  background: linear-gradient(135deg, var(--easyedu-surface) 0%, var(--easyedu-surface-soft) 100%);
+  border: 1px solid var(--easyedu-card-border);
+  border-left: 0.28rem solid $accent;
+  border-radius: var(--easyedu-radius-lg);
+  bottom: $bottom;
+  box-shadow: var(--easyedu-shadow-strong);
+  display: grid;
+  gap: 0.35rem;
+  left: $left;
+  max-width: min(92vw, 23rem);
+  padding: 0.52rem;
+  position: fixed;
+  z-index: 1046;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+@mixin sticky-selection-button {
+  align-items: center;
+  background: var(--easyedu-surface);
+  border-color: var(--easyedu-control-border);
+  color: color-mix(in srgb, var(--easyedu-text) 78%, var(--easyedu-text-muted) 22%);
+  display: inline-flex;
+  gap: 0.35rem;
+  justify-content: center;
+  line-height: 1.2;
+  min-height: var(--easyedu-control-height);
+  white-space: nowrap;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+@mixin sticky-selection-count {
+  color: var(--easyedu-text-muted);
+  font-size: 0.72rem;
+  font-weight: 760;
+  line-height: 1;
+  padding: 0 0.22rem;
+  text-align: center;
+}

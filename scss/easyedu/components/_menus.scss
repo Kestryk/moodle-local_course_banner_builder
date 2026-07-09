@@ -1,0 +1,112 @@
+// EasyEdu dropdowns, context menus and overflow action menus.
+
+@mixin menu-surface($size: regular) {
+  $min-width: 12rem;
+  $padding: 0.35rem;
+
+  @if $size == small {
+    $min-width: 9.5rem;
+    $padding: 0.24rem;
+  } @else if $size == large {
+    $min-width: 14.5rem;
+    $padding: 0.48rem;
+  }
+
+  background: var(--easyedu-surface);
+  border: 1px solid var(--easyedu-dropdown-border);
+  border-radius: var(--easyedu-dropdown-radius);
+  box-shadow: var(--easyedu-dropdown-shadow);
+  color: var(--easyedu-text);
+  display: grid;
+  gap: 0.18rem;
+  min-width: $min-width;
+  padding: $padding;
+  z-index: 1052;
+}
+
+@mixin menu-item($size: regular) {
+  $border-radius: 0.58rem;
+  $font-size: 0.9rem;
+  $gap: 0.52rem;
+  $min-height: 2.1rem;
+  $padding: 0.42rem 0.58rem;
+
+  @if $size == small {
+    $border-radius: 0.48rem;
+    $font-size: 0.8rem;
+    $gap: 0.38rem;
+    $min-height: 1.72rem;
+    $padding: 0.28rem 0.42rem;
+  } @else if $size == large {
+    $border-radius: 0.72rem;
+    $font-size: 0.98rem;
+    $gap: 0.62rem;
+    $min-height: 2.45rem;
+    $padding: 0.52rem 0.72rem;
+  }
+
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: $border-radius;
+  color: var(--easyedu-text);
+  display: flex;
+  font-size: $font-size;
+  gap: $gap;
+  justify-content: flex-start;
+  line-height: 1.25;
+  min-height: $min-height;
+  padding: $padding;
+  text-align: left;
+  text-decoration: none;
+  width: 100%;
+
+  .fa {
+    color: var(--easyedu-text-muted);
+    flex: 0 0 auto;
+    text-align: center;
+    width: 1rem;
+  }
+
+  &:hover,
+  &:focus-visible {
+    background: var(--easyedu-primary-soft);
+    color: var(--easyedu-primary-strong);
+    outline: 0;
+
+    .fa {
+      color: var(--easyedu-primary);
+    }
+  }
+
+  &[aria-disabled="true"],
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.52;
+  }
+}
+
+@mixin context-menu($size: regular) {
+  @include menu-surface($size);
+
+  position: fixed;
+
+  [role="menuitem"],
+  button,
+  a {
+    @include menu-item($size);
+  }
+}
+
+@mixin overflow-action-menu($size: small) {
+  @include menu-surface($size);
+
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.35rem);
+
+  button,
+  a {
+    @include menu-item($size);
+  }
+}

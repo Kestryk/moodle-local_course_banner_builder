@@ -1,0 +1,166 @@
+// Shared EasyEdu visual tokens.
+//
+// These CSS custom properties are intentionally plugin-agnostic. Each Moodle
+// plugin embeds this kit, includes `token-defaults` on its own root selector,
+// and Moodle themes can then override the public `--easyedu-*` variables without
+// editing the plugin files.
+//
+// Keep this file boring and explicit: tokens are the public contract between the
+// plugin author, Moodle theme authors and future EasyEdu plugins.
+
+@mixin token-defaults {
+  // Layout rhythm.
+  --easyedu-gap: 1rem;
+  --easyedu-radius: 0.75rem;
+  --easyedu-radius-sm: 0.5rem;
+  --easyedu-radius-lg: 1rem;
+
+  // Global surfaces and text.
+  --easyedu-border: #d7dfe8;
+  --easyedu-border-strong: #b9c6d4;
+  --easyedu-focus-ring: rgba(15, 108, 191, 0.22);
+  --easyedu-focus-ring-accent: rgba(27, 127, 90, 0.22);
+  --easyedu-shadow: 0 0.45rem 1.25rem rgba(31, 42, 55, 0.08);
+  --easyedu-shadow-soft: 0 0.25rem 0.8rem rgba(31, 42, 55, 0.05);
+  --easyedu-shadow-strong: 0 0.9rem 2.2rem rgba(31, 42, 55, 0.16);
+  --easyedu-text: #1f2a37;
+  --easyedu-text-muted: #5c6c7d;
+  --easyedu-surface: #fff;
+  --easyedu-surface-soft: #f7f9fc;
+  --easyedu-surface-strong: #edf3f8;
+
+  // Primary and action colours.
+  --easyedu-primary: #0f6cbf;
+  --easyedu-primary-soft: #eaf3fb;
+  --easyedu-primary-strong: #0b4f8a;
+  --easyedu-accent: #1b7f5a;
+  --easyedu-accent-soft: #eef8f2;
+  --easyedu-warning-soft: #fff4df;
+  --easyedu-danger-soft: #fdecec;
+  --easyedu-danger: #a12b2b;
+  --easyedu-success: #1f7a4d;
+  --easyedu-success-soft: #e9f7ef;
+  --easyedu-warning: #9a650f;
+  --easyedu-info: #0f6cbf;
+  --easyedu-info-soft: #eaf3fb;
+
+  // Component-level defaults. Moodle themes should prefer these before changing
+  // individual plugin selectors.
+  --easyedu-card-border: #d9e2ec;
+  --easyedu-card-radius: 0.9rem;
+  --easyedu-card-shadow: 0 0.2rem 0.55rem rgba(31, 42, 55, 0.04);
+  --easyedu-count-bg: #f6f8fa;
+  --easyedu-count-border: #d8e0e8;
+  --easyedu-count-text: #6d7f91;
+  --easyedu-control-height: 2.35rem;
+  --easyedu-control-radius: 0.72rem;
+  --easyedu-control-border: #c8d6e3;
+  --easyedu-control-focus-border: #8abce3;
+  --easyedu-dropdown-border: #cbdcea;
+  --easyedu-dropdown-radius: 0.78rem;
+  --easyedu-dropdown-shadow: 0 0.85rem 1.8rem rgba(31, 42, 55, 0.16);
+  --easyedu-empty-bg-start: #fbfdff;
+  --easyedu-empty-bg-end: #f6f9fc;
+  --easyedu-empty-border: #cdddea;
+  --easyedu-filter-border: #dce7f1;
+  --easyedu-modal-border: #cfe0ef;
+  --easyedu-modal-radius: 1rem;
+  --easyedu-modal-shadow: 0 1.15rem 3.2rem rgba(22, 45, 68, 0.24);
+  --easyedu-modal-header-bg: linear-gradient(135deg, #f8fbff 0%, #eef7f1 100%);
+  --easyedu-modal-field-bg: rgba(255, 255, 255, 0.86);
+  --easyedu-modal-field-border: #d9e7f1;
+  --easyedu-guide-modal-width: 72rem;
+  --easyedu-guide-modal-height: min(90vh, 46rem);
+  --easyedu-guide-modal-max-height: calc(100vh - 2rem);
+  --easyedu-guide-modal-min-height: min(42rem, calc(100vh - 2rem));
+  --easyedu-tooltip-bg: #f8fbfd;
+  --easyedu-tooltip-border: #cfe0ec;
+  --easyedu-tooltip-glow: rgba(12, 113, 194, 0.1);
+  --easyedu-tooltip-shadow:
+    0 0.65rem 1.45rem rgba(31, 68, 104, 0.15),
+    0 0.08rem 0.2rem rgba(31, 42, 55, 0.06);
+  --easyedu-tooltip-text: #31485f;
+  --easyedu-table-header-bg: #f5f9fc;
+  --easyedu-table-row-border: #e1e9f1;
+  --easyedu-table-row-hover: #f9fcff;
+  --easyedu-table-success-bg: #f0f9f4;
+  --easyedu-table-warning-bg: #fff8e9;
+  --easyedu-table-error-bg: #fff1f1;
+  --easyedu-overlay-bg: rgba(255, 255, 255, 0.82);
+  --easyedu-overlay-plus-bg: var(--easyedu-accent);
+  --easyedu-overlay-plus-color: #fff;
+  --easyedu-image-preview-bg: #f7fbff;
+  --easyedu-image-preview-border: #d5e5f1;
+  --easyedu-motion-fast: 150ms;
+  --easyedu-motion-normal: 240ms;
+  --easyedu-motion-slow: 360ms;
+  --easyedu-motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  // Semantic object colours. Plugins can remap these to their own domain:
+  // participant/group/grouping in EasyStud, layer/banner/source in another UI.
+  --easyedu-participant: #4873ad;
+  --easyedu-participant-soft: #e6eef7;
+  --easyedu-participant-rail: #79acd6;
+  --easyedu-group: #29724d;
+  --easyedu-group-soft: #eaf6ef;
+  --easyedu-group-rail: #74b892;
+  --easyedu-grouping: #6a7f98;
+  --easyedu-grouping-soft: #edf2f7;
+  --easyedu-grouping-rail: #8aa5ba;
+
+  // Left identity rail and built-in masked icons.
+  --easyedu-identity-border-width: 1.28rem;
+  --easyedu-grouping-open-border-width: var(--easyedu-identity-border-width);
+  --easyedu-identity-icon-color: #fff;
+  --easyedu-identity-size: 0.78rem;
+  --easyedu-icon-user: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 8.2a3.45 3.45 0 1 0 0-6.9 3.45 3.45 0 0 0 0 6.9Zm0 1.45c-3.28 0-5.72 1.72-6.22 4.36-.08.42.25.79.68.79h11.08c.43 0 .76-.37.68-.79-.5-2.64-2.94-4.36-6.22-4.36Z'/%3E%3C/svg%3E");
+  --easyedu-icon-group: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M6.2 7.35a2.85 2.85 0 1 0 0-5.7 2.85 2.85 0 0 0 0 5.7Zm5.25.55a2.25 2.25 0 1 0 0-4.5 2.25 2.25 0 0 0 0 4.5ZM6.2 8.65c-2.9 0-5.05 1.65-5.48 4.05-.08.45.27.85.73.85h9.5c.46 0 .81-.4.73-.85-.43-2.4-2.58-4.05-5.48-4.05Zm5.25.55c-.42 0-.82.04-1.2.13 1.15.77 1.96 1.86 2.25 3.2h2.04c.47 0 .83-.42.72-.88-.36-1.55-1.81-2.45-3.81-2.45Z'/%3E%3C/svg%3E");
+  --easyedu-icon-grouping: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2.5 2h4a1 1 0 0 1 1 1v2.7a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1Zm7 0h4a1 1 0 0 1 1 1v2.7a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1ZM6 9.3h4a1 1 0 0 1 1 1V13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-2.7a1 1 0 0 1 1-1ZM4 7.3h1.2v1.1h5.6V7.3H12v2H8.6v-1H7.4v1H4v-2Z'/%3E%3C/svg%3E");
+  --easyedu-drag-handle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 14'%3E%3Ccircle cx='2' cy='2' r='1.2'/%3E%3Ccircle cx='6' cy='2' r='1.2'/%3E%3Ccircle cx='2' cy='7' r='1.2'/%3E%3Ccircle cx='6' cy='7' r='1.2'/%3E%3Ccircle cx='2' cy='12' r='1.2'/%3E%3Ccircle cx='6' cy='12' r='1.2'/%3E%3C/svg%3E");
+}
+
+// EasyStud compatibility aliases.
+//
+// Keep plugin-specific variables outside generic kit components. This mixin is
+// intentionally retained here while EasyStud still consumes
+// `--local-groupimport-easystud-*` variables. New plugins can skip it and use
+// only `--easyedu-*`.
+@mixin groupimport-compat-tokens {
+  --local-groupimport-easystud-gap: var(--easyedu-gap);
+  --local-groupimport-easystud-radius: var(--easyedu-radius);
+  --local-groupimport-easystud-radius-sm: var(--easyedu-radius-sm);
+  --local-groupimport-easystud-border: var(--easyedu-border);
+  --local-groupimport-easystud-border-strong: var(--easyedu-border-strong);
+  --local-groupimport-easystud-shadow: var(--easyedu-shadow);
+  --local-groupimport-easystud-shadow-soft: var(--easyedu-shadow-soft);
+  --local-groupimport-easystud-text: var(--easyedu-text);
+  --local-groupimport-easystud-text-muted: var(--easyedu-text-muted);
+  --local-groupimport-easystud-surface: var(--easyedu-surface);
+  --local-groupimport-easystud-surface-soft: var(--easyedu-surface-soft);
+  --local-groupimport-easystud-surface-strong: var(--easyedu-surface-strong);
+  --local-groupimport-easystud-primary: var(--easyedu-primary);
+  --local-groupimport-easystud-primary-soft: var(--easyedu-primary-soft);
+  --local-groupimport-easystud-primary-strong: var(--easyedu-primary-strong);
+  --local-groupimport-easystud-accent: var(--easyedu-accent);
+  --local-groupimport-easystud-accent-soft: var(--easyedu-accent-soft);
+  --local-groupimport-easystud-warning-soft: var(--easyedu-warning-soft);
+  --local-groupimport-easystud-danger-soft: var(--easyedu-danger-soft);
+  --local-groupimport-easystud-danger: var(--easyedu-danger);
+  --local-groupimport-easystud-participant: var(--easyedu-participant);
+  --local-groupimport-easystud-participant-soft: var(--easyedu-participant-soft);
+  --local-groupimport-easystud-participant-rail: var(--easyedu-participant-rail);
+  --local-groupimport-easystud-group: var(--easyedu-group);
+  --local-groupimport-easystud-group-soft: var(--easyedu-group-soft);
+  --local-groupimport-easystud-group-rail: var(--easyedu-group-rail);
+  --local-groupimport-easystud-grouping: var(--easyedu-grouping);
+  --local-groupimport-easystud-grouping-soft: var(--easyedu-grouping-soft);
+  --local-groupimport-easystud-grouping-rail: var(--easyedu-grouping-rail);
+  --local-groupimport-easystud-identity-border-width: var(--easyedu-identity-border-width);
+  --local-groupimport-easystud-grouping-open-border-width: var(--easyedu-grouping-open-border-width);
+  --local-groupimport-easystud-identity-icon-color: var(--easyedu-identity-icon-color);
+  --local-groupimport-easystud-identity-size: var(--easyedu-identity-size);
+  --local-groupimport-easystud-icon-user: var(--easyedu-icon-user);
+  --local-groupimport-easystud-icon-group: var(--easyedu-icon-group);
+  --local-groupimport-easystud-icon-grouping: var(--easyedu-icon-grouping);
+  --local-groupimport-easystud-drag-handle: var(--easyedu-drag-handle);
+}
