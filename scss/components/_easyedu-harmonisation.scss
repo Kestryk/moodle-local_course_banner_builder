@@ -55,6 +55,10 @@
         }
     }
 
+    .popover {
+        @include easyedu-tooltips.popover-surface;
+    }
+
     .local-course-banner-builder-configured-source-tools,
     .local-course-banner-builder-source-preview-primary-actions,
     .local-course-banner-builder-bulk-action-row,
@@ -92,6 +96,15 @@
         }
     }
 }
+
+.local-course-banner-builder-hover-popover {
+    position: absolute;
+    z-index: 1095;
+
+    @include easyedu-tooltips.popover-surface;
+}
+
+@include easyedu-tooltips.positioned-popover-arrows(".local-course-banner-builder-hover-popover");
 
 .local-course-banner-builder-admin--native,
 .modal[id^="local-course-banner-builder-"] {
