@@ -716,8 +716,22 @@ document.addEventListener('click', function (e) {
         return;
     }
 
+    var modalPreviewScope = e.target.closest(
+        '[data-layer-banner-preview="1"], [data-preview-current-image="1"], [data-preview-draft-layer="1"]'
+    );
+    if (modalPreviewScope && Date.now() < localCourseBannerBuilderSuppressModalPreviewClickUntil) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+    }
+
     var sourcePreviewRoot = e.target.closest('[data-source-visual-editor="1"]');
     if (sourcePreviewRoot && !localCourseBannerBuilderIsSourcePreviewReadonly(sourcePreviewRoot)) {
+        if (Date.now() < localCourseBannerBuilderSuppressSourcePreviewClickUntil) {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+        }
         var sourceLayer = localCourseBannerBuilderGetSourcePreviewEventLayer(sourcePreviewRoot, e);
         if (sourceLayer) {
             localCourseBannerBuilderSelectSourcePreviewLayer(sourcePreviewRoot, sourceLayer);
@@ -1416,6 +1430,15 @@ function localCourseBannerBuilderSyncSourceSubmit(dropdown) {
     submit.disabled = !hasSelection;
     submit.classList.toggle('disabled', !hasSelection);
     submit.setAttribute('aria-disabled', hasSelection ? 'false' : 'true');
+    if ((dropdown.getAttribute('data-source-dropdown') || '') !== 'sourceparent') {
+        if (hasSelection) {
+            Array.prototype.slice.call(document.querySelectorAll('[data-easyedu-guide-target="selected-source-submit"]'))
+                .forEach(function (button) {
+                    button.removeAttribute('data-easyedu-guide-target');
+                });
+            submit.setAttribute('data-easyedu-guide-target', 'selected-source-submit');
+        }
+    }
 }
 
 function localCourseBannerBuilderSyncSelectionButton() {
@@ -3035,12 +3058,188 @@ function localCourseBannerBuilderReadPreviewCropState(form, layer, preferStoredS
 }
 
 var localCourseBannerBuilderCropInteraction = null;
+var localCourseBannerBuilderSuppressModalPreviewClickUntil = 0;
 
 function localCourseBannerBuilderGetCropInput(form, name) {
     if (!form) {
         return null;
     }
     return form.querySelector('#id_' + name) || form.querySelector('[name="' + name + '"]');
+}
+
+function localCourseBannerBuilderGetCropFrameForLayer(layer) {
+    if (!layer || !layer.closest) {
+        return null;
+    }
+    return layer.closest(
+        '[data-banner-preview-frame="1"], [data-source-preview-frame="1"], [data-source-preview-frame-moodle="1"]'
+    );
+}
+
+function localCourseBannerBuilderBuildPercentRectFromDomRect(rect, frameRect) {
+    if (!rect || !frameRect || !frameRect.width || !frameRect.height || !rect.width || !rect.height) {
+        return null;
+    }
+    return {
+        left: localCourseBannerBuilderRoundPreviewPercent(((rect.left - frameRect.left) / frameRect.width) * 100),
+        top: localCourseBannerBuilderRoundPreviewPercent(((rect.top - frameRect.top) / frameRect.height) * 100),
+        width: localCourseBannerBuilderRoundPreviewPercent((rect.width / frameRect.width) * 100),
+        height: localCourseBannerBuilderRoundPreviewPercent((rect.height / frameRect.height) * 100)
+    };
+}
+
+function localCourseBannerBuilderSetCropSessionSourceState(layer, sourceRect) {
+    if (!layer || !sourceRect) {
+        return;
+    }
+    layer.setAttribute('data-preview-crop-session-source-left', String(sourceRect.left));
+    layer.setAttribute('data-preview-crop-session-source-top', String(sourceRect.top));
+    layer.setAttribute('data-preview-crop-session-source-width', String(sourceRect.width));
+    layer.setAttribute('data-preview-crop-session-source-height', String(sourceRect.height));
+}
+
+function localCourseBannerBuilderClearCropSessionSourceState(layer) {
+    if (!layer) {
+        return;
+    }
+    [
+        'data-preview-crop-session-source-left',
+        'data-preview-crop-session-source-top',
+        'data-preview-crop-session-source-width',
+        'data-preview-crop-session-source-height'
+    ].forEach(function (attribute) {
+        layer.removeAttribute(attribute);
+    });
+}
+
+function localCourseBannerBuilderGetCropSessionSourceState(layer) {
+    if (!layer) {
+        return null;
+    }
+    var source = {
+        left: localCourseBannerBuilderNormaliseNumericValue(
+            layer.getAttribute('data-preview-crop-session-source-left') || '0',
+            0
+        ),
+        top: localCourseBannerBuilderNormaliseNumericValue(
+            layer.getAttribute('data-preview-crop-session-source-top') || '0',
+            0
+        ),
+        width: localCourseBannerBuilderNormaliseNumericValue(
+            layer.getAttribute('data-preview-crop-session-source-width') || '0',
+            0
+        ),
+        height: localCourseBannerBuilderNormaliseNumericValue(
+            layer.getAttribute('data-preview-crop-session-source-height') || '0',
+            0
+        )
+    };
+    if (source.width > 0 && source.height > 0) {
+        return source;
+    }
+    return null;
+}
+
+function localCourseBannerBuilderSetCropSessionPlacementState(layer, placementState) {
+    if (!layer || !placementState) {
+        return;
+    }
+    layer.setAttribute('data-preview-crop-session-placement', JSON.stringify(placementState));
+}
+
+function localCourseBannerBuilderGetCropSessionPlacementState(layer) {
+    if (!layer) {
+        return null;
+    }
+    return localCourseBannerBuilderReadJson(
+        layer.getAttribute('data-preview-crop-session-placement') || '',
+        null
+    );
+}
+
+function localCourseBannerBuilderSetCropSessionInitialCropState(layer, cropState) {
+    if (!layer || !cropState) {
+        return;
+    }
+    layer.setAttribute('data-preview-crop-session-initial-crop', JSON.stringify(cropState));
+}
+
+function localCourseBannerBuilderGetCropSessionInitialCropState(layer) {
+    if (!layer) {
+        return null;
+    }
+    return localCourseBannerBuilderReadJson(
+        layer.getAttribute('data-preview-crop-session-initial-crop') || '',
+        null
+    );
+}
+
+function localCourseBannerBuilderSetCropSessionDirty(layer, dirty) {
+    if (!layer) {
+        return;
+    }
+    layer.setAttribute('data-preview-crop-session-dirty', dirty ? '1' : '0');
+}
+
+function localCourseBannerBuilderIsCropSessionDirty(layer) {
+    return !!(layer && layer.getAttribute('data-preview-crop-session-dirty') === '1');
+}
+
+function localCourseBannerBuilderClearCropSessionMeta(layer) {
+    if (!layer) {
+        return;
+    }
+    [
+        'data-preview-crop-session-placement',
+        'data-preview-crop-session-initial-crop',
+        'data-preview-crop-session-dirty'
+    ].forEach(function (attribute) {
+        layer.removeAttribute(attribute);
+    });
+}
+
+function localCourseBannerBuilderCropStatesMatch(firstState, secondState, tolerance) {
+    var first = localCourseBannerBuilderNormaliseCropState(firstState || {});
+    var second = localCourseBannerBuilderNormaliseCropState(secondState || {});
+    var epsilon = typeof tolerance === 'number' ? tolerance : 0.05;
+    return Math.abs(first.left - second.left) <= epsilon &&
+        Math.abs(first.top - second.top) <= epsilon &&
+        Math.abs(first.width - second.width) <= epsilon &&
+        Math.abs(first.height - second.height) <= epsilon &&
+        (!!first.enabled === !!second.enabled);
+}
+
+function localCourseBannerBuilderBuildCropSourceRectFromVisibleLayer(layer, measureLayer) {
+    if (!layer || !layer.getBoundingClientRect) {
+        return null;
+    }
+    var referenceLayer = measureLayer || layer;
+    var frame = localCourseBannerBuilderGetCropFrameForLayer(layer);
+    if (!frame || !frame.getBoundingClientRect || !referenceLayer.getBoundingClientRect) {
+        return null;
+    }
+    var frameRect = frame.getBoundingClientRect();
+    var visibleRect = referenceLayer.getBoundingClientRect();
+    var visiblePercentRect = localCourseBannerBuilderBuildPercentRectFromDomRect(visibleRect, frameRect);
+    if (!visiblePercentRect) {
+        return null;
+    }
+    var crop = localCourseBannerBuilderGetPreviewCropState(layer);
+    if (!crop.enabled) {
+        return visiblePercentRect;
+    }
+    var sourceWidth = visiblePercentRect.width * (100 / Math.max(1, crop.width));
+    var sourceHeight = visiblePercentRect.height * (100 / Math.max(1, crop.height));
+    return {
+        left: localCourseBannerBuilderRoundPreviewPercent(
+            visiblePercentRect.left - ((sourceWidth * crop.left) / 100)
+        ),
+        top: localCourseBannerBuilderRoundPreviewPercent(
+            visiblePercentRect.top - ((sourceHeight * crop.top) / 100)
+        ),
+        width: localCourseBannerBuilderRoundPreviewPercent(sourceWidth),
+        height: localCourseBannerBuilderRoundPreviewPercent(sourceHeight)
+    };
 }
 
 function localCourseBannerBuilderSetPreviewCropState(layer, state) {
@@ -3053,13 +3252,10 @@ function localCourseBannerBuilderSetPreviewCropState(layer, state) {
     layer.setAttribute('data-preview-crop-top', String(localCourseBannerBuilderRoundPreviewPercent(crop.top)));
     layer.setAttribute('data-preview-crop-width', String(localCourseBannerBuilderRoundPreviewPercent(crop.width)));
     layer.setAttribute('data-preview-crop-height', String(localCourseBannerBuilderRoundPreviewPercent(crop.height)));
-    if (Number(state.imagecropsourcewidthpercent || 0) > 0 &&
-            Number(state.imagecropsourceheightpercent || 0) > 0) {
-        layer.setAttribute('data-preview-crop-source-left', String(state.imagecropsourceleftpercent || 0));
-        layer.setAttribute('data-preview-crop-source-top', String(state.imagecropsourcetoppercent || 0));
-        layer.setAttribute('data-preview-crop-source-width', String(state.imagecropsourcewidthpercent));
-        layer.setAttribute('data-preview-crop-source-height', String(state.imagecropsourceheightpercent));
-    }
+    layer.removeAttribute('data-preview-crop-source-left');
+    layer.removeAttribute('data-preview-crop-source-top');
+    layer.removeAttribute('data-preview-crop-source-width');
+    layer.removeAttribute('data-preview-crop-source-height');
     localCourseBannerBuilderUpdateCropSelectionFrame(layer, crop);
 
     var form = layer.closest ? layer.closest('form.mform') : null;
@@ -3135,98 +3331,8 @@ function localCourseBannerBuilderSetPreviewCropState(layer, state) {
     }
 }
 
-function localCourseBannerBuilderGetCropEditSourceState(layer) {
-    if (!layer) {
-        return null;
-    }
-    var frame = layer.closest(
-        '[data-banner-preview-frame="1"], [data-source-preview-frame="1"], [data-source-preview-frame-moodle="1"]'
-    );
-    if (!frame || !frame.getBoundingClientRect || !layer.getBoundingClientRect) {
-        return null;
-    }
-    var frameRect = frame.getBoundingClientRect();
-    var layerRect = layer.getBoundingClientRect();
-    if (!frameRect.width || !frameRect.height || !layerRect.width || !layerRect.height) {
-        return null;
-    }
-    return {
-        imagecropsourceleftpercent: localCourseBannerBuilderRoundPreviewPercent(
-            ((layerRect.left - frameRect.left) / frameRect.width) * 100
-        ),
-        imagecropsourcetoppercent: localCourseBannerBuilderRoundPreviewPercent(
-            ((layerRect.top - frameRect.top) / frameRect.height) * 100
-        ),
-        imagecropsourcewidthpercent: localCourseBannerBuilderRoundPreviewPercent(
-            (layerRect.width / frameRect.width) * 100
-        ),
-        imagecropsourceheightpercent: localCourseBannerBuilderRoundPreviewPercent(
-            (layerRect.height / frameRect.height) * 100
-        )
-    };
-}
-
-function localCourseBannerBuilderHasCropSourceState(state) {
-    return !!(state &&
-        Number(state.imagecropsourcewidthpercent || 0) > 0 &&
-        Number(state.imagecropsourceheightpercent || 0) > 0);
-}
-
-function localCourseBannerBuilderCopyCropSourceState(fromState, toState) {
-    if (!fromState || !toState) {
-        return toState;
-    }
-    [
-        'imagecropsourceleftpercent',
-        'imagecropsourcetoppercent',
-        'imagecropsourcewidthpercent',
-        'imagecropsourceheightpercent'
-    ].forEach(function (key) {
-        if (typeof fromState[key] !== 'undefined') {
-            toState[key] = fromState[key];
-        }
-    });
-    return toState;
-}
-
-function localCourseBannerBuilderPreserveCropSourceState(existingState, nextState) {
-    if (!nextState || !nextState.imagecropenabled ||
-            localCourseBannerBuilderHasCropSourceState(nextState) ||
-            !localCourseBannerBuilderHasCropSourceState(existingState)) {
-        return nextState;
-    }
-    return localCourseBannerBuilderCopyCropSourceState(existingState, nextState);
-}
-
 function localCourseBannerBuilderGetStoredCropEditSourceState(layer) {
-    if (!layer) {
-        return null;
-    }
-    var source = {
-        left: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-crop-source-left') || '0', 0),
-        top: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-crop-source-top') || '0', 0),
-        width: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-crop-source-width') || '0', 0),
-        height: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-crop-source-height') || '0', 0)
-    };
-    if (source.width > 0 && source.height > 0) {
-        return source;
-    }
-    if (layer.hasAttribute('data-preview-draft-layer')) {
-        var form = localCourseBannerBuilderGetLayerScope(layer);
-        var draftIndex = String(layer.getAttribute('data-draft-index') || '');
-        var settings = form && draftIndex !== '' ? localCourseBannerBuilderGetDraftPreviewSettings(form) : {};
-        var draftState = settings[draftIndex] || null;
-        if (localCourseBannerBuilderHasCropSourceState(draftState)) {
-            return {
-                left: localCourseBannerBuilderNormaliseNumericValue(draftState.imagecropsourceleftpercent || 0, 0),
-                top: localCourseBannerBuilderNormaliseNumericValue(draftState.imagecropsourcetoppercent || 0, 0),
-                width: localCourseBannerBuilderNormaliseNumericValue(draftState.imagecropsourcewidthpercent || 0, 0),
-                height: localCourseBannerBuilderNormaliseNumericValue(draftState.imagecropsourceheightpercent || 0, 0)
-            };
-        }
-        return null;
-    }
-    return null;
+    return localCourseBannerBuilderGetCropSessionSourceState(layer);
 }
 
 function localCourseBannerBuilderGetEditableCurrentPreviewImage(form) {
@@ -3475,45 +3581,44 @@ function localCourseBannerBuilderEnterCropEditLayout(layer) {
         return;
     }
     var image = layer.querySelector('[data-preview-image-tag="1"]');
-    var frame = layer.closest(
-        '[data-banner-preview-frame="1"], [data-source-preview-frame="1"], [data-source-preview-frame-moodle="1"]'
-    );
+    var frame = localCourseBannerBuilderGetCropFrameForLayer(layer);
     if (!image || !frame || !frame.getBoundingClientRect) {
         return;
     }
-    var crop = localCourseBannerBuilderGetPreviewCropState(layer);
-    var frameRect = frame.getBoundingClientRect();
     var form = localCourseBannerBuilderGetLayerScope(layer);
-    var storedSource = crop.enabled ? localCourseBannerBuilderGetStoredCropEditSourceState(layer) : null;
-    var visualLayer = form && !storedSource ? localCourseBannerBuilderGetDraftSelectionVisualLayer(form, layer) : null;
+    var visualLayer = form ? localCourseBannerBuilderGetDraftSelectionVisualLayer(form, layer) : null;
     var measureLayer = visualLayer && !visualLayer.hidden ? visualLayer : layer;
-    var measureImage = measureLayer.querySelector('[data-preview-image-tag="1"]') || image;
-    var layerRect = measureLayer.getBoundingClientRect();
-    if (!frameRect.width || !frameRect.height || !layerRect.width || !layerRect.height) {
+    var sourceRect = localCourseBannerBuilderBuildCropSourceRectFromVisibleLayer(layer, measureLayer);
+    var frameRect = frame.getBoundingClientRect();
+    if (!sourceRect || !frameRect.width || !frameRect.height) {
         return;
     }
 
     layer.dataset.previewCropEditLayout = '1';
     layer.dataset.previewCropEditLayerStyle = layer.style.cssText || '';
     layer.dataset.previewCropEditImageStyle = image.style.cssText || '';
-
-    var imageRect = measureImage && measureImage.getBoundingClientRect ? measureImage.getBoundingClientRect() : null;
-    var hasRenderedCropImage = !storedSource && crop.enabled && imageRect && imageRect.width > 0 && imageRect.height > 0 &&
-        (imageRect.width > layerRect.width * 1.01 || imageRect.height > layerRect.height * 1.01);
-    var originalWidth = storedSource ? (storedSource.width * frameRect.width / 100) : (hasRenderedCropImage ? imageRect.width :
-        (crop.enabled ? (layerRect.width * 100 / Math.max(1, crop.width)) : layerRect.width));
-    var originalHeight = storedSource ? (storedSource.height * frameRect.height / 100) : (hasRenderedCropImage ? imageRect.height :
-        (crop.enabled ? (layerRect.height * 100 / Math.max(1, crop.height)) : layerRect.height));
-    var originalLeft = storedSource ? (storedSource.left * frameRect.width / 100) : (hasRenderedCropImage ? (imageRect.left - frameRect.left) :
-        ((layerRect.left - frameRect.left) - (crop.enabled ? (originalWidth * crop.left / 100) : 0)));
-    var originalTop = storedSource ? (storedSource.top * frameRect.height / 100) : (hasRenderedCropImage ? (imageRect.top - frameRect.top) :
-        ((layerRect.top - frameRect.top) - (crop.enabled ? (originalHeight * crop.top / 100) : 0)));
     var zIndex = layer.style.zIndex || layer.getAttribute('data-preview-zindex') || '1';
     var cropOverlayContext = localCourseBannerBuilderGetOverlayOrderingContext(
         layer.closest('form.mform, [data-source-visual-editor="1"], [data-layer-banner-preview="1"]') || frame
     );
     var opacityMatch = (image.style.cssText || '').match(/opacity:s*([^;]+);?/i);
     var opacity = opacityMatch ? opacityMatch[1] : '';
+    var placementState = localCourseBannerBuilderReadLayerPreviewStateFromLayer(layer) || {};
+    var initialCropState = localCourseBannerBuilderGetPreviewCropState(layer);
+    localCourseBannerBuilderSetCropSessionSourceState(layer, sourceRect);
+    localCourseBannerBuilderSetCropSessionPlacementState(layer, {
+        fitmodeoverride: placementState.fitmodeoverride,
+        positionanchor: placementState.positionanchor,
+        customsizekeepaspect: placementState.customsizekeepaspect,
+        customwidthpercent: placementState.customwidthpercent,
+        customheightpercent: placementState.customheightpercent,
+        offsetleftpercent: placementState.offsetleftpercent,
+        offsettoppercent: placementState.offsettoppercent,
+        offsetrightpercent: placementState.offsetrightpercent,
+        offsetbottompercent: placementState.offsetbottompercent
+    });
+    localCourseBannerBuilderSetCropSessionInitialCropState(layer, initialCropState);
+    localCourseBannerBuilderSetCropSessionDirty(layer, false);
 
     layer.style.cssText = [
         'position: absolute;',
@@ -3521,10 +3626,10 @@ function localCourseBannerBuilderEnterCropEditLayout(layer) {
         'align-items: stretch;',
         'justify-content: stretch;',
         'overflow: visible;',
-        'width: ' + localCourseBannerBuilderRoundPreviewPercent((originalWidth / frameRect.width) * 100) + '%;',
-        'height: ' + localCourseBannerBuilderRoundPreviewPercent((originalHeight / frameRect.height) * 100) + '%;',
-        'left: ' + localCourseBannerBuilderRoundPreviewPercent((originalLeft / frameRect.width) * 100) + '%;',
-        'top: ' + localCourseBannerBuilderRoundPreviewPercent((originalTop / frameRect.height) * 100) + '%;',
+        'width: ' + sourceRect.width + '%;',
+        'height: ' + sourceRect.height + '%;',
+        'left: ' + sourceRect.left + '%;',
+        'top: ' + sourceRect.top + '%;',
         'right: auto;',
         'bottom: auto;',
         'transform: none;',
@@ -3553,6 +3658,8 @@ function localCourseBannerBuilderExitCropEditLayout(layer) {
     delete layer.dataset.previewCropEditLayout;
     delete layer.dataset.previewCropEditLayerStyle;
     delete layer.dataset.previewCropEditImageStyle;
+    localCourseBannerBuilderClearCropSessionSourceState(layer);
+    localCourseBannerBuilderClearCropSessionMeta(layer);
 }
 
 function localCourseBannerBuilderEnsureCropEditor(layer) {
@@ -3586,17 +3693,6 @@ function localCourseBannerBuilderEnsureCropEditor(layer) {
             '<span data-preview-crop-handle="sw"></span><span data-preview-crop-handle="se"></span>' +
             '</div>';
         layer.appendChild(editor);
-    } else {
-        var existingBox = editor.querySelector('[data-preview-crop-box="1"]');
-        if (existingBox) {
-            ['n', 'e', 's', 'w', 'nw', 'ne', 'sw', 'se'].forEach(function (handle) {
-                if (!existingBox.querySelector('[data-preview-crop-handle="' + handle + '"]')) {
-                    var node = document.createElement('span');
-                    node.setAttribute('data-preview-crop-handle', handle);
-                    existingBox.appendChild(node);
-                }
-            });
-        }
     }
     layer.classList.add('local-course-banner-builder-preview-image-layer--crop-editing');
     localCourseBannerBuilderSyncPreviewCropFocusState(layer, true);
@@ -3634,40 +3730,111 @@ function localCourseBannerBuilderRefreshCropEditor(layer) {
         return;
     }
     var gap = 8;
-    var actionWidth = 32;
-    var actionHeight = 68;
+    var actionWidth = Math.max(32, actions.offsetWidth || 32);
+    var actionHeight = Math.max(68, actions.offsetHeight || 68);
     var frame = layer.closest(
         '[data-banner-preview-frame="1"], [data-source-preview-frame="1"], [data-source-preview-frame-moodle="1"]'
     );
-    var editorRect = editor.getBoundingClientRect();
-    var frameRect = frame ? frame.getBoundingClientRect() : editorRect;
-    if (!editorRect.width || !editorRect.height || !frameRect.width || !frameRect.height) {
+    var frameRect = frame ? frame.getBoundingClientRect() : null;
+    var boxRect = box.getBoundingClientRect();
+    if (!frameRect || !frameRect.width || !frameRect.height || !boxRect.width || !boxRect.height) {
         return;
     }
-    var boxLeft = editorRect.width * (crop.left / 100);
-    var boxTop = editorRect.height * (crop.top / 100);
-    var boxWidth = editorRect.width * (crop.width / 100);
-    var boxHeight = editorRect.height * (crop.height / 100);
-    var minLeft = Math.max(0, frameRect.left - editorRect.left + gap);
-    var maxLeft = Math.min(editorRect.width - actionWidth, frameRect.right - editorRect.left - actionWidth - gap);
-    var minTop = Math.max(0, frameRect.top - editorRect.top + gap);
-    var maxTop = Math.min(editorRect.height - actionHeight, frameRect.bottom - editorRect.top - actionHeight - gap);
+    var minLeft = gap;
+    var maxLeft = Math.max(gap, window.innerWidth - actionWidth - gap);
+    var minTop = gap;
+    var maxTop = Math.max(gap, window.innerHeight - actionHeight - gap);
+    var boxLeft = boxRect.left;
+    var boxTop = boxRect.top;
+    var boxWidth = boxRect.width;
+    var boxHeight = boxRect.height;
+    var boxRight = boxLeft + boxWidth;
+    var boxBottom = boxTop + boxHeight;
+    var centerLeft = boxLeft + (boxWidth / 2) - (actionWidth / 2);
     var centerTop = boxTop + (boxHeight / 2) - (actionHeight / 2);
-    var rightLeft = boxLeft + boxWidth + gap;
-    var leftLeft = boxLeft - actionWidth - gap;
-    var canPlaceRight = rightLeft <= maxLeft;
-    var canPlaceLeft = leftLeft >= minLeft;
-    var actionsLeft = canPlaceRight ? rightLeft : leftLeft;
-    var actionsTop = centerTop;
-
-    if (!canPlaceRight && !canPlaceLeft) {
-        var boxCenter = boxLeft + (boxWidth / 2);
-        actionsLeft = boxCenter < (editorRect.width / 2) ? maxLeft : minLeft;
-    }
-    actionsLeft = Math.max(minLeft, Math.min(maxLeft, actionsLeft));
-    actionsTop = Math.max(minTop, Math.min(maxTop, actionsTop));
-    editor.style.setProperty('--local-course-banner-builder-crop-actions-left', actionsLeft + 'px');
-    editor.style.setProperty('--local-course-banner-builder-crop-actions-top', actionsTop + 'px');
+    var overlapArea = function (candidateLeft, candidateTop) {
+        var overlapWidth = Math.max(
+            0,
+            Math.min(candidateLeft + actionWidth, boxRight) - Math.max(candidateLeft, boxLeft)
+        );
+        var overlapHeight = Math.max(
+            0,
+            Math.min(candidateTop + actionHeight, boxBottom) - Math.max(candidateTop, boxTop)
+        );
+        return overlapWidth * overlapHeight;
+    };
+    var clamp = function (value, min, max) {
+        if (min > max) {
+            return value;
+        }
+        return Math.max(min, Math.min(max, value));
+    };
+    var candidates = [
+        {
+            left: boxRight + gap,
+            top: centerTop,
+            priority: 1
+        },
+        {
+            left: boxLeft - actionWidth - gap,
+            top: centerTop,
+            priority: 2
+        },
+        {
+            left: centerLeft,
+            top: boxTop - actionHeight - gap,
+            priority: 3
+        },
+        {
+            left: centerLeft,
+            top: boxBottom + gap,
+            priority: 4
+        },
+        {
+            left: frameRect.right + gap,
+            top: frameRect.top,
+            priority: 5
+        },
+        {
+            left: frameRect.left - actionWidth - gap,
+            top: frameRect.top,
+            priority: 6
+        },
+        {
+            left: frameRect.right + gap,
+            top: frameRect.bottom - actionHeight,
+            priority: 7
+        },
+        {
+            left: frameRect.left - actionWidth - gap,
+            top: frameRect.bottom - actionHeight,
+            priority: 8
+        }
+    ].map(function (candidate) {
+        var nextLeft = clamp(candidate.left, minLeft, maxLeft);
+        var nextTop = clamp(candidate.top, minTop, maxTop);
+        return {
+            left: nextLeft,
+            top: nextTop,
+            overlap: overlapArea(nextLeft, nextTop),
+            priority: candidate.priority
+        };
+    });
+    candidates.sort(function (a, b) {
+        if (a.overlap !== b.overlap) {
+            return a.overlap - b.overlap;
+        }
+        return a.priority - b.priority;
+    });
+    var bestCandidate = candidates[0] || {left: maxLeft, top: minTop};
+    editor.style.setProperty(
+        '--local-course-banner-builder-crop-actions-left',
+        localCourseBannerBuilderRoundPreviewPercent(bestCandidate.left) + 'px'
+    );
+    editor.style.setProperty(
+        '--local-course-banner-builder-crop-actions-top',
+        localCourseBannerBuilderRoundPreviewPercent(bestCandidate.top) + 'px'
+    );
 }
 
 function localCourseBannerBuilderRemoveCropEditor(layer) {
@@ -3780,6 +3947,14 @@ function localCourseBannerBuilderGetCropControlLayer(control, sourceMode) {
 }
 
 function localCourseBannerBuilderGetCropSelectionCustomState(layer) {
+    var sessionPlacement = localCourseBannerBuilderGetCropSessionPlacementState(layer);
+    var initialCropState = localCourseBannerBuilderGetCropSessionInitialCropState(layer);
+    var currentCropState = localCourseBannerBuilderGetPreviewCropState(layer);
+    if (sessionPlacement && initialCropState &&
+            (!localCourseBannerBuilderIsCropSessionDirty(layer) ||
+            localCourseBannerBuilderCropStatesMatch(currentCropState, initialCropState))) {
+        return Object.assign({}, sessionPlacement);
+    }
     var box = layer ? layer.querySelector('[data-preview-crop-box="1"]') : null;
     var frame = layer ? layer.closest(
         '[data-banner-preview-frame="1"], [data-source-preview-frame="1"], [data-source-preview-frame-moodle="1"]'
@@ -3889,11 +4064,19 @@ function localCourseBannerBuilderSaveDraftPreviewLayerState(form, layer, patch) 
         localCourseBannerBuilderReadLayerPreviewStateFromLayer(layer) || {},
         patch || {}
     );
-    settings[draftIndex] = localCourseBannerBuilderPreserveCropSourceState(existingState, nextState);
+    [
+        'imagecropsourceleftpercent',
+        'imagecropsourcetoppercent',
+        'imagecropsourcewidthpercent',
+        'imagecropsourceheightpercent'
+    ].forEach(function (key) {
+        delete nextState[key];
+    });
+    settings[draftIndex] = nextState;
     localCourseBannerBuilderSetDraftPreviewSettings(form, settings);
 }
 
-function localCourseBannerBuilderApplyModalCropPreviewState(form, layer, cropState, placementState, cropSourceState) {
+function localCourseBannerBuilderApplyModalCropPreviewState(form, layer, cropState, placementState) {
     if (!form || !layer) {
         return;
     }
@@ -3905,10 +4088,6 @@ function localCourseBannerBuilderApplyModalCropPreviewState(form, layer, cropSta
         imagecropwidthpercent: cropState.width,
         imagecropheightpercent: cropState.height
     });
-    var sourceState = cropSourceState || localCourseBannerBuilderGetCropEditSourceState(layer);
-    if (sourceState) {
-        Object.assign(nextState, sourceState);
-    }
     localCourseBannerBuilderWriteCropStateToForm(form, nextState);
     localCourseBannerBuilderApplyCropSelectionCustomStateToForm(form, nextState);
     localCourseBannerBuilderSetSourcePreviewLayerState(layer, nextState);
@@ -3947,7 +4126,6 @@ function localCourseBannerBuilderApplyCropEditor(control, sourceMode) {
     }
     var crop = localCourseBannerBuilderGetPreviewCropState(layer);
     var cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState(layer);
-    var cropSourceState = sourceMode ? null : localCourseBannerBuilderGetCropEditSourceState(layer);
     localCourseBannerBuilderSetPreviewCropState(layer, {
         imagecropenabled: crop.enabled,
         imagecropleftpercent: crop.left,
@@ -3978,7 +4156,7 @@ function localCourseBannerBuilderApplyCropEditor(control, sourceMode) {
     } else {
         if (form) {
             form.dataset.previewApplyingInteraction = '1';
-            localCourseBannerBuilderApplyModalCropPreviewState(form, layer, crop, cropSelectionState, cropSourceState);
+            localCourseBannerBuilderApplyModalCropPreviewState(form, layer, crop, cropSelectionState);
             localCourseBannerBuilderSyncModalPreviewCropButtons(form);
             form.dataset.previewApplyingInteraction = '0';
         }
@@ -4147,11 +4325,21 @@ function localCourseBannerBuilderHandleCropPointerMove(event) {
     crop.imagecroptoppercent = crop.top;
     crop.imagecropwidthpercent = crop.width;
     crop.imagecropheightpercent = crop.height;
+    if (!localCourseBannerBuilderCropStatesMatch(crop, interaction.startCrop)) {
+        localCourseBannerBuilderSetCropSessionDirty(interaction.layer, true);
+    }
     localCourseBannerBuilderSetPreviewCropState(interaction.layer, crop);
     localCourseBannerBuilderRefreshCropEditor(interaction.layer);
 }
 
 function localCourseBannerBuilderStopCropInteraction() {
+    if (localCourseBannerBuilderCropInteraction && localCourseBannerBuilderCropInteraction.layer) {
+        if (localCourseBannerBuilderCropInteraction.layer.hasAttribute('data-source-preview-layer')) {
+            localCourseBannerBuilderSuppressNextSourcePreviewClick();
+        } else {
+            localCourseBannerBuilderSuppressModalPreviewClickUntil = Date.now() + 350;
+        }
+    }
     localCourseBannerBuilderCropInteraction = null;
 }
 
@@ -7883,22 +8071,6 @@ function localCourseBannerBuilderReadLayerFormPreviewState(form) {
         imagecropheightpercent: localCourseBannerBuilderClampCropSize(
             cropHeightInput ? cropHeightInput.value : (currentLayer ? currentLayer.getAttribute('data-preview-crop-height') : '100')
         ),
-        imagecropsourceleftpercent: localCourseBannerBuilderNormaliseNumericValue(
-            currentLayer ? currentLayer.getAttribute('data-preview-crop-source-left') : '0',
-            0
-        ),
-        imagecropsourcetoppercent: localCourseBannerBuilderNormaliseNumericValue(
-            currentLayer ? currentLayer.getAttribute('data-preview-crop-source-top') : '0',
-            0
-        ),
-        imagecropsourcewidthpercent: localCourseBannerBuilderNormaliseNumericValue(
-            currentLayer ? currentLayer.getAttribute('data-preview-crop-source-width') : '0',
-            0
-        ),
-        imagecropsourceheightpercent: localCourseBannerBuilderNormaliseNumericValue(
-            currentLayer ? currentLayer.getAttribute('data-preview-crop-source-height') : '0',
-            0
-        ),
         offsettoppercent: localCourseBannerBuilderNormaliseNumericValue(offsetTopInput ? offsetTopInput.value : '0', 0),
         offsetrightpercent: localCourseBannerBuilderNormaliseNumericValue(offsetRightInput ? offsetRightInput.value : '0', 0),
         offsetbottompercent: localCourseBannerBuilderNormaliseNumericValue(offsetBottomInput ? offsetBottomInput.value : '0', 0),
@@ -7937,22 +8109,6 @@ function localCourseBannerBuilderReadLayerPreviewStateFromLayer(layer) {
         imagecroptoppercent: localCourseBannerBuilderClampPercent(layer.getAttribute('data-preview-crop-top') || '0', 0),
         imagecropwidthpercent: localCourseBannerBuilderClampCropSize(layer.getAttribute('data-preview-crop-width') || '100'),
         imagecropheightpercent: localCourseBannerBuilderClampCropSize(layer.getAttribute('data-preview-crop-height') || '100'),
-        imagecropsourceleftpercent: localCourseBannerBuilderNormaliseNumericValue(
-            layer.getAttribute('data-preview-crop-source-left') || '0',
-            0
-        ),
-        imagecropsourcetoppercent: localCourseBannerBuilderNormaliseNumericValue(
-            layer.getAttribute('data-preview-crop-source-top') || '0',
-            0
-        ),
-        imagecropsourcewidthpercent: localCourseBannerBuilderNormaliseNumericValue(
-            layer.getAttribute('data-preview-crop-source-width') || '0',
-            0
-        ),
-        imagecropsourceheightpercent: localCourseBannerBuilderNormaliseNumericValue(
-            layer.getAttribute('data-preview-crop-source-height') || '0',
-            0
-        ),
         offsettoppercent: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-offset-top') || '0', 0),
         offsetrightpercent: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-offset-right') || '0', 0),
         offsetbottompercent: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-offset-bottom') || '0', 0),
@@ -7964,12 +8120,6 @@ function localCourseBannerBuilderReadLayerPreviewStateFromLayer(layer) {
         zindex: parseInt(layer.getAttribute('data-preview-zindex') || '', 10) ||
             localCourseBannerBuilderGetDraftPreviewZIndex(layer.getAttribute('data-draft-index') || '0')
     };
-    if (state.imagecropenabled && !localCourseBannerBuilderHasCropSourceState(state)) {
-        var liveCropSourceState = localCourseBannerBuilderGetCropEditSourceState(layer);
-        if (liveCropSourceState) {
-            state = Object.assign({}, state, liveCropSourceState);
-        }
-    }
     return state;
 }
 
@@ -8001,18 +8151,10 @@ function localCourseBannerBuilderSyncCurrentLayerDataFromForm(form) {
     currentLayer.setAttribute('data-preview-crop-top', String(state.imagecroptoppercent ?? 0));
     currentLayer.setAttribute('data-preview-crop-width', String(state.imagecropwidthpercent ?? 100));
     currentLayer.setAttribute('data-preview-crop-height', String(state.imagecropheightpercent ?? 100));
-    if (Number(state.imagecropsourcewidthpercent || 0) > 0 &&
-            Number(state.imagecropsourceheightpercent || 0) > 0) {
-        currentLayer.setAttribute('data-preview-crop-source-left', String(state.imagecropsourceleftpercent ?? 0));
-        currentLayer.setAttribute('data-preview-crop-source-top', String(state.imagecropsourcetoppercent ?? 0));
-        currentLayer.setAttribute('data-preview-crop-source-width', String(state.imagecropsourcewidthpercent));
-        currentLayer.setAttribute('data-preview-crop-source-height', String(state.imagecropsourceheightpercent));
-    } else if (!state.imagecropenabled) {
-        currentLayer.removeAttribute('data-preview-crop-source-left');
-        currentLayer.removeAttribute('data-preview-crop-source-top');
-        currentLayer.removeAttribute('data-preview-crop-source-width');
-        currentLayer.removeAttribute('data-preview-crop-source-height');
-    }
+    currentLayer.removeAttribute('data-preview-crop-source-left');
+    currentLayer.removeAttribute('data-preview-crop-source-top');
+    currentLayer.removeAttribute('data-preview-crop-source-width');
+    currentLayer.removeAttribute('data-preview-crop-source-height');
     localCourseBannerBuilderUpdateCropSelectionFrame(currentLayer, localCourseBannerBuilderNormaliseCropState(state));
     currentLayer.setAttribute('data-preview-offset-top', String(state.offsettoppercent ?? 0));
     currentLayer.setAttribute('data-preview-offset-right', String(state.offsetrightpercent ?? 0));
@@ -8136,18 +8278,10 @@ function localCourseBannerBuilderApplyLayerFormPreviewState(form, state) {
         currentLayer.setAttribute('data-preview-crop-top', String(state.imagecroptoppercent ?? 0));
         currentLayer.setAttribute('data-preview-crop-width', String(state.imagecropwidthpercent ?? 100));
         currentLayer.setAttribute('data-preview-crop-height', String(state.imagecropheightpercent ?? 100));
-        if (Number(state.imagecropsourcewidthpercent || 0) > 0 &&
-                Number(state.imagecropsourceheightpercent || 0) > 0) {
-            currentLayer.setAttribute('data-preview-crop-source-left', String(state.imagecropsourceleftpercent ?? 0));
-            currentLayer.setAttribute('data-preview-crop-source-top', String(state.imagecropsourcetoppercent ?? 0));
-            currentLayer.setAttribute('data-preview-crop-source-width', String(state.imagecropsourcewidthpercent));
-            currentLayer.setAttribute('data-preview-crop-source-height', String(state.imagecropsourceheightpercent));
-        } else {
-            currentLayer.removeAttribute('data-preview-crop-source-left');
-            currentLayer.removeAttribute('data-preview-crop-source-top');
-            currentLayer.removeAttribute('data-preview-crop-source-width');
-            currentLayer.removeAttribute('data-preview-crop-source-height');
-        }
+        currentLayer.removeAttribute('data-preview-crop-source-left');
+        currentLayer.removeAttribute('data-preview-crop-source-top');
+        currentLayer.removeAttribute('data-preview-crop-source-width');
+        currentLayer.removeAttribute('data-preview-crop-source-height');
         localCourseBannerBuilderUpdateCropSelectionFrame(
             currentLayer,
             localCourseBannerBuilderNormaliseCropState(state)
@@ -8657,6 +8791,7 @@ function localCourseBannerBuilderClearLayerPreviewCropState(form, layer) {
     layer.removeAttribute('data-preview-crop-source-top');
     layer.removeAttribute('data-preview-crop-source-width');
     layer.removeAttribute('data-preview-crop-source-height');
+    localCourseBannerBuilderClearCropSessionSourceState(layer);
     localCourseBannerBuilderUpdateCropSelectionFrame(layer, resetState);
 
     var visualLayer = localCourseBannerBuilderGetDraftSelectionVisualLayer(form, layer);
@@ -8670,6 +8805,7 @@ function localCourseBannerBuilderClearLayerPreviewCropState(form, layer) {
         visualLayer.removeAttribute('data-preview-crop-source-top');
         visualLayer.removeAttribute('data-preview-crop-source-width');
         visualLayer.removeAttribute('data-preview-crop-source-height');
+        localCourseBannerBuilderClearCropSessionSourceState(visualLayer);
         localCourseBannerBuilderUpdateCropSelectionFrame(visualLayer, resetState);
     }
 }
@@ -8708,6 +8844,7 @@ function localCourseBannerBuilderMirrorDraftSelectionVisual(form, layer) {
     if (!visualLayer || !visualImage || !image) {
         return;
     }
+    var cropEditing = !!layer.querySelector('[data-preview-crop-editor="1"]');
     [
         'data-preview-fitmode',
         'data-preview-anchor',
@@ -8725,10 +8862,6 @@ function localCourseBannerBuilderMirrorDraftSelectionVisual(form, layer) {
         'data-preview-crop-top',
         'data-preview-crop-width',
         'data-preview-crop-height',
-        'data-preview-crop-source-left',
-        'data-preview-crop-source-top',
-        'data-preview-crop-source-width',
-        'data-preview-crop-source-height',
         'data-preview-offset-top',
         'data-preview-offset-right',
         'data-preview-offset-bottom',
@@ -8743,17 +8876,24 @@ function localCourseBannerBuilderMirrorDraftSelectionVisual(form, layer) {
             visualLayer.setAttribute(attribute, layer.getAttribute(attribute));
         }
     });
-    visualLayer.style.cssText = layer.style.cssText;
-    visualLayer.style.visibility = '';
-    localCourseBannerBuilderUpdateCropSelectionFrame(visualLayer, localCourseBannerBuilderGetPreviewCropState(layer));
     if (visualImage.getAttribute('src') !== (image.getAttribute('src') || '')) {
         visualImage.setAttribute('src', image.getAttribute('src') || '');
     }
     visualImage.hidden = image.hidden;
-    visualImage.style.cssText = image.style.cssText;
     visualLayer.hidden = layer.hidden;
-    if (visualLayer.getAttribute('data-preview-crop-enabled') === '1' &&
-            !layer.querySelector('[data-preview-crop-editor="1"]')) {
+    if (cropEditing) {
+        localCourseBannerBuilderSyncStandalonePreviewLayer(
+            visualLayer.closest('[data-layer-banner-preview="1"]'),
+            visualLayer
+        );
+        visualLayer.style.visibility = '';
+        return;
+    }
+    visualLayer.style.cssText = layer.style.cssText;
+    visualLayer.style.visibility = '';
+    localCourseBannerBuilderUpdateCropSelectionFrame(visualLayer, localCourseBannerBuilderGetPreviewCropState(layer));
+    visualImage.style.cssText = image.style.cssText;
+    if (visualLayer.getAttribute('data-preview-crop-enabled') === '1') {
         localCourseBannerBuilderSyncStandalonePreviewLayer(
             visualLayer.closest('[data-layer-banner-preview="1"]'),
             visualLayer
@@ -8816,18 +8956,10 @@ function localCourseBannerBuilderApplyDraftVisualLayerState(form, previewRoot, l
     layer.setAttribute('data-preview-crop-top', String(layerState.imagecroptoppercent ?? 0));
     layer.setAttribute('data-preview-crop-width', String(layerState.imagecropwidthpercent ?? 100));
     layer.setAttribute('data-preview-crop-height', String(layerState.imagecropheightpercent ?? 100));
-    if (Number(layerState.imagecropsourcewidthpercent || 0) > 0 &&
-            Number(layerState.imagecropsourceheightpercent || 0) > 0) {
-        layer.setAttribute('data-preview-crop-source-left', String(layerState.imagecropsourceleftpercent ?? 0));
-        layer.setAttribute('data-preview-crop-source-top', String(layerState.imagecropsourcetoppercent ?? 0));
-        layer.setAttribute('data-preview-crop-source-width', String(layerState.imagecropsourcewidthpercent));
-        layer.setAttribute('data-preview-crop-source-height', String(layerState.imagecropsourceheightpercent));
-    } else {
-        layer.removeAttribute('data-preview-crop-source-left');
-        layer.removeAttribute('data-preview-crop-source-top');
-        layer.removeAttribute('data-preview-crop-source-width');
-        layer.removeAttribute('data-preview-crop-source-height');
-    }
+    layer.removeAttribute('data-preview-crop-source-left');
+    layer.removeAttribute('data-preview-crop-source-top');
+    layer.removeAttribute('data-preview-crop-source-width');
+    layer.removeAttribute('data-preview-crop-source-height');
     layer.setAttribute('data-preview-offset-top', String(layerState.offsettoppercent ?? 0));
     layer.setAttribute('data-preview-offset-right', String(layerState.offsetrightpercent ?? 0));
     layer.setAttribute('data-preview-offset-bottom', String(layerState.offsetbottompercent ?? 0));
@@ -9058,33 +9190,19 @@ function localCourseBannerBuilderSaveActiveDraftPreviewState(form) {
     if (!state) {
         return;
     }
-    if (state.imagecropenabled && !localCourseBannerBuilderHasCropSourceState(state)) {
-        var liveLayer = currentLayer && String(currentLayer.getAttribute('data-draft-index') || '') === index ?
-            currentLayer :
-            visualLayer;
-        var liveCropSourceState = localCourseBannerBuilderGetCropEditSourceState(liveLayer);
-        if (liveCropSourceState) {
-            state = Object.assign({}, state, liveCropSourceState);
-        }
-    }
     if (!state.imagecropenabled && existingState.imagecropenabled) {
         [
             'imagecropenabled',
             'imagecropleftpercent',
             'imagecroptoppercent',
             'imagecropwidthpercent',
-            'imagecropheightpercent',
-            'imagecropsourceleftpercent',
-            'imagecropsourcetoppercent',
-            'imagecropsourcewidthpercent',
-            'imagecropsourceheightpercent'
+            'imagecropheightpercent'
         ].forEach(function (key) {
             if (typeof existingState[key] !== 'undefined') {
                 state[key] = existingState[key];
             }
         });
     }
-    state = localCourseBannerBuilderPreserveCropSourceState(existingState, state);
     settings[index] = state;
     localCourseBannerBuilderSetDraftPreviewSettings(form, settings);
 }
@@ -9103,7 +9221,6 @@ function localCourseBannerBuilderCommitActiveDraftCropBeforeSwitch(form) {
     }
     var crop = localCourseBannerBuilderGetPreviewCropState(activeLayer);
     var cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState(activeLayer);
-    var cropSourceState = localCourseBannerBuilderGetCropEditSourceState(activeLayer);
     var settings = localCourseBannerBuilderGetDraftPreviewSettings(form);
     var existingState = settings[draftIndex] || {};
     var state = Object.assign(
@@ -9116,10 +9233,8 @@ function localCourseBannerBuilderCommitActiveDraftCropBeforeSwitch(form) {
             imagecroptoppercent: crop.top,
             imagecropwidthpercent: crop.width,
             imagecropheightpercent: crop.height
-        },
-        cropSourceState || {}
+        }
     );
-    state = localCourseBannerBuilderPreserveCropSourceState(existingState, state);
     settings[draftIndex] = state;
     localCourseBannerBuilderSetDraftPreviewSettings(form, settings);
 
@@ -12648,20 +12763,10 @@ function localCourseBannerBuilderSetSourcePreviewLayerState(layer, state) {
     layer.setAttribute('data-preview-crop-top', String(state.imagecroptoppercent ?? 0));
     layer.setAttribute('data-preview-crop-width', String(state.imagecropwidthpercent ?? 100));
     layer.setAttribute('data-preview-crop-height', String(state.imagecropheightpercent ?? 100));
-    if (typeof state.imagecropsourcewidthpercent !== 'undefined' &&
-            typeof state.imagecropsourceheightpercent !== 'undefined' &&
-            Number(state.imagecropsourcewidthpercent) > 0 &&
-            Number(state.imagecropsourceheightpercent) > 0) {
-        layer.setAttribute('data-preview-crop-source-left', String(state.imagecropsourceleftpercent ?? 0));
-        layer.setAttribute('data-preview-crop-source-top', String(state.imagecropsourcetoppercent ?? 0));
-        layer.setAttribute('data-preview-crop-source-width', String(state.imagecropsourcewidthpercent));
-        layer.setAttribute('data-preview-crop-source-height', String(state.imagecropsourceheightpercent));
-    } else if (!state.imagecropenabled) {
-        layer.removeAttribute('data-preview-crop-source-left');
-        layer.removeAttribute('data-preview-crop-source-top');
-        layer.removeAttribute('data-preview-crop-source-width');
-        layer.removeAttribute('data-preview-crop-source-height');
-    }
+    layer.removeAttribute('data-preview-crop-source-left');
+    layer.removeAttribute('data-preview-crop-source-top');
+    layer.removeAttribute('data-preview-crop-source-width');
+    layer.removeAttribute('data-preview-crop-source-height');
     localCourseBannerBuilderUpdateCropSelectionFrame(layer, localCourseBannerBuilderNormaliseCropState(state));
     layer.setAttribute('data-preview-offset-top', String(state.offsettoppercent ?? 0));
     layer.setAttribute('data-preview-offset-right', String(state.offsetrightpercent ?? 0));
@@ -18456,10 +18561,6 @@ localCourseBannerBuilderOnReady(function () {
         window.localCourseBannerBuilderReadPreviewCropState = localCourseBannerBuilderReadPreviewCropState;
         window.localCourseBannerBuilderGetCropInput = localCourseBannerBuilderGetCropInput;
         window.localCourseBannerBuilderSetPreviewCropState = localCourseBannerBuilderSetPreviewCropState;
-        window.localCourseBannerBuilderGetCropEditSourceState = localCourseBannerBuilderGetCropEditSourceState;
-        window.localCourseBannerBuilderHasCropSourceState = localCourseBannerBuilderHasCropSourceState;
-        window.localCourseBannerBuilderCopyCropSourceState = localCourseBannerBuilderCopyCropSourceState;
-        window.localCourseBannerBuilderPreserveCropSourceState = localCourseBannerBuilderPreserveCropSourceState;
         window.localCourseBannerBuilderGetStoredCropEditSourceState = localCourseBannerBuilderGetStoredCropEditSourceState;
         window.localCourseBannerBuilderGetEditableCurrentPreviewImage = localCourseBannerBuilderGetEditableCurrentPreviewImage;
         window.localCourseBannerBuilderGetLayerFormPreviewPanel = localCourseBannerBuilderGetLayerFormPreviewPanel;

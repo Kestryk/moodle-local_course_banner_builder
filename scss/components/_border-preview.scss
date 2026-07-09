@@ -98,7 +98,7 @@
 }
 
 .local-course-banner-builder-crop-actions {
-    position: absolute;
+    position: fixed;
     top: var(--local-course-banner-builder-crop-actions-top, 50%);
     left: var(--local-course-banner-builder-crop-actions-left, calc(100% - 2.5rem));
     z-index: 3;
