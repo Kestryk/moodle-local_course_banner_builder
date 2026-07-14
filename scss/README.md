@@ -13,9 +13,29 @@ powershell -ExecutionPolicy Bypass -File .\scss\build.ps1
 This requires the Dart Sass CLI (`sass`) to be available on the PATH. The build
 script writes to `styles.css`, which is the file Moodle loads.
 
+Embedded EasyEdu UI kit:
+
+- Version: `v0.4.37`
+- Source: `git@github.com:Kestryk/easyedu-ui-kit.git`
+- Synced folders:
+  - `scss/easyedu/`: shared SCSS tokens and opt-in component mixins.
+  - `easyedu-guide-kit/`: reusable guide foundation kept as reference files
+    until Course Banner Builder guide content is wired into Moodle-native AMD,
+    templates, and language strings.
+  - `easyedu-motion-kit/`: shared cancellable animation runtime reference.
+  - `easyedu-kit-docs/`: component contracts and Moodle implementation rules;
+    development-only files are excluded from production archives.
+
+The kit is intentionally embedded so this plugin has no runtime dependency on
+another EasyEdu plugin. Import EasyEdu component mixins only under
+`local-course-banner-builder-*` selectors. Do not apply kit styles to global
+Moodle or Bootstrap selectors.
+
 Current component entry points:
 
 - `components/_base.scss`: base plugin wrapper defaults.
+- `components/_easyedu-adapter.scss`: scoped EasyEdu token defaults for Course
+  Banner Builder admin and modal roots.
 - `components/_slideshow-runtime.scss`: public slideshow overlay rendering,
   navigation, labels, and action styles.
 - `components/_native-banner-core.scss`: native banner shells, public banner
@@ -45,6 +65,11 @@ Current component entry points:
 - `components/_slideshow-admin.scss`: slideshow admin panels, preview editor, and
   toolbar controls.
 - `components/_tours.scss`: rich-content styles used inside Moodle user tours.
+- `components/_easyedu-guide.scss`: scoped EasyEdu guide shell, including the
+  shared guide launcher button style, rich horizontal guide navigation, visual
+  guide primitives, and guided checklist panel. Compact action menus, dropdowns
+  and hover-help surfaces are available in the embedded kit and should be
+  adopted in a separate focused pass.
 - `components/_responsive.scss`: responsive adjustments for admin tables,
   previews, modals, and slideshow text controls.
 

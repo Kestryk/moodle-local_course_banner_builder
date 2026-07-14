@@ -1,0 +1,160 @@
+// EasyEdu pagination and list tools.
+
+@mixin pagination-bar {
+  align-items: center;
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  min-height: 2.4rem;
+  overflow: visible;
+  padding: 0.2rem 0;
+  position: relative;
+  width: 100%;
+}
+
+@mixin pagination-controls {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.28rem;
+  justify-content: center;
+
+  button,
+  a {
+    align-items: center;
+    border-radius: 0.58rem;
+    display: inline-flex;
+    font-size: 0.78rem;
+    justify-content: center;
+    min-height: 1.85rem;
+    min-width: 1.85rem;
+    padding: 0.2rem 0.45rem;
+  }
+}
+
+@mixin list-tools {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+@mixin pagination-selection {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.42rem;
+  grid-column: 1;
+  justify-self: start;
+  min-width: 0;
+}
+
+@mixin pagination-select-button {
+  align-self: center;
+  border-radius: 0.65rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  min-height: 1.62rem;
+  padding: 0 0.7rem;
+  width: auto;
+
+  &[data-easyedu-deselect-results="1"],
+  &[data-easystud-deselect-results="1"] {
+    background: var(--easyedu-surface-soft);
+    border-color: var(--easyedu-border-strong);
+    color: color-mix(in srgb, var(--easyedu-text) 80%, var(--easyedu-text-muted) 20%);
+  }
+}
+
+@mixin pagination-tools {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.42rem;
+  grid-column: 3;
+  justify-self: end;
+  margin: -0.16rem -0.18rem;
+  min-width: 0;
+  overflow: visible;
+  padding: 0.16rem 0.18rem;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+@mixin pagination-count {
+  background: var(--easyedu-surface-soft);
+  border: 1px solid var(--easyedu-card-border);
+  border-radius: 999px;
+  color: color-mix(in srgb, var(--easyedu-text) 74%, var(--easyedu-text-muted) 26%);
+  display: inline-flex;
+  font-size: 0.68rem;
+  font-weight: 720;
+  line-height: 1;
+  padding: 0.32rem 0.55rem;
+  white-space: nowrap;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+@mixin pagination-sort {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.28rem;
+  margin: 0;
+  min-width: 0;
+
+  > span {
+    color: var(--easyedu-text-muted);
+    font-size: 0.66rem;
+    font-weight: 720;
+  }
+}
+
+@mixin pagination-spacer {
+  display: block;
+  grid-column: 3;
+  min-width: 0;
+}
+
+@mixin pagination-placeholder {
+  [data-easyedu-page-first],
+  [data-easyedu-page-prev],
+  [data-easyedu-page-next],
+  [data-easyedu-page-last],
+  [data-easyedu-page-label],
+  [data-easystud-page-first],
+  [data-easystud-page-prev],
+  [data-easystud-page-next],
+  [data-easystud-page-last],
+  [data-easystud-page-label] {
+    pointer-events: none;
+    visibility: hidden;
+  }
+}
+
+@mixin pagination-mobile($breakpoint: 48rem) {
+  @media (max-width: $breakpoint) {
+    grid-template-columns: minmax(0, 1fr) auto;
+
+    [data-easyedu-pagination-tools],
+    [data-easystud-pagination-tools],
+    .easyedu-pagination__tools {
+      grid-column: 1 / -1;
+      justify-self: center;
+    }
+
+    [data-easyedu-pagination-count],
+    [data-easystud-pagination-count],
+    .easyedu-pagination__count {
+      display: none;
+    }
+
+    [data-easyedu-pagination-spacer],
+    [data-easystud-pagination-spacer],
+    .easyedu-pagination__spacer {
+      display: none;
+    }
+  }
+}

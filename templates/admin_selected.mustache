@@ -176,7 +176,7 @@
                 <input type="hidden" name="updatelayersbulk" value="1">
             </form>
         {{/haselements}}
-        <div class="table-responsive">
+        <div class="table-responsive local-course-banner-builder-table-shell local-course-banner-builder-table-shell--layers">
             <table class="generaltable local-course-banner-builder-layer-table">
                 <colgroup>
                     <col style="width: 8%;">
@@ -434,7 +434,8 @@
                                 <div class="local-course-banner-builder-action-list">
                                     <button type="button"
                                         class="btn btn-secondary btn-sm"
-                                        data-edit-layer-url="{{editurl}}">
+                                        data-edit-layer-url="{{editurl}}"
+                                        data-edit-layer-modal="{{editmodaltarget}}">
                                         {{editlabel}}
                                     </button>
                                     <a class="btn btn-danger btn-sm" href="{{deleteurl}}">{{#str}}delete{{/str}}</a>
@@ -446,7 +447,7 @@
             </table>
         </div>
         {{#haschainborderlayer}}
-            <div class="table-responsive local-course-banner-builder-chain-table">
+            <div class="table-responsive local-course-banner-builder-chain-table local-course-banner-builder-table-shell local-course-banner-builder-table-shell--chain">
                 <table class="generaltable">
                     <colgroup>
                         <col style="width: 8%;">
@@ -498,7 +499,7 @@
             </div>
         {{/haschainborderlayer}}
         {{#haschainoverlaylayer}}
-            <div class="table-responsive local-course-banner-builder-chain-table">
+            <div class="table-responsive local-course-banner-builder-chain-table local-course-banner-builder-table-shell local-course-banner-builder-table-shell--chain">
                 <table class="generaltable">
                     <colgroup>
                         <col style="width: 8%;">

@@ -7,3 +7,7 @@
 *.xml text eol=lf
 *.md text eol=lf
 *.txt text eol=lf
+
+/easyedu-kit-docs export-ignore
+/easyedu-guide-kit export-ignore
+/easyedu-motion-kit export-ignore

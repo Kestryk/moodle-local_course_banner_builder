@@ -1,0 +1,191 @@
+// EasyEdu hover-only help bubbles.
+//
+// Use this for custom plugin help bubbles when native browser `title` would
+// duplicate the information or provide too little styling control.
+
+@mixin tooltip-surface($long: false) {
+  background:
+    radial-gradient(circle at 1.2rem 0.6rem, var(--easyedu-tooltip-glow), transparent 5.5rem),
+    var(--easyedu-tooltip-bg);
+  border: 1px solid var(--easyedu-tooltip-border);
+  border-radius: 0.64rem;
+  box-shadow: var(--easyedu-tooltip-shadow);
+  color: var(--easyedu-tooltip-text);
+  font-size: if($long, 0.76rem, 0.74rem);
+  font-weight: if($long, 560, 680);
+  line-height: if($long, 1.35, 1.2);
+  max-width: if($long, 19rem, 14rem);
+  padding: if($long, 0.48rem 0.58rem, 0.34rem 0.46rem);
+}
+
+@mixin hover-help-host {
+  position: relative;
+
+  &::after {
+    @include tooltip-surface;
+
+    bottom: calc(100% + 0.45rem);
+    content: attr(data-easyedu-hover-help);
+    left: 50%;
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    transform: translate(-50%, 0.2rem);
+    transition:
+      opacity var(--easyedu-motion-fast) var(--easyedu-motion-ease),
+      transform var(--easyedu-motion-fast) var(--easyedu-motion-ease);
+    white-space: normal;
+    z-index: 1065;
+  }
+
+  &:hover::after,
+  &:focus-visible::after {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@mixin popover-surface {
+  --easyedu-tooltip-bg: linear-gradient(135deg, #183a59 0%, #1f6b57 100%);
+  --easyedu-tooltip-border: rgba(255, 255, 255, 0.28);
+  --easyedu-tooltip-glow: rgba(255, 255, 255, 0.14);
+  --easyedu-tooltip-shadow:
+    0 0.7rem 1.6rem rgba(20, 44, 67, 0.2),
+    0 0.08rem 0.24rem rgba(12, 28, 44, 0.16);
+  --easyedu-tooltip-text: #fff;
+  --easyedu-tooltip-arrow-bg: #1b4e5a;
+  --easyedu-tooltip-arrow-border: rgba(255, 255, 255, 0.28);
+
+  @include tooltip-surface;
+
+  display: block;
+  max-width: min(22rem, calc(100vw - 1.5rem));
+  pointer-events: none;
+  transform-origin: bottom center;
+
+  .popover-arrow {
+    height: 0.72rem;
+    position: absolute;
+    width: 0.72rem;
+
+    &::before {
+      background: var(--easyedu-tooltip-arrow-bg);
+      border: 1px solid var(--easyedu-tooltip-arrow-border);
+      content: "";
+      height: 0.5rem;
+      position: absolute;
+      transform: rotate(45deg);
+      width: 0.5rem;
+    }
+  }
+
+  .popover-header {
+    background: transparent;
+    border: 0;
+    color: var(--easyedu-tooltip-text);
+    font-size: 0.76rem;
+    font-weight: 700;
+    line-height: 1.25;
+    padding: 0.58rem 0.72rem 0;
+    text-align: center;
+  }
+
+  .popover-body {
+    background: transparent;
+    color: var(--easyedu-tooltip-text);
+    font-size: 0.76rem;
+    font-weight: 540;
+    letter-spacing: 0.005em;
+    line-height: 1.42;
+    margin: 0 auto;
+    padding: 0.54rem 0.78rem 0.72rem;
+    text-align: justify;
+    text-align-last: center;
+
+    p {
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+@mixin popover-warning-variant {
+  --easyedu-tooltip-bg:
+    radial-gradient(circle at 1.2rem 0.6rem, rgba(255, 255, 255, 0.12), transparent 5.5rem),
+    linear-gradient(135deg, #69272d 0%, #9f3e3b 58%, #78302f 100%);
+  --easyedu-tooltip-border: rgba(255, 220, 220, 0.34);
+  --easyedu-tooltip-glow: rgba(255, 236, 232, 0.12);
+  --easyedu-tooltip-shadow:
+    0 0.72rem 1.7rem rgba(78, 23, 27, 0.24),
+    0 0.08rem 0.24rem rgba(58, 14, 18, 0.2);
+  --easyedu-tooltip-text: #fff7f5;
+  --easyedu-tooltip-arrow-bg: #863533;
+  --easyedu-tooltip-arrow-border: rgba(255, 220, 220, 0.34);
+}
+
+@mixin positioned-popover-arrows($base-class) {
+  #{$base-class}--top .popover-arrow,
+  #{$base-class}--bottom .popover-arrow {
+    left: calc(var(--local-course-banner-builder-popover-arrow-left, 50%) - 0.36rem);
+  }
+
+  #{$base-class}--top .popover-arrow {
+    bottom: -0.32rem;
+
+    &::before {
+      border-left: 0;
+      border-top: 0;
+    }
+  }
+
+  #{$base-class}--bottom .popover-arrow {
+    top: -0.32rem;
+
+    &::before {
+      border-bottom: 0;
+      border-right: 0;
+    }
+  }
+
+  #{$base-class}--left .popover-arrow,
+  #{$base-class}--right .popover-arrow {
+    top: calc(50% - 0.36rem);
+  }
+
+  #{$base-class}--left .popover-arrow {
+    right: -0.32rem;
+
+    &::before {
+      border-bottom: 0;
+      border-left: 0;
+    }
+  }
+
+  #{$base-class}--right .popover-arrow {
+    left: -0.32rem;
+
+    &::before {
+      border-right: 0;
+      border-top: 0;
+    }
+  }
+}
+
+@mixin help-icon {
+  align-items: center;
+  background: var(--easyedu-primary-soft);
+  border: 1px solid color-mix(in srgb, var(--easyedu-primary) 24%, #fff 76%);
+  border-radius: 999px;
+  color: var(--easyedu-primary);
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 800;
+  height: 1.35rem;
+  justify-content: center;
+  line-height: 1;
+  width: 1.35rem;
+}

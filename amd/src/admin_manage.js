@@ -20,7 +20,7 @@
  * @copyright  2026 Kevin Jarniac
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define([], function () {
+define(['local_course_banner_builder/motion'], function (Motion) {
 
 var localCourseBannerBuilderOnReady = function (callback) {
     if (document.readyState === 'loading') {
@@ -93,6 +93,21 @@ document.addEventListener('focusin', function (e) {
         null;
     if (popoverTrigger) {
         localCourseBannerBuilderDismissOpenPopovers(popoverTrigger);
+    }
+}, true);
+
+document.addEventListener('pointerover', function (e) {
+    var editLayerButton = e.target && e.target.closest ? e.target.closest('[data-edit-layer-url]') : null;
+    if (!editLayerButton || (e.relatedTarget && editLayerButton.contains(e.relatedTarget))) {
+        return;
+    }
+    localCourseBannerBuilderPrefetchLayerModal(editLayerButton.getAttribute('data-edit-layer-url'));
+}, true);
+
+document.addEventListener('focusin', function (e) {
+    var editLayerButton = e.target && e.target.closest ? e.target.closest('[data-edit-layer-url]') : null;
+    if (editLayerButton) {
+        localCourseBannerBuilderPrefetchLayerModal(editLayerButton.getAttribute('data-edit-layer-url'));
     }
 }, true);
 
@@ -195,7 +210,10 @@ document.addEventListener('click', function (e) {
     var editlayerbutton = e.target.closest('[data-edit-layer-url]');
     if (editlayerbutton) {
         e.preventDefault();
-        localCourseBannerBuilderLoadLayerModal(editlayerbutton.getAttribute('data-edit-layer-url'));
+        localCourseBannerBuilderLoadLayerModal(
+            editlayerbutton.getAttribute('data-edit-layer-url'),
+            editlayerbutton.getAttribute('data-edit-layer-modal')
+        );
         return;
     }
 
@@ -802,6 +820,7 @@ document.addEventListener('shown.bs.modal', function (e) {
     if (!form) {
         return;
     }
+    delete form.dataset.borderSettingsAutoOpened;
     localCourseBannerBuilderUpgradeRanges();
     localCourseBannerBuilderUpgradeNumberInputs();
     localCourseBannerBuilderUpgradeColorPickers(modal);
@@ -2433,7 +2452,11 @@ function localCourseBannerBuilderSelectLayerType(layerForm, nextType, openPanel)
     localCourseBannerBuilderSyncLayerInputModes(layerForm);
     localCourseBannerBuilderSyncModalPreviewActionButtons(layerForm);
     if (openPanel && nextType === 'border') {
-        localCourseBannerBuilderOpenModalSidePanel(layerForm, 'borderstyle');
+        localCourseBannerBuilderOpenModalSidePanelOnce(
+            layerForm,
+            'borderstyle',
+            'borderSettingsAutoOpened'
+        );
     } else if (openPanel && nextType === 'overlay') {
         localCourseBannerBuilderOpenModalSidePanel(layerForm, 'overlaystyle');
     }
@@ -2530,6 +2553,9 @@ function localCourseBannerBuilderMoveLayerEssentialsUnderPreview(layerForm, prev
             identityRow.appendChild(item);
         }
     });
+    if (anchor && anchor.parentNode !== parent) {
+        anchor = previewItem.nextSibling;
+    }
     if (identityRow.children.length && (identityRow.parentNode !== parent || identityRow.nextSibling !== anchor)) {
         parent.insertBefore(identityRow, anchor);
     }
@@ -2829,15 +2855,26 @@ function localCourseBannerBuilderSyncLayerInputModes(scope) {
         existingBorderInlineNote.classList.toggle('d-none', !sourceBlocksNewBorder);
     }
     if (borderSection) {
-        borderSection.hidden = isOverlayOnly;
-        borderSection.setAttribute('aria-hidden', isOverlayOnly ? 'true' : 'false');
+        var borderIsPreviewSidePanel = borderSection.getAttribute('data-modal-preview-side-panel') === '1';
+        if (isOverlayOnly) {
+            borderSection.hidden = true;
+        } else if (!borderIsPreviewSidePanel) {
+            borderSection.hidden = false;
+        }
+        borderSection.setAttribute('aria-hidden', borderSection.hidden ? 'true' : 'false');
         borderSection.classList.toggle('local-course-banner-builder-disabled', !!sourceBlocksNewBorder);
         if (sourceBlocksNewBorder) {
             borderSection.open = false;
         }
     }
     if (overlaySection) {
-        overlaySection.hidden = isBorderOnly || (!isOverlayOnly && !isExistingOverlayLayer);
+        var overlayIsPreviewSidePanel = overlaySection.getAttribute('data-modal-preview-side-panel') === '1';
+        var shouldHideOverlaySection = isBorderOnly || (!isOverlayOnly && !isExistingOverlayLayer);
+        if (shouldHideOverlaySection) {
+            overlaySection.hidden = true;
+        } else if (!overlayIsPreviewSidePanel) {
+            overlaySection.hidden = false;
+        }
         overlaySection.setAttribute('aria-hidden', overlaySection.hidden ? 'true' : 'false');
         overlaySection.classList.toggle('local-course-banner-builder-disabled', !!sourceBlocksNewOverlay);
         if (sourceBlocksNewOverlay) {
@@ -10421,12 +10458,12 @@ function localCourseBannerBuilderToggleTitleSidePanel(form, button) {
     if (!panel) {
         return;
     }
-    var shouldOpen = panel.hidden || panel.classList.contains('is-collapsed');
+    var shouldOpen = localCourseBannerBuilderShouldOpenPanel(panel);
     Array.prototype.slice.call(form.querySelectorAll('[data-title-side-panel]')).forEach(function (candidate) {
         var key = candidate.getAttribute('data-title-side-panel');
         var candidateButton = form.querySelector('[data-title-side-panel-target="' + key + '"]');
         if (candidate !== panel) {
-            localCourseBannerBuilderToggleOpacityPanel(candidate, candidateButton, false);
+            localCourseBannerBuilderToggleOpacityPanel(candidate, candidateButton, false, false);
             if (candidateButton) {
                 candidateButton.classList.remove('btn-primary');
                 candidateButton.classList.add('btn-outline-secondary');
@@ -10436,6 +10473,25 @@ function localCourseBannerBuilderToggleTitleSidePanel(form, button) {
     localCourseBannerBuilderToggleOpacityPanel(panel, button, shouldOpen);
     button.classList.toggle('btn-primary', shouldOpen);
     button.classList.toggle('btn-outline-secondary', !shouldOpen);
+}
+
+function localCourseBannerBuilderEnhanceTitleSideAccordions(form) {
+    if (!form) {
+        return;
+    }
+    var host = form.querySelector('.local-course-banner-builder-title-side-actions[data-modal-preview-action-list="1"], ' +
+        '.local-course-banner-builder-title-side-actions.local-course-banner-builder-modal-preview-action-list');
+    if (!host) {
+        return;
+    }
+    Array.prototype.slice.call(host.querySelectorAll('[data-title-side-panel-target]')).forEach(function (button) {
+        var key = button.getAttribute('data-title-side-panel-target');
+        var panel = key ? host.querySelector('[data-title-side-panel="' + key + '"]') : null;
+        if (!panel) {
+            return;
+        }
+        localCourseBannerBuilderApplyPreviewSideAccordionContract(host, panel, button, 'title-' + key);
+    });
 }
 
 function localCourseBannerBuilderGetInlineFrameGapEm(lineHeightPercent) {
@@ -11013,6 +11069,7 @@ function localCourseBannerBuilderBindTitleEditor(form) {
         return;
     }
     form.dataset.titleEditorBound = '1';
+    localCourseBannerBuilderEnhanceTitleSideAccordions(form);
     form.addEventListener('input', function (event) {
         var target = event.target;
         if (target && target.matches('[data-title-range-for]')) {
@@ -14106,7 +14163,12 @@ function localCourseBannerBuilderEnhanceBinaryOptionButtons(form) {
     var previewRow = form.querySelector('#fitem_id_layerpreview, #fitem_id_imagepreview, #fitem_id_borderpreview');
     if (enabledRow && enabledRow.parentNode && enabledRow.parentNode.firstChild !== enabledRow &&
             !form.querySelector('[data-layer-top-choice-row="1"]')) {
-        enabledRow.parentNode.insertBefore(enabledRow, previewRow ? previewRow.nextSibling : enabledRow.parentNode.firstChild);
+        var enabledRowParent = enabledRow.parentNode;
+        var enabledRowReference = previewRow && previewRow.parentNode === enabledRowParent ?
+            previewRow.nextSibling : enabledRowParent.firstChild;
+        if (enabledRowReference !== enabledRow) {
+            enabledRowParent.insertBefore(enabledRow, enabledRowReference);
+        }
     }
     [
         {selector: '#id_isenabled', icon: 'fa-toggle-on', useenabledlabels: true},
@@ -14300,7 +14362,7 @@ function localCourseBannerBuilderSyncModalPreviewActionButtons(form) {
     Array.prototype.slice.call(form.querySelectorAll('[data-preview-opacity-panel="modal"]')).forEach(function (panel) {
         if (!(hasImage && !isBorderOnly)) {
             var button = form.querySelector('[data-action="local-course-banner-builder-toggle-modal-preview-opacity"]');
-            localCourseBannerBuilderToggleOpacityPanel(panel, button, false);
+            localCourseBannerBuilderToggleOpacityPanel(panel, button, false, false);
         }
     });
     Array.prototype.slice.call(form.querySelectorAll('[data-modal-preview-side-panel="1"]')).forEach(function (panel) {
@@ -14520,24 +14582,40 @@ function localCourseBannerBuilderCreateImageOpacityPanel(prefix, value) {
     return panel;
 }
 
-function localCourseBannerBuilderToggleOpacityPanel(panel, button, forceOpen) {
+function localCourseBannerBuilderShouldOpenPanel(panel) {
+    if (!panel) {
+        return false;
+    }
+    var targetState = panel.getAttribute('data-easyedu-panel-target-open');
+    return targetState === null ? panel.hidden || panel.classList.contains('is-collapsed') : targetState !== '1';
+}
+
+function localCourseBannerBuilderToggleOpacityPanel(panel, button, forceOpen, animate) {
     if (!panel) {
         return;
     }
-    var shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : panel.hidden;
-    if (shouldOpen) {
-        panel.hidden = false;
-        panel.classList.add('is-collapsed');
-        window.requestAnimationFrame(function () {
-            panel.classList.remove('is-collapsed');
-        });
+    var shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : localCourseBannerBuilderShouldOpenPanel(panel);
+    panel.setAttribute('data-easyedu-motion-owner', 'runtime');
+    panel.setAttribute('data-easyedu-panel-target-open', shouldOpen ? '1' : '0');
+
+    var transition;
+    if (animate === false) {
+        Motion.cancel(panel);
+        panel.hidden = !shouldOpen;
+        panel.classList.remove('is-collapsed');
+        panel.removeAttribute('data-easyedu-panel-target-open');
+        transition = Promise.resolve(true);
     } else {
-        panel.classList.add('is-collapsed');
-        window.setTimeout(function () {
-            if (panel.classList.contains('is-collapsed')) {
-                panel.hidden = true;
+        panel.classList.remove('is-collapsed');
+        transition = shouldOpen ? Motion.expand(panel) : Motion.collapse(panel);
+        transition.then(function(completed) {
+            if (!completed || panel.getAttribute('data-easyedu-panel-target-open') !== (shouldOpen ? '1' : '0')) {
+                return;
             }
-        }, 270);
+            panel.hidden = !shouldOpen;
+            panel.classList.remove('is-collapsed');
+            panel.removeAttribute('data-easyedu-panel-target-open');
+        });
     }
     if (button) {
         button.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
@@ -14546,6 +14624,7 @@ function localCourseBannerBuilderToggleOpacityPanel(panel, button, forceOpen) {
         button.classList.toggle('active', shouldOpen);
         button.classList.toggle('local-course-banner-builder-source-preview-button--active', shouldOpen);
     }
+    return transition;
 }
 
 function localCourseBannerBuilderSetOpacityPanelValue(panel, value) {
@@ -14915,7 +14994,7 @@ function localCourseBannerBuilderEnsureModalOpacityControls(form) {
         localCourseBannerBuilderGetJsString('toggleimageopacity', 'Adjust image opacity')
     );
     opacityButton.addEventListener('click', function () {
-        var shouldOpen = opacityPanel.hidden || opacityPanel.classList.contains('is-collapsed');
+        var shouldOpen = localCourseBannerBuilderShouldOpenPanel(opacityPanel);
         localCourseBannerBuilderCloseOtherModalSidePanels(host, opacityPanel);
         localCourseBannerBuilderToggleOpacityPanel(opacityPanel, opacityButton, shouldOpen);
         localCourseBannerBuilderSetOpacityPanelValue(opacityPanel, imageOpacityInput.value || '100');
@@ -14952,7 +15031,7 @@ function localCourseBannerBuilderCloseOtherModalSidePanels(host, activePanel) {
             if (!button && panel.getAttribute('data-preview-opacity-panel') === 'modal') {
                 button = host.querySelector('[data-action="local-course-banner-builder-toggle-modal-preview-opacity"]');
             }
-            localCourseBannerBuilderToggleOpacityPanel(panel, button, false);
+            localCourseBannerBuilderToggleOpacityPanel(panel, button, false, false);
         }
     });
 }
@@ -15086,6 +15165,34 @@ function localCourseBannerBuilderEnhanceModalSidePanelLinkedRanges(panel) {
     });
 }
 
+function localCourseBannerBuilderApplyPreviewSideAccordionContract(host, panel, button, key) {
+    if (!host || !panel || !button || !key) {
+        return;
+    }
+    var form = host.closest('form');
+    var formKey = form && form.id ? form.id.replace(/[^a-zA-Z0-9_-]/g, '-') : 'form';
+    if (!panel.id) {
+        panel.id = 'local-course-banner-builder-' + key + '-' + formKey;
+    }
+    panel.classList.add('local-course-banner-builder-preview-side-accordion-panel');
+    panel.setAttribute('data-easyedu-preview-side-accordion-panel', '1');
+    if (panel.tagName === 'DETAILS') {
+        panel.open = true;
+    }
+    button.classList.add('local-course-banner-builder-preview-side-accordion-trigger');
+    button.setAttribute('data-easyedu-preview-side-accordion-trigger', '1');
+    button.setAttribute('aria-controls', panel.id);
+    if (button.parentNode !== host) {
+        host.appendChild(button);
+    }
+    if (panel.parentNode !== host) {
+        host.appendChild(panel);
+    }
+    if (button.nextElementSibling !== panel) {
+        host.insertBefore(panel, button.nextSibling);
+    }
+}
+
 function localCourseBannerBuilderEnsureModalImageControls(form) {
     if (!form) {
         return;
@@ -15106,9 +15213,12 @@ function localCourseBannerBuilderEnsureModalImageControls(form) {
         imageAccordion.classList.add('is-collapsed');
     }
     if (existingButton) {
-        if (imageAccordion.parentNode !== host) {
-            host.insertBefore(imageAccordion, existingButton);
-        }
+        localCourseBannerBuilderApplyPreviewSideAccordionContract(
+            host,
+            imageAccordion,
+            existingButton,
+            'image-options'
+        );
         var borderToggle = form.querySelector('[data-border-toggle="1"][type="checkbox"]');
         existingButton.hidden = !!(borderToggle && borderToggle.checked);
         existingButton.disabled = false;
@@ -15140,11 +15250,17 @@ function localCourseBannerBuilderEnsureModalImageControls(form) {
         if (imageOptionsButton.disabled) {
             return;
         }
-        var shouldOpen = imageAccordion.hidden || imageAccordion.classList.contains('is-collapsed');
+        var shouldOpen = localCourseBannerBuilderShouldOpenPanel(imageAccordion);
         localCourseBannerBuilderCloseOtherModalSidePanels(host, imageAccordion);
         localCourseBannerBuilderToggleOpacityPanel(imageAccordion, imageOptionsButton, shouldOpen);
     });
     host.appendChild(imageOptionsButton);
+    localCourseBannerBuilderApplyPreviewSideAccordionContract(
+        host,
+        imageAccordion,
+        imageOptionsButton,
+        'image-options'
+    );
 }
 
 function localCourseBannerBuilderEnsureModalOverlayControls(form) {
@@ -15172,9 +15288,12 @@ function localCourseBannerBuilderEnsureModalOverlayControls(form) {
         overlayAccordion.classList.add('is-collapsed');
     }
     if (existingButton) {
-        if (overlayAccordion.parentNode !== host) {
-            host.insertBefore(overlayAccordion, existingButton);
-        }
+        localCourseBannerBuilderApplyPreviewSideAccordionContract(
+            host,
+            overlayAccordion,
+            existingButton,
+            'overlay-style'
+        );
         localCourseBannerBuilderEnhanceModalSidePanelLinkedRanges(overlayAccordion);
         if (localCourseBannerBuilderGetSelectedLayerType(form) === 'overlay' ||
                 form.getAttribute('data-layer-modal-mode') === 'editoverlay') {
@@ -15198,11 +15317,17 @@ function localCourseBannerBuilderEnsureModalOverlayControls(form) {
         localCourseBannerBuilderGetJsString('overlaysettings', 'Overlay settings')
     );
     overlayButton.addEventListener('click', function () {
-        var shouldOpen = overlayAccordion.hidden || overlayAccordion.classList.contains('is-collapsed');
+        var shouldOpen = localCourseBannerBuilderShouldOpenPanel(overlayAccordion);
         localCourseBannerBuilderCloseOtherModalSidePanels(host, overlayAccordion);
         localCourseBannerBuilderToggleOpacityPanel(overlayAccordion, overlayButton, shouldOpen);
     });
     host.appendChild(overlayButton);
+    localCourseBannerBuilderApplyPreviewSideAccordionContract(
+        host,
+        overlayAccordion,
+        overlayButton,
+        'overlay-style'
+    );
     if (localCourseBannerBuilderGetSelectedLayerType(form) === 'overlay' ||
             form.getAttribute('data-layer-modal-mode') === 'editoverlay') {
         localCourseBannerBuilderOpenModalSidePanelOnce(form, 'overlaystyle', 'overlaySettingsAutoOpened');
@@ -16131,9 +16256,12 @@ function localCourseBannerBuilderEnsureModalBorderControls(form) {
         borderAccordion.classList.add('is-collapsed');
     }
     if (existingButton) {
-        if (borderAccordion.parentNode !== host) {
-            host.insertBefore(borderAccordion, existingButton);
-        }
+        localCourseBannerBuilderApplyPreviewSideAccordionContract(
+            host,
+            borderAccordion,
+            existingButton,
+            'border-style'
+        );
         localCourseBannerBuilderEnhanceModalSidePanelLinkedRanges(borderAccordion);
         return;
     }
@@ -16153,11 +16281,17 @@ function localCourseBannerBuilderEnsureModalBorderControls(form) {
         localCourseBannerBuilderGetJsString('borderstyle', 'Border style')
     );
     borderStyleButton.addEventListener('click', function () {
-        var shouldOpen = borderAccordion.hidden || borderAccordion.classList.contains('is-collapsed');
+        var shouldOpen = localCourseBannerBuilderShouldOpenPanel(borderAccordion);
         localCourseBannerBuilderCloseOtherModalSidePanels(host, borderAccordion);
         localCourseBannerBuilderToggleOpacityPanel(borderAccordion, borderStyleButton, shouldOpen);
     });
     host.appendChild(borderStyleButton);
+    localCourseBannerBuilderApplyPreviewSideAccordionContract(
+        host,
+        borderAccordion,
+        borderStyleButton,
+        'border-style'
+    );
 }
 
 function localCourseBannerBuilderSyncBorderStyleChoice(form) {
@@ -18065,11 +18199,17 @@ function localCourseBannerBuilderEnhanceAccordions(root) {
     });
 }
 
-function localCourseBannerBuilderLoadLayerModal(url) {
-    if (!url) {
-        return;
+var localCourseBannerBuilderLayerModalRequestCache = {};
+var localCourseBannerBuilderLayerModalCacheLifetime = 30000;
+
+function localCourseBannerBuilderRequestLayerModal(url) {
+    var now = Date.now();
+    var cached = localCourseBannerBuilderLayerModalRequestCache[url];
+    if (cached && cached.expires > now) {
+        return cached.promise;
     }
-    fetch(url, {
+
+    var request = fetch(url, {
         credentials: 'same-origin',
         headers: {'X-Requested-With': 'XMLHttpRequest'}
     }).then(function (response) {
@@ -18077,7 +18217,71 @@ function localCourseBannerBuilderLoadLayerModal(url) {
             throw new Error(localCourseBannerBuilderGetJsString('unabletoloadlayerform', ''));
         }
         return response.text();
-    }).then(function (response) {
+    });
+    localCourseBannerBuilderLayerModalRequestCache[url] = {
+        expires: now + localCourseBannerBuilderLayerModalCacheLifetime,
+        promise: request
+    };
+    request.catch(function () {
+        delete localCourseBannerBuilderLayerModalRequestCache[url];
+    });
+    return request;
+}
+
+function localCourseBannerBuilderPrefetchLayerModal(url) {
+    if (url) {
+        localCourseBannerBuilderRequestLayerModal(url);
+    }
+}
+
+function localCourseBannerBuilderShowLayerModalLoading(modal, requestId) {
+    if (!modal) {
+        return;
+    }
+    var body = modal.querySelector('.modal-body');
+    if (!body) {
+        return;
+    }
+    var status = document.createElement('div');
+    status.className = 'local-course-banner-builder-layer-modal-loading';
+    status.setAttribute('role', 'status');
+    var title = modal.querySelector('.modal-title');
+    if (title) {
+        status.setAttribute('aria-label', title.textContent.trim());
+    }
+    var spinner = document.createElement('span');
+    spinner.className = 'spinner-border text-primary';
+    spinner.setAttribute('aria-hidden', 'true');
+    status.appendChild(spinner);
+    body.replaceChildren(status);
+    modal.dataset.layerModalLoading = '1';
+    modal.dataset.layerModalRequest = requestId;
+    localCourseBannerBuilderShowModal(modal);
+}
+
+function localCourseBannerBuilderRefreshLoadedLayerModal(modal) {
+    var form = modal ? modal.querySelector('form.mform') : null;
+    window.requestAnimationFrame(function () {
+        localCourseBannerBuilderRefreshCurrentPreviewLayer(form);
+        localCourseBannerBuilderSyncBorderPreview(form);
+        localCourseBannerBuilderSyncContextPreviewVisibility(form);
+        window.requestAnimationFrame(function () {
+            localCourseBannerBuilderSyncBorderPreview(form);
+        });
+    });
+}
+
+function localCourseBannerBuilderLoadLayerModal(url, modalId) {
+    if (!url) {
+        return;
+    }
+    var requestId = String(Date.now()) + '-' + String(Math.random());
+    var requestedModal = modalId ? document.getElementById(modalId) : null;
+    if (requestedModal) {
+        localCourseBannerBuilderShowLayerModalLoading(requestedModal, requestId);
+    }
+
+    localCourseBannerBuilderRequestLayerModal(url).then(function (response) {
         var html = response;
         var parser = new DOMParser();
         var doc = parser.parseFromString(html, 'text/html');
@@ -18094,6 +18298,15 @@ function localCourseBannerBuilderLoadLayerModal(url) {
         var targetmodal = document.getElementById(fetchedmodal.id);
         if (!targetmodal) {
             throw new Error(localCourseBannerBuilderGetJsString('targetmodalnotfound', ''));
+        }
+        if (requestedModal && targetmodal !== requestedModal) {
+            throw new Error(localCourseBannerBuilderGetJsString('targetmodalnotfound', ''));
+        }
+        if (requestedModal && targetmodal.dataset.layerModalRequest !== requestId) {
+            return;
+        }
+        if (!requestedModal) {
+            targetmodal.dataset.layerModalRequest = requestId;
         }
 
         var fetchedtitle = fetchedmodal.querySelector('.modal-title');
@@ -18161,31 +18374,19 @@ function localCourseBannerBuilderLoadLayerModal(url) {
         }
 
         localCourseBannerBuilderSafelyPrepareDynamicLayerModal(targetmodal);
-        if (localCourseBannerBuilderShowModal(targetmodal) && typeof window.jQuery !== 'undefined') {
-            window.jQuery(targetmodal).one('shown.bs.modal', function () {
-                var shownForm = targetmodal.querySelector('form.mform');
-                window.requestAnimationFrame(function () {
-                    localCourseBannerBuilderRefreshCurrentPreviewLayer(shownForm);
-                    localCourseBannerBuilderSyncBorderPreview(shownForm);
-                    localCourseBannerBuilderSyncContextPreviewVisibility(shownForm);
-                    window.requestAnimationFrame(function () {
-                        localCourseBannerBuilderSyncBorderPreview(shownForm);
-                    });
-                });
-            });
-        } else {
-            var visibleForm = targetmodal.querySelector('form.mform');
-            window.requestAnimationFrame(function () {
-                localCourseBannerBuilderRefreshCurrentPreviewLayer(visibleForm);
-                localCourseBannerBuilderSyncBorderPreview(visibleForm);
-                localCourseBannerBuilderSyncContextPreviewVisibility(visibleForm);
-                window.requestAnimationFrame(function () {
-                    localCourseBannerBuilderSyncBorderPreview(visibleForm);
-                });
-            });
+        targetmodal.removeAttribute('data-layer-modal-loading');
+        targetmodal.removeAttribute('data-layer-modal-request');
+        if (!targetmodal.classList.contains('show')) {
+            localCourseBannerBuilderShowModal(targetmodal);
         }
+        localCourseBannerBuilderRefreshLoadedLayerModal(targetmodal);
     }).catch(function (error) {
         window.console.error(error);
+        if (requestedModal && requestedModal.dataset.layerModalRequest === requestId) {
+            requestedModal.removeAttribute('data-layer-modal-loading');
+            requestedModal.removeAttribute('data-layer-modal-request');
+            localCourseBannerBuilderHideModal(requestedModal);
+        }
     });
 }
 
@@ -18337,6 +18538,8 @@ localCourseBannerBuilderOnReady(function () {
             return;
         }
         window.jQuery(dynamicmodal).on('hidden.bs.modal', function () {
+            dynamicmodal.removeAttribute('data-layer-modal-loading');
+            dynamicmodal.removeAttribute('data-layer-modal-request');
             var body = dynamicmodal.querySelector('.modal-body');
             if (body) {
                 body.innerHTML = '';

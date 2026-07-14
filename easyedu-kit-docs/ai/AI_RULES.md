@@ -42,6 +42,10 @@ Avoid:
 - native `title` tooltips when the kit custom tooltip pattern is used;
 - absolute-position highlights for guide selectors;
 - local guide behaviour that diverges from the guide kit.
+- local admin navigation buttons outside `admin-primary-nav`;
+- applying standard nav/action button styles to the guide launcher;
+- admin navigation labels that wrap onto two lines instead of using the kit
+  non-wrapping rail.
 
 ## Required update set for reusable changes
 
@@ -55,28 +59,6 @@ When adding or changing a reusable component, update all relevant parts:
 - component matrix if the component family changes;
 - changelog;
 - AI contract if the behaviour is fragile or often misimplemented.
-
-## Fragile interaction systems
-
-Some systems are not generic kit primitives, but they are still too fragile to
-be changed from memory or by visual intuition alone. Course Banner Builder crop
-editing is one example.
-
-For those systems:
-
-1. Write or update an explicit contract in `docs/examples/<plugin>.md`.
-2. State the canonical source of truth and any session-only state.
-3. List the regression scenarios that must be replayed.
-4. Prefer a targeted browser/headless probe over speculative patching.
-5. When a fix is validated, create a handoff note so another agent does not
-   have to reconstruct the reasoning from chat history.
-
-Do not rely on:
-
-- rough screenshots alone;
-- one modal working while another uses a forked controller;
-- DOM geometry reconstructed from already transformed layers when a stable data
-  model exists or should exist.
 
 ## Moodle constraints
 

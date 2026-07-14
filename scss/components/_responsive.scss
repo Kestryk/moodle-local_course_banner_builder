@@ -380,7 +380,7 @@ span[data-flexitour="container"].orphan .modal-dialog {
 
 .local-course-banner-builder-hover-popover--top .popover-arrow,
 .local-course-banner-builder-hover-popover--bottom .popover-arrow {
-    left: calc(50% - 0.375rem);
+    left: calc(var(--local-course-banner-builder-popover-arrow-left, 50%) - 0.375rem);
 }
 
 .local-course-banner-builder-hover-popover--top .popover-arrow {

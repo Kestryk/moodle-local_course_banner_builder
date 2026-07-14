@@ -1,0 +1,113 @@
+@use "../easyedu" as easyedu;
+
+@include easyedu.motion-keyframes;
+
+// EasyEdu guide shell, scoped to Course Banner Builder. Keep this adapter thin:
+// the visual language for navigation cards, show buttons, return dock and
+// guided checklist comes from the embedded EasyEdu kit.
+.local-course-banner-builder-easyedu-guide,
+.path-admin-local-course_banner_builder .easyedu-guide {
+    --easyedu-guide-modal-width: 72rem;
+    --easyedu-guide-modal-height: min(90vh, 46rem);
+    --easyedu-guide-modal-max-height: calc(100vh - 2rem);
+    --easyedu-guide-modal-min-height: min(42rem, calc(100vh - 2rem));
+
+    @include easyedu.guide-shell;
+    @include easyedu.guide-rich-navigation;
+    @include easyedu.guide-visuals;
+    @include easyedu.guided-panel;
+}
+
+.local-course-banner-builder-admin-switcher > .local-course-banner-builder-easyedu-guide,
+.local-course-banner-builder-admin-switcher > .easyedu-guide {
+    display: inline-flex;
+    flex: 0 0 auto;
+    justify-content: flex-start;
+    margin-right: auto;
+    min-width: 2.55rem;
+    order: -1;
+}
+
+.local-course-banner-builder-admin-switcher
+    > :is(.local-course-banner-builder-easyedu-guide, .easyedu-guide)
+    .easyedu-guide__launcher {
+    box-sizing: border-box;
+    min-width: 2.55rem;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.local-course-banner-builder-easyedu-guide .easyedu-guide__launcher-label,
+.path-admin-local-course_banner_builder .easyedu-guide .easyedu-guide__launcher-label {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}
+
+.local-course-banner-builder-easyedu-guide .easyedu-guide-modal__map-item--source .fa,
+.local-course-banner-builder-easyedu-guide .easyedu-guide-mini-card--source > .fa,
+.path-admin-local-course_banner_builder .easyedu-guide .easyedu-guide-modal__map-item--source .fa,
+.path-admin-local-course_banner_builder .easyedu-guide .easyedu-guide-mini-card--source > .fa {
+    background: #4873ad;
+}
+
+.local-course-banner-builder-easyedu-guide .easyedu-guide-modal__map-item--layer .fa,
+.local-course-banner-builder-easyedu-guide .easyedu-guide-mini-card--layer > .fa,
+.path-admin-local-course_banner_builder .easyedu-guide .easyedu-guide-modal__map-item--layer .fa,
+.path-admin-local-course_banner_builder .easyedu-guide .easyedu-guide-mini-card--layer > .fa {
+    background: #29724d;
+}
+
+.local-course-banner-builder-easyedu-guide .easyedu-guide-modal__map-item--banner .fa,
+.local-course-banner-builder-easyedu-guide .easyedu-guide-mini-card--banner > .fa,
+.path-admin-local-course_banner_builder .easyedu-guide .easyedu-guide-modal__map-item--banner .fa,
+.path-admin-local-course_banner_builder .easyedu-guide .easyedu-guide-mini-card--banner > .fa {
+    background: #6a7f98;
+}
+
+.local-course-banner-builder-easyedu-guide .easyedu-guide-mini-card--source,
+.path-admin-local-course_banner_builder .easyedu-guide .easyedu-guide-mini-card--source {
+    border-left-color: #4873ad;
+}
+
+.local-course-banner-builder-easyedu-guide .easyedu-guide-mini-card--layer,
+.path-admin-local-course_banner_builder .easyedu-guide .easyedu-guide-mini-card--layer {
+    border-left-color: #29724d;
+}
+
+.local-course-banner-builder-easyedu-guide .easyedu-guide-mini-card--banner,
+.path-admin-local-course_banner_builder .easyedu-guide .easyedu-guide-mini-card--banner {
+    border-left-color: #6a7f98;
+}
+
+@media (max-width: 780px) {
+    .local-course-banner-builder-easyedu-guide .easyedu-guide-modal__header,
+    .local-course-banner-builder-easyedu-guide .easyedu-guide-slide__header,
+    .path-admin-local-course_banner_builder .easyedu-guide .easyedu-guide-modal__header,
+    .path-admin-local-course_banner_builder .easyedu-guide .easyedu-guide-slide__header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .local-course-banner-builder-easyedu-guide .easyedu-guide-modal__map-flow,
+    .path-admin-local-course_banner_builder .easyedu-guide .easyedu-guide-modal__map-flow {
+        justify-content: flex-start;
+        margin-left: 0;
+    }
+
+    .local-course-banner-builder-easyedu-guide .easyedu-guide-visual--flow,
+    .path-admin-local-course_banner_builder .easyedu-guide .easyedu-guide-visual--flow {
+        grid-template-columns: 1fr;
+    }
+
+    .local-course-banner-builder-easyedu-guide .easyedu-guide-flow-arrow,
+    .path-admin-local-course_banner_builder .easyedu-guide .easyedu-guide-flow-arrow {
+        transform: rotate(90deg);
+    }
+}

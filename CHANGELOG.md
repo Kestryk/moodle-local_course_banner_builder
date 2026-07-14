@@ -6,10 +6,203 @@ The format is inspired by [Keep a Changelog](https://keepachangelog.com/).
 Entries are grouped by day so related changes stay together instead of creating
 many small sections.
 
+## Unreleased
+
+### 2026-07-14
+
+#### Changed
+
+- Synchronized EasyEdu UI kit `0.4.37` and kept semantic accent rails inside
+  rounded administration panels without hiding menus or popovers that escape
+  their panel surface.
+- Rebuilt the embedded guide AMD artifact as a genuinely minified production
+  module with its source map kept in sync with the readable source.
+- Excluded embedded EasyEdu development documentation, guide references and
+  motion-kit sources from production archives while retaining them in Git for
+  maintenance and future synchronisation.
+
+### 2026-07-13
+
+#### Changed
+
+- Synchronized the embedded EasyEdu UI contracts to version `0.4.36`, adding
+  the form action, segmented-choice, balanced administration navigation and
+  modal history primitives while preserving CCB-specific popover, accordion
+  and motion refinements.
+- Harmonised Course and Site Slideshow administration cards with equal heights,
+  content-sized settings sections, context-coloured appearance actions and a
+  shared action zone anchored at the bottom of each card.
+- Clarified checked, unchecked, focus and disabled Slideshow control states and
+  restored the semantic section borders previously suppressed by an undefined
+  kit token.
+- Aligned image, border, overlay and slideshow preview-modal content with the
+  shared EasyStud `1rem` horizontal rhythm while preserving the wider action
+  rail and every interaction-owned preview dimension.
+- Stabilised source, layer and inheritance table headers with the compact
+  EasyStud Mass Import typography, natural column sizing and no mid-word
+  wrapping.
+- Kept Border style open on its first selection in the add-layer modal while
+  allowing the user to close it for the rest of that modal session.
+- Separated layer-type visibility from preview-side accordion disclosure so
+  border and overlay form synchronisation can no longer reopen a panel that the
+  user has closed.
+
+### 2026-07-12
+
+#### Changed
+
+- Synchronized the EasyEdu guide action contract with compact rounded
+  Previous, Next, Show in interface and Start guided path controls.
+- Completed the embedded EasyEdu motion reference package and added a dedicated
+  animated inheritance-chain learning slide to the course banner guide.
+
+### 2026-07-11
+
+#### Changed
+
+- Introduced the shared EasyEdu administration typography roles and aligned
+  option, slideshow, transfer, table and modal headings without changing
+  user-configurable banner or slideshow text.
+- Vendored the cancellable EasyEdu motion runtime and used it for the
+  course/site banner options disclosure, including repeated-click cleanup and
+  native reduced-motion support.
+- Replaced timeout and `max-height` orchestration in image, border, overlay,
+  title and slideshow preview-side accordions with the shared cancellable
+  motion runtime, while closing sibling panels atomically to keep preview
+  layouts stable.
+- Made slideshow accordion target state authoritative during interrupted
+  transitions so rapid open/close/open input cannot desynchronise the panel and
+  its trigger.
+- Reworked preview-side accordion headers as stable editor disclosures with a
+  compact semantic icon tile, end chevron and calmer hover/active treatment.
+- Matched collapsed preview-side accordions to adjacent command heights and
+  removed the grid gap between each expanded header and its content panel.
+- Applied the shared accordion contract to slideshow controls at initial render
+  instead of waiting for their first interaction.
+- Harmonised banner format choice cards and their selected/focus states while
+  preserving every simulated banner dimension shown in the format previews.
+- Reorganised each slideshow administration card into a distinct activation
+  band plus labelled Content and Controls sections, with contextual active
+  toggle states and compact numeric field rows.
+- Made image, border and overlay edit modals acknowledge clicks immediately
+  with an accessible loading surface while Moodle prepares the dynamic form.
+- Added short-lived hover and keyboard-focus prefetching for layer editors so
+  frequently opened forms can become usable in roughly one transition.
+- Reduced AJAX-only modal work by skipping title-preview and upload-guidance
+  calculations that are not rendered in edit-form responses.
+- Hardened dynamic form reordering when identity fields are moved below the
+  preview, preventing an intermittent `insertBefore` exception during modal
+  preparation.
+- Harmonised border, overlay and image preview-side accordions as integrated
+  EasyEdu components with stable semantic accents and no secondary close row.
+- Unified modal colour controls and linked slider/number rows while preserving
+  the existing CCB input bindings, ARIA state and live preview behaviour.
+- Verified border and overlay sliders, accordion open/close and preview
+  geometry in Moodle 5.1 with no browser console errors.
+- Synced EasyEdu UI kit 0.4.27 non-guide visual contracts and applied the
+  EasyStud-derived contextual modal chrome to CCB preview editors.
+- Added semantic accent rails to Transfer and Slideshow administration panels,
+  and distinct source, layer and inheritance-chain table surfaces without
+  changing their data, drag/drop or action-menu contracts.
+- Promoted the tested CCB preview modal, side accordion and table shell
+  primitives back into the canonical EasyEdu kit.
+- Extended the embedded EasyEdu guide with explicit action-owned checklist
+  completion and reusable animated learning scenes shared with EasyStud.
+- Synced the latest EasyEdu guide contract for solid primary guide actions,
+  checklist return labels, stronger animated learning scenes and safer guided
+  checklist wrapping.
+- Synced the refined EasyEdu guide slide spacing and larger introductory
+  flow/card learning scenes.
+- Replaced the rounded, raised admin navigation treatment with shorter labels
+  and a stronger EasyEdu application rail using tiled icons, a flat filled
+  active state and responsive control wrapping instead of horizontal scrolling.
+- Separated contextual banner status actions from the primary navigation with
+  explicit active and disabled states, state-based wording and popovers carried
+  by the controls instead of separate question-mark buttons.
+- Refined the primary rail into traditional flat bordered tabs with a lighter
+  type treatment and a fine active-view accent, then joined the tabs across the
+  full rail height and increased their typography for clearer navigation.
+- Restyled the destructive settings action as a transparent guide-adjacent
+  icon-only control, centred the primary tabs between it and the guide launcher,
+  and added a reusable red EasyEdu warning popover variant.
+- Grouped site, course and activity title editors in a dedicated trailing area
+  of the secondary navigation.
+- Reworked the status area into responsive General, Images, Generation and
+  Titles groups, removed redundant enabled/disabled wording, and made active,
+  inactive and unavailable states visual rather than textual.
+- Centred the flatter full-height primary navigation between the unchanged
+  guide launcher and icon-only reset action, while returning navigation text to
+  the Moodle theme font.
+- Moved the active primary-navigation accent to the bottom edge, lightened its
+  typography, restored the guide launcher popover and aligned both edge actions
+  to the same square footprint.
+- Made course and site banner options collapsible and closed by default, with
+  their title-edit modals kept outside the collapsed DOM ancestor.
+- Anchored navigation popover arrows to their actual trigger even when a long
+  warning popover is clamped against the viewport edge.
+- Added the soft EasyEdu context gradient to the primary rail, refined its
+  translucent hover state and corrected the shared popover mixin so dynamic
+  arrow anchoring is no longer overwritten by a static 50% rule.
+- Added a reduced-motion-aware opening animation to the collapsed banner
+  options and normalised the content padding and group heights.
+- Added a CCB-specific UI harmonisation baseline that classifies administration
+  views and runtime-sensitive selectors before broader EasyEdu adoption.
+- Rebuilt the transfer screen as responsive Export and Import task panels,
+  removed its duplicated page heading and grouped export checkboxes through a
+  reusable EasyEdu option-list primitive.
+- Harmonised the Course and Site slideshow settings cards with the same
+  administrative panel/header contract and reduced the visual weight of their
+  enable controls without changing form behaviour.
+- Added non-structural EasyEdu table surfaces to the configured-source, layer
+  and inherited-layer tables while preserving their column sizing, action
+  overflow, row selectors and drag-and-drop hooks.
+- Matched the configured-source table corners to the layer table by rounding
+  corner cells directly, preserving the source table's required visible
+  overflow for action menus and popovers.
+- Documented the preview-side accordion contract so an opened action becomes
+  the persistent panel header instead of spawning a duplicate close button.
+- Implemented integrated preview-side accordions for Image layer options,
+  Border style and Overlay settings: each existing action now stays above and
+  visually joins its opened panel while retaining the original open/close
+  engine and form controls.
+- Aligned opened preview-side panels with their collapsed triggers by using the
+  same white surface, fine border and restrained active tint instead of a
+  separate heavy blue content rail.
+- Extended the integrated-header contract to title and slideshow side panels
+  while keeping their existing selection, animation and form-update engines.
+- Introduced a shared EasyEdu shell for layer, title and slideshow preview
+  modals, standardising viewport dimensions, flex containment and footer
+  surfaces while leaving each preview grid and sticky calculation untouched.
+- Refined long EasyEdu-style popovers with balanced inner spacing, centred
+  headings and justified body copy.
+- Added richer EasyEdu guide scenes to source selection, source settings, layer
+  guided paths and slideshow save flows, and retargeted the source slide to the
+  source picker controls instead of a potentially empty configured-source list.
+- Synced the hardened EasyEdu guide scene layouts so long translated guide
+  labels and guided-path buttons wrap inside their containers instead of
+  overflowing.
+- Synced the animated guide pointer refinement so context-menu learning scenes
+  keep their motion without causing horizontal overflow.
+- Synced the restored EasyEdu guide action and checklist styling so guide
+  buttons stay blue, learning surfaces are centred, guided-path cards use a
+  stronger green surface without an extra rail, and checklist rows avoid
+  internal text overflow.
+
+### Verified
+
+- Rebuilt the plugin stylesheet in the Moodle 5.1 workspace and purged Moodle
+  caches.
+- Validated all modified language files with PHP lint and checked the Git diff.
+
 ## Unreleased - 2026-07-09
 
 ### Changed
 
+- Reworked the EasyEdu admin navigation styling on Moodle 5.1 so top-level
+  admin buttons use a sober non-wrapping navigation rail, while course/site
+  status controls use a separate secondary action style.
+- Aligned Course Banner Builder hover popovers with the EasyStud/EasyEdu
+  popover surface without changing the existing popover JavaScript engine.
 - Refactored the image crop workflow on Moodle 5.1 so crop editing now keeps a
   session-only source rectangle and placement snapshot instead of rebuilding the
   next crop state from multiple competing DOM/data sources.
