@@ -12,6 +12,11 @@ many small sections.
 
 #### Changed
 
+- Synchronized EasyEdu UI kit `0.4.38` and applied its native Moodle QuickForm
+  colour-group contract so border swatches and textual values remain aligned
+  on one compact row without changing form submission or validation hooks.
+- Corrected the dynamically loaded border editor heading so edit actions no
+  longer reuse the add-border label.
 - Synchronized EasyEdu UI kit `0.4.37` and kept semantic accent rails inside
   rounded administration panels without hiding menus or popovers that escape
   their panel surface.

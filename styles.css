@@ -12964,6 +12964,32 @@ span[data-flexitour=container].orphan .modal-dialog {
   border-color: var(--easyedu-control-focus-border);
   box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring);
 }
+.local-course-banner-builder-admin--native [id*=fgroup_id_bordercolorgroup] .felement > fieldset > .d-flex,
+.local-course-banner-builder-admin--native [id*=fgroup_id_overlaybannercolorgroup] .felement > fieldset > .d-flex {
+  align-items: center !important;
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  gap: 0.55rem;
+  min-width: 0;
+  width: 100%;
+}
+.local-course-banner-builder-admin--native [id*=fgroup_id_bordercolorgroup] .felement > fieldset > .d-flex > .fitem,
+.local-course-banner-builder-admin--native [id*=fgroup_id_overlaybannercolorgroup] .felement > fieldset > .d-flex > .fitem {
+  flex: 1 1 auto;
+  margin: 0 !important;
+  min-width: 0;
+  order: 2;
+}
+.local-course-banner-builder-admin--native [id*=fgroup_id_bordercolorgroup] .felement > fieldset > .d-flex > input[type=color],
+.local-course-banner-builder-admin--native [id*=fgroup_id_overlaybannercolorgroup] .felement > fieldset > .d-flex > input[type=color] {
+  flex: 0 0 3.1rem;
+  order: 1;
+}
+.local-course-banner-builder-admin--native [id*=fgroup_id_bordercolorgroup] .felement > fieldset > .d-flex input[type=text],
+.local-course-banner-builder-admin--native [id*=fgroup_id_overlaybannercolorgroup] .felement > fieldset > .d-flex input[type=text] {
+  min-width: 0;
+  width: 100%;
+}
 .local-course-banner-builder-admin--native [id*=fgroup_id_bordercolorgroup] input[type=color],
 .local-course-banner-builder-admin--native [id*=fgroup_id_overlaybannercolorgroup] input[type=color] {
   background: transparent;

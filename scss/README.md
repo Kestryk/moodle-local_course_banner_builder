@@ -15,7 +15,7 @@ script writes to `styles.css`, which is the file Moodle loads.
 
 Embedded EasyEdu UI kit:
 
-- Version: `v0.4.37`
+- Version: `v0.4.38`
 - Source: `git@github.com:Kestryk/easyedu-ui-kit.git`
 - Synced folders:
   - `scss/easyedu/`: shared SCSS tokens and opt-in component mixins.

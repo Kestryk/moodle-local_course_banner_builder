@@ -647,6 +647,7 @@
     [id*="fgroup_id_bordercolorgroup"] .felement,
     [id*="fgroup_id_overlaybannercolorgroup"] .felement {
         @include easyedu.color-picker-control;
+        @include easyedu.moodle-color-picker-group;
 
         display: flex;
         width: 100%;

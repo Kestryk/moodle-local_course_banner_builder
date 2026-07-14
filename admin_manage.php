@@ -2669,7 +2669,7 @@ if ($isxmlhttprequest && $selectedsource && $elementid) {
         default => 'local-course-banner-builder-edit-image-layer-modal',
     };
     $ajaxmodaltitle = match ($formmode) {
-        'editborder' => get_string('layerborder', 'local_course_banner_builder'),
+        'editborder' => get_string('editborder', 'local_course_banner_builder'),
         'editoverlay' => get_string('editoverlaylayer', 'local_course_banner_builder'),
         default => get_string('editimage', 'local_course_banner_builder'),
     };

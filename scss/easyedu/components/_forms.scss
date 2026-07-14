@@ -111,6 +111,9 @@
     white-space: normal;
   }
 
+  // Canonical contained structure. The native legend remains available to
+  // assistive technology while the visible heading sits inside the surface,
+  // avoiding browser-specific fieldset border notches and overlays.
   .easyedu-segmented-choice__legend {
     border: 0;
     clip: rect(0 0 0 0);
@@ -529,21 +532,17 @@
   border: 1px dashed var(--easyedu-card-border);
   border-radius: var(--easyedu-radius-sm);
   margin-top: 0;
-  max-height: 0;
   opacity: 0;
   overflow: hidden;
   padding: 0.65rem;
   transform: translateY(-0.06rem);
   transition:
-    max-height var(--easyedu-motion-slow) var(--easyedu-motion-ease),
-    opacity var(--easyedu-motion-normal) ease,
-    margin var(--easyedu-motion-normal) var(--easyedu-motion-ease),
-    transform var(--easyedu-motion-normal) var(--easyedu-motion-ease);
+    opacity var(--easyedu-motion-fast) ease,
+    transform var(--easyedu-motion-fast) var(--easyedu-motion-ease);
 
   &.is-open,
   &[aria-expanded="true"] {
     margin-top: 0.6rem;
-    max-height: $max-height;
     opacity: 1;
     transform: translateY(0);
   }
@@ -649,6 +648,36 @@
   font-size: 0.78rem;
   font-weight: 760;
   letter-spacing: 0.04em;
+}
+
+// Align a Moodle QuickForm colour group without changing its submission
+// structure. Apply this to the group's `.felement` after `color-picker-control`.
+@mixin moodle-color-picker-group {
+  > fieldset > .d-flex {
+    align-items: center !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 0.55rem;
+    min-width: 0;
+    width: 100%;
+  }
+
+  > fieldset > .d-flex > .fitem {
+    flex: 1 1 auto;
+    margin: 0 !important;
+    min-width: 0;
+    order: 2;
+  }
+
+  > fieldset > .d-flex > input[type="color"] {
+    flex: 0 0 3.1rem;
+    order: 1;
+  }
+
+  > fieldset > .d-flex input[type="text"] {
+    min-width: 0;
+    width: 100%;
+  }
 }
 
 @mixin detected-token-input {

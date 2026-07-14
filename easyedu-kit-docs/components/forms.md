@@ -253,6 +253,20 @@ Expected structure:
 </label>
 ```
 
+For a native Moodle QuickForm group containing a text value and a colour input,
+keep Moodle's generated fieldset and apply both mixins to its `.felement`:
+
+```scss
+.my-moodle-colour-group .felement {
+  @include easyedu.color-picker-control;
+  @include easyedu.moodle-color-picker-group;
+}
+```
+
+This contract keeps the colour swatch and textual value on one line, places the
+swatch first, removes the nested QuickForm field margin and preserves the
+original input names, ids, validation feedback and submission behaviour.
+
 ## Detected token inputs
 
 Use this pattern for text inputs that transform recognised identifiers into
