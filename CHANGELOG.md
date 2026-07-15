@@ -8,6 +8,17 @@ many small sections.
 
 ## Unreleased
 
+### 2026-07-15
+
+#### Changed
+
+- Harmonised Course, Activity and Site title editor controls with the shared
+  EasyEdu colour, numeric-input and preview-side-panel surfaces while keeping
+  title frame sizing, responsive positioning, drag and resize calculations
+  unchanged.
+- Kept title activation and Moodle-title replacement actions together on one
+  compact row in course title editors.
+
 ### 2026-07-14
 
 #### Changed

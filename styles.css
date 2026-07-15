@@ -12930,6 +12930,116 @@ span[data-flexitour=container].orphan .modal-dialog {
 .local-course-banner-builder-admin--native .local-course-banner-builder-image-options-side-panel .form-check:has(input[type=checkbox]) label {
   margin: 0;
 }
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-top-choice-row .local-course-banner-builder-title-top-choice,
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-top-choice-row .local-course-banner-builder-title-top-secondary {
+  flex: 0 0 auto;
+  margin: 0;
+  width: auto;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-panel-section .local-course-banner-builder-title-color-field,
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-side-panel .local-course-banner-builder-title-color-field {
+  align-items: center;
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: auto minmax(7rem, 1fr);
+  width: 100%;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-panel-section .local-course-banner-builder-title-color-field input[type=color],
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-side-panel .local-course-banner-builder-title-color-field input[type=color] {
+  background: var(--easyedu-surface);
+  border: 0.0625rem solid var(--easyedu-control-border);
+  border-radius: 0.62rem;
+  height: 2.35rem;
+  padding: 0.18rem;
+  width: 3.4rem;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-panel-section .local-course-banner-builder-title-color-field input[type=text],
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-side-panel .local-course-banner-builder-title-color-field input[type=text] {
+  background: var(--easyedu-surface);
+  border: 1px solid var(--easyedu-control-border);
+  border-radius: var(--easyedu-control-radius);
+  box-shadow: none;
+  color: var(--easyedu-text);
+  max-width: 100%;
+  transition: border-color var(--easyedu-motion-fast) ease, box-shadow var(--easyedu-motion-fast) ease;
+  font-size: 0.82rem;
+  min-height: 2.15rem;
+  padding: 0.32rem 0.55rem;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-panel-section .local-course-banner-builder-title-color-field input[type=text]:focus, .local-course-banner-builder-admin--native .local-course-banner-builder-title-panel-section .local-course-banner-builder-title-color-field input[type=text]:focus-visible,
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-side-panel .local-course-banner-builder-title-color-field input[type=text]:focus,
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-side-panel .local-course-banner-builder-title-color-field input[type=text]:focus-visible {
+  border-color: var(--easyedu-control-focus-border);
+  box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring);
+  outline: 0;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-panel-section .local-course-banner-builder-title-color-field input[type=text]:disabled, .local-course-banner-builder-admin--native .local-course-banner-builder-title-panel-section .local-course-banner-builder-title-color-field input[type=text][aria-disabled=true],
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-side-panel .local-course-banner-builder-title-color-field input[type=text]:disabled,
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-side-panel .local-course-banner-builder-title-color-field input[type=text][aria-disabled=true] {
+  background: var(--easyedu-surface-soft);
+  color: var(--easyedu-text-muted);
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-panel-section .local-course-banner-builder-title-slider > input[type=number],
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-side-panel .local-course-banner-builder-title-slider > input[type=number] {
+  background: var(--easyedu-surface);
+  border: 1px solid var(--easyedu-control-border);
+  border-radius: var(--easyedu-control-radius);
+  box-shadow: none;
+  color: var(--easyedu-text);
+  max-width: 100%;
+  transition: border-color var(--easyedu-motion-fast) ease, box-shadow var(--easyedu-motion-fast) ease;
+  font-size: 0.82rem;
+  min-height: 2.15rem;
+  padding: 0.32rem 0.55rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-panel-section .local-course-banner-builder-title-slider > input[type=number]:focus, .local-course-banner-builder-admin--native .local-course-banner-builder-title-panel-section .local-course-banner-builder-title-slider > input[type=number]:focus-visible,
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-side-panel .local-course-banner-builder-title-slider > input[type=number]:focus,
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-side-panel .local-course-banner-builder-title-slider > input[type=number]:focus-visible {
+  border-color: var(--easyedu-control-focus-border);
+  box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring);
+  outline: 0;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-panel-section .local-course-banner-builder-title-slider > input[type=number]:disabled, .local-course-banner-builder-admin--native .local-course-banner-builder-title-panel-section .local-course-banner-builder-title-slider > input[type=number][aria-disabled=true],
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-side-panel .local-course-banner-builder-title-slider > input[type=number]:disabled,
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-side-panel .local-course-banner-builder-title-slider > input[type=number][aria-disabled=true] {
+  background: var(--easyedu-surface-soft);
+  color: var(--easyedu-text-muted);
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-panel-section select,
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-panel-section .custom-select {
+  border: 0.0625rem solid var(--easyedu-control-border);
+  border-radius: var(--easyedu-control-radius);
+  box-shadow: none;
+  color: var(--easyedu-text);
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-panel-section select:focus, .local-course-banner-builder-admin--native .local-course-banner-builder-title-panel-section select:focus-visible,
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-panel-section .custom-select:focus,
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-panel-section .custom-select:focus-visible {
+  border-color: var(--easyedu-control-focus-border);
+  box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring);
+  outline: 0;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-side-panel {
+  --easyedu-preview-side-accent: var(--easyedu-primary);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--easyedu-preview-side-accent) 4%, var(--easyedu-surface) 96%), var(--easyedu-surface) 3rem);
+  border: 0.0625rem solid color-mix(in srgb, var(--easyedu-preview-side-accent) 34%, var(--easyedu-control-border) 66%);
+  border-top: 0;
+  border-radius: 0 0 var(--easyedu-control-radius) var(--easyedu-control-radius);
+  box-shadow: inset 0.18rem 0 0 color-mix(in srgb, var(--easyedu-preview-side-accent) 38%, transparent);
+  margin: 0 0 0.22rem;
+  padding: 0.72rem;
+  border-top: 0;
+  margin-top: 0;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-title-side-panel > summary {
+  display: none;
+}
 .local-course-banner-builder-admin--native .local-course-banner-builder-border-style-side-panel {
   --easyedu-preview-side-accent: var(--easyedu-grouping);
   background: linear-gradient(180deg, color-mix(in srgb, var(--easyedu-preview-side-accent) 4%, var(--easyedu-surface) 96%), var(--easyedu-surface) 3rem);

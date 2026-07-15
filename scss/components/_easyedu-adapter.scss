@@ -692,6 +692,55 @@
         }
     }
 
+    .local-course-banner-builder-title-top-choice-row {
+        .local-course-banner-builder-title-top-choice,
+        .local-course-banner-builder-title-top-secondary {
+            flex: 0 0 auto;
+            margin: 0;
+            width: auto;
+        }
+    }
+
+    .local-course-banner-builder-title-panel-section,
+    .local-course-banner-builder-title-side-panel {
+        .local-course-banner-builder-title-color-field {
+            @include easyedu.color-picker-field;
+
+            width: 100%;
+        }
+
+        .local-course-banner-builder-title-slider > input[type="number"] {
+            @include easyedu.native-select-control(small);
+
+            font-variant-numeric: tabular-nums;
+            text-align: center;
+        }
+    }
+
+    .local-course-banner-builder-title-panel-section {
+        select,
+        .custom-select {
+            border: 0.0625rem solid var(--easyedu-control-border);
+            border-radius: var(--easyedu-control-radius);
+            box-shadow: none;
+            color: var(--easyedu-text);
+
+            &:focus,
+            &:focus-visible {
+                border-color: var(--easyedu-control-focus-border);
+                box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring);
+                outline: 0;
+            }
+        }
+    }
+
+    .local-course-banner-builder-title-side-panel {
+        @include easyedu.preview-side-accordion-panel(var(--easyedu-primary));
+
+        border-top: 0;
+        margin-top: 0;
+    }
+
     .local-course-banner-builder-border-style-side-panel {
         @include easyedu.preview-side-accordion-panel(var(--easyedu-grouping));
     }
