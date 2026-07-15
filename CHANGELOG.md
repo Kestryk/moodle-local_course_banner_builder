@@ -12,6 +12,9 @@ many small sections.
 
 #### Changed
 
+- Harmonised the Image layer options in add/edit modals with compact EasyEdu
+  select, helper and numeric-control surfaces while preserving Moodle select
+  indicators and every crop, resize, drag and positioning interaction hook.
 - Synchronized EasyEdu UI kit `0.4.38` and applied its native Moodle QuickForm
   colour-group contract so border swatches and textual values remain aligned
   on one compact row without changing form submission or validation hooks.

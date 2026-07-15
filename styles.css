@@ -12873,6 +12873,63 @@ span[data-flexitour=container].orphan .modal-dialog {
 .local-course-banner-builder-admin--native .local-course-banner-builder-image-options-side-panel > summary {
   display: none;
 }
+.local-course-banner-builder-admin--native .local-course-banner-builder-image-options-side-panel select,
+.local-course-banner-builder-admin--native .local-course-banner-builder-image-options-side-panel .custom-select {
+  border: 0.0625rem solid var(--easyedu-control-border);
+  border-radius: var(--easyedu-control-radius);
+  box-shadow: none;
+  color: var(--easyedu-text);
+  font-size: 0.82rem;
+  min-height: 2.15rem;
+  padding-top: 0.32rem;
+  padding-bottom: 0.32rem;
+  width: 100%;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-image-options-side-panel select:focus, .local-course-banner-builder-admin--native .local-course-banner-builder-image-options-side-panel select:focus-visible,
+.local-course-banner-builder-admin--native .local-course-banner-builder-image-options-side-panel .custom-select:focus,
+.local-course-banner-builder-admin--native .local-course-banner-builder-image-options-side-panel .custom-select:focus-visible {
+  border-color: var(--easyedu-control-focus-border);
+  box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring);
+  outline: 0;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-image-options-side-panel .local-course-banner-builder-linked-range-wrapper {
+  font-variant-numeric: tabular-nums;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-image-options-side-panel .form-text {
+  color: var(--easyedu-text-muted) !important;
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-image-options-side-panel #fitem_id_layeradvancedhelp,
+.local-course-banner-builder-admin--native .local-course-banner-builder-image-options-side-panel #fitem_id_fitoverridehelp,
+.local-course-banner-builder-admin--native .local-course-banner-builder-image-options-side-panel #fitem_id_layeroffsethelp {
+  margin-bottom: 0.72rem;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-image-options-side-panel #fitem_id_layeradvancedhelp .form-text,
+.local-course-banner-builder-admin--native .local-course-banner-builder-image-options-side-panel #fitem_id_fitoverridehelp .form-text,
+.local-course-banner-builder-admin--native .local-course-banner-builder-image-options-side-panel #fitem_id_layeroffsethelp .form-text {
+  background: color-mix(in srgb, var(--easyedu-primary) 3%, var(--easyedu-surface) 97%);
+  border-left: 0.16rem solid color-mix(in srgb, var(--easyedu-primary) 34%, transparent);
+  border-radius: 0 var(--easyedu-control-radius) var(--easyedu-control-radius) 0;
+  padding: 0.48rem 0.58rem;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-image-options-side-panel .form-check:has(input[type=checkbox]) {
+  align-items: center;
+  background: var(--easyedu-surface-soft);
+  border: 0.0625rem solid var(--easyedu-control-border);
+  border-radius: var(--easyedu-control-radius);
+  display: flex;
+  gap: 0.45rem;
+  min-height: 2.15rem;
+  padding: 0.38rem 0.55rem;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-image-options-side-panel .form-check:has(input[type=checkbox]):focus-within {
+  border-color: var(--easyedu-control-focus-border);
+  box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring);
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-image-options-side-panel .form-check:has(input[type=checkbox]) label {
+  margin: 0;
+}
 .local-course-banner-builder-admin--native .local-course-banner-builder-border-style-side-panel {
   --easyedu-preview-side-accent: var(--easyedu-grouping);
   background: linear-gradient(180deg, color-mix(in srgb, var(--easyedu-preview-side-accent) 4%, var(--easyedu-surface) 96%), var(--easyedu-surface) 3rem);
