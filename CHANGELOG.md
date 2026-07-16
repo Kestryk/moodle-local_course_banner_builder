@@ -8,6 +8,14 @@ many small sections.
 
 ## Unreleased
 
+### 2026-07-16
+
+#### Changed
+
+- Included the exact 768 px viewport in the compact administration and
+  Slideshow modal layouts so preview-side actions stack below the preview
+  instead of retaining the cramped desktop rail at the breakpoint.
+
 ### 2026-07-15
 
 #### Changed
