@@ -332,12 +332,114 @@
     .local-course-banner-builder-transfer-panel .mform {
         margin: 0;
 
+        > .h5 {
+            @include easyedu.type-section-title;
+
+            margin: 1rem 0 0.55rem !important;
+        }
+
+        > .fitem:has(input[type="checkbox"]) {
+            align-items: flex-start;
+            display: flex;
+            margin: 0;
+            min-width: 0;
+            padding: 0.56rem 0.12rem;
+            border-bottom: 1px solid color-mix(in srgb, var(--easyedu-card-border) 52%, transparent 48%);
+
+            > .col-md-3 {
+                display: none;
+            }
+
+            > .col-md-9 {
+                flex: 0 0 100%;
+                max-width: 100%;
+                min-width: 0;
+                padding: 0;
+            }
+
+            .form-check {
+                align-items: flex-start;
+                display: flex;
+                gap: 0.55rem;
+                min-width: 0;
+            }
+
+            input[type="checkbox"] {
+                accent-color: var(--easyedu-accent);
+                flex: 0 0 auto;
+                margin-top: 0.18rem;
+            }
+
+            label {
+                color: color-mix(in srgb, var(--easyedu-text) 84%, var(--easyedu-text-muted) 16%);
+                line-height: 1.35;
+                margin: 0;
+            }
+        }
+
+        > .fitem:has(input[name="replaceall"]) {
+            margin: 0.35rem 0 0.9rem;
+            padding: 0.68rem 0.72rem;
+            border: 1px solid color-mix(in srgb, var(--easyedu-danger) 28%, var(--easyedu-card-border) 72%);
+            border-radius: var(--easyedu-control-radius);
+            background: color-mix(in srgb, var(--easyedu-danger) 5%, var(--easyedu-surface) 95%);
+
+            label {
+                color: color-mix(in srgb, var(--easyedu-danger) 72%, var(--easyedu-text) 28%);
+                font-weight: 650;
+            }
+
+            input[type="checkbox"] {
+                accent-color: var(--easyedu-danger);
+            }
+        }
+
+        #fitem_id_configarchive {
+            margin-bottom: 0.75rem;
+            padding: 0.72rem;
+            border: 1px solid color-mix(in srgb, var(--easyedu-accent) 18%, var(--easyedu-card-border) 82%);
+            border-radius: var(--easyedu-control-radius);
+            background: color-mix(in srgb, var(--easyedu-accent) 3%, var(--easyedu-surface) 97%);
+
+            > .col-md-3,
+            > .col-md-9 {
+                flex: 0 0 100%;
+                max-width: 100%;
+                min-width: 0;
+            }
+
+            > .col-md-3 {
+                padding: 0 0 0.45rem;
+                text-align: left;
+            }
+
+            > .col-md-9 {
+                padding: 0;
+            }
+        }
+
+        #fitem_id_submitbutton {
+            margin: 0.85rem 0 0;
+
+            > .col-md-3 {
+                display: none;
+            }
+
+            > .col-md-9 {
+                flex: 0 0 100%;
+                justify-content: flex-start;
+                margin-left: 0;
+                max-width: 100%;
+                padding: 0;
+            }
+        }
+
         .fitem:last-of-type {
             margin-bottom: 0;
         }
     }
 
-    @media (max-width: 62rem) {
+    @media (max-width: 75rem) {
         .local-course-banner-builder-transfer-grid {
             grid-template-columns: 1fr;
         }

@@ -18,6 +18,11 @@ many small sections.
   unchanged.
 - Kept title activation and Moodle-title replacement actions together on one
   compact row in course title editors.
+- Harmonised transfer import controls with the EasyEdu option-list rhythm,
+  including a dedicated archive surface and a clear warning state for the
+  destructive replace-all option without changing Moodle form validation.
+- Stacked export and import panels before their file and option controls become
+  cramped, while keeping the two-column transfer workspace on wide screens.
 
 ### 2026-07-14
 
