@@ -1005,9 +1005,12 @@
         @include easyedu.context-modal-variant(primary);
     }
 
-    .local-course-banner-builder-modal-preview-action-list .local-course-banner-builder-source-preview-button,
-    .local-course-banner-builder-slideshow-side-actions .local-course-banner-builder-source-preview-button,
-    .local-course-banner-builder-title-side-actions .local-course-banner-builder-source-preview-button {
+    .local-course-banner-builder-modal-preview-action-list
+        .local-course-banner-builder-source-preview-button:not(.local-course-banner-builder-preview-side-accordion-trigger),
+    .local-course-banner-builder-slideshow-side-actions
+        .local-course-banner-builder-source-preview-button:not(.local-course-banner-builder-preview-side-accordion-trigger),
+    .local-course-banner-builder-title-side-actions
+        .local-course-banner-builder-source-preview-button:not(.local-course-banner-builder-preview-side-accordion-trigger) {
         border-color: var(--easyedu-control-border);
         border-radius: var(--easyedu-control-radius);
         background: var(--easyedu-surface);
@@ -1058,40 +1061,6 @@
     .local-course-banner-builder-slideshow-modal-footer {
         @include easyedu.preview-modal-footer-shell;
     }
-}
-
-// Keep preview-side disclosures visually distinct from command buttons. This
-// sits after the generic modal button rules so the accordion contract wins the
-// cascade without changing Bootstrap or CCB interaction classes.
-.modal[id^="local-course-banner-builder-"]
-    .local-course-banner-builder-modal-preview-action-list
-    > .local-course-banner-builder-preview-side-accordion-trigger {
-    border-color: color-mix(in srgb, var(--easyedu-preview-side-accent) 24%, var(--easyedu-control-border) 76%);
-    background:
-        linear-gradient(
-            90deg,
-            color-mix(in srgb, var(--easyedu-preview-side-accent) 5%, var(--easyedu-surface) 95%),
-            var(--easyedu-surface)
-        );
-    box-shadow: inset 0.16rem 0 0 color-mix(in srgb, var(--easyedu-preview-side-accent) 68%, transparent);
-    color: color-mix(in srgb, var(--easyedu-preview-side-accent) 72%, var(--easyedu-text) 28%);
-    transform: none !important;
-}
-
-.modal[id^="local-course-banner-builder-"]
-    .local-course-banner-builder-modal-preview-action-list
-    > .local-course-banner-builder-preview-side-accordion-trigger[aria-expanded="true"] {
-    border-color: color-mix(in srgb, var(--easyedu-preview-side-accent) 38%, var(--easyedu-control-border) 62%);
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    background:
-        linear-gradient(
-            90deg,
-            color-mix(in srgb, var(--easyedu-preview-side-accent) 9%, var(--easyedu-surface) 91%),
-            var(--easyedu-surface)
-        );
-    box-shadow: inset 0.16rem 0 0 color-mix(in srgb, var(--easyedu-preview-side-accent) 78%, transparent);
-    color: color-mix(in srgb, var(--easyedu-preview-side-accent) 84%, var(--easyedu-text) 16%);
 }
 
 .modal[id^="local-course-banner-builder-"]

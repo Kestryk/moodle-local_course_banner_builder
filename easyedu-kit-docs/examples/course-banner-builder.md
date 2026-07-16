@@ -142,6 +142,25 @@ padding on the body end edge when it reserves the preview action rail; only the
 start edge, header and visible footer should be normalised by the kit. Title
 editors whose scroll grid owns the padding should keep the outer body unpadded.
 
+## Preview-side action cascade
+
+Command buttons and accordion disclosures may share the same preview-side
+action rail, but they must not share active-state ownership:
+
+- generic command-button selectors must exclude
+  `.local-course-banner-builder-preview-side-accordion-trigger`;
+- `preview-side-accordion-trigger` owns the collapsed, hover, focus and
+  expanded appearance of a disclosure;
+- `preview-side-accordion-panel` owns the matching panel border and surface;
+- the consuming plugin may keep only geometric adaptations such as neutralising
+  a local grid gap between an expanded trigger and its panel;
+- do not copy the mixin's gradients, borders or expanded colours into a later
+  plugin selector to win the cascade.
+
+Validate this contract with one command button and one disclosure in the same
+rail. Opening and closing the disclosure must not change its height, and the
+command button must retain its own active/pressed state.
+
 ## Guide target naming
 
 Use semantic target attributes in Course Banner Builder templates:

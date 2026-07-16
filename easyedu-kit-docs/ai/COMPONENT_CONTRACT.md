@@ -108,6 +108,25 @@ Must not:
   token exists;
 - move activation, persistence or preview behaviour into the visual mixins.
 
+## Preview-side disclosures
+
+Must:
+
+- exclude accordion disclosure triggers from generic preview command-button
+  selectors;
+- let `preview-side-accordion-trigger` own every visual trigger state;
+- let `preview-side-accordion-panel` own the connected panel surface;
+- keep only plugin-specific geometry or motion orchestration in the consumer;
+- verify collapsed, expanded and collapsed-again states in the rendered modal.
+
+Must not:
+
+- restyle all `[aria-expanded="true"]` preview buttons as commands;
+- duplicate the accordion mixin later in a plugin stylesheet to repair the
+  cascade;
+- change disclosure ids, `data-*` hooks or motion ownership while cleaning
+  visual overrides.
+
 ## Guide: show in interface selector
 
 Canonical files:

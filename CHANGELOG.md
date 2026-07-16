@@ -15,6 +15,9 @@ many small sections.
 - Included the exact 768 px viewport in the compact administration and
   Slideshow modal layouts so preview-side actions stack below the preview
   instead of retaining the cramped desktop rail at the breakpoint.
+- Removed duplicated late accordion styling from the CCB adapter by excluding
+  disclosure triggers from generic preview command-button rules, leaving the
+  shared EasyEdu accordion mixin as the visual source of truth.
 
 ### 2026-07-15
 

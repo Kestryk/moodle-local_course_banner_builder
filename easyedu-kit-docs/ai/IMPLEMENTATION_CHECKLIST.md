@@ -63,6 +63,11 @@ Use this checklist for every UI task in EasyEdu plugins.
 - [ ] Anchor Slideshow editor/reset actions with `slideshow-action-zone` and
       keep all input names, ids, modal targets and event handlers plugin-owned.
 - [ ] Validate checked, unchecked, focus and disabled Slideshow toggle states.
+- [ ] Exclude preview-side accordion triggers from generic command-button
+      selectors so the shared disclosure mixin owns collapsed and expanded
+      states without a late cascade repair.
+- [ ] Keep only consumer-owned gap, sizing or motion adaptations beside shared
+      preview-side accordion mixins.
 
 ## 4. Guide-specific checklist
 

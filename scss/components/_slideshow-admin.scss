@@ -684,13 +684,15 @@
     border-left: 4px solid var(--bs-primary, #0f6cbf);
 }
 
-.local-course-banner-builder-slideshow-side-actions.local-course-banner-builder-modal-preview-action-list
-    .local-course-banner-builder-source-preview-button[aria-expanded="true"],
-.local-course-banner-builder-slideshow-side-actions.local-course-banner-builder-modal-preview-action-list
-    .local-course-banner-builder-source-preview-button.local-course-banner-builder-source-preview-button--active {
-    color: #fff;
-    border-color: var(--bs-primary, #0f6cbf);
-    background-color: var(--bs-primary, #0f6cbf);
+.local-course-banner-builder-slideshow-side-actions.local-course-banner-builder-modal-preview-action-list {
+    .local-course-banner-builder-source-preview-button {
+        &:not(.local-course-banner-builder-preview-side-accordion-trigger)[aria-expanded="true"],
+        &:not(.local-course-banner-builder-preview-side-accordion-trigger).local-course-banner-builder-source-preview-button--active {
+            color: #fff;
+            border-color: var(--bs-primary, #0f6cbf);
+            background-color: var(--bs-primary, #0f6cbf);
+        }
+    }
 }
 
 .local-course-banner-builder-slideshow-side-title {

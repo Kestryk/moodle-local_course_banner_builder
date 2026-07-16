@@ -7068,8 +7068,7 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
   border-left: 4px solid var(--bs-primary, #0f6cbf);
 }
 
-.local-course-banner-builder-slideshow-side-actions.local-course-banner-builder-modal-preview-action-list .local-course-banner-builder-source-preview-button[aria-expanded=true],
-.local-course-banner-builder-slideshow-side-actions.local-course-banner-builder-modal-preview-action-list .local-course-banner-builder-source-preview-button.local-course-banner-builder-source-preview-button--active {
+.local-course-banner-builder-slideshow-side-actions.local-course-banner-builder-modal-preview-action-list .local-course-banner-builder-source-preview-button:not(.local-course-banner-builder-preview-side-accordion-trigger)[aria-expanded=true], .local-course-banner-builder-slideshow-side-actions.local-course-banner-builder-modal-preview-action-list .local-course-banner-builder-source-preview-button:not(.local-course-banner-builder-preview-side-accordion-trigger).local-course-banner-builder-source-preview-button--active {
   color: #fff;
   border-color: var(--bs-primary, #0f6cbf);
   background-color: var(--bs-primary, #0f6cbf);
@@ -13757,33 +13756,33 @@ span[data-flexitour=container].orphan .modal-dialog {
   background: var(--easyedu-modal-footer-bg);
   border-top: 1px solid var(--easyedu-modal-border);
 }
-.modal[id^=local-course-banner-builder-] .local-course-banner-builder-modal-preview-action-list .local-course-banner-builder-source-preview-button,
-.modal[id^=local-course-banner-builder-] .local-course-banner-builder-slideshow-side-actions .local-course-banner-builder-source-preview-button,
-.modal[id^=local-course-banner-builder-] .local-course-banner-builder-title-side-actions .local-course-banner-builder-source-preview-button {
+.modal[id^=local-course-banner-builder-] .local-course-banner-builder-modal-preview-action-list .local-course-banner-builder-source-preview-button:not(.local-course-banner-builder-preview-side-accordion-trigger),
+.modal[id^=local-course-banner-builder-] .local-course-banner-builder-slideshow-side-actions .local-course-banner-builder-source-preview-button:not(.local-course-banner-builder-preview-side-accordion-trigger),
+.modal[id^=local-course-banner-builder-] .local-course-banner-builder-title-side-actions .local-course-banner-builder-source-preview-button:not(.local-course-banner-builder-preview-side-accordion-trigger) {
   border-color: var(--easyedu-control-border);
   border-radius: var(--easyedu-control-radius);
   background: var(--easyedu-surface);
   box-shadow: 0 0.12rem 0.32rem rgba(31, 42, 55, 0.035);
   color: var(--easyedu-text-muted);
 }
-.modal[id^=local-course-banner-builder-] .local-course-banner-builder-modal-preview-action-list .local-course-banner-builder-source-preview-button:hover, .modal[id^=local-course-banner-builder-] .local-course-banner-builder-modal-preview-action-list .local-course-banner-builder-source-preview-button:focus-visible,
-.modal[id^=local-course-banner-builder-] .local-course-banner-builder-slideshow-side-actions .local-course-banner-builder-source-preview-button:hover,
-.modal[id^=local-course-banner-builder-] .local-course-banner-builder-slideshow-side-actions .local-course-banner-builder-source-preview-button:focus-visible,
-.modal[id^=local-course-banner-builder-] .local-course-banner-builder-title-side-actions .local-course-banner-builder-source-preview-button:hover,
-.modal[id^=local-course-banner-builder-] .local-course-banner-builder-title-side-actions .local-course-banner-builder-source-preview-button:focus-visible {
+.modal[id^=local-course-banner-builder-] .local-course-banner-builder-modal-preview-action-list .local-course-banner-builder-source-preview-button:not(.local-course-banner-builder-preview-side-accordion-trigger):hover, .modal[id^=local-course-banner-builder-] .local-course-banner-builder-modal-preview-action-list .local-course-banner-builder-source-preview-button:not(.local-course-banner-builder-preview-side-accordion-trigger):focus-visible,
+.modal[id^=local-course-banner-builder-] .local-course-banner-builder-slideshow-side-actions .local-course-banner-builder-source-preview-button:not(.local-course-banner-builder-preview-side-accordion-trigger):hover,
+.modal[id^=local-course-banner-builder-] .local-course-banner-builder-slideshow-side-actions .local-course-banner-builder-source-preview-button:not(.local-course-banner-builder-preview-side-accordion-trigger):focus-visible,
+.modal[id^=local-course-banner-builder-] .local-course-banner-builder-title-side-actions .local-course-banner-builder-source-preview-button:not(.local-course-banner-builder-preview-side-accordion-trigger):hover,
+.modal[id^=local-course-banner-builder-] .local-course-banner-builder-title-side-actions .local-course-banner-builder-source-preview-button:not(.local-course-banner-builder-preview-side-accordion-trigger):focus-visible {
   border-color: var(--easyedu-control-focus-border);
   background: var(--easyedu-primary-soft);
   color: var(--easyedu-primary-strong);
 }
-.modal[id^=local-course-banner-builder-] .local-course-banner-builder-modal-preview-action-list .local-course-banner-builder-source-preview-button.btn-primary, .modal[id^=local-course-banner-builder-] .local-course-banner-builder-modal-preview-action-list .local-course-banner-builder-source-preview-button.active, .modal[id^=local-course-banner-builder-] .local-course-banner-builder-modal-preview-action-list .local-course-banner-builder-source-preview-button[aria-expanded=true], .modal[id^=local-course-banner-builder-] .local-course-banner-builder-modal-preview-action-list .local-course-banner-builder-source-preview-button[aria-pressed=true],
-.modal[id^=local-course-banner-builder-] .local-course-banner-builder-slideshow-side-actions .local-course-banner-builder-source-preview-button.btn-primary,
-.modal[id^=local-course-banner-builder-] .local-course-banner-builder-slideshow-side-actions .local-course-banner-builder-source-preview-button.active,
-.modal[id^=local-course-banner-builder-] .local-course-banner-builder-slideshow-side-actions .local-course-banner-builder-source-preview-button[aria-expanded=true],
-.modal[id^=local-course-banner-builder-] .local-course-banner-builder-slideshow-side-actions .local-course-banner-builder-source-preview-button[aria-pressed=true],
-.modal[id^=local-course-banner-builder-] .local-course-banner-builder-title-side-actions .local-course-banner-builder-source-preview-button.btn-primary,
-.modal[id^=local-course-banner-builder-] .local-course-banner-builder-title-side-actions .local-course-banner-builder-source-preview-button.active,
-.modal[id^=local-course-banner-builder-] .local-course-banner-builder-title-side-actions .local-course-banner-builder-source-preview-button[aria-expanded=true],
-.modal[id^=local-course-banner-builder-] .local-course-banner-builder-title-side-actions .local-course-banner-builder-source-preview-button[aria-pressed=true] {
+.modal[id^=local-course-banner-builder-] .local-course-banner-builder-modal-preview-action-list .local-course-banner-builder-source-preview-button:not(.local-course-banner-builder-preview-side-accordion-trigger).btn-primary, .modal[id^=local-course-banner-builder-] .local-course-banner-builder-modal-preview-action-list .local-course-banner-builder-source-preview-button:not(.local-course-banner-builder-preview-side-accordion-trigger).active, .modal[id^=local-course-banner-builder-] .local-course-banner-builder-modal-preview-action-list .local-course-banner-builder-source-preview-button:not(.local-course-banner-builder-preview-side-accordion-trigger)[aria-expanded=true], .modal[id^=local-course-banner-builder-] .local-course-banner-builder-modal-preview-action-list .local-course-banner-builder-source-preview-button:not(.local-course-banner-builder-preview-side-accordion-trigger)[aria-pressed=true],
+.modal[id^=local-course-banner-builder-] .local-course-banner-builder-slideshow-side-actions .local-course-banner-builder-source-preview-button:not(.local-course-banner-builder-preview-side-accordion-trigger).btn-primary,
+.modal[id^=local-course-banner-builder-] .local-course-banner-builder-slideshow-side-actions .local-course-banner-builder-source-preview-button:not(.local-course-banner-builder-preview-side-accordion-trigger).active,
+.modal[id^=local-course-banner-builder-] .local-course-banner-builder-slideshow-side-actions .local-course-banner-builder-source-preview-button:not(.local-course-banner-builder-preview-side-accordion-trigger)[aria-expanded=true],
+.modal[id^=local-course-banner-builder-] .local-course-banner-builder-slideshow-side-actions .local-course-banner-builder-source-preview-button:not(.local-course-banner-builder-preview-side-accordion-trigger)[aria-pressed=true],
+.modal[id^=local-course-banner-builder-] .local-course-banner-builder-title-side-actions .local-course-banner-builder-source-preview-button:not(.local-course-banner-builder-preview-side-accordion-trigger).btn-primary,
+.modal[id^=local-course-banner-builder-] .local-course-banner-builder-title-side-actions .local-course-banner-builder-source-preview-button:not(.local-course-banner-builder-preview-side-accordion-trigger).active,
+.modal[id^=local-course-banner-builder-] .local-course-banner-builder-title-side-actions .local-course-banner-builder-source-preview-button:not(.local-course-banner-builder-preview-side-accordion-trigger)[aria-expanded=true],
+.modal[id^=local-course-banner-builder-] .local-course-banner-builder-title-side-actions .local-course-banner-builder-source-preview-button:not(.local-course-banner-builder-preview-side-accordion-trigger)[aria-pressed=true] {
   border-color: var(--easyedu-primary);
   background: var(--easyedu-primary);
   color: #fff;
@@ -13850,23 +13849,6 @@ span[data-flexitour=container].orphan .modal-dialog {
   pointer-events: none;
   position: absolute;
   right: 0;
-}
-
-.modal[id^=local-course-banner-builder-] .local-course-banner-builder-modal-preview-action-list > .local-course-banner-builder-preview-side-accordion-trigger {
-  border-color: color-mix(in srgb, var(--easyedu-preview-side-accent) 24%, var(--easyedu-control-border) 76%);
-  background: linear-gradient(90deg, color-mix(in srgb, var(--easyedu-preview-side-accent) 5%, var(--easyedu-surface) 95%), var(--easyedu-surface));
-  box-shadow: inset 0.16rem 0 0 color-mix(in srgb, var(--easyedu-preview-side-accent) 68%, transparent);
-  color: color-mix(in srgb, var(--easyedu-preview-side-accent) 72%, var(--easyedu-text) 28%);
-  transform: none !important;
-}
-
-.modal[id^=local-course-banner-builder-] .local-course-banner-builder-modal-preview-action-list > .local-course-banner-builder-preview-side-accordion-trigger[aria-expanded=true] {
-  border-color: color-mix(in srgb, var(--easyedu-preview-side-accent) 38%, var(--easyedu-control-border) 62%);
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-  background: linear-gradient(90deg, color-mix(in srgb, var(--easyedu-preview-side-accent) 9%, var(--easyedu-surface) 91%), var(--easyedu-surface));
-  box-shadow: inset 0.16rem 0 0 color-mix(in srgb, var(--easyedu-preview-side-accent) 78%, transparent);
-  color: color-mix(in srgb, var(--easyedu-preview-side-accent) 84%, var(--easyedu-text) 16%);
 }
 
 .modal[id^=local-course-banner-builder-] .local-course-banner-builder-modal-preview-action-list > .local-course-banner-builder-preview-side-accordion-trigger[aria-expanded=true] + .local-course-banner-builder-preview-side-accordion-panel:not(.is-collapsed) {
