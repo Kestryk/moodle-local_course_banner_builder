@@ -11371,6 +11371,9 @@ span[data-flexitour=container].orphan .modal-dialog {
   display: none;
 }
 @media (max-width: 48rem) {
+  .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher {
+    justify-content: flex-start;
+  }
   .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher.easyedu-admin-primary-nav--balanced {
     display: flex;
   }

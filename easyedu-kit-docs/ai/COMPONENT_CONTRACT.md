@@ -127,6 +127,23 @@ Must not:
 - change disclosure ids, `data-*` hooks or motion ownership while cleaning
   visual overrides.
 
+## Horizontally scrollable administration navigation
+
+Must:
+
+- keep primary administration navigation centred while all actions fit;
+- switch overflowing compact navigation to start alignment before horizontal
+  scrolling is required;
+- keep the guide launcher and first navigation action reachable at
+  `scrollLeft = 0`;
+- validate the first and last actions at the exact responsive breakpoint.
+
+Must not:
+
+- combine centred flex justification with content wider than its scrollport;
+- hide the scrollbar unless keyboard and pointer users can still reach every
+  navigation action.
+
 ## Guide: show in interface selector
 
 Canonical files:

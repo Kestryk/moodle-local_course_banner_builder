@@ -270,6 +270,12 @@
   }
 
   @media (max-width: 48rem) {
+    // Centred flex content becomes unreachable on its start edge as soon as
+    // the navigation is wider than its scrollport. Keep the desktop balance,
+    // but anchor compact navigation to the start so every action remains
+    // reachable through horizontal scrolling.
+    justify-content: flex-start;
+
     &.easyedu-admin-primary-nav--balanced {
       display: flex;
 
