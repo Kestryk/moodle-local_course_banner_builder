@@ -18,4 +18,3 @@ Preserve and compare it first. Report repository, branch, HEAD, upstream,
 clean/dirty state and ahead/behind counts before claiming readiness. Managed
 workstations receive no remote service, elevated configuration or policy bypass
 without explicit organisational approval.
-
