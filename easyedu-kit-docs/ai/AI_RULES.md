@@ -13,6 +13,14 @@ plugin, it must be defined or updated in the kit first.
 
 Plugins consume the kit. Plugins must not reinvent reusable UI locally.
 
+## Multi-machine handoff
+
+All agents must follow the canonical
+[EasyEdu project handoff procedure](https://github.com/Kestryk/workstation-sync/blob/main/docs/PROJECT-HANDOFF.md).
+A handoff requires a snapshot, a clean worktree, an upstream and pushed commits.
+Use a pushed WIP commit for unfinished work; never use stash, worktree syncing or
+destructive cleanup as a transfer mechanism.
+
 ## Before creating or changing UI
 
 1. Inspect the kit first:

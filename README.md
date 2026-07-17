@@ -20,6 +20,15 @@ encounter.
 
 ---
 
+## Multi-machine development
+
+Before changing workstation, follow the canonical
+[EasyEdu project handoff procedure](https://github.com/Kestryk/workstation-sync/blob/main/docs/PROJECT-HANDOFF.md).
+Snapshots are recovery artefacts; transfer source work through a clean,
+committed and pushed branch, then resume by fast-forward only.
+
+---
+
 ## What's New In 0.6.22
 
 ### More Complete Banner Composition

@@ -17,6 +17,21 @@ Before coding:
 2. Identify the exact EasyEdu component/mixin/template/AMD behaviour to reuse.
 3. If the behaviour is missing, update easyedu-ui-kit first.
 
+Workstation handoff state:
+- Source machine: [NAME]
+- Destination machine: [NAME]
+- Repository and path: [REPOSITORY] / [PATH]
+- Branch: [BRANCH]
+- HEAD: [COMMIT]
+- Upstream: [UPSTREAM]
+- Worktree clean: [YES - REQUIRED]
+- Ahead/behind: [0/0 - REQUIRED]
+- Recovery snapshot: [SNAPSHOT ID]
+
+Stop before coding if the worktree is dirty, the upstream is missing, local
+commits are unpushed or the recorded HEAD cannot be fast-forwarded. Follow the
+canonical workstation procedure in workstation-sync/docs/PROJECT-HANDOFF.md.
+
 Source of truth:
 - Repository: git@github.com:Kestryk/easyedu-ui-kit.git
 - Commit/tag to use: [COMMIT OR TAG]

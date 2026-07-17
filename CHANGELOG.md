@@ -8,6 +8,13 @@ many small sections.
 
 ## Unreleased
 
+### 2026-07-17
+
+#### Documentation
+
+- Added mandatory human and AI guidance for safe single-owner,
+  commit-and-push development handoffs between workstations.
+
 ### 2026-07-16
 
 #### Changed
