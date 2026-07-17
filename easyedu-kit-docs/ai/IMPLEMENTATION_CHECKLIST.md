@@ -68,6 +68,8 @@ Use this checklist for every UI task in EasyEdu plugins.
       states without a late cascade repair.
 - [ ] Keep only consumer-owned gap, sizing or motion adaptations beside shared
       preview-side accordion mixins.
+- [ ] At compact breakpoints, verify horizontally scrollable administration
+      navigation starts with its guide launcher and first action fully visible.
 
 ## 4. Guide-specific checklist
 

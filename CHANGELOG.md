@@ -18,6 +18,9 @@ many small sections.
 - Removed duplicated late accordion styling from the CCB adapter by excluding
   disclosure triggers from generic preview command-button rules, leaving the
   shared EasyEdu accordion mixin as the visual source of truth.
+- Anchored horizontally scrollable administration navigation to its start edge
+  on compact viewports so the guide launcher and first navigation action remain
+  reachable instead of being clipped by centred overflowing flex content.
 
 ### 2026-07-15
 
