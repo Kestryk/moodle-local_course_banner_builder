@@ -7857,13 +7857,13 @@ span[data-flexitour=container].orphan .modal-dialog {
   padding: 0.48rem 0.58rem;
 }
 .local-course-banner-builder-admin--native .popover {
-  background: var(--bs-body-bg, var(--easyedu-surface));
-  border: 1px solid #d7dfe8;
-  border-radius: 0.375rem;
-  box-shadow: 0 0.45rem 1.25rem rgba(31, 42, 55, 0.14);
-  color: var(--bs-body-color, var(--easyedu-text));
+  background: radial-gradient(circle at 1.2rem 0.6rem, rgba(255, 255, 255, 0.14), transparent 5.5rem), linear-gradient(135deg, #183a59 0%, #1f6b57 100%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0.64rem;
+  box-shadow: 0 0.7rem 1.6rem rgba(20, 44, 67, 0.2), 0 0.08rem 0.24rem rgba(12, 28, 44, 0.16);
+  color: #fff;
   display: block;
-  max-width: 20rem;
+  max-width: 22rem;
   pointer-events: none;
 }
 .local-course-banner-builder-admin--native .popover .popover-arrow {
@@ -7872,8 +7872,8 @@ span[data-flexitour=container].orphan .modal-dialog {
   width: 0.75rem;
 }
 .local-course-banner-builder-admin--native .popover .popover-arrow::before {
-  background: var(--bs-body-bg, var(--easyedu-surface));
-  border: 1px solid #d7dfe8;
+  background: #1f6b57;
+  border: 1px solid rgba(255, 255, 255, 0.18);
   content: "";
   height: 0.55rem;
   position: absolute;
@@ -7881,19 +7881,28 @@ span[data-flexitour=container].orphan .modal-dialog {
   width: 0.55rem;
 }
 .local-course-banner-builder-admin--native .popover.popover .popover-header, .local-course-banner-builder-admin--native .popover .popover-header {
-  background: var(--bs-body-bg, var(--easyedu-surface));
+  background: transparent;
   border: 0;
-  color: var(--bs-body-color, var(--easyedu-text));
-  font-size: 0.78rem;
+  color: #fff;
+  font-size: 0.76rem;
   font-weight: 700;
-  padding: 0.5rem 0.65rem 0;
+  line-height: 1.25;
+  padding: 0.58rem 0.72rem 0;
+  text-align: center;
 }
 .local-course-banner-builder-admin--native .popover.popover .popover-body, .local-course-banner-builder-admin--native .popover .popover-body {
   background: transparent;
-  color: #405061;
-  font-size: 0.78rem;
-  line-height: 1.35;
-  padding: 0.5rem 0.65rem 0.65rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.76rem;
+  line-height: 1.42;
+  margin: 0 auto;
+  padding: 0.54rem 0.78rem 0.72rem;
+  text-align: justify;
+  text-align-last: center;
+}
+.local-course-banner-builder-admin--native .popover.popover .popover-body p, .local-course-banner-builder-admin--native .popover .popover-body p {
+  margin-left: auto;
+  margin-right: auto;
 }
 .local-course-banner-builder-admin--native .popover.popover .popover-body p:last-child, .local-course-banner-builder-admin--native .popover .popover-body p:last-child {
   margin-bottom: 0;
@@ -7907,20 +7916,27 @@ span[data-flexitour=container].orphan .modal-dialog {
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher {
   align-items: center;
-  background: linear-gradient(180deg, var(--easyedu-surface) 0%, color-mix(in srgb, var(--easyedu-surface) 94%, var(--easyedu-primary-soft) 6%) 100%);
-  border: 1px solid var(--easyedu-card-border);
-  border-radius: var(--easyedu-card-radius);
-  box-shadow: var(--easyedu-shadow-soft);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--easyedu-card-border);
+  border-radius: 0;
+  box-shadow: none;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.55rem;
+  flex-wrap: nowrap;
+  gap: 0.18rem;
   justify-content: flex-start;
-  margin: 0 0 1.1rem;
-  padding: 0.62rem;
+  margin: 0 0 0.85rem;
+  overflow-x: auto;
+  padding: 0.1rem 0 0.28rem;
+  scrollbar-width: thin;
   justify-content: flex-start;
 }
+.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher::-webkit-scrollbar {
+  height: 0.34rem;
+}
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .easyedu-guide__launcher {
-  margin-right: 0.15rem;
+  flex: 0 0 auto;
+  margin-right: 0.32rem;
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .easyedu-guide__launcher-label {
   display: none;
@@ -7952,71 +7968,44 @@ span[data-flexitour=container].orphan .modal-dialog {
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-dashed-action {
   align-items: center;
-  display: inline-flex;
-  gap: 0.4rem;
-  justify-content: center;
-  line-height: 1.2;
-  font-size: 0.88rem;
-  min-height: var(--easyedu-control-height);
-  min-width: var(--easyedu-control-height);
-  padding: 0.36rem 0.75rem;
-}
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-dashed-action:hover, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-dashed-action:focus-visible, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-dashed-action[aria-expanded=true], .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-dashed-action[aria-pressed=true], .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-dashed-action.active, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-dashed-action.is-active {
-  background: var(--easyedu-primary-soft);
-  border-color: var(--easyedu-control-focus-border);
-  color: var(--easyedu-primary-strong);
-  outline: 0;
-}
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-dashed-action:focus-visible {
-  box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring);
-}
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-dashed-action:disabled, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-dashed-action[aria-disabled=true], .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-dashed-action.disabled {
-  background: var(--easyedu-surface-soft);
-  border-color: var(--easyedu-card-border);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 0.42rem;
+  box-shadow: none;
   color: var(--easyedu-text-muted);
-  cursor: not-allowed;
-  opacity: 0.62;
-  pointer-events: none;
-  transform: none;
-}
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-dashed-action .fa {
-  align-items: center;
   display: inline-flex;
   flex: 0 0 auto;
+  gap: 0.38rem;
+  font-size: 0.88rem;
+  font-weight: 560;
   justify-content: center;
-  line-height: 1;
-}
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-dashed-action {
-  background: var(--easyedu-surface);
-  border: 1px solid var(--easyedu-control-border);
-  border-radius: var(--easyedu-control-radius);
-  box-shadow: 0 0.16rem 0.42rem rgba(31, 42, 55, 0.045);
-  color: var(--easyedu-text-muted);
-  font-weight: 720;
-  min-height: 2.42rem;
-  padding: 0.42rem 0.78rem;
+  line-height: 1.2;
+  min-height: 2.08rem;
+  padding: 0.3rem 0.52rem;
   text-decoration: none;
   transform: translateY(0);
-  transition: background-color var(--easyedu-motion-fast) var(--easyedu-motion-ease), border-color var(--easyedu-motion-fast) var(--easyedu-motion-ease), box-shadow var(--easyedu-motion-fast) var(--easyedu-motion-ease), color var(--easyedu-motion-fast) var(--easyedu-motion-ease), transform var(--easyedu-motion-fast) var(--easyedu-motion-ease);
+  transition: background-color var(--easyedu-motion-fast) var(--easyedu-motion-ease), border-color var(--easyedu-motion-fast) var(--easyedu-motion-ease), color var(--easyedu-motion-fast) var(--easyedu-motion-ease);
+  white-space: nowrap;
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-dashed-action .fa {
-  color: color-mix(in srgb, var(--easyedu-primary) 78%, var(--easyedu-text-muted) 22%);
-  font-size: 0.92rem;
-  width: 1rem;
+  color: color-mix(in srgb, var(--easyedu-primary) 62%, var(--easyedu-text-muted) 38%);
+  font-size: 0.88rem;
+  text-align: center;
+  width: 0.95rem;
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-dashed-action:hover, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-dashed-action:focus-visible {
-  background: var(--easyedu-primary-soft);
-  border-color: color-mix(in srgb, var(--easyedu-primary) 34%, #fff 66%);
-  box-shadow: 0 0.24rem 0.58rem rgba(31, 68, 104, 0.09), inset 0.22rem 0 0 var(--easyedu-primary);
+  background: color-mix(in srgb, var(--easyedu-primary-soft) 72%, #fff 28%);
+  border-color: color-mix(in srgb, var(--easyedu-primary) 18%, transparent 82%);
+  box-shadow: none;
   color: var(--easyedu-primary-strong);
   text-decoration: none;
-  transform: translateY(-0.02rem);
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-dashed-action.active, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-dashed-action.is-active, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-dashed-action[aria-current=page], .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-dashed-action[aria-pressed=true] {
-  background: var(--easyedu-primary-soft);
-  border-color: color-mix(in srgb, var(--easyedu-primary) 42%, #fff 58%);
-  box-shadow: inset 0.24rem 0 0 var(--easyedu-primary), 0 0.42rem 0.95rem rgba(15, 108, 191, 0.12);
+  background: transparent;
+  border-color: transparent;
+  box-shadow: inset 0 -0.14rem 0 var(--easyedu-primary);
   color: var(--easyedu-primary-strong);
+  font-weight: 640;
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-dashed-action.active .fa, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-dashed-action.is-active .fa, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-dashed-action[aria-current=page] .fa, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-dashed-action[aria-pressed=true] .fa {
   color: var(--easyedu-primary);
@@ -8025,95 +8014,43 @@ span[data-flexitour=container].orphan .modal-dialog {
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-target*=format-modal],
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-bs-target*=format-modal] {
   align-items: center;
-  display: inline-flex;
-  gap: 0.4rem;
-  justify-content: center;
-  line-height: 1.2;
-  font-size: 0.88rem;
-  min-height: var(--easyedu-control-height);
-  min-width: var(--easyedu-control-height);
-  padding: 0.36rem 0.75rem;
-}
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-format-button:hover, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-format-button:focus-visible, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-format-button[aria-expanded=true], .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-format-button[aria-pressed=true], .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-format-button.active, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-format-button.is-active,
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-target*=format-modal]:hover,
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-target*=format-modal]:focus-visible,
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-target*=format-modal][aria-expanded=true],
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-target*=format-modal][aria-pressed=true],
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-target*=format-modal].active,
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-target*=format-modal].is-active,
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-bs-target*=format-modal]:hover,
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-bs-target*=format-modal]:focus-visible,
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-bs-target*=format-modal][aria-expanded=true],
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-bs-target*=format-modal][aria-pressed=true],
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-bs-target*=format-modal].active,
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-bs-target*=format-modal].is-active {
-  background: var(--easyedu-primary-soft);
-  border-color: var(--easyedu-control-focus-border);
-  color: var(--easyedu-primary-strong);
-  outline: 0;
-}
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-format-button:focus-visible,
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-target*=format-modal]:focus-visible,
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-bs-target*=format-modal]:focus-visible {
-  box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring);
-}
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-format-button:disabled, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-format-button[aria-disabled=true], .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-format-button.disabled,
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-target*=format-modal]:disabled,
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-target*=format-modal][aria-disabled=true],
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-target*=format-modal].disabled,
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-bs-target*=format-modal]:disabled,
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-bs-target*=format-modal][aria-disabled=true],
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-bs-target*=format-modal].disabled {
-  background: var(--easyedu-surface-soft);
-  border-color: var(--easyedu-card-border);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 0.42rem;
+  box-shadow: none;
   color: var(--easyedu-text-muted);
-  cursor: not-allowed;
-  opacity: 0.62;
-  pointer-events: none;
-  transform: none;
-}
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-format-button .fa,
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-target*=format-modal] .fa,
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-bs-target*=format-modal] .fa {
-  align-items: center;
   display: inline-flex;
   flex: 0 0 auto;
+  gap: 0.38rem;
+  font-size: 0.88rem;
+  font-weight: 560;
   justify-content: center;
-  line-height: 1;
-}
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-format-button,
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-target*=format-modal],
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-bs-target*=format-modal] {
-  background: var(--easyedu-surface);
-  border: 1px solid var(--easyedu-control-border);
-  border-radius: var(--easyedu-control-radius);
-  box-shadow: 0 0.16rem 0.42rem rgba(31, 42, 55, 0.045);
-  color: var(--easyedu-text-muted);
-  font-weight: 720;
-  min-height: 2.42rem;
-  padding: 0.42rem 0.78rem;
+  line-height: 1.2;
+  min-height: 2.08rem;
+  padding: 0.3rem 0.52rem;
   text-decoration: none;
   transform: translateY(0);
-  transition: background-color var(--easyedu-motion-fast) var(--easyedu-motion-ease), border-color var(--easyedu-motion-fast) var(--easyedu-motion-ease), box-shadow var(--easyedu-motion-fast) var(--easyedu-motion-ease), color var(--easyedu-motion-fast) var(--easyedu-motion-ease), transform var(--easyedu-motion-fast) var(--easyedu-motion-ease);
+  transition: background-color var(--easyedu-motion-fast) var(--easyedu-motion-ease), border-color var(--easyedu-motion-fast) var(--easyedu-motion-ease), color var(--easyedu-motion-fast) var(--easyedu-motion-ease);
+  white-space: nowrap;
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-format-button .fa,
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-target*=format-modal] .fa,
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-bs-target*=format-modal] .fa {
-  color: color-mix(in srgb, var(--easyedu-primary) 78%, var(--easyedu-text-muted) 22%);
-  font-size: 0.92rem;
-  width: 1rem;
+  color: color-mix(in srgb, var(--easyedu-primary) 62%, var(--easyedu-text-muted) 38%);
+  font-size: 0.88rem;
+  text-align: center;
+  width: 0.95rem;
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-format-button:hover, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-format-button:focus-visible,
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-target*=format-modal]:hover,
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-target*=format-modal]:focus-visible,
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-bs-target*=format-modal]:hover,
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-bs-target*=format-modal]:focus-visible {
-  background: var(--easyedu-primary-soft);
-  border-color: color-mix(in srgb, var(--easyedu-primary) 34%, #fff 66%);
-  box-shadow: 0 0.24rem 0.58rem rgba(31, 68, 104, 0.09), inset 0.22rem 0 0 var(--easyedu-primary);
+  background: color-mix(in srgb, var(--easyedu-primary-soft) 72%, #fff 28%);
+  border-color: color-mix(in srgb, var(--easyedu-primary) 18%, transparent 82%);
+  box-shadow: none;
   color: var(--easyedu-primary-strong);
   text-decoration: none;
-  transform: translateY(-0.02rem);
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-format-button.active, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-format-button.is-active, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-format-button[aria-current=page], .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-format-button[aria-pressed=true],
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-target*=format-modal].active,
@@ -8124,10 +8061,11 @@ span[data-flexitour=container].orphan .modal-dialog {
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-bs-target*=format-modal].is-active,
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-bs-target*=format-modal][aria-current=page],
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-bs-target*=format-modal][aria-pressed=true] {
-  background: var(--easyedu-primary-soft);
-  border-color: color-mix(in srgb, var(--easyedu-primary) 42%, #fff 58%);
-  box-shadow: inset 0.24rem 0 0 var(--easyedu-primary), 0 0.42rem 0.95rem rgba(15, 108, 191, 0.12);
+  background: transparent;
+  border-color: transparent;
+  box-shadow: inset 0 -0.14rem 0 var(--easyedu-primary);
   color: var(--easyedu-primary-strong);
+  font-weight: 640;
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-format-button.active .fa, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-format-button.is-active .fa, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-format-button[aria-current=page] .fa, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-format-button[aria-pressed=true] .fa,
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-target*=format-modal].active .fa,
@@ -8158,106 +8096,177 @@ span[data-flexitour=container].orphan .modal-dialog {
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-bs-target*=format-modal].is-active,
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-bs-target*=format-modal][aria-current=page],
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher [data-bs-target*=format-modal][aria-pressed=true] {
-  border-color: color-mix(in srgb, var(--easyedu-accent) 38%, #fff 62%);
-  box-shadow: inset 0.22rem 0 0 var(--easyedu-accent), 0 0.32rem 0.82rem rgba(27, 127, 90, 0.1);
+  border-color: transparent;
+  box-shadow: inset 0 -0.14rem 0 var(--easyedu-accent);
   color: color-mix(in srgb, var(--easyedu-accent) 72%, var(--easyedu-text) 28%);
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-reset-button {
   align-items: center;
-  display: inline-flex;
-  gap: 0.4rem;
-  justify-content: center;
-  line-height: 1.2;
-  font-size: 0.88rem;
-  min-height: var(--easyedu-control-height);
-  min-width: var(--easyedu-control-height);
-  padding: 0.36rem 0.75rem;
-}
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-reset-button:hover, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-reset-button:focus-visible, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-reset-button[aria-expanded=true], .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-reset-button[aria-pressed=true], .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-reset-button.active, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-reset-button.is-active {
-  background: var(--easyedu-primary-soft);
-  border-color: var(--easyedu-control-focus-border);
-  color: var(--easyedu-primary-strong);
-  outline: 0;
-}
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-reset-button:focus-visible {
-  box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring);
-}
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-reset-button:disabled, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-reset-button[aria-disabled=true], .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-reset-button.disabled {
-  background: var(--easyedu-surface-soft);
-  border-color: var(--easyedu-card-border);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 0.42rem;
+  box-shadow: none;
   color: var(--easyedu-text-muted);
-  cursor: not-allowed;
-  opacity: 0.62;
-  pointer-events: none;
-  transform: none;
-}
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-reset-button .fa {
-  align-items: center;
   display: inline-flex;
   flex: 0 0 auto;
+  gap: 0.38rem;
+  font-size: 0.88rem;
+  font-weight: 560;
   justify-content: center;
-  line-height: 1;
-}
-.local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-reset-button {
-  background: var(--easyedu-surface);
-  border: 1px solid var(--easyedu-control-border);
-  border-radius: var(--easyedu-control-radius);
-  box-shadow: 0 0.16rem 0.42rem rgba(31, 42, 55, 0.045);
-  color: var(--easyedu-text-muted);
-  font-weight: 720;
-  min-height: 2.42rem;
-  padding: 0.42rem 0.78rem;
+  line-height: 1.2;
+  min-height: 2.08rem;
+  padding: 0.3rem 0.52rem;
   text-decoration: none;
   transform: translateY(0);
-  transition: background-color var(--easyedu-motion-fast) var(--easyedu-motion-ease), border-color var(--easyedu-motion-fast) var(--easyedu-motion-ease), box-shadow var(--easyedu-motion-fast) var(--easyedu-motion-ease), color var(--easyedu-motion-fast) var(--easyedu-motion-ease), transform var(--easyedu-motion-fast) var(--easyedu-motion-ease);
+  transition: background-color var(--easyedu-motion-fast) var(--easyedu-motion-ease), border-color var(--easyedu-motion-fast) var(--easyedu-motion-ease), color var(--easyedu-motion-fast) var(--easyedu-motion-ease);
+  white-space: nowrap;
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-reset-button .fa {
-  color: color-mix(in srgb, var(--easyedu-primary) 78%, var(--easyedu-text-muted) 22%);
-  font-size: 0.92rem;
-  width: 1rem;
+  color: color-mix(in srgb, var(--easyedu-primary) 62%, var(--easyedu-text-muted) 38%);
+  font-size: 0.88rem;
+  text-align: center;
+  width: 0.95rem;
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-reset-button:hover, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-reset-button:focus-visible {
-  background: var(--easyedu-primary-soft);
-  border-color: color-mix(in srgb, var(--easyedu-primary) 34%, #fff 66%);
-  box-shadow: 0 0.24rem 0.58rem rgba(31, 68, 104, 0.09), inset 0.22rem 0 0 var(--easyedu-primary);
+  background: color-mix(in srgb, var(--easyedu-primary-soft) 72%, #fff 28%);
+  border-color: color-mix(in srgb, var(--easyedu-primary) 18%, transparent 82%);
+  box-shadow: none;
   color: var(--easyedu-primary-strong);
   text-decoration: none;
-  transform: translateY(-0.02rem);
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-reset-button.active, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-reset-button.is-active, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-reset-button[aria-current=page], .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-reset-button[aria-pressed=true] {
-  background: var(--easyedu-primary-soft);
-  border-color: color-mix(in srgb, var(--easyedu-primary) 42%, #fff 58%);
-  box-shadow: inset 0.24rem 0 0 var(--easyedu-primary), 0 0.42rem 0.95rem rgba(15, 108, 191, 0.12);
+  background: transparent;
+  border-color: transparent;
+  box-shadow: inset 0 -0.14rem 0 var(--easyedu-primary);
   color: var(--easyedu-primary-strong);
+  font-weight: 640;
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-reset-button.active .fa, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-reset-button.is-active .fa, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-reset-button[aria-current=page] .fa, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-reset-button[aria-pressed=true] .fa {
   color: var(--easyedu-primary);
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-reset-button {
-  background: var(--easyedu-danger-soft);
-  border-color: color-mix(in srgb, var(--easyedu-danger) 28%, #fff 72%);
+  background: transparent;
+  border-color: transparent;
   color: var(--easyedu-danger);
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-reset-button .fa {
   color: var(--easyedu-danger);
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-reset-button:hover, .local-course-banner-builder-admin--native .local-course-banner-builder-admin-switcher .local-course-banner-builder-admin-reset-button:focus-visible {
-  background: color-mix(in srgb, var(--easyedu-danger-soft) 74%, #fff 26%);
-  border-color: var(--easyedu-danger);
-  box-shadow: 0 0.24rem 0.58rem rgba(161, 43, 43, 0.08), inset 0.22rem 0 0 var(--easyedu-danger);
+  background: color-mix(in srgb, var(--easyedu-danger-soft) 72%, #fff 28%);
+  border-color: color-mix(in srgb, var(--easyedu-danger) 18%, transparent 82%);
+  box-shadow: none;
   color: var(--easyedu-danger);
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.38rem;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions form,
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .local-course-banner-builder-toggle-button-row {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.24rem;
+  margin: 0;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .local-course-banner-builder-dashed-action,
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .btn {
+  align-items: center;
+  background: color-mix(in srgb, var(--easyedu-surface) 88%, var(--easyedu-primary-soft) 12%);
+  border: 1px solid var(--easyedu-control-border);
+  border-radius: 0.48rem;
+  box-shadow: none;
+  color: var(--easyedu-text-muted);
+  display: inline-flex;
+  gap: 0.36rem;
+  font-size: 0.86rem;
+  font-weight: 560;
+  justify-content: center;
+  line-height: 1.18;
+  min-height: 2.06rem;
+  padding: 0.3rem 0.54rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .local-course-banner-builder-dashed-action .fa,
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .btn .fa {
+  color: color-mix(in srgb, var(--easyedu-text-muted) 72%, var(--easyedu-primary) 28%);
+  font-size: 0.86rem;
+  width: 0.95rem;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .local-course-banner-builder-dashed-action:hover, .local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .local-course-banner-builder-dashed-action:focus-visible,
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .btn:hover,
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .btn:focus-visible {
+  background: var(--easyedu-primary-soft);
+  border-color: color-mix(in srgb, var(--easyedu-primary) 24%, #fff 76%);
+  color: var(--easyedu-primary-strong);
+  text-decoration: none;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .local-course-banner-builder-dashed-action.btn-primary, .local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .local-course-banner-builder-dashed-action.active, .local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .local-course-banner-builder-dashed-action.is-active, .local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .local-course-banner-builder-dashed-action[aria-pressed=true],
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .btn.btn-primary,
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .btn.active,
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .btn.is-active,
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .btn[aria-pressed=true] {
+  background: color-mix(in srgb, var(--easyedu-primary-soft) 78%, #fff 22%);
+  border-color: color-mix(in srgb, var(--easyedu-primary) 34%, #fff 66%);
+  color: var(--easyedu-primary-strong);
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .local-course-banner-builder-dashed-action.btn-primary .fa, .local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .local-course-banner-builder-dashed-action.active .fa, .local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .local-course-banner-builder-dashed-action.is-active .fa, .local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .local-course-banner-builder-dashed-action[aria-pressed=true] .fa,
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .btn.btn-primary .fa,
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .btn.active .fa,
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .btn.is-active .fa,
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .btn[aria-pressed=true] .fa {
+  color: var(--easyedu-primary);
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .local-course-banner-builder-dashed-action:disabled, .local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .local-course-banner-builder-dashed-action[aria-disabled=true], .local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .local-course-banner-builder-dashed-action.disabled,
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .btn:disabled,
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .btn[aria-disabled=true],
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .btn.disabled {
+  background: color-mix(in srgb, var(--easyedu-surface) 82%, #eef2f6 18%);
+  border-color: color-mix(in srgb, var(--easyedu-control-border) 70%, #fff 30%);
+  color: color-mix(in srgb, var(--easyedu-text-muted) 58%, #fff 42%);
+  cursor: not-allowed;
+  opacity: 0.74;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .local-course-banner-builder-dashed-action:disabled .fa, .local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .local-course-banner-builder-dashed-action[aria-disabled=true] .fa, .local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .local-course-banner-builder-dashed-action.disabled .fa,
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .btn:disabled .fa,
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .btn[aria-disabled=true] .fa,
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .btn.disabled .fa {
+  color: color-mix(in srgb, var(--easyedu-text-muted) 50%, #fff 50%);
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .local-course-banner-builder-help-dot {
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--easyedu-primary) 28%, #fff 72%);
+  border-radius: 999px;
+  color: var(--easyedu-primary);
+  display: inline-flex;
+  font-size: 0.74rem;
+  font-weight: 700;
+  height: 1.18rem;
+  justify-content: center;
+  line-height: 1;
+  margin-left: 0.05rem;
+  text-decoration: none;
+  width: 1.18rem;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .local-course-banner-builder-help-dot:hover, .local-course-banner-builder-admin--native .local-course-banner-builder-course-banner-status-actions .local-course-banner-builder-help-dot:focus-visible {
+  background: var(--easyedu-primary-soft);
+  color: var(--easyedu-primary-strong);
+  text-decoration: none;
 }
 
 .local-course-banner-builder-hover-popover {
   position: absolute;
   z-index: 1095;
-  background: var(--bs-body-bg, var(--easyedu-surface));
-  border: 1px solid #d7dfe8;
-  border-radius: 0.375rem;
-  box-shadow: 0 0.45rem 1.25rem rgba(31, 42, 55, 0.14);
-  color: var(--bs-body-color, var(--easyedu-text));
+  background: radial-gradient(circle at 1.2rem 0.6rem, rgba(255, 255, 255, 0.14), transparent 5.5rem), linear-gradient(135deg, #183a59 0%, #1f6b57 100%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0.64rem;
+  box-shadow: 0 0.7rem 1.6rem rgba(20, 44, 67, 0.2), 0 0.08rem 0.24rem rgba(12, 28, 44, 0.16);
+  color: #fff;
   display: block;
-  max-width: 20rem;
+  max-width: 22rem;
   pointer-events: none;
 }
 .local-course-banner-builder-hover-popover .popover-arrow {
@@ -8266,8 +8275,8 @@ span[data-flexitour=container].orphan .modal-dialog {
   width: 0.75rem;
 }
 .local-course-banner-builder-hover-popover .popover-arrow::before {
-  background: var(--bs-body-bg, var(--easyedu-surface));
-  border: 1px solid #d7dfe8;
+  background: #1f6b57;
+  border: 1px solid rgba(255, 255, 255, 0.18);
   content: "";
   height: 0.55rem;
   position: absolute;
@@ -8275,19 +8284,28 @@ span[data-flexitour=container].orphan .modal-dialog {
   width: 0.55rem;
 }
 .local-course-banner-builder-hover-popover.popover .popover-header, .local-course-banner-builder-hover-popover .popover-header {
-  background: var(--bs-body-bg, var(--easyedu-surface));
+  background: transparent;
   border: 0;
-  color: var(--bs-body-color, var(--easyedu-text));
-  font-size: 0.78rem;
+  color: #fff;
+  font-size: 0.76rem;
   font-weight: 700;
-  padding: 0.5rem 0.65rem 0;
+  line-height: 1.25;
+  padding: 0.58rem 0.72rem 0;
+  text-align: center;
 }
 .local-course-banner-builder-hover-popover.popover .popover-body, .local-course-banner-builder-hover-popover .popover-body {
   background: transparent;
-  color: #405061;
-  font-size: 0.78rem;
-  line-height: 1.35;
-  padding: 0.5rem 0.65rem 0.65rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.76rem;
+  line-height: 1.42;
+  margin: 0 auto;
+  padding: 0.54rem 0.78rem 0.72rem;
+  text-align: justify;
+  text-align-last: center;
+}
+.local-course-banner-builder-hover-popover.popover .popover-body p, .local-course-banner-builder-hover-popover .popover-body p {
+  margin-left: auto;
+  margin-right: auto;
 }
 .local-course-banner-builder-hover-popover.popover .popover-body p:last-child, .local-course-banner-builder-hover-popover .popover-body p:last-child {
   margin-bottom: 0;

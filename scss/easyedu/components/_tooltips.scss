@@ -46,13 +46,17 @@
 }
 
 @mixin popover-surface {
-  background: var(--bs-body-bg, var(--easyedu-surface));
-  border: 1px solid #d7dfe8;
-  border-radius: 0.375rem;
-  box-shadow: 0 0.45rem 1.25rem rgba(31, 42, 55, 0.14);
-  color: var(--bs-body-color, var(--easyedu-text));
+  background:
+    radial-gradient(circle at 1.2rem 0.6rem, rgba(255, 255, 255, 0.14), transparent 5.5rem),
+    linear-gradient(135deg, #183a59 0%, #1f6b57 100%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0.64rem;
+  box-shadow:
+    0 0.7rem 1.6rem rgba(20, 44, 67, 0.2),
+    0 0.08rem 0.24rem rgba(12, 28, 44, 0.16);
+  color: #fff;
   display: block;
-  max-width: 20rem;
+  max-width: 22rem;
   pointer-events: none;
 
   .popover-arrow {
@@ -61,8 +65,8 @@
     width: 0.75rem;
 
     &::before {
-      background: var(--bs-body-bg, var(--easyedu-surface));
-      border: 1px solid #d7dfe8;
+      background: #1f6b57;
+      border: 1px solid rgba(255, 255, 255, 0.18);
       content: "";
       height: 0.55rem;
       position: absolute;
@@ -74,20 +78,30 @@
   &.popover,
   & {
     .popover-header {
-      background: var(--bs-body-bg, var(--easyedu-surface));
+      background: transparent;
       border: 0;
-      color: var(--bs-body-color, var(--easyedu-text));
-      font-size: 0.78rem;
+      color: #fff;
+      font-size: 0.76rem;
       font-weight: 700;
-      padding: 0.5rem 0.65rem 0;
+      line-height: 1.25;
+      padding: 0.58rem 0.72rem 0;
+      text-align: center;
     }
 
     .popover-body {
       background: transparent;
-      color: #405061;
-      font-size: 0.78rem;
-      line-height: 1.35;
-      padding: 0.5rem 0.65rem 0.65rem;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.76rem;
+      line-height: 1.42;
+      margin: 0 auto;
+      padding: 0.54rem 0.78rem 0.72rem;
+      text-align: justify;
+      text-align-last: center;
+
+      p {
+        margin-left: auto;
+        margin-right: auto;
+      }
 
       p:last-child {
         margin-bottom: 0;

@@ -121,6 +121,46 @@
             @include easyedu-buttons.admin-primary-nav-action(destructive);
         }
     }
+
+    .local-course-banner-builder-course-banner-status-actions {
+        @include easyedu-buttons.admin-secondary-actions;
+
+        form,
+        .local-course-banner-builder-toggle-button-row {
+            align-items: center;
+            display: inline-flex;
+            gap: 0.24rem;
+            margin: 0;
+        }
+
+        .local-course-banner-builder-dashed-action,
+        .btn {
+            @include easyedu-buttons.admin-secondary-action;
+        }
+
+        .local-course-banner-builder-help-dot {
+            align-items: center;
+            border: 1px solid color-mix(in srgb, var(--easyedu-primary) 28%, #fff 72%);
+            border-radius: 999px;
+            color: var(--easyedu-primary);
+            display: inline-flex;
+            font-size: 0.74rem;
+            font-weight: 700;
+            height: 1.18rem;
+            justify-content: center;
+            line-height: 1;
+            margin-left: 0.05rem;
+            text-decoration: none;
+            width: 1.18rem;
+
+            &:hover,
+            &:focus-visible {
+                background: var(--easyedu-primary-soft);
+                color: var(--easyedu-primary-strong);
+                text-decoration: none;
+            }
+        }
+    }
 }
 
 .local-course-banner-builder-hover-popover {
