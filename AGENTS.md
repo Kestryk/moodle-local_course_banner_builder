@@ -1,4 +1,11 @@
-+# Multi-machine development contract
+# EasyEdu agent contract
+
+For cross-repository EasyEdu context, start with
+`D:\dev\easyedu-platform\AI\README.md` when it is available locally. Then read
+`AI\course-banner-builder\context.md` in the platform repository before editing
+this plugin.
+
+## Multi-machine development contract
 
 Every AI agent working in this repository must follow the canonical EasyEdu
 handoff procedure:

@@ -8,6 +8,37 @@ many small sections.
 
 ## Unreleased
 
+### 2026-07-18
+
+#### Changed
+
+- Contained the configured-source table inside its administration panel at
+  laptop and tablet widths, while allowing open inline source menus to escape
+  the horizontal scroll shell.
+- Aligned source-chain list controls and empty-source feedback with the shared
+  EasyEdu table toolbar and empty-state surfaces.
+- Hid the global source-chain collapse action when the configured-source list
+  contains only independent root sources and therefore has nothing to fold.
+- Harmonised source and layer row actions with neutral and destructive EasyEdu
+  variants while retaining the existing edit, preview and confirmation flows.
+
+#### Documentation
+
+- Added Course Banner Builder-specific functional, accessibility and release
+  test protocols aligned with the EasyEdu Moodle quality gates.
+- Documented the current system-level capability boundary, the missing
+  deterministic fixtures and the staged promotion path for Moodle 4.5 and 5.1
+  matrix jobs.
+
+#### Tests
+
+- Added an opt-in Playwright/axe smoke test scoped to the visible Course Banner
+  Builder administration region.
+- Added a Moodle-native Behat accessibility smoke scenario for the course
+  banner administration page.
+- Added a fixture-free Behat smoke scenario covering administrator access and
+  rendering of the Course Banner Builder administration root.
+
 ### 2026-07-17
 
 #### Documentation

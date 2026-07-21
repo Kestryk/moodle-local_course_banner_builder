@@ -436,9 +436,13 @@
                                         class="btn btn-secondary btn-sm"
                                         data-edit-layer-url="{{editurl}}"
                                         data-edit-layer-modal="{{editmodaltarget}}">
+                                        <i class="icon fa fa-pen fa-fw" aria-hidden="true"></i>
                                         {{editlabel}}
                                     </button>
-                                    <a class="btn btn-danger btn-sm" href="{{deleteurl}}">{{#str}}delete{{/str}}</a>
+                                    <a class="btn btn-danger btn-sm" href="{{deleteurl}}">
+                                        <i class="icon fa fa-trash-can fa-fw" aria-hidden="true"></i>
+                                        {{#str}}delete{{/str}}
+                                    </a>
                                 </div>
                             </td>
                         </tr>
@@ -488,7 +492,8 @@
                                 </td>
                                 <td class="local-course-banner-builder-layer-render-cell">{{#chainborderlayer.haslayerpreviewhtml}}{{{chainborderlayer.layerpreviewhtml}}}{{/chainborderlayer.haslayerpreviewhtml}}</td>
                                 <td>
-                                    <a class="btn btn-secondary btn-sm" href="{{sourceediturl}}">
+                                    <a class="btn btn-secondary btn-sm local-course-banner-builder-inherited-layer-action" href="{{sourceediturl}}">
+                                        <i class="icon fa fa-arrow-up-right-from-square fa-fw" aria-hidden="true"></i>
                                         {{#str}}editsourceoflayer, local_course_banner_builder{{/str}}
                                     </a>
                                 </td>
@@ -548,7 +553,13 @@
                                 {{/chainoverlaylayer.hasoverlaysummary}}
                             </td>
                             <td class="local-course-banner-builder-layer-render-cell">{{#chainoverlaylayer.haslayerpreviewhtml}}{{{chainoverlaylayer.layerpreviewhtml}}}{{/chainoverlaylayer.haslayerpreviewhtml}}</td>
-                            <td><a class="btn btn-secondary btn-sm" href="{{chainoverlaylayer.sourceediturl}}">{{#str}}editsourceoflayer, local_course_banner_builder{{/str}}</a></td>
+                            <td>
+                                <a class="btn btn-secondary btn-sm local-course-banner-builder-inherited-layer-action"
+                                    href="{{chainoverlaylayer.sourceediturl}}">
+                                    <i class="icon fa fa-arrow-up-right-from-square fa-fw" aria-hidden="true"></i>
+                                    {{#str}}editsourceoflayer, local_course_banner_builder{{/str}}
+                                </a>
+                            </td>
                         </tr>
                     </tbody>
                 </table>

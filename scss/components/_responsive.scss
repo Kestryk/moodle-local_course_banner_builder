@@ -278,9 +278,21 @@ span[data-flexitour="container"].orphan .modal-dialog {
     text-decoration: none;
 }
 
-@media (max-width: 991.98px) {
-    .local-course-banner-builder-admin--native .local-course-banner-builder-configured-source-tools + .table-responsive {
-        overflow-x: auto;
+@media (max-width: 1199.98px) {
+    .local-course-banner-builder-admin--native
+    .local-course-banner-builder-table-shell.local-course-banner-builder-table-shell--sources {
+        overflow: auto;
+        overscroll-behavior-inline: contain;
+    }
+
+    // Inline parent-source menus must still escape the scroll shell while they
+    // are open. The table returns to contained horizontal scrolling as soon as
+    // the menu closes.
+    .local-course-banner-builder-admin--native
+    .local-course-banner-builder-table-shell.local-course-banner-builder-table-shell--sources:has(
+        .local-course-banner-builder-source-dropdown-menu.show
+    ) {
+        overflow: visible;
     }
 }
 

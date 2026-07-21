@@ -6360,6 +6360,9 @@ class manager {
 
         return [
             'hasitems' => !empty($items),
+            'haschains' => array_reduce($items, static function (bool $carry, array $item): bool {
+                return $carry || !empty($item['haschildren']);
+            }, false),
             'items' => $items,
         ];
     }

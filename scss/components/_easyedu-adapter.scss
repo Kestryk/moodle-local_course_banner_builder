@@ -886,6 +886,10 @@
         @include easyedu.table-toolbar;
 
         margin-bottom: 0.55rem;
+
+        .local-course-banner-builder-chain-collapse-toggle {
+            @include easyedu.admin-secondary-action;
+        }
     }
 
     .local-course-banner-builder-table-shell {
@@ -951,7 +955,45 @@
         background-color: color-mix(in srgb, var(--easyedu-primary-soft) 64%, #fff 36%) !important;
     }
 
-    .local-course-banner-builder-empty-layer-list {
+    .local-course-banner-builder-action-list .btn:not(.btn-danger):not(.btn-outline-danger),
+    .local-course-banner-builder-inherited-layer-action {
+        @include easyedu.admin-secondary-action;
+
+        & {
+            font-size: 0.78rem;
+            white-space: normal;
+        }
+    }
+
+    .local-course-banner-builder-action-list .btn-danger,
+    .local-course-banner-builder-action-list .btn-outline-danger,
+    .local-course-banner-builder-bulk-delete-button {
+        @include easyedu.admin-secondary-action(destructive);
+    }
+
+    .local-course-banner-builder-action-list .btn,
+    .local-course-banner-builder-inherited-layer-action {
+        width: 100%;
+        min-height: 2.15rem;
+        font-size: 0.78rem;
+        white-space: normal;
+    }
+
+    .local-course-banner-builder-source-actions-cell,
+    .local-course-banner-builder-layer-actions-cell {
+        min-width: 9.75rem;
+    }
+
+    .local-course-banner-builder-bulk-action-row {
+        @include easyedu.admin-form-actions;
+    }
+
+    .local-course-banner-builder-bulk-save-button {
+        @include easyedu.action-button(small);
+    }
+
+    .local-course-banner-builder-empty-layer-list,
+    .local-course-banner-builder-empty-source-list {
         @include easyedu.inline-empty-state;
 
         margin: 0;
