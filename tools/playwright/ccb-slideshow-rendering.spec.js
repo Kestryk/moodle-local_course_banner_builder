@@ -28,6 +28,54 @@ const captureCdp = async(page, context, file) => {
     }
 };
 
+const matrixViewports = [
+    {name: 'desktop', width: 1600, height: 900},
+    {name: 'tablet', width: 768, height: 1024},
+    {name: 'mobile', width: 390, height: 844},
+];
+
+const previewGeometry = async(preview) => preview.evaluate((element) => {
+    const bounds = element.getBoundingClientRect();
+    const elements = [
+        '.local-course-banner-builder-slideshow-labels',
+        '.local-course-banner-builder-slideshow-title-block',
+        '.local-course-banner-builder-slideshow-body-block',
+        '.local-course-banner-builder-slideshow-action-wrap',
+    ];
+    const samples = elements.map((selector) => {
+        const child = element.querySelector(selector);
+        if (!child) {
+            return {selector, present: false};
+        }
+        const rect = child.getBoundingClientRect();
+        return {
+            selector,
+            present: true,
+            width: rect.width,
+            height: rect.height,
+            left: rect.left - bounds.left,
+            right: rect.right - bounds.left,
+            top: rect.top - bounds.top,
+            bottom: rect.bottom - bounds.top,
+        };
+    });
+    return {width: bounds.width, height: bounds.height, samples};
+});
+
+const expectRenderableGeometry = (geometry) => {
+    expect(geometry.width).toBeGreaterThan(0);
+    expect(geometry.height).toBeGreaterThan(0);
+    for (const sample of geometry.samples) {
+        expect(sample.present, sample.selector + ' is missing').toBeTruthy();
+        expect(sample.width, sample.selector + ' has no width').toBeGreaterThan(0);
+        expect(sample.height, sample.selector + ' has no height').toBeGreaterThan(0);
+        expect(sample.left, sample.selector + ' escapes the preview on the left').toBeGreaterThanOrEqual(-1);
+        expect(sample.top, sample.selector + ' escapes the preview at the top').toBeGreaterThanOrEqual(-1);
+        expect(sample.right, sample.selector + ' escapes the preview on the right').toBeLessThanOrEqual(geometry.width + 2);
+        expect(sample.bottom, sample.selector + ' escapes the preview at the bottom').toBeLessThanOrEqual(geometry.height + 2);
+    }
+};
+
 const environment = () => {
     const required = [
         'EASYEDU_MOODLE_URL',
@@ -62,7 +110,7 @@ const login = async(page, env) => {
     await expect(page).not.toHaveURL(/\/login\//, {timeout: 30000});
 };
 
-test('CCB Slideshow fixture preflight keeps course and site previews isolated', async() => {
+test('CCB Slideshow rendering matrix keeps course and site previews readable', async() => {
     const env = environment();
     const consoleErrors = [];
     const requestFailures = [];
@@ -95,17 +143,48 @@ test('CCB Slideshow fixture preflight keeps course and site previews isolated', 
         await expect(cards).toHaveCount(2);
         await expect(cards.filter({has: page.locator('input[name="context"][value="course"]')})).toHaveCount(1);
         await expect(cards.filter({has: page.locator('input[name="context"][value="site"]')})).toHaveCount(1);
-        await expect(page.locator('[data-slideshow-overlay-settings="1"]')).toHaveCount(2);
-        await expect(page.locator('.local-course-banner-builder-slideshow-admin-preview')).toHaveCount(2);
+        const roots = page.locator('[data-slideshow-overlay-settings="1"]');
+        await expect(roots).toHaveCount(2);
         await expect(page.locator('input[name="maxslides"]')).toHaveCount(2);
         await expect(page.locator('input[name="siteannouncementdays"]')).toHaveCount(2);
+        await expect(page.locator('[data-slideshow-side-panel-target]')).toHaveCount(18);
+        await expect(page.locator('[data-slideshow-side-panel]')).toHaveCount(18);
 
-        await captureCdp(page, context, path.join(env.artifactRoot, 'slideshow-admin-preflight.png'));
-        writeJson(path.join(env.artifactRoot, 'slideshow-preflight.json'), {
+        const matrix = [];
+        for (const viewport of matrixViewports) {
+            await page.setViewportSize({width: viewport.width, height: viewport.height});
+            await page.waitForTimeout(200);
+            const view = {viewport: viewport.name, previews: []};
+            const editButtons = page.locator('.local-course-banner-builder-slideshow-edit-appearance-button');
+            await expect(editButtons).toHaveCount(2);
+            for (let index = 0; index < await editButtons.count(); index++) {
+                await editButtons.nth(index).click();
+                const modal = page.locator('.local-course-banner-builder-slideshow-preview-modal.show');
+                await expect(modal).toHaveCount(1);
+                const preview = modal.locator('[data-slideshow-overlay-preview="1"][data-slideshow-preview-editor="1"]');
+                await expect(preview).toHaveCount(1);
+                const geometry = await previewGeometry(preview);
+                await captureCdp(page, context,
+                    path.join(env.artifactRoot, `slideshow-admin-${viewport.name}-${index === 0 ? 'course' : 'site'}.png`));
+                expectRenderableGeometry(geometry);
+                view.previews.push(geometry);
+                await modal.locator('[data-bs-dismiss="modal"]').click();
+                await expect(modal).toHaveCount(0);
+            }
+            matrix.push(view);
+        }
+        writeJson(path.join(env.artifactRoot, 'slideshow-rendering-matrix.json'), {
             cards: await cards.count(),
             consoleErrors,
             requestFailures,
             fixtureCourseId: Number(process.env.EASYEDU_CCB_SLIDESHOW_COURSE_ID),
+            matrix,
+            coverage: {
+                contexts: ['course', 'site'],
+                viewports: matrixViewports.map(viewport => viewport.name),
+                previewElements: ['labels', 'title', 'body', 'action'],
+                sidePanelsPerContext: 9,
+            },
         });
         expect(consoleErrors).toEqual([]);
         expect(requestFailures).toEqual([]);
