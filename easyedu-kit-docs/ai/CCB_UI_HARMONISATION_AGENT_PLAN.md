@@ -560,12 +560,23 @@ or Moodle/Boost.
 - Machine: `PORT4719PG3`
 - CCB checkout: `C:\dev\Moodle 51\MoodleWindowsInstaller-latest-501\server\moodle\local\course_banner_builder`
 - Branch: `wip/desktop-k1gsrvt/ccb-continuity-2026-07`
-- Expected HEAD: `c5f33c8ab50bdc32f181dc31c22df97bb0c5fd00`
-- Upstream: none
-- Worktree: intentionally dirty; all staged, unstaged, and untracked changes
-  are pre-existing handoff material and must be preserved.
+- WIP consolidation checkpoint: `0a3c7a041320a4fff0a83d980aedb877415dde7a`
+  (`WIP(ccb): checkpoint concurrent UI and QA work`).
+- Upstream: `origin/wip/desktop-k1gsrvt/ccb-continuity-2026-07`, synchronized
+  at `0/0` with the WIP checkpoint.
+- Worktree: clean at handoff; no staged, unstaged or untracked changes remain.
+  The consolidation commit is the new point of reprise and must be preserved.
 - Stashes: three preserved entries; never reset, clean, stash, checkout,
   rebase, unstage, or rewrite them.
+
+### 2026-08-06 WIP consolidation checkpoint
+
+The concurrent CCB UI and QA material was consolidated in the WIP commit
+`0a3c7a041320a4fff0a83d980aedb877415dde7a` on the active branch above. This
+checkpoint is synchronized with its upstream and is the only valid restart
+point for the next CCB lot. Do not return to the historical feature branches
+or to `c5f33c8` without an explicit instruction. The future CCB Loading/Skeleton
+consumer remains a separate scope and is not implemented by this checkpoint.
 
 The active runtime, Moodle database, QA fixtures, Playwright credentials, and
 external browser artifacts remain outside this source/build phase.
