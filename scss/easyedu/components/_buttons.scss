@@ -7,6 +7,8 @@
 // Theme override tokens:
 // --easyedu-control-radius, --easyedu-control-height.
 
+@use "focus";
+
 @mixin button-size($size: regular) {
   @if $size == small {
     font-size: 0.78rem;
@@ -44,7 +46,7 @@
   }
 
   &:focus-visible {
-    box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring);
+    @include focus.ring($border-color: $hover-border);
   }
 
   &:disabled,
@@ -75,8 +77,7 @@
     transform var(--easyedu-motion-fast) ease;
 
   &:focus-visible {
-    box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring);
-    outline: 0;
+    @include focus.ring;
   }
 }
 
@@ -144,7 +145,6 @@
   transform: translateY(0);
 
   &:hover,
-  &:focus-visible,
   &[aria-expanded="true"] {
     background: color-mix(in srgb, var(--easyedu-primary-soft) 82%, #fff 18%);
     border-color: color-mix(in srgb, var(--easyedu-primary) 32%, #fff 68%);
@@ -153,6 +153,17 @@
       0 0 0 0.14rem color-mix(in srgb, var(--easyedu-primary) 14%, transparent);
     color: var(--easyedu-primary-strong);
     outline: 0;
+    transform: translateY(-0.02rem);
+  }
+
+  &:focus-visible {
+    @include focus.ring(
+      $border-color: color-mix(in srgb, var(--easyedu-primary) 32%, #fff 68%),
+      $base-shadow: 0 0.16rem 0.38rem rgba(31, 68, 104, 0.08)
+    );
+
+    background: color-mix(in srgb, var(--easyedu-primary-soft) 82%, #fff 18%);
+    color: var(--easyedu-primary-strong);
     transform: translateY(-0.02rem);
   }
 }
@@ -224,7 +235,7 @@
   margin: 0 0 1.05rem;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0 0.42rem;
+  padding: var(--easyedu-focus-ring-width) 0.42rem;
   scrollbar-width: none;
   white-space: nowrap;
 
@@ -351,6 +362,19 @@
     }
   }
 
+  &:focus-visible {
+    @include focus.ring(
+      $base-shadow: inset 0 -0.16rem 0 color-mix(in srgb, var(--easyedu-primary) 42%, transparent 58%)
+    );
+  }
+
+  &.active:focus-visible,
+  &.is-active:focus-visible,
+  &[aria-current="page"]:focus-visible,
+  &[aria-pressed="true"]:focus-visible {
+    @include focus.ring($base-shadow: inset 0 -0.2rem 0 var(--easyedu-primary));
+  }
+
   @if $variant == destructive {
     & {
       color: var(--easyedu-danger);
@@ -367,6 +391,13 @@
       box-shadow: 0 0.14rem 0.34rem rgba(161, 43, 43, 0.07);
       color: var(--easyedu-danger);
     }
+
+    &:focus-visible {
+      @include focus.ring(
+        $color: var(--easyedu-focus-ring-danger),
+        $border-color: color-mix(in srgb, var(--easyedu-danger) 24%, #fff 76%)
+      );
+    }
   } @else if $variant == format {
     & {
       color: color-mix(in srgb, var(--easyedu-accent) 62%, var(--easyedu-text-muted) 38%);
@@ -381,6 +412,13 @@
       background: color-mix(in srgb, var(--easyedu-accent-soft) 76%, #fff 24%);
       border-color: color-mix(in srgb, var(--easyedu-accent) 24%, #fff 76%);
       color: color-mix(in srgb, var(--easyedu-accent) 72%, var(--easyedu-text) 28%);
+    }
+
+    &:focus-visible {
+      @include focus.ring(
+        $color: var(--easyedu-focus-ring-accent),
+        $border-color: color-mix(in srgb, var(--easyedu-accent) 24%, #fff 76%)
+      );
     }
   }
 }
@@ -428,6 +466,13 @@
     text-decoration: none;
   }
 
+  &:focus-visible {
+    @include focus.ring(
+      $border-color: color-mix(in srgb, var(--easyedu-primary) 26%, #fff 74%),
+      $base-shadow: 0 0.16rem 0.38rem rgba(31, 68, 104, 0.075)
+    );
+  }
+
   @if $variant == warning {
     & {
       background: color-mix(in srgb, var(--easyedu-warning-soft) 72%, #fff 28%);
@@ -447,6 +492,14 @@
         0 0.16rem 0.38rem rgba(154, 101, 15, 0.075),
         0 0 0 0.14rem color-mix(in srgb, var(--easyedu-warning) 14%, transparent);
       color: color-mix(in srgb, var(--easyedu-warning) 88%, var(--easyedu-text) 12%);
+    }
+
+    &:focus-visible {
+      @include focus.ring(
+        $color: var(--easyedu-focus-ring-warning),
+        $border-color: color-mix(in srgb, var(--easyedu-warning) 38%, #fff 62%),
+        $base-shadow: 0 0.16rem 0.38rem rgba(154, 101, 15, 0.075)
+      );
     }
   } @else if $variant == destructive {
     & {
@@ -511,6 +564,22 @@
     box-shadow: none;
     color: var(--easyedu-primary-strong);
     text-decoration: none;
+  }
+
+  &:focus-visible {
+    @include focus.ring(
+      $border-color: color-mix(in srgb, var(--easyedu-primary) 26%, #fff 74%),
+      $base-shadow: 0 0.14rem 0.32rem rgba(31, 68, 104, 0.08)
+    );
+  }
+
+  @if $variant == destructive {
+    &:focus-visible {
+      @include focus.ring(
+        $color: var(--easyedu-focus-ring-danger),
+        $border-color: color-mix(in srgb, var(--easyedu-danger) 24%, #fff 76%)
+      );
+    }
   }
 
   &:active {

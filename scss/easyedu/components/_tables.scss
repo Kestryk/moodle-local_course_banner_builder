@@ -1,5 +1,6 @@
 // EasyEdu data tables, preview reports and status rows.
 
+@use "focus";
 @use "typography";
 
 @mixin data-table {
@@ -86,6 +87,142 @@
 
   tbody tr:focus-within > td {
     background-color: color-mix(in srgb, var(--easyedu-primary-soft) 42%, transparent 58%);
+  }
+}
+
+// Table-row counterpart to object-card. Apply this only to a real <tr> whose
+// cells must remain in normal table flow. The inset rail is painted on every
+// cell so it stays continuous without changing the row's geometry.
+@mixin object-row-cells($identity-color: var(--easyedu-primary)) {
+  --easyedu-object-row-identity: #{$identity-color};
+  --easyedu-object-row-rail-width: var(--easyedu-focus-ring-width);
+
+  > :is(th, td) {
+    background-color: var(--easyedu-surface);
+    box-shadow: inset 0 var(--easyedu-object-row-rail-width) 0 var(--easyedu-object-row-identity);
+    transition:
+      background-color var(--easyedu-motion-fast) ease,
+      box-shadow var(--easyedu-motion-fast) ease;
+  }
+
+  &:hover > :is(th, td) {
+    background-color: color-mix(in srgb, var(--easyedu-object-row-identity) 7%, var(--easyedu-surface) 93%);
+  }
+
+  &:focus-within > :is(th, td) {
+    @include focus.ring(
+      $base-shadow: inset 0 var(--easyedu-object-row-rail-width) 0 var(--easyedu-object-row-identity)
+    );
+
+    background-color: color-mix(in srgb, var(--easyedu-primary-soft) 46%, var(--easyedu-surface) 54%);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    > :is(th, td) {
+      transition-duration: 0.01ms;
+    }
+  }
+
+  @media (forced-colors: active) {
+    > :is(th, td) {
+      box-shadow: none;
+      outline: 1px solid CanvasText;
+      outline-offset: -1px;
+    }
+
+    &:focus-within > :is(th, td) {
+      outline: var(--easyedu-focus-outline-width) solid Highlight;
+      outline-offset: var(--easyedu-focus-outline-offset);
+    }
+  }
+}
+
+// Apply this beside object-row-cells when the plugin exposes selected rows.
+// The state paints inside existing cells and never changes the table layout.
+@mixin object-row-cells-selected($identity-color: var(--easyedu-primary)) {
+  &.is-selected,
+  &[aria-selected="true"] {
+    > :is(th, td) {
+      background-color: color-mix(in srgb, #{$identity-color} 13%, var(--easyedu-surface) 87%);
+      box-shadow:
+        inset 0 var(--easyedu-focus-ring-width) 0 #{$identity-color},
+        inset 0 0 0 1px color-mix(in srgb, #{$identity-color} 42%, var(--easyedu-card-border) 58%);
+    }
+  }
+}
+
+// Opt-in affordance for rows that the plugin has explicitly made draggable.
+// Touch users keep the plugin-provided keyboard or menu alternative.
+@mixin object-row-cells-draggable {
+  cursor: grab;
+
+  &:active {
+    cursor: grabbing;
+  }
+
+  @media (pointer: coarse) {
+    cursor: default;
+  }
+}
+
+// Native HTML drag source state. Unlike drag-source-placeholder, this keeps
+// the real row visible because the browser may use it as the drag image.
+@mixin object-row-cells-drag-source($identity-color: var(--easyedu-primary)) {
+  cursor: grabbing;
+
+  > :is(th, td) {
+    background-color: color-mix(in srgb, #{$identity-color} 10%, var(--easyedu-surface) 90%);
+    box-shadow:
+      inset 0 var(--easyedu-focus-ring-width) 0 #{$identity-color},
+      inset 0 0 0 1px color-mix(in srgb, #{$identity-color} 48%, var(--easyedu-card-border) 52%);
+  }
+
+  @media (forced-colors: active) {
+    > :is(th, td) {
+      outline: 2px solid Highlight;
+      outline-offset: -2px;
+    }
+  }
+}
+
+// Destination state for an existing table row. It uses paint only, leaving
+// the row and every cell in normal flow while an insert position is offered.
+@mixin object-row-cells-drop-target($identity-color: var(--easyedu-primary)) {
+  > :is(th, td) {
+    background-color: color-mix(in srgb, #{$identity-color} 16%, var(--easyedu-surface) 84%);
+    box-shadow:
+      inset 0 var(--easyedu-focus-ring-width) 0 #{$identity-color},
+      inset 0 0 0 var(--easyedu-focus-ring-width) color-mix(in srgb, #{$identity-color} 56%, transparent);
+  }
+
+  @media (forced-colors: active) {
+    > :is(th, td) {
+      outline: 2px solid Highlight;
+      outline-offset: -2px;
+    }
+  }
+}
+
+// Locked rows keep their normal geometry and do not imply a draggable cursor.
+@mixin object-row-cells-locked {
+  cursor: default;
+
+  > :is(th, td) {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent 0,
+      transparent 0.42rem,
+      color-mix(in srgb, var(--easyedu-text-muted) 3.5%, transparent) 0.42rem,
+      color-mix(in srgb, var(--easyedu-text-muted) 3.5%, transparent) 0.72rem
+    );
+  }
+
+  @media (forced-colors: active) {
+    > :is(th, td) {
+      background-image: none;
+      outline: 1px dashed GrayText;
+      outline-offset: -1px;
+    }
   }
 }
 

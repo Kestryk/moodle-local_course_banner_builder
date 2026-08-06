@@ -9,6 +9,8 @@
 // --easyedu-empty-bg-start, --easyedu-empty-bg-end, --easyedu-empty-border,
 // --easyedu-text-muted.
 
+@use "focus";
+
 @mixin token-pill($bg, $border, $text) {
   align-items: center;
   background: $bg;
@@ -47,11 +49,15 @@
   cursor: pointer;
   padding-right: 0.46rem;
 
-  &:hover,
-  &:focus-visible {
+  &:hover {
     border-color: color-mix(in srgb, #{$text} 28%, #fff 72%);
-    box-shadow: 0 0 0 0.14rem color-mix(in srgb, #{$text} 12%, transparent);
-    outline: 0;
+  }
+
+  &:focus-visible {
+    @include focus.ring(
+      $color: color-mix(in srgb, #{$text} 22%, transparent),
+      $border-color: color-mix(in srgb, #{$text} 28%, #fff 72%)
+    );
   }
 }
 

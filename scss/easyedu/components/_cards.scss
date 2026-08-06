@@ -9,6 +9,7 @@
 // --easyedu-card-shadow, --easyedu-identity-border-width,
 // --easyedu-identity-size, --easyedu-identity-icon-color.
 
+@use "focus";
 @use "typography";
 
 @mixin object-card($identity-color) {
@@ -172,13 +173,21 @@
     box-shadow var(--easyedu-motion-fast) ease,
     color var(--easyedu-motion-fast) ease;
 
-  &:hover,
-  &:focus-visible {
+  &:hover {
     background: color-mix(in srgb, #{$bg} 72%, #fff 28%);
     border-color: color-mix(in srgb, #{$border} 78%, #000 22%);
-    box-shadow: 0 0 0 0.16rem color-mix(in srgb, #{$text} 14%, transparent);
     color: color-mix(in srgb, #{$text} 86%, #000 14%);
-    outline: 0;
+    text-decoration: none;
+  }
+
+  &:focus-visible {
+    @include focus.ring(
+      $color: color-mix(in srgb, #{$text} 22%, transparent),
+      $border-color: color-mix(in srgb, #{$border} 78%, #000 22%)
+    );
+
+    background: color-mix(in srgb, #{$bg} 72%, #fff 28%);
+    color: color-mix(in srgb, #{$text} 86%, #000 14%);
     text-decoration: none;
   }
 }
@@ -381,6 +390,10 @@
     background-size: min(34rem, 96%) 1px, min(34rem, 96%) 1px;
     color: $text-color;
     outline: 0;
+  }
+
+  &:focus-visible {
+    @include focus.ring;
   }
 
   &:focus:not(:focus-visible) {

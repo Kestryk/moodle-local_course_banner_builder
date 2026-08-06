@@ -1,0 +1,69 @@
+@use "../easyedu" as easyedu;
+
+// Bridge CCB's real Moodle form checkboxes to the embedded EasyEdu selection
+// control. The native input remains focusable and owns the submitted value.
+
+.local-course-banner-builder-selection-checkbox {
+    @include easyedu.selection-checkbox(var(--easyedu-primary), regular);
+
+    &--small {
+        @include easyedu.selection-checkbox(var(--easyedu-primary), small);
+    }
+}
+
+.local-course-banner-builder-admin,
+.local-course-banner-builder-modal {
+    // Moodle mforms generate their own checkbox markup, so they cannot receive
+    // the sibling visual element above. Keep the same tokens and state contract
+    // on their native input without altering toggle-switch controls.
+    .mform input[type="checkbox"]:not([data-preview-context-toggle]) {
+        appearance: none;
+        width: 1.15rem;
+        height: 1.15rem;
+        margin: 0;
+        border: 1.5px solid var(--easyedu-control-border);
+        border-radius: 0.4rem;
+        background: var(--easyedu-surface);
+        background-image: none !important;
+        box-shadow: 0 0.1rem 0.35rem rgba(31, 42, 55, 0.06);
+        cursor: pointer;
+        vertical-align: middle;
+
+        &::after {
+            content: "";
+            display: block;
+            width: 0.28rem;
+            height: 0.52rem;
+            margin: 0.18rem auto 0;
+            border-right: 2px solid #fff;
+            border-bottom: 2px solid #fff;
+            opacity: 0;
+            transform: rotate(45deg) scale(0.8);
+            transition: opacity var(--easyedu-motion-fast) ease, transform var(--easyedu-motion-fast) ease;
+        }
+
+        &:checked {
+            border-color: var(--easyedu-primary);
+            background: var(--easyedu-primary);
+            box-shadow: 0 0 0 0.18rem color-mix(in srgb, var(--easyedu-primary) 14%, transparent);
+
+            &::after {
+                opacity: 1;
+                transform: rotate(45deg) scale(1);
+            }
+        }
+
+        &:focus-visible {
+            outline: var(--easyedu-focus-outline-width) solid transparent;
+            outline-offset: var(--easyedu-focus-outline-offset);
+            box-shadow: 0 0 0 var(--easyedu-focus-ring-width) var(--easyedu-focus-ring);
+        }
+
+        &:disabled {
+            border-color: var(--easyedu-card-border);
+            background: var(--easyedu-surface-soft);
+            cursor: not-allowed;
+            opacity: 0.62;
+        }
+    }
+}

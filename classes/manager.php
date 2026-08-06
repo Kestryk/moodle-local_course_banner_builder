@@ -6665,7 +6665,8 @@ class manager {
                 $record,
                 $file,
                 $fitmode,
-                self::get_banner_format_aspect_ratio(self::get_course_banner_format())
+                self::get_course_banner_format(),
+                self::get_preview_layer_zindex($record)
             );
             if (empty($styles['wrapperstyle']) || empty($styles['imagestyle'])) {
                 continue;
@@ -6679,7 +6680,7 @@ class manager {
             $overlays[] = [
                 'index' => $index + 1,
                 'url' => $imageurl->out(false),
-                'wrapperstyle' => $styles['wrapperstyle'] . ' z-index: ' . self::get_preview_layer_zindex($record) . ';',
+                'wrapperstyle' => $styles['wrapperstyle'] . ' z-index: ' . (int)($styles['zindex'] ?? 0) . ';',
                 'imagestyle' => $styles['imagestyle'],
             ];
         }
@@ -7831,17 +7832,6 @@ class manager {
                 'options' => self::export_inline_setting_options(
                     self::get_composition_mode_options(),
                     $compositionmode
-                ),
-            ],
-            [
-                'fieldname' => 'fitmode',
-                'fieldid' => 'local-course-banner-builder-summary-fitmode',
-                'label' => get_string('fitmode', 'local_course_banner_builder'),
-                'displayvalue' => self::get_source_fit_mode_label($source),
-                'helptext' => get_string('fitmode_help', 'local_course_banner_builder'),
-                'options' => self::export_inline_setting_options(
-                    self::get_editable_fit_mode_options(),
-                    $settings->fitmode ?? self::FIT_MODE_BANNER
                 ),
             ],
         ];
@@ -12244,30 +12234,45 @@ class manager {
     }
 
     /**
-     * Build native course-header overlay styles aligned with the admin preview.
+     * Build native course-header overlay styles through the public geometry adapter.
      *
      * @param \stdClass $record
      * @param \stored_file $file
      * @param string $fitmode
-     * @param float|null $banneraspect
-     * @return array{wrapperstyle:string,imagestyle:string}
+     * @param string|null $bannerformat
+     * @param int $zindex
+     * @return array{wrapperstyle:string,imagestyle:string,zindex?:int}
      */
     protected static function build_native_course_header_overlay_styles(
         \stdClass $record,
         \stored_file $file,
         string $fitmode,
-        ?float $banneraspect = null
+        ?string $bannerformat = null,
+        int $zindex = 0
     ): array {
-        $styles = self::build_modal_preview_image_layer_styles($record, $fitmode, $file, $banneraspect);
+        $imageinfo = $file->get_imageinfo();
+        $recorddata = get_object_vars($record);
+        $recorddata['geometryzindex'] = $zindex;
+        $styles = course_header_overlay_geometry_adapter::build_styles(
+            $recorddata,
+            [
+                'width' => (int)($imageinfo['width'] ?? 0),
+                'height' => (int)($imageinfo['height'] ?? 0),
+            ],
+            $fitmode,
+            $bannerformat ?? self::get_course_banner_format()
+        );
         $wrapperstyle = trim((string)($styles['wrapperstyle'] ?? ''));
-        $imagestyle = trim((string)($styles['imagestyle'] ?? ''));
-        if ($wrapperstyle === '' || $imagestyle === '') {
+        $imagestyles = is_array($styles['imagestyles'] ?? null) ? $styles['imagestyles'] : [];
+        if ($wrapperstyle === '' || empty($imagestyles)) {
             return ['wrapperstyle' => '', 'imagestyle' => ''];
         }
+        self::append_image_crop_styles($imagestyles, $record, $fitmode === self::FIT_MODE_BANNER);
 
         return [
             'wrapperstyle' => $wrapperstyle,
-            'imagestyle' => $imagestyle,
+            'imagestyle' => implode(' ', $imagestyles),
+            'zindex' => (int)($styles['zindex'] ?? 0),
         ];
     }
 

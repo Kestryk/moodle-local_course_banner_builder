@@ -23,7 +23,11 @@ large EasyEdu plugin change.
 
 - [ ] Reusable UI comes from EasyEdu UI Kit or is added to the kit first.
 - [ ] Templates are used for reusable markup where practical.
-- [ ] No new inline CSS/JS was added for reusable behaviour.
+- [ ] No arbitrary inline CSS/JS was added for reusable behaviour. If a
+      preview needs computed geometry, the inline style is limited to the
+      documented `--local-course-banner-builder-source-preview-*` custom
+      properties, has matching `data-source-preview-*` attributes and an
+      SCSS fallback.
 - [ ] Custom help/tooltip components do not duplicate native `title` tooltips.
 - [ ] SCSS is scoped to plugin or kit roots.
 

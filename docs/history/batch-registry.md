@@ -1,0 +1,24 @@
+# Course Banner Builder batch registry
+
+This index records only the current evidence. `Unknown from available evidence`
+and `Pending historical confirmation` are intentional states, not omissions.
+
+| Batch or evolution | Title | Area | Status | First known date | Latest validation date | Detail | Release / commit reference | Successor or dependency |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Batch 2F-A | Public title accessibility gate | Public semantics | Partially validated | 2026-07-22 | 2026-07-26 (2F-A.1 cell only) | [2F-A](batches/batch-2f-a.md) | `c5f33c8` adds the focused scenario | 2F-B and the remaining accessibility review |
+| Batch 2F-A.1 | Activity `h1` and contextual `h2` at 100% | Public semantics | Validated | 2026-07-22 | 2026-07-27 | [2F-A.1](batches/batch-2f-a1.md) | `c5f33c8`; supervised artifact `ccb-2fa1-supervised-20260727T151314953Z-19692` | Batch 2F-B.1 genuine 200% gate |
+| Batch 2F-B | Narrow public title continuation | Accessibility / responsive | Validated | 2026-07-22 | 2026-07-27 | [2F-B](batches/batch-2f-b.md) | Batch 2F-B.1 passing headed-browser evidence | Controlled recovery commit |
+| Batch 2F-B.1 | Contextual `h2` at genuine 200% | Accessibility / responsive | Validated | 2026-07-22 | 2026-07-27 | [2F-B.1](batches/batch-2f-b1.md) | Single headed Chrome scenario passed; external artifact `ccb-2fb1-supervised-20260727T143916775Z-9640` | Controlled recovery commit |
+| Batch 2A | Preview/public geometry measurement | Geometry | Partially validated | Unknown from available evidence | 2026-07-28 (2A.1 and 2A.2 accepted; remaining cells pending) | [2A](batches/batch-2a.md) | 2A.1 and 2A.2 external artifacts; admin/public contentwide ratio aligned; no release commit | Remaining format/viewport cells |
+| Source preview responsive audit | CCB administration source-preview containment | CCB responsive UI | Gate 2 blocked: shared runtime overlap (4/5 cells passed) | 2026-07-28 | 2026-07-29 | [source preview responsive](batches/source-preview-responsive.md) | Latest external artifact `ccb-source-preview-responsive-20260729T092709891Z-12348`; no release commit | Make the Moodle runtime lease globally exclusive, then rerun one-test matrix; Moodle Boost / EasyEdu UI Kit menu overflow remains separate |
+| Batch 2B | Course/site visual harmonisation | Visual harmonisation | Deferred | Unknown from available evidence | Unknown from available evidence | [2B](batches/batch-2b.md) | No completion reference | 2F-A.1 and 2F-B validation |
+| Modal runner output-drain recovery | Async Playwright stdout/stderr supervisor | QA infrastructure | Validated synthetically; runtime pending | 2026-08-04 | 2026-08-04 | [runner recovery](batches/modal-action-rail-runner-output-drain.md) | Local dirty worktree; no commit | One leased rail capture |
+| Geometry work | Deterministic banner geometry contract | Architecture | Implemented — validation pending | 2026-07-21 | Unknown from available evidence | [geometry](batches/banner-geometry.md) | Restored worktree; focused tests are present | Controlled commit and focused PHPUnit |
+| Public title semantics | Moodle-owned `h1`, contextual `h2` | Architecture / accessibility | Partially validated | 2026-07-22 | 2026-07-26 | [public title](batches/public-title-semantics.md) | `c5f33c8`; current dirty implementation | 2F-B.1 and manual 200% review |
+| Overlay geometry adapter | Public HTML image-overlay compatibility adapter | Architecture | Implemented — validation pending | 2026-07-21 | Unknown from available evidence | [overlay adapter](batches/overlay-geometry-adapter.md) | Restored worktree; no commit claim | Geometry migration evidence and controlled commit |
+| 128px policy | Public non-standard minimum heights | Public sizing | Validated | 2026-07-22 | 2026-07-26 | [128px policy](batches/public-sizing-128px.md) | Accepted CSS SHA-256 recorded in detail | R0.5B isolation and controlled commit |
+| Playwright portability | External artifacts and owned profiles | QA infrastructure | Implemented — validation pending | 2026-07-22 | 2026-07-26 | [portability](batches/playwright-artifact-portability.md) | `c5f33c8`; active config is uncommitted | R0.5B and future gates |
+| Workstation recovery | Snapshot restore and continuity handoff | Migration | Pending historical confirmation | Unknown from available evidence | 2026-07-26 | [snapshot recovery](batches/workstation-snapshot-recovery.md) | Snapshot and handoff reports; no release claim | Controlled commit and human lineage review |
+
+The current checkout is intentionally dirty. A registry entry does not grant
+permission to stage, commit, push, reset, clean, or overwrite that worktree.

@@ -302,15 +302,27 @@ const writeAtomicJson = (filePath, value) => {
 };
 
 const openAdminPreview = async(page, environment) => {
-    await page.goto(`${environment.baseUrl}/local/course_banner_builder/admin_manage.php`, {waitUntil: 'domcontentloaded'});
-    const button = page.locator('[data-action="local-course-banner-builder-show-source-chain-preview"]').first();
-    await expect(button).toBeVisible();
-    await button.click();
-    const frame = page.locator('[data-source-preview-frame="1"]').first();
-    await expect(frame).toBeVisible();
-    const layers = frame.locator('[data-source-preview-layer="1"]');
-    expect(await layers.count()).toBeGreaterThan(0);
-    return {container: await measureContainer(frame), layers: await measureAll(layers, frame)};
+    // Moodle's administration page can keep background session requests open
+    // while the source-preview fragment is fetched. Use a fresh page for the
+    // modal interaction so the test still exercises the real client fetch,
+    // without inheriting those unrelated pending requests from the public
+    // surface page.
+    const viewport = page.viewportSize() || await page.evaluate(() => ({width: window.innerWidth, height: window.innerHeight}));
+    const previewPage = await page.context().newPage();
+    try {
+        await previewPage.setViewportSize(viewport);
+        await previewPage.goto(`${environment.baseUrl}/local/course_banner_builder/admin_manage.php`, {waitUntil: 'domcontentloaded'});
+        const button = previewPage.locator('[data-action="local-course-banner-builder-show-source-chain-preview"]').first();
+        await expect(button).toBeVisible();
+        await button.click();
+        const frame = previewPage.locator('[data-source-preview-frame="1"]').first();
+        await expect(frame).toBeVisible({timeout: 30000});
+        const layers = frame.locator('[data-source-preview-layer="1"]');
+        expect(await layers.count()).toBeGreaterThan(0);
+        return {container: await measureContainer(frame), layers: await measureAll(layers, frame)};
+    } finally {
+        await previewPage.close();
+    }
 };
 
 const openPublicBanner = async(page, environment) => {
@@ -1095,7 +1107,8 @@ test.describe('CCB public image-overlay geometry', () => {
         const ratios = {fullwidthtopinset: 6.1};
         const chromeProcess = spawn(chromePath, [
             `--remote-debugging-port=${debuggingPort}`, '--remote-debugging-address=127.0.0.1',
-            `--user-data-dir=${profileDirectory}`, '--no-first-run', '--no-default-browser-check',
+            `--user-data-dir=${profileDirectory}`, '--no-first-run', '--no-default-browser-check', '--disable-gpu',
+            '--disable-features=CalculateNativeWinOcclusion', '--disable-backgrounding-occluded-windows',
             '--new-window', `${environment.baseUrl}/login/index.php`,
         ], {stdio: 'ignore', windowsHide: false});
         let browser = null;
@@ -1273,7 +1286,8 @@ test.describe('CCB public image-overlay geometry', () => {
         const profileDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'ccb-lot0c-'));
         const chromeProcess = spawn(chromePath, [
             `--remote-debugging-port=${debuggingPort}`, '--remote-debugging-address=127.0.0.1',
-            `--user-data-dir=${profileDirectory}`, '--no-first-run', '--no-default-browser-check',
+            `--user-data-dir=${profileDirectory}`, '--no-first-run', '--no-default-browser-check', '--disable-gpu',
+            '--disable-features=CalculateNativeWinOcclusion', '--disable-backgrounding-occluded-windows',
             '--new-window', `${environment.baseUrl}/login/index.php`,
         ], {stdio: 'ignore', windowsHide: false});
         const startedAt = Date.now();

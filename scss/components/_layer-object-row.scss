@@ -1,0 +1,228 @@
+// CCB table adapter for the EasyEdu object-card interaction language.
+//
+// A native table row cannot adopt card geometry. Keep its cells in normal
+// table flow and project the card states through a single leading rail,
+// surface tint and visible grip. This deliberately does not use the generic
+// object-row-cells focus outline, which would draw a separate border around
+// every cell.
+
+@use "../easyedu" as easyedu;
+
+.local-course-banner-builder-admin,
+[data-source-visual-editor="1"] {
+    .local-course-banner-builder-layer-row {
+        --local-course-banner-builder-layer-row-rail: var(--bs-primary, #0f6cbf);
+        --local-course-banner-builder-layer-row-rail-width: 2.15rem;
+        --local-course-banner-builder-layer-row-separator: color-mix(
+            in srgb,
+            var(--local-course-banner-builder-layer-row-rail) 15%,
+            var(--bs-border-color, #dee2e6) 85%
+        );
+        --local-course-banner-builder-layer-row-stripe: color-mix(
+            in srgb,
+            var(--local-course-banner-builder-layer-row-rail) 4.5%,
+            transparent
+        );
+
+        > :is(th, td) {
+            border-style: solid;
+            border-top-width: 0;
+            border-right-width: 0;
+            border-bottom-width: 1px;
+            border-left-width: 0;
+            border-bottom-color: var(--local-course-banner-builder-layer-row-separator);
+            background-color: var(--bs-body-bg, #fff);
+            box-shadow: none;
+            transition: background-color 160ms ease;
+        }
+
+        > :first-child {
+            position: relative;
+            padding-left: 2.7rem;
+            box-shadow: inset var(--local-course-banner-builder-layer-row-rail-width) 0 0
+                var(--local-course-banner-builder-layer-row-rail);
+        }
+
+        > :first-child::before {
+            display: none;
+        }
+
+        &:hover > :is(th, td) {
+            background-color: color-mix(in srgb, var(--local-course-banner-builder-layer-row-rail) 5%, #fff);
+        }
+
+        &:focus-within > :is(th, td) {
+            background-color: color-mix(in srgb, var(--local-course-banner-builder-layer-row-rail) 9%, #fff);
+        }
+
+        &:focus-within > :first-child {
+            box-shadow: inset var(--local-course-banner-builder-layer-row-rail-width) 0 0
+                var(--local-course-banner-builder-layer-row-rail);
+        }
+    }
+
+    .local-course-banner-builder-layer-row[draggable="true"] {
+        cursor: grab;
+
+        .local-course-banner-builder-layer-row-identity {
+            cursor: grab;
+        }
+
+        .local-course-banner-builder-drag-corner {
+            background-color: #fff;
+            block-size: 1rem;
+            inline-size: 1rem;
+            mask-image: var(--easyedu-drag-handle);
+            mask-position: center;
+            mask-repeat: no-repeat;
+            mask-size: 1rem 1rem;
+            opacity: 0;
+            transform: rotate(-12deg) scale(0.68);
+            transition: opacity 180ms var(--easyedu-motion-ease),
+                transform 220ms var(--easyedu-motion-ease);
+            -webkit-mask-image: var(--easyedu-drag-handle);
+            -webkit-mask-position: center;
+            -webkit-mask-repeat: no-repeat;
+            -webkit-mask-size: 1rem 1rem;
+        }
+
+        &:hover .local-course-banner-builder-drag-corner,
+        &:focus-within .local-course-banner-builder-drag-corner {
+            opacity: 1;
+            transform: rotate(0) scale(1);
+        }
+
+        &:hover .local-course-banner-builder-layer-type-icon--image,
+        &:focus-within .local-course-banner-builder-layer-type-icon--image {
+            opacity: 0;
+            transform: rotate(10deg) scale(0.72);
+        }
+    }
+
+    .local-course-banner-builder-layer-row--border {
+        --local-course-banner-builder-layer-row-rail: #b05f16;
+    }
+
+    .local-course-banner-builder-layer-row--overlay {
+        --local-course-banner-builder-layer-row-rail: #2f7d73;
+        --local-course-banner-builder-layer-row-stripe: color-mix(in srgb, #2f7d73 8%, transparent);
+    }
+
+    .local-course-banner-builder-layer-row-dragging {
+        // The native row remains the visible drag source and drag image.
+        cursor: grabbing;
+        opacity: 1;
+
+        > :is(th, td) {
+            background-color: color-mix(in srgb, var(--local-course-banner-builder-layer-row-rail) 12%, #fff);
+        }
+
+        > :first-child {
+            box-shadow: inset var(--local-course-banner-builder-layer-row-rail-width) 0 0
+                var(--local-course-banner-builder-layer-row-rail);
+        }
+    }
+
+    .local-course-banner-builder-layer-row--order-locked {
+        cursor: default;
+        background-color: color-mix(in srgb, var(--local-course-banner-builder-layer-row-rail) 2.5%, #fff);
+        background-image: repeating-linear-gradient(
+            90deg,
+            transparent 0,
+            transparent 0.5rem,
+            var(--local-course-banner-builder-layer-row-stripe) 0.5rem,
+            var(--local-course-banner-builder-layer-row-stripe) 0.8rem
+        );
+        background-position: left top;
+
+        > :is(th, td) {
+            border-top-width: 0 !important;
+            border-right-width: 0 !important;
+            border-bottom-width: 1px !important;
+            border-left-width: 0 !important;
+            border-bottom-color: var(--local-course-banner-builder-layer-row-separator) !important;
+            background-color: transparent !important;
+            background-image: none !important;
+        }
+
+        .local-course-banner-builder-admin-layer-visual--overlay {
+            box-sizing: border-box;
+            padding: 0.14rem;
+            border-radius: 0.35rem;
+            background-color: var(--bs-body-bg, #fff);
+        }
+    }
+
+    .local-course-banner-builder-layer-row-identity {
+        align-items: center;
+        display: inline-flex;
+        height: 100%;
+        justify-content: center;
+        left: 0.55rem;
+        pointer-events: none;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 1.05rem;
+    }
+
+    .local-course-banner-builder-drag-corner,
+    .local-course-banner-builder-layer-type-icon {
+        align-items: center;
+        display: inline-flex;
+        height: 1rem;
+        justify-content: center;
+        position: absolute;
+        inset: 0;
+        margin: auto;
+        width: 1rem;
+    }
+
+    .local-course-banner-builder-layer-type-icon {
+        color: #fff;
+        font-size: 1rem;
+        transition: opacity 180ms var(--easyedu-motion-ease),
+            transform 220ms var(--easyedu-motion-ease);
+    }
+
+    // Moodle's `fa-fw` icon element is wider than the visual glyph. Constrain
+    // and center that element itself so every icon type shares the handle's
+    // visual center, rather than adding a one-off Image offset.
+    .local-course-banner-builder-layer-type-icon > .icon {
+        align-items: center;
+        display: inline-flex;
+        justify-content: center;
+        width: 1rem !important;
+        height: 1rem;
+        margin: 0 !important;
+        line-height: 1;
+        text-align: center;
+    }
+
+    .local-course-banner-builder-layer-order-state {
+        align-items: center;
+        display: inline-flex;
+        gap: 0.28rem;
+        justify-content: center;
+    }
+
+    .local-course-banner-builder-lock-help {
+        align-items: center;
+        display: inline-flex;
+        justify-content: center;
+        position: static;
+    }
+
+    // Preserve a normal pointer over interactive descendants of draggable rows.
+    .local-course-banner-builder-layer-row[draggable="true"] :is(input, select, button, a) {
+        cursor: auto;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .local-course-banner-builder-layer-row > :is(th, td),
+        .local-course-banner-builder-layer-row[draggable="true"] .local-course-banner-builder-drag-corner,
+        .local-course-banner-builder-layer-row[draggable="true"] .local-course-banner-builder-layer-type-icon {
+            transition-duration: 0.01ms;
+        }
+    }
+}

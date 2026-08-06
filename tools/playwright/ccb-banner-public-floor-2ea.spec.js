@@ -161,7 +161,9 @@ test('CCB Batch 2E-A.1 public runtime and compiled sizing agree', async() => {
     const browserProcess = spawn('C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', [
         `--remote-debugging-port=${env.port}`, '--remote-debugging-address=127.0.0.1',
         `--user-data-dir=${fs.mkdtempSync(path.join(os.tmpdir(), `ccb-2ea-${env.scenarioId}-`))}`,
-        '--no-first-run', '--no-default-browser-check', '--new-window', `${env.baseUrl}/login/index.php`,
+        '--no-first-run', '--no-default-browser-check', '--disable-gpu',
+        '--disable-features=CalculateNativeWinOcclusion', '--disable-backgrounding-occluded-windows',
+        '--new-window', `${env.baseUrl}/login/index.php`,
     ], {stdio: 'ignore', windowsHide: false});
     let browser = null;
     let page = null;

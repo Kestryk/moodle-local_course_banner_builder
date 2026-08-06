@@ -1,5 +1,7 @@
 // EasyEdu dropdowns, context menus and overflow action menus.
 
+@use "focus";
+
 @mixin menu-surface($size: regular) {
   $min-width: 12rem;
   $padding: 0.35rem;
@@ -77,6 +79,10 @@
     .fa {
       color: var(--easyedu-primary);
     }
+  }
+
+  &:focus-visible {
+    @include focus.ring;
   }
 
   &[aria-disabled="true"],

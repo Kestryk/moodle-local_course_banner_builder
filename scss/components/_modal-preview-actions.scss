@@ -32,7 +32,29 @@
 }
 
 .modal[id^="local-course-banner-builder-"] .local-course-banner-builder-layer-modal-body {
-    padding-right: calc(18rem + 1.75rem);
+    --local-course-banner-builder-modal-action-rail-width: clamp(15rem, 22vw, 18rem);
+    padding-right: calc(var(--local-course-banner-builder-modal-action-rail-width) + 1.75rem);
+}
+
+// A loading modal has no action rail. Restore symmetric body padding so the
+// status spinner is centered in the available modal surface, not in the space
+// left after the inactive rail reservation.
+.modal[id^="local-course-banner-builder-"][data-layer-modal-loading="1"]
+    .local-course-banner-builder-layer-modal-body {
+    display: flex;
+    flex-direction: column;
+    padding-right: 1rem;
+}
+
+.modal[id^="local-course-banner-builder-"][data-layer-modal-loading="1"]
+    .local-course-banner-builder-layer-modal-body::after {
+    display: none;
+}
+
+.modal[id^="local-course-banner-builder-"][data-layer-modal-loading="1"]
+    .local-course-banner-builder-layer-modal-loading {
+    flex: 1 1 auto;
+    min-height: 0;
 }
 
 .modal[id^="local-course-banner-builder-"] form.local-course-banner-builder-has-preview-proxy {
@@ -89,12 +111,14 @@
     form.local-course-banner-builder-has-preview-proxy
     > .local-course-banner-builder-modal-preview-action-list {
     position: absolute;
-    top: 2.7rem;
+    // Align the action rail with the preview frame, rather than the form label
+    // immediately before it.
+    top: 3.5rem;
     right: 1rem;
     bottom: 0;
     z-index: 13;
     align-content: start;
-    width: 18rem;
+    width: var(--local-course-banner-builder-modal-action-rail-width);
     min-width: 0;
     max-height: none;
     overflow: visible;
@@ -116,6 +140,11 @@
 
 @media (max-width: 991.98px) {
     .modal[id^="local-course-banner-builder-"] .local-course-banner-builder-layer-modal-body {
+        padding-right: 1rem;
+    }
+
+    .modal[id^="local-course-banner-builder-"][data-layer-modal-loading="1"]
+        .local-course-banner-builder-layer-modal-body {
         padding-right: 1rem;
     }
 

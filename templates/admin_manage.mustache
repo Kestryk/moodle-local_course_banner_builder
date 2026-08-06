@@ -52,7 +52,6 @@
                 <col class="local-course-banner-builder-configured-col-type">
                 <col class="local-course-banner-builder-configured-col-layers">
                 <col class="local-course-banner-builder-configured-col-mode">
-                <col class="local-course-banner-builder-configured-col-fit">
                 <col class="local-course-banner-builder-configured-col-preview">
                 <col class="local-course-banner-builder-configured-col-actions">
             </colgroup>
@@ -64,7 +63,6 @@
                     <th scope="col">{{#str}}sourcetype, local_course_banner_builder{{/str}}</th>
                     <th scope="col">{{#str}}layers, local_course_banner_builder{{/str}}</th>
                     <th scope="col">{{#str}}compositionmode, local_course_banner_builder{{/str}}</th>
-                    <th scope="col">{{#str}}fitmode, local_course_banner_builder{{/str}}</th>
                     <th scope="col">{{#str}}bannerimage, local_course_banner_builder{{/str}}</th>
                     <th scope="col">{{#str}}actions, local_course_banner_builder{{/str}}</th>
                 </tr>
@@ -178,7 +176,7 @@
                                                             data-value="{{value}}"
                                                             data-label="{{label}}"
                                                             data-search="{{label}}">
-                                                            {{label}}
+                                                            <span class="local-course-banner-builder-source-option-label">{{label}}</span>
                                                         </button>
                                                     {{/parentoptions}}
                                                 </div>
@@ -206,7 +204,6 @@
                         <td>{{sourcetypelabel}}</td>
                         <td>{{layercountdisplay}}</td>
                         <td>{{compositionmodelabel}}</td>
-                        <td>{{fitmodelabel}}</td>
                         <td>
                             <div class="local-course-banner-builder-thumb-list">
                                 {{#thumbnails}}
@@ -340,11 +337,11 @@
                                     data-html="true"
                                     data-trigger="hover">
                                     <i class="icon fa fa-eye fa-fw" aria-hidden="true"></i>
-                                    {{#str}}preview{{/str}}
+                                    <span class="local-course-banner-builder-action-label">{{#str}}preview{{/str}}</span>
                                 </button>
                                 <a class="btn btn-secondary btn-sm" href="{{editurl}}">
                                     <i class="icon fa fa-pen fa-fw" aria-hidden="true"></i>
-                                    {{#str}}edit{{/str}}
+                                    <span class="local-course-banner-builder-action-label">{{#str}}edit{{/str}}</span>
                                 </a>
                                 <form method="post" class="d-inline">
                                     <input type="hidden" name="sesskey" value="{{sesskey}}">
@@ -356,7 +353,7 @@
                                         data-modal-content="{{#str}}deletecategoryimagesconfirm, local_course_banner_builder{{/str}}"
                                         data-modal-yes-button="{{#str}}delete{{/str}}">
                                         <i class="icon fa fa-layer-group fa-fw" aria-hidden="true"></i>
-                                        {{#str}}deletecategoryimages, local_course_banner_builder{{/str}}
+                                        <span class="local-course-banner-builder-action-label">{{#str}}deletecategoryimages, local_course_banner_builder{{/str}}</span>
                                     </button>
                                 </form>
                                 <form method="post" class="d-inline">
@@ -369,7 +366,7 @@
                                         data-modal-content="{{#str}}deletecategorycontentconfirm, local_course_banner_builder{{/str}}"
                                         data-modal-yes-button="{{#str}}delete{{/str}}">
                                         <i class="icon fa fa-trash-can fa-fw" aria-hidden="true"></i>
-                                        {{#str}}deletecategorycontent, local_course_banner_builder{{/str}}
+                                        <span class="local-course-banner-builder-action-label">{{#str}}deletecategorycontent, local_course_banner_builder{{/str}}</span>
                                     </button>
                                 </form>
                             </div>

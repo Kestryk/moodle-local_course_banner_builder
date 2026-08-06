@@ -221,9 +221,6 @@ class manage_banner_form extends \moodleform {
         bool $currentisoverlaylayer = false
     ): void {
         $usesharedcreatepreview = $formmode === 'create' && $showadvanced && $showborder;
-        $fitoptions = ['' => get_string('fitoverride:categorydefault', 'local_course_banner_builder')]
-            + \local_course_banner_builder\manager::get_editable_fit_mode_options(true);
-
         if ($showadvanced) {
             $imageattrs = [
                 'class' => 'local-course-banner-builder-advanced-accordion ' .
@@ -250,12 +247,10 @@ class manage_banner_form extends \moodleform {
 
         if ($showadvanced) {
             $customsizemax = (string)(int)\local_course_banner_builder\manager::CUSTOM_SIZE_PERCENT_MAX;
-            $mform->addElement('select', 'fitmodeoverride', get_string('fitoverride', 'local_course_banner_builder'), $fitoptions);
+            // Preserve the persisted override for existing preview and save behaviour.
+            // The sizing-mode selector is intentionally not exposed to authors.
+            $mform->addElement('hidden', 'fitmodeoverride');
             $mform->setType('fitmodeoverride', PARAM_ALPHA);
-            $mform->addElement('static', 'fitoverridehelp', '', \html_writer::div(
-            get_string('fitoverridehelp', 'local_course_banner_builder'),
-            'form-text text-muted'
-            ));
 
             $customsizeattrs = [
             'size' => 6,

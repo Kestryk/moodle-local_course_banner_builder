@@ -22,6 +22,9 @@
  */
 define(['local_course_banner_builder/motion'], function (Motion) {
 
+var localCourseBannerBuilderSourcePreviewModes = {};
+var localCourseBannerBuilderSourcePreviewOrientationMediaQuery = null;
+
 var localCourseBannerBuilderOnReady = function (callback) {
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', callback);
@@ -49,6 +52,23 @@ document.addEventListener('change', function (e) {
         selectedCard.classList.add('is-selected');
     }
 });
+
+document.addEventListener('click', function (e) {
+    var dismissButton = e.target && e.target.closest ?
+        e.target.closest('[data-source-preview-orientation-dismiss="1"]') :
+        null;
+    if (!dismissButton) {
+        return;
+    }
+    var root = dismissButton.closest('[data-source-visual-editor="1"]');
+    if (!root) {
+        return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    root.dataset.sourcePreviewOrientationDismissed = '1';
+    localCourseBannerBuilderSyncSourcePreviewOrientationHint(root);
+}, true);
 
 document.addEventListener('click', function (e) {
     var popoverTrigger = e.target && e.target.closest ?
@@ -92,7 +112,7 @@ document.addEventListener('focusin', function (e) {
         e.target.closest('[data-toggle="popover"], [data-bs-toggle="popover"]') :
         null;
     if (popoverTrigger) {
-        localCourseBannerBuilderDismissOpenPopovers(popoverTrigger);
+        localCourseBannerBuilderDismissOpenPopovers();
     }
 }, true);
 
@@ -3465,7 +3485,7 @@ function localCourseBannerBuilderWriteCropStateToForm(form, state) {
         imagecropheightpercent: String(localCourseBannerBuilderRoundPreviewPercent(crop.height))
     };
     Object.keys(values).forEach(function (name) {
-        var input = form.querySelector('[name="' + name + '"]');
+        var input = localCourseBannerBuilderGetCropInput(form, name);
         if (!input) {
             input = document.createElement('input');
             input.type = 'hidden';
@@ -4225,6 +4245,12 @@ function localCourseBannerBuilderCancelCropEditor(control, sourceMode) {
         }
     } else {
         if (form) {
+            localCourseBannerBuilderApplyModalCropPreviewState(
+                form,
+                layer,
+                localCourseBannerBuilderGetPreviewCropState(layer),
+                null
+            );
             localCourseBannerBuilderSyncCurrentImagePreview(form);
             localCourseBannerBuilderSaveActiveDraftPreviewState(form);
             localCourseBannerBuilderSyncModalPreviewCropButtons(form);
@@ -5323,6 +5349,12 @@ function localCourseBannerBuilderCancelActivePreviewCropInScope(scope, keepLayer
     }
     var form = localCourseBannerBuilderGetLayerScope(activeLayer);
     if (form) {
+        localCourseBannerBuilderApplyModalCropPreviewState(
+            form,
+            activeLayer,
+            localCourseBannerBuilderGetPreviewCropState(activeLayer),
+            null
+        );
         localCourseBannerBuilderSyncCurrentImagePreview(form);
         localCourseBannerBuilderSaveActiveDraftPreviewState(form);
         localCourseBannerBuilderSyncModalPreviewCropButtons(form);
@@ -7709,6 +7741,7 @@ function localCourseBannerBuilderToggleAllSourcePreviewImageVisibility(button) {
     localCourseBannerBuilderSyncSourcePreviewFitButton(root);
     localCourseBannerBuilderSyncSourcePreviewFillButton(root);
     localCourseBannerBuilderSyncSourcePreviewCropButtons(root);
+    localCourseBannerBuilderSyncSourcePreviewOrderButtons(root);
     localCourseBannerBuilderSyncSourcePreviewDeleteButton(root);
 }
 
@@ -9226,19 +9259,6 @@ function localCourseBannerBuilderSaveActiveDraftPreviewState(form) {
             localCourseBannerBuilderReadLayerFormPreviewState(form));
     if (!state) {
         return;
-    }
-    if (!state.imagecropenabled && existingState.imagecropenabled) {
-        [
-            'imagecropenabled',
-            'imagecropleftpercent',
-            'imagecroptoppercent',
-            'imagecropwidthpercent',
-            'imagecropheightpercent'
-        ].forEach(function (key) {
-            if (typeof existingState[key] !== 'undefined') {
-                state[key] = existingState[key];
-            }
-        });
     }
     settings[index] = state;
     localCourseBannerBuilderSetDraftPreviewSettings(form, settings);
@@ -12227,6 +12247,58 @@ function localCourseBannerBuilderGetSourceVisualEditorRoots(scope) {
     return Array.prototype.slice.call(root.querySelectorAll ? root.querySelectorAll('[data-source-visual-editor="1"]') : []);
 }
 
+function localCourseBannerBuilderGetSourcePreviewOrientationMediaQuery() {
+    if (!localCourseBannerBuilderSourcePreviewOrientationMediaQuery && window.matchMedia) {
+        localCourseBannerBuilderSourcePreviewOrientationMediaQuery = window.matchMedia(
+            '(max-width: 576px) and (orientation: portrait)'
+        );
+    }
+    return localCourseBannerBuilderSourcePreviewOrientationMediaQuery;
+}
+
+function localCourseBannerBuilderIsSourcePreviewOrientationHintEligible(root) {
+    var mediaQuery = localCourseBannerBuilderGetSourcePreviewOrientationMediaQuery();
+    return !!(root && mediaQuery && !localCourseBannerBuilderIsSourcePreviewReadonly(root) &&
+        !root.closest('.local-course-banner-builder-source-chain-preview-modal') && mediaQuery.matches);
+}
+
+function localCourseBannerBuilderSyncSourcePreviewOrientationHint(root) {
+    var hint = root ? root.querySelector('[data-source-preview-orientation-hint="1"]') : null;
+    if (!hint) {
+        return;
+    }
+    hint.hidden = root.dataset.sourcePreviewOrientationDismissed === '1' ||
+        !localCourseBannerBuilderIsSourcePreviewOrientationHintEligible(root);
+}
+
+function localCourseBannerBuilderInitSourcePreviewOrientationHint(scope) {
+    var roots = localCourseBannerBuilderGetSourceVisualEditorRoots(scope);
+    if (!roots.length) {
+        return;
+    }
+    roots.forEach(function (root) {
+        localCourseBannerBuilderSyncSourcePreviewOrientationHint(root);
+    });
+    if (document.documentElement.dataset.localCourseBannerBuilderOrientationHintBound === '1') {
+        return;
+    }
+    var sync = function () {
+        localCourseBannerBuilderGetSourceVisualEditorRoots(document).forEach(
+            localCourseBannerBuilderSyncSourcePreviewOrientationHint
+        );
+    };
+    var mediaQuery = localCourseBannerBuilderGetSourcePreviewOrientationMediaQuery();
+    if (mediaQuery) {
+        if (mediaQuery.addEventListener) {
+            mediaQuery.addEventListener('change', sync);
+        } else if (mediaQuery.addListener) {
+            mediaQuery.addListener(sync);
+        }
+    }
+    window.addEventListener('resize', sync);
+    document.documentElement.dataset.localCourseBannerBuilderOrientationHintBound = '1';
+}
+
 function localCourseBannerBuilderIsSourcePreviewReadonly(root) {
     return !!(root && root.getAttribute && root.getAttribute('data-source-preview-readonly') === '1');
 }
@@ -13492,6 +13564,7 @@ function localCourseBannerBuilderSelectSourcePreviewLayer(root, layer) {
     localCourseBannerBuilderSyncSourcePreviewFitButton(root);
     localCourseBannerBuilderSyncSourcePreviewFillButton(root);
     localCourseBannerBuilderSyncSourcePreviewCropButtons(root);
+    localCourseBannerBuilderSyncSourcePreviewOrderButtons(root);
     localCourseBannerBuilderSyncSourcePreviewDeleteButton(root);
     localCourseBannerBuilderUpdateSourcePreviewThumbnailSelection(root);
     localCourseBannerBuilderSyncSourcePreviewSelectionOutline(root);
@@ -13521,9 +13594,81 @@ function localCourseBannerBuilderClearSourcePreviewSelection(root) {
     localCourseBannerBuilderSyncSourcePreviewSelectionOutline(root);
 }
 
+/**
+ * Set the transient rendering mode for the main source visual editor.
+ *
+ * The selection intentionally lives only on the rendered root: it does not
+ * enter the source payload, a form field, local storage, or server state.
+ *
+ * @param {HTMLElement} root Source visual editor root.
+ * @param {string} mode Requested preview mode.
+ */
+function localCourseBannerBuilderSetSourcePreviewMode(root, mode) {
+    if (!root || !root.querySelector('[data-source-preview-mode-control="1"]')) {
+        return;
+    }
+    mode = mode === 'mobile' ? 'mobile' : 'desktop';
+    root.setAttribute('data-source-preview-mode', mode);
+    var sourcekey = root.getAttribute('data-sourcekey') || '';
+    if (sourcekey) {
+        localCourseBannerBuilderSourcePreviewModes[sourcekey] = mode;
+    }
+    Array.prototype.slice.call(root.querySelectorAll('[data-source-preview-mode-value]')).forEach(function(button) {
+        var selected = button.getAttribute('data-source-preview-mode-value') === mode;
+        button.setAttribute('aria-pressed', selected ? 'true' : 'false');
+        button.classList.toggle('is-active', selected);
+        button.classList.toggle('btn-primary', selected);
+        button.classList.toggle('btn-outline-secondary', !selected);
+    });
+}
+
+/**
+ * Bind the desktop/mobile selector when the main source editor is rendered.
+ *
+ * @param {HTMLElement} root Source visual editor root.
+ */
+function localCourseBannerBuilderInitSourcePreviewMode(root) {
+    var control = root ? root.querySelector('[data-source-preview-mode-control="1"]') : null;
+    if (!control) {
+        return;
+    }
+    var buttons = Array.prototype.slice.call(control.querySelectorAll('[data-source-preview-mode-value]'));
+    var sourcekey = root.getAttribute('data-sourcekey') || '';
+    localCourseBannerBuilderSetSourcePreviewMode(root, sourcekey && localCourseBannerBuilderSourcePreviewModes[sourcekey] ?
+        localCourseBannerBuilderSourcePreviewModes[sourcekey] : root.getAttribute('data-source-preview-mode'));
+    buttons.forEach(function(button, index) {
+        if (button.dataset.sourcePreviewModeBound) {
+            return;
+        }
+        button.addEventListener('click', function() {
+            localCourseBannerBuilderSetSourcePreviewMode(root, button.getAttribute('data-source-preview-mode-value'));
+        });
+        button.addEventListener('keydown', function(event) {
+            var targetindex = null;
+            if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+                targetindex = (index + buttons.length - 1) % buttons.length;
+            } else if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+                targetindex = (index + 1) % buttons.length;
+            } else if (event.key === 'Home') {
+                targetindex = 0;
+            } else if (event.key === 'End') {
+                targetindex = buttons.length - 1;
+            }
+            if (targetindex === null) {
+                return;
+            }
+            event.preventDefault();
+            buttons[targetindex].focus();
+        });
+        button.dataset.sourcePreviewModeBound = '1';
+    });
+}
+
 function localCourseBannerBuilderInitSourceVisualEditor(scope) {
+    localCourseBannerBuilderInitSourcePreviewOrientationHint(scope);
     localCourseBannerBuilderGetSourceVisualEditorRoots(scope).forEach(function (root) {
         var isReadonly = localCourseBannerBuilderIsSourcePreviewReadonly(root);
+        localCourseBannerBuilderInitSourcePreviewMode(root);
         if (!root.dataset.sourcePreviewBound) {
             root.addEventListener('click', function (event) {
                 if (localCourseBannerBuilderIsSourcePreviewReadonly(root)) {
@@ -14911,6 +15056,11 @@ function localCourseBannerBuilderApplyModalPreviewSnapshot(form, snapshot) {
         localCourseBannerBuilderBindPercentSliders(form);
         if (form.querySelector('[data-preview-draft-layer-host="1"]')) {
             localCourseBannerBuilderRenderDraftUploadPreview(form);
+            var restoredDraftLayer = localCourseBannerBuilderGetEditableCurrentPreviewImage(form);
+            var restoredDraftState = localCourseBannerBuilderReadLayerPreviewStateFromLayer(restoredDraftLayer);
+            if (restoredDraftState) {
+                localCourseBannerBuilderWriteCropStateToForm(form, restoredDraftState);
+            }
         } else {
             localCourseBannerBuilderSyncCurrentLayerDataFromForm(form);
             localCourseBannerBuilderSyncLayerBannerPreview(form);
@@ -17162,8 +17312,12 @@ function localCourseBannerBuilderShowHoverPopover(node) {
     popover.id = id;
     popover.className = 'popover local-course-banner-builder-hover-popover ' +
         'local-course-banner-builder-hover-popover--' + payload.placement + ' show';
+    var variant = node.getAttribute('data-local-course-banner-builder-popover-variant') || '';
+    if (variant === 'compact-centered') {
+        popover.classList.add('local-course-banner-builder-hover-popover--compact-centered');
+    }
     popover.setAttribute('role', 'tooltip');
-    popover.setAttribute('aria-hidden', 'true');
+    popover.setAttribute('aria-hidden', 'false');
 
     var arrow = document.createElement('div');
     arrow.className = 'popover-arrow';
@@ -17203,19 +17357,13 @@ function localCourseBannerBuilderHandlePopoverMouseLeave(event) {
 }
 
 function localCourseBannerBuilderHandlePopoverFocus(event) {
-    localCourseBannerBuilderHideHoverPopover(event.currentTarget);
-    if (event.currentTarget && event.currentTarget.blur) {
-        event.currentTarget.blur();
-    }
+    localCourseBannerBuilderShowHoverPopover(event.currentTarget);
 }
 
 function localCourseBannerBuilderHandlePopoverClick(event) {
     localCourseBannerBuilderHideHoverPopover(event.currentTarget);
     if (event.currentTarget && !event.currentTarget.hasAttribute('data-action')) {
         event.preventDefault();
-    }
-    if (event.currentTarget && event.currentTarget.blur) {
-        event.currentTarget.blur();
     }
 }
 
@@ -17251,8 +17399,15 @@ function localCourseBannerBuilderBindDelegatedPopovers() {
     document.addEventListener('focusin', function (event) {
         var trigger = localCourseBannerBuilderGetPopoverTrigger(event.target);
         if (trigger) {
-            localCourseBannerBuilderHideHoverPopover(trigger);
+            localCourseBannerBuilderShowHoverPopover(trigger);
         }
+    }, true);
+    document.addEventListener('focusout', function (event) {
+        var trigger = localCourseBannerBuilderGetPopoverTrigger(event.target);
+        if (!trigger || (event.relatedTarget && trigger.contains(event.relatedTarget))) {
+            return;
+        }
+        localCourseBannerBuilderHideHoverPopover(trigger);
     }, true);
 }
 
@@ -17309,9 +17464,6 @@ function localCourseBannerBuilderDismissOpenPopovers(activeElement) {
                 describedNode.remove();
             }
             activeElement.removeAttribute('aria-describedby');
-        }
-        if (activeElement.blur) {
-            activeElement.blur();
         }
     }
     Array.prototype.slice.call(document.querySelectorAll('.local-course-banner-builder-hover-popover')).forEach(function (popover) {
@@ -18158,6 +18310,8 @@ function localCourseBannerBuilderDeleteSelectedLayers(button) {
     });
 }
 
+var localCourseBannerBuilderAccordionSequence = 0;
+
 function localCourseBannerBuilderEnhanceAccordions(root) {
     Array.prototype.slice.call((root || document).querySelectorAll([
         'details.local-course-banner-builder-upload-accordion',
@@ -18168,6 +18322,26 @@ function localCourseBannerBuilderEnhanceAccordions(root) {
         if (!summary) {
             return;
         }
+        var content = details.querySelector(':scope > .local-course-banner-builder-accordion-content');
+        if (!content) {
+            content = document.createElement('div');
+            content.className = 'local-course-banner-builder-accordion-content';
+            var child = summary.nextSibling;
+            while (child) {
+                var next = child.nextSibling;
+                content.appendChild(child);
+                child = next;
+            }
+            details.appendChild(content);
+        }
+        if (!content.id) {
+            localCourseBannerBuilderAccordionSequence += 1;
+            content.id = 'local-course-banner-builder-accordion-content-' +
+                String(localCourseBannerBuilderAccordionSequence);
+        }
+        summary.setAttribute('aria-controls', content.id);
+        summary.setAttribute('aria-expanded', details.hasAttribute('open') ? 'true' : 'false');
+        content.hidden = !details.hasAttribute('open');
         var icon = summary.querySelector('[data-accordion-chevron="1"], [data-local-details-toggle-icon="1"], .icons-collapse-expand');
         if (!icon) {
             icon = document.createElement('span');
@@ -18193,8 +18367,36 @@ function localCourseBannerBuilderEnhanceAccordions(root) {
                     toggleIcon.style.removeProperty('transform');
                     toggleIcon.classList.toggle('collapsed', !details.hasAttribute('open'));
                 }
+                summary.setAttribute('aria-expanded', details.hasAttribute('open') ? 'true' : 'false');
+                if (!details.dataset.accordionMotionActive) {
+                    content.hidden = !details.hasAttribute('open');
+                }
             });
             details.dataset.chevronBound = '1';
+        }
+        if (!details.dataset.accordionMotionBound) {
+            summary.addEventListener('click', function (event) {
+                event.preventDefault();
+                var opening = !details.hasAttribute('open');
+                details.dataset.accordionMotionActive = '1';
+                if (opening) {
+                    details.setAttribute('open', 'open');
+                    content.hidden = false;
+                    Motion.expand(content).then(function () {
+                        delete details.dataset.accordionMotionActive;
+                        summary.setAttribute('aria-expanded', 'true');
+                    });
+                    return;
+                }
+                Motion.collapse(content).then(function (completed) {
+                    if (completed) {
+                        details.removeAttribute('open');
+                    }
+                    delete details.dataset.accordionMotionActive;
+                    summary.setAttribute('aria-expanded', details.hasAttribute('open') ? 'true' : 'false');
+                });
+            });
+            details.dataset.accordionMotionBound = '1';
         }
     });
 }
@@ -18390,6 +18592,198 @@ function localCourseBannerBuilderLoadLayerModal(url, modalId) {
     });
 }
 
+function localCourseBannerBuilderGetStickyLayoutTop(element) {
+    var top = 0;
+    var current = element;
+    while (current) {
+        top += current.offsetTop || 0;
+        current = current.offsetParent;
+    }
+    return top;
+}
+
+/**
+ * Find the scroll container that actually moves the administration page.
+ * Moodle may keep the document at scrollY=0 while an inner layout shell
+ * owns the vertical scroll position.
+ *
+ * @param {HTMLElement} element Sticky holder.
+ * @return {Element} Scroll container or the document scrolling element.
+ */
+function localCourseBannerBuilderGetStickyScrollContainer(element) {
+    var current = element ? element.parentElement : null;
+    while (current && current !== document.body) {
+        var style = window.getComputedStyle(current);
+        var scrollable = /(auto|scroll|overlay)/.test(style.overflowY) &&
+            current.scrollHeight > current.clientHeight + 1;
+        if (scrollable) {
+            return current;
+        }
+        current = current.parentElement;
+    }
+    return document.scrollingElement || document.documentElement;
+}
+
+/**
+ * Read the current scroll position for a document or nested scroll shell.
+ *
+ * @param {Element} container Scroll container.
+ * @return {number} Current vertical scroll offset.
+ */
+function localCourseBannerBuilderGetStickyScrollTop(container) {
+    if (!container || container === document.scrollingElement ||
+            container === document.documentElement || container === document.body) {
+        return window.scrollY || document.documentElement.scrollTop || 0;
+    }
+    return container.scrollTop || 0;
+}
+
+/**
+ * Return the viewport top of a holder's original anchor.
+ *
+ * @param {HTMLElement} holder Sticky holder.
+ * @param {Element} container Scroll container.
+ * @param {number} anchorContentTop Anchor position in the container content.
+ * @return {number} Anchor viewport top.
+ */
+function localCourseBannerBuilderGetStickyAnchorViewportTop(holder, container, anchorContentTop) {
+    var scrollTop = localCourseBannerBuilderGetStickyScrollTop(container);
+    if (!container || container === document.scrollingElement ||
+            container === document.documentElement || container === document.body) {
+        return anchorContentTop - scrollTop;
+    }
+    return container.getBoundingClientRect().top + anchorContentTop - scrollTop;
+}
+
+/**
+ * Reserve the live Moodle block-drawer toggle while the selected-source tray
+ * occupies the viewport. The toggle is theme-owned, so measure its current
+ * viewport footprint instead of assuming a fixed offset.
+ *
+ * @return {number} Right-side space in CSS pixels.
+ */
+function localCourseBannerBuilderGetStickyRightDrawerSpace() {
+    var toggle = document.querySelector('.drawer-toggles .drawer-right-toggle');
+    if (!toggle) {
+        return 0;
+    }
+    var style = window.getComputedStyle(toggle);
+    var rect = toggle.getBoundingClientRect();
+    var viewportWidth = document.documentElement.clientWidth || window.innerWidth;
+    if (style.display === 'none' || style.visibility === 'hidden' || rect.width <= 0 ||
+            rect.right <= 0 || rect.left >= viewportWidth) {
+        return 0;
+    }
+    return Math.min(viewportWidth, Math.max(0, viewportWidth - rect.left + 28));
+}
+
+/**
+ * Return the placeholder that preserves the selected-source holder's natural
+ * place in the administration layout while its live control is in the body
+ * portal.
+ *
+ * @return {HTMLElement|null} Sticky placeholder, when present.
+ */
+function localCourseBannerBuilderGetStickyPlaceholder() {
+    return document.getElementById('local-course-banner-builder-selected-source-sticky-placeholder');
+}
+
+/**
+ * Restore the selected-source holder to its source-layout position.
+ *
+ * @param {HTMLElement} holder Sticky holder.
+ * @param {HTMLElement} header Sticky header.
+ */
+function localCourseBannerBuilderRestoreStickyHeader(holder, header) {
+    var placeholder = localCourseBannerBuilderGetStickyPlaceholder();
+    if (holder.dataset.stickyState === 'inline' && holder.dataset.stickyPortal !== '1') {
+        return;
+    }
+    if (holder.dataset.stickyPortal === '1' && placeholder && placeholder.parentNode) {
+        placeholder.parentNode.replaceChild(holder, placeholder);
+    }
+    holder.classList.remove('focus-navigation-buttons-holder--floating');
+    holder.classList.remove('local-course-banner-builder-selected-source-sticky-holder--portal');
+    header.classList.remove('focus-navigation-buttons--floating');
+    delete holder.dataset.stickyPortal;
+    holder.style.left = '';
+    holder.style.right = '';
+    holder.style.width = '';
+    holder.style.top = '';
+    holder.style.bottom = '';
+    holder.style.minHeight = '';
+    header.style.left = '';
+    header.style.right = '';
+    header.style.width = '';
+    header.style.top = '';
+    header.style.setProperty('--local-course-banner-builder-sticky-header-right-space', '0px');
+    holder.dataset.stickyState = 'inline';
+    if (document.body.style.getPropertyValue('--local-course-banner-builder-sticky-header-space') !== '0px') {
+        document.body.style.setProperty('--local-course-banner-builder-sticky-header-space', '0px');
+    }
+}
+
+/**
+ * Move the selected-source holder to the body while it is sticky. The portal
+ * avoids transformed administration containers constraining position: fixed
+ * and lets the tray use the actual viewport width.
+ *
+ * @param {HTMLElement} holder Sticky holder.
+ * @param {HTMLElement} header Sticky header.
+ * @param {number} top Viewport top offset below the Moodle navigation.
+ * @param {number} viewportWidth Available viewport width.
+ */
+function localCourseBannerBuilderFloatStickyHeader(holder, header, top, viewportWidth) {
+    var placeholder = localCourseBannerBuilderGetStickyPlaceholder();
+    if (holder.dataset.stickyPortal !== '1') {
+        var holderStyle = window.getComputedStyle(holder);
+        placeholder = document.createElement('div');
+        placeholder.id = 'local-course-banner-builder-selected-source-sticky-placeholder';
+        placeholder.className = 'local-course-banner-builder-selected-source-sticky-placeholder';
+        placeholder.setAttribute('aria-hidden', 'true');
+        // Preserve the natural block footprint before the floating class
+        // removes its top margin. Without these margins the replacement shifts
+        // the threshold sentinel and can make the tray restore immediately.
+        placeholder.style.marginTop = holderStyle.marginTop;
+        placeholder.style.marginBottom = holderStyle.marginBottom;
+        holder.parentNode.insertBefore(placeholder, holder);
+        document.body.appendChild(holder);
+        holder.dataset.stickyPortal = '1';
+    }
+    if (placeholder) {
+        placeholder.style.height = header.offsetHeight + 'px';
+    }
+    holder.classList.add('focus-navigation-buttons-holder--floating');
+    holder.classList.add('local-course-banner-builder-selected-source-sticky-holder--portal');
+    header.classList.add('focus-navigation-buttons--floating');
+    holder.style.left = '0px';
+    holder.style.right = '';
+    holder.style.width = viewportWidth + 'px';
+    holder.style.top = top + 'px';
+    holder.style.bottom = 'auto';
+    holder.style.minHeight = '';
+    header.style.left = '';
+    header.style.right = '';
+    header.style.width = '100%';
+    header.style.top = '';
+    header.style.setProperty(
+        '--local-course-banner-builder-sticky-header-right-space',
+        localCourseBannerBuilderGetStickyRightDrawerSpace() + 'px'
+    );
+    holder.dataset.stickyState = 'stuck';
+    var stickySpace = header.offsetHeight + 'px';
+    // The portal layout can increase the tray height (notably when narrow
+    // screens stack the source title and Deselect action). Update the
+    // placeholder only after those classes/styles are live, otherwise its
+    // temporary shorter footprint moves its own threshold anchor.
+    if (placeholder) {
+        placeholder.style.height = stickySpace;
+    }
+    if (document.body.style.getPropertyValue('--local-course-banner-builder-sticky-header-space') !== stickySpace) {
+        document.body.style.setProperty('--local-course-banner-builder-sticky-header-space', stickySpace);
+    }
+}
+
 function localCourseBannerBuilderSyncStickyHeader() {
     var holder = document.querySelector('.local-course-banner-builder-selected-source-sticky-holder');
     var header = document.querySelector('.local-course-banner-builder-selected-source-sticky');
@@ -18403,105 +18797,42 @@ function localCourseBannerBuilderSyncStickyHeader() {
     if (!holder || !header) {
         return;
     }
-    var snapOffset = 2;
-    var nav = document.querySelector('.navbar.fixed-top, header.fixed-top, #page-header.fixed-top');
-    var navbottom = nav ? Math.max(0, nav.getBoundingClientRect().bottom) : 0;
-    var top = navbottom;
-    var breadcrumbbottom = navbottom;
-    if (breadcrumbnav) {
-        breadcrumbbottom = Math.max(navbottom, breadcrumbnav.getBoundingClientRect().bottom);
-        top = Math.max(navbottom, breadcrumbbottom - snapOffset);
-    }
+    // The CSS sticky rule is only a no-JavaScript fallback. Once the runtime
+    // owns this holder, the explicit inline/stuck state below is its sole
+    // positioning authority; native container sticky must not compete with
+    // the body-level portal around the threshold.
+    document.documentElement.dataset.localCourseBannerBuilderStickyRuntime = '1';
+    // A four-pixel entry allowance absorbs Moodle's fractional scroll/layout
+    // rounding at ordinary and native-zoom viewports. The larger release
+    // offset below preserves a deliberate hysteresis band for upward scroll.
+    var enterOffset = 4;
+    var releaseOffset = 12;
+    var isStuck = holder.dataset.stickyState === 'stuck' || holder.dataset.stickyPortal === '1';
 
-    if (!holder.dataset.stickyAnchorTop) {
-        holder.dataset.stickyAnchorTop = String(holder.getBoundingClientRect().top + window.scrollY);
-    }
-    var anchortop = parseFloat(holder.dataset.stickyAnchorTop || '0');
-    var shouldFloat = (anchortop - window.scrollY) <= (breadcrumbbottom + snapOffset);
-
+    // Prefer the fixed Moodle navigation. #page-navbar can be a normal-flow
+    // ancestor on some Boost layouts and then reports a scrolling, negative
+    // viewport edge instead of the live navigation edge.
+    var navbar = document.querySelector('.navbar.fixed-top') ||
+        document.querySelector('header.fixed-top') ||
+        document.querySelector('#page-header.fixed-top') ||
+        document.querySelector('#page-navbar');
+    var top = navbar ? Math.max(0, navbar.getBoundingClientRect().bottom) : 0;
+    // Once the holder is portaled into body, its own rectangle is fixed. Its
+    // placeholder stays in the original scroll layout, so it is the stable
+    // threshold sentinel across nested Moodle scroll containers and restores.
+    var placeholder = localCourseBannerBuilderGetStickyPlaceholder();
+    var anchor = isStuck && holder.dataset.stickyPortal === '1' && placeholder ?
+        placeholder : holder;
+    var anchorViewportTop = anchor.getBoundingClientRect().top;
+    var thresholdOffset = isStuck ?
+        releaseOffset : enterOffset;
+    var shouldFloat = Number.isFinite(anchorViewportTop) && anchorViewportTop <= top + thresholdOffset;
     if (!shouldFloat) {
-        holder.classList.remove('focus-navigation-buttons-holder--floating');
-        header.classList.remove('focus-navigation-buttons--floating');
-        holder.style.left = '';
-        holder.style.right = '';
-        holder.style.width = '';
-        holder.style.top = '';
-        holder.style.bottom = '';
-        holder.style.minHeight = '0px';
-        header.style.left = '';
-        header.style.right = '';
-        header.style.width = '';
-        header.style.top = '';
-        if (document.body.style.getPropertyValue('--local-course-banner-builder-sticky-header-space') !== '0px') {
-            document.body.style.setProperty('--local-course-banner-builder-sticky-header-space', '0px');
-        }
+        localCourseBannerBuilderRestoreStickyHeader(holder, header);
         return;
     }
-    var rightSpace = 0;
-    var page = document.getElementById('page');
-    var rightDrawerOpen = document.body.classList.contains('drawer-open-right') ||
-        (page && page.classList.contains('show-drawer-right'));
-    var rightDrawerSelectors = [
-        '#theme_boost-drawers-blocks',
-        '#theme_boost-drawers-blocks.show',
-        '.drawer.drawer-right',
-        '.drawer.drawer-right.show',
-        '[data-region="right-hand-drawer"]:not(.hidden)',
-        '[data-region="right-hand-drawer"].drawer.show',
-        '[data-region="right-hand-drawer"].drawer'
-    ];
-    rightDrawerSelectors.forEach(function (selector) {
-        var drawer = document.querySelector(selector);
-        if (!drawer) {
-            return;
-        }
-        var rect = drawer.getBoundingClientRect();
-        var style = window.getComputedStyle(drawer);
-        var visible = rect.width > 0 &&
-            rect.right > 0 &&
-            rect.left < window.innerWidth &&
-            style.display !== 'none' &&
-            style.visibility !== 'hidden' &&
-            !drawer.classList.contains('hidden');
-        if (visible) {
-            rightSpace = Math.max(0, window.innerWidth - rect.left);
-        } else if (rightDrawerOpen) {
-            rightSpace = Math.max(rightSpace, drawer.offsetWidth || rect.width || 0);
-        }
-    });
-    holder.classList.add('focus-navigation-buttons-holder--floating');
-    header.classList.add('focus-navigation-buttons--floating');
-    var left = 0;
-    var rightBoundary = window.innerWidth;
-    var rightDrawerToggle = document.querySelector(
-        '.drawer-toggler.drawer-right-toggle, button[data-toggler="drawers"][data-target="theme_boost-drawers-blocks"]'
-    );
-    if (rightDrawerToggle) {
-        var toggleRect = rightDrawerToggle.getBoundingClientRect();
-        var toggleVisible = toggleRect.width > 0 && toggleRect.height > 0 && toggleRect.left < window.innerWidth;
-        if (toggleVisible) {
-            rightBoundary = Math.min(rightBoundary, Math.max(left, toggleRect.left - 12));
-        }
-    }
-    if (rightSpace > 0) {
-        rightBoundary = Math.min(rightBoundary, window.innerWidth - rightSpace);
-    }
-    var width = Math.max(0, rightBoundary - left);
-    holder.style.left = left + 'px';
-    holder.style.right = '';
-    holder.style.width = width + 'px';
-    holder.style.top = top + 'px';
-    holder.style.bottom = 'auto';
-    header.style.left = '';
-    header.style.right = '';
-    header.style.width = '100%';
-    header.style.top = '';
-    header.style.setProperty('--local-course-banner-builder-sticky-header-right-space', '0px');
-    holder.style.minHeight = header.offsetHeight + 'px';
-    var stickySpace = header.offsetHeight + 'px';
-    if (document.body.style.getPropertyValue('--local-course-banner-builder-sticky-header-space') !== stickySpace) {
-        document.body.style.setProperty('--local-course-banner-builder-sticky-header-space', stickySpace);
-    }
+    var viewportWidth = document.documentElement.clientWidth || window.innerWidth;
+    localCourseBannerBuilderFloatStickyHeader(holder, header, top, viewportWidth);
 }
 
 function localCourseBannerBuilderRunInitStep(label, callback) {
@@ -18630,6 +18961,21 @@ localCourseBannerBuilderOnReady(function () {
         });
         document.documentElement.dataset.localCourseBannerBuilderFilmstripResizeBound = '1';
     }
+    if (!document.documentElement.dataset.localCourseBannerBuilderStickyScrollBound) {
+        var stickySyncFrame = null;
+        var scheduleStickySync = function () {
+            if (stickySyncFrame !== null) {
+                return;
+            }
+            stickySyncFrame = window.requestAnimationFrame(function () {
+                stickySyncFrame = null;
+                localCourseBannerBuilderSyncStickyHeader();
+            });
+        };
+        window.addEventListener('scroll', scheduleStickySync, {passive: true});
+        document.addEventListener('scroll', scheduleStickySync, {capture: true, passive: true});
+        document.documentElement.dataset.localCourseBannerBuilderStickyScrollBound = '1';
+    }
     localCourseBannerBuilderSyncStickyHeader();
     Array.prototype.slice.call(document.querySelectorAll('[data-source-dropdown]')).forEach(function (dropdown) {
         localCourseBannerBuilderSyncSourceDropdownButton(dropdown);
@@ -18669,7 +19015,6 @@ localCourseBannerBuilderOnReady(function () {
         localCourseBannerBuilderSyncBorderPreview();
         localCourseBannerBuilderSyncLayerBannerPreview();
     }, {passive: true});
-    window.addEventListener('scroll', localCourseBannerBuilderSyncStickyHeader, {passive: true});
     if (typeof MutationObserver !== 'undefined') {
         var drawerObserver = new MutationObserver(localCourseBannerBuilderSyncStickyHeader);
         var body = document.body;

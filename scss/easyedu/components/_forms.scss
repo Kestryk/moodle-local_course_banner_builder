@@ -8,6 +8,7 @@
 // --easyedu-surface, --easyedu-dropdown-border, --easyedu-dropdown-radius,
 // --easyedu-dropdown-shadow.
 @use "feedback";
+@use "focus";
 
 @mixin dropdown-menu {
   background: var(--easyedu-surface);
@@ -50,8 +51,7 @@
   }
 
   &:focus-within {
-    border-color: var(--easyedu-control-focus-border);
-    box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring);
+    @include focus.ring($border-color: var(--easyedu-control-focus-border));
   }
 }
 
@@ -198,8 +198,7 @@
   }
 
   .easyedu-segmented-choice__input:focus-visible + .easyedu-segmented-choice__surface {
-    border-color: var(--easyedu-control-focus-border);
-    box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring);
+    @include focus.ring($border-color: var(--easyedu-control-focus-border));
   }
 
   .easyedu-segmented-choice__input:checked + .easyedu-segmented-choice__surface {
@@ -361,9 +360,7 @@
 
   &:focus,
   &:focus-visible {
-    border-color: var(--easyedu-control-focus-border);
-    box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring);
-    outline: 0;
+    @include focus.ring($border-color: var(--easyedu-control-focus-border));
   }
 
   &:disabled,
@@ -510,7 +507,7 @@
 
   input:focus-visible + .easyedu-selection-checkbox__ui,
   input:focus-visible + span {
-    box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring);
+    @include focus.ring;
   }
 
   input:disabled + .easyedu-selection-checkbox__ui,
@@ -573,11 +570,18 @@
   }
 
   &:hover,
-  &:focus-within,
   &.is-drag-over {
     background: #fff;
     border-color: var(--easyedu-accent);
-    box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring-accent);
+  }
+
+  &:focus-within {
+    @include focus.ring(
+      $color: var(--easyedu-focus-ring-accent),
+      $border-color: var(--easyedu-accent)
+    );
+
+    background: #fff;
   }
 }
 
@@ -609,8 +613,7 @@
     box-shadow var(--easyedu-motion-fast) ease;
 
   &:focus-within {
-    border-color: var(--easyedu-control-focus-border);
-    box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring);
+    @include focus.ring($border-color: var(--easyedu-control-focus-border));
   }
 }
 
@@ -703,8 +706,7 @@
   }
 
   &:focus-within {
-    border-color: var(--easyedu-control-focus-border);
-    box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring);
+    @include focus.ring($border-color: var(--easyedu-control-focus-border));
   }
 }
 

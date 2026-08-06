@@ -1,0 +1,63 @@
+/* stylelint-disable -- Narrow native-zoom modal containment needs scoped overrides. */
+// This file is imported after the EasyEdu adapter. It therefore takes effect
+// only for CCB dynamic layer modals when native browser zoom leaves a very
+// narrow CSS viewport; shared Kit modal defaults remain unchanged.
+
+@media (max-width: 575.98px) {
+    .modal[id^="local-course-banner-builder-"] .local-course-banner-builder-layer-modal-dialog {
+        width: calc(100vw - 1rem);
+        max-width: calc(100vw - 1rem);
+        height: calc(100vh - 0.5rem);
+        max-height: calc(100vh - 0.5rem);
+        margin-top: 0.25rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .modal[id^="local-course-banner-builder-"]
+        .local-course-banner-builder-layer-modal-content
+        .local-course-banner-builder-layer-modal-body {
+        padding-right: 0.5rem;
+        padding-left: 0.5rem;
+    }
+
+    .modal[id^="local-course-banner-builder-"]
+        .local-course-banner-builder-layer-modal-body
+        > form.local-course-banner-builder-has-preview-proxy {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        padding-right: 0;
+        padding-left: 0;
+        margin-right: 0;
+        margin-left: 0;
+    }
+
+    .modal[id^="local-course-banner-builder-"]
+        .local-course-banner-builder-layer-modal-body
+        > form.local-course-banner-builder-has-preview-proxy
+        > .local-course-banner-builder-modal-preview-action-list,
+    .modal[id^="local-course-banner-builder-"]
+        .local-course-banner-builder-layer-modal-body
+        > form.local-course-banner-builder-has-preview-proxy
+        .local-course-banner-builder-banner-preview-panel {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        margin-right: 0;
+        margin-left: 0;
+    }
+}
+
+// A 390px device at native 200% exposes about 195 CSS pixels. At that size,
+// preserving decorative outer margins costs a meaningful part of the editing
+// surface, so use the modal viewport itself while leaving ordinary mobile
+// presentation unchanged.
+@media (max-width: 240px) {
+    .modal[id^="local-course-banner-builder-"] .local-course-banner-builder-layer-modal-dialog {
+        width: 100vw;
+        max-width: 100vw;
+        height: 100vh;
+        max-height: 100vh;
+        margin: 0;
+    }
+}

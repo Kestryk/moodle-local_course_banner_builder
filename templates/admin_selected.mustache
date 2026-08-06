@@ -72,7 +72,7 @@
                                                                 data-value="{{value}}"
                                                                 data-label="{{label}}"
                                                                 data-search="{{label}}">
-                                                                {{label}}
+                                                                <span class="local-course-banner-builder-source-option-label">{{label}}</span>
                                                             </button>
                                                         {{/options}}
                                                     </div>
@@ -208,6 +208,7 @@
                                     class="btn btn-link p-0 icon-no-margin local-course-banner-builder-table-help-icon"
                                     data-container="body"
                                     data-toggle="popover"
+                                    data-local-course-banner-builder-popover-variant="compact-centered"
                                     data-placement="top"
                                     data-content="<div class=&quot;no-overflow&quot;><p>{{#str}}sortorder_help, local_course_banner_builder{{/str}}</p></div>"
                                     data-html="true"
@@ -228,94 +229,115 @@
                     {{#elements}}
                         <tr class="{{rowclass}}" data-layer-row="1" {{#iscumulative}}{{#isreorderable}}draggable="true"{{/isreorderable}}{{/iscumulative}}>
                             <td class="local-course-banner-builder-layer-select-cell">
-                                {{#iscumulative}}
-                                    {{#isreorderable}}
-                                    <i class="icon fa fa-arrows fa-fw local-course-banner-builder-drag-corner" title="{{#str}}dragreorderlayer, local_course_banner_builder{{/str}}" aria-hidden="true"></i>
+                                <span class="local-course-banner-builder-layer-row-identity">
+                                    {{#iscumulative}}{{#isreorderable}}
+                                    <span class="local-course-banner-builder-drag-corner" title="{{#str}}dragreorderlayer, local_course_banner_builder{{/str}}" aria-hidden="true"></span>
+                                    <span class="local-course-banner-builder-layer-type-icon local-course-banner-builder-layer-type-icon--image" role="img" aria-label="{{#str}}bannerimage, local_course_banner_builder{{/str}}"><i class="icon fa fa-image fa-fw" aria-hidden="true"></i></span>
+                                    {{/isreorderable}}{{/iscumulative}}
+                                    {{^isreorderable}}
+                                    <span class="local-course-banner-builder-layer-type-icon" role="img" aria-label="{{#isborderlayer}}{{#str}}bordertitle, local_course_banner_builder{{/str}}{{/isborderlayer}}{{#isoverlaylayer}}{{#str}}overlaytitle, local_course_banner_builder{{/str}}{{/isoverlaylayer}}{{^isborderlayer}}{{^isoverlaylayer}}{{#str}}bannerimage, local_course_banner_builder{{/str}}{{/isoverlaylayer}}{{/isborderlayer}}">
+                                        {{#isborderlayer}}<i class="icon fa fa-square-o fa-fw" aria-hidden="true"></i>{{/isborderlayer}}
+                                        {{#isoverlaylayer}}<i class="icon fa fa-adjust fa-fw" aria-hidden="true"></i>{{/isoverlaylayer}}
+                                        {{^isborderlayer}}{{^isoverlaylayer}}<i class="icon fa fa-image fa-fw" aria-hidden="true"></i>{{/isoverlaylayer}}{{/isborderlayer}}
+                                    </span>
                                     {{/isreorderable}}
-                                {{/iscumulative}}
-                                {{#hasorderlockhelp}}
-                                <a class="btn btn-link p-0 icon-no-margin local-course-banner-builder-lock-help{{#isborderlayer}} local-course-banner-builder-lock-help--border{{/isborderlayer}}{{#isoverlaylayer}} local-course-banner-builder-lock-help--overlay{{/isoverlaylayer}}{{#isdynamiclayer}} local-course-banner-builder-lock-help--dynamic{{/isdynamiclayer}}{{#isaboveoverlaylayer}} local-course-banner-builder-lock-help--overlay-top{{/isaboveoverlaylayer}}{{#isbelowinheritedlayer}} local-course-banner-builder-lock-help--below-inherited{{/isbelowinheritedlayer}}{{#isaboveinheritedlayer}} local-course-banner-builder-lock-help--above-inherited{{/isaboveinheritedlayer}}"
-                                   role="button"
-                                   data-container="body"
-                                   data-toggle="popover"
-                                   data-placement="right"
-                                   data-content="{{orderlockpopovercontent}}"
-                                   data-html="true"
-                                   data-trigger="hover"
-                                   tabindex="0"
-                                   aria-label="{{orderlocklabel}}">
-                                <i class="icon fa {{orderlockicon}} fa-fw" role="img" aria-label="{{orderlocklabel}}"></i>
-                                </a>
-                                {{/hasorderlockhelp}}
-                                <input class="local-course-banner-builder-layer-select" type="checkbox" name="selectedelements[]" value="{{id}}" form="local-course-banner-builder-bulk-delete">
+                                    {{^iscumulative}}{{#isreorderable}}
+                                    <span class="local-course-banner-builder-layer-type-icon" role="img" aria-label="{{#str}}bannerimage, local_course_banner_builder{{/str}}"><i class="icon fa fa-image fa-fw" aria-hidden="true"></i></span>
+                                    {{/isreorderable}}{{/iscumulative}}
+                                </span>
+                                <label class="local-course-banner-builder-selection-checkbox local-course-banner-builder-selection-checkbox--small" aria-label="{{#str}}select, core{{/str}}: {{name}}">
+                                    <input class="local-course-banner-builder-layer-select" type="checkbox" name="selectedelements[]" value="{{id}}" form="local-course-banner-builder-bulk-delete" aria-label="{{#str}}select, core{{/str}}: {{name}}">
+                                    <span class="easyedu-selection-checkbox__ui" aria-hidden="true"></span>
+                                </label>
                             </td>
-                            <td class="local-course-banner-builder-layer-preview-cell {{#hasbordersummary}}local-course-banner-builder-layer-preview-cell--border{{/hasbordersummary}}{{#hasoverlaysummary}} local-course-banner-builder-layer-preview-cell--border{{/hasoverlaysummary}}">
+                            <td class="local-course-banner-builder-layer-preview-cell {{#hasbordersummary}}local-course-banner-builder-layer-preview-cell--border{{/hasbordersummary}}{{#hasoverlaysummary}} local-course-banner-builder-layer-preview-cell--overlay{{/hasoverlaysummary}}">
                                 <input class="local-course-banner-builder-sort-input" type="hidden" name="sortorder_inline[{{id}}]" value="{{sortorder}}" form="local-course-banner-builder-bulk-update">
-                                <span class="local-course-banner-builder-sort-position" data-sort-display>
-                                    {{#hasorderlockhelp}}&mdash;{{/hasorderlockhelp}}{{^hasorderlockhelp}}{{sortorder}}{{/hasorderlockhelp}}
+                                <span class="local-course-banner-builder-layer-order-state">
+                                    <span class="local-course-banner-builder-sort-position" data-sort-display>
+                                        {{#hasorderlockhelp}}&mdash;{{/hasorderlockhelp}}{{^hasorderlockhelp}}{{sortorder}}{{/hasorderlockhelp}}
+                                    </span>
+                                    {{#hasorderlockhelp}}
+                                    <a class="btn btn-link p-0 icon-no-margin local-course-banner-builder-lock-help{{#isborderlayer}} local-course-banner-builder-lock-help--border{{/isborderlayer}}{{#isoverlaylayer}} local-course-banner-builder-lock-help--overlay{{/isoverlaylayer}}{{#isdynamiclayer}} local-course-banner-builder-lock-help--dynamic{{/isdynamiclayer}}{{#isaboveoverlaylayer}} local-course-banner-builder-lock-help--overlay-top{{/isaboveoverlaylayer}}{{#isbelowinheritedlayer}} local-course-banner-builder-lock-help--below-inherited{{/isbelowinheritedlayer}}{{#isaboveinheritedlayer}} local-course-banner-builder-lock-help--above-inherited{{/isaboveinheritedlayer}}"
+                                       role="button"
+                                       data-container="body"
+                                       data-toggle="popover"
+                                       data-placement="right"
+                                       data-content="{{orderlockpopovercontent}}"
+                                       data-html="true"
+                                       data-trigger="hover"
+                                       tabindex="0"
+                                       aria-label="{{orderlocklabel}}">
+                                        <i class="icon fa {{orderlockicon}} fa-fw" aria-hidden="true"></i>
+                                    </a>
+                                    {{/hasorderlockhelp}}
                                 </span>
                             </td>
                             <td>
                                 <input class="form-control form-control-sm" type="text" name="layername_inline[{{id}}]" value="{{name}}" form="local-course-banner-builder-bulk-update">
                             </td>
                             <td class="local-course-banner-builder-layer-enabled-cell">
-                                <input type="checkbox" name="isenabled_inline[{{id}}]" value="1" form="local-course-banner-builder-bulk-update" {{#enabledchecked}}checked{{/enabledchecked}}>
+                                <label class="local-course-banner-builder-selection-checkbox local-course-banner-builder-selection-checkbox--small" aria-label="{{#str}}enabled, local_course_banner_builder{{/str}}: {{name}}">
+                                    <input type="checkbox" name="isenabled_inline[{{id}}]" value="1" form="local-course-banner-builder-bulk-update" {{#enabledchecked}}checked{{/enabledchecked}} aria-label="{{#str}}enabled, local_course_banner_builder{{/str}}: {{name}}">
+                                    <span class="easyedu-selection-checkbox__ui" aria-hidden="true"></span>
+                                </label>
                             </td>
                             <td class="local-course-banner-builder-fit-override-cell {{fitoverridecellclass}}" {{#fitoverridecellstyle}}style="{{fitoverridecellstyle}}"{{/fitoverridecellstyle}}>
-                                {{#showfitoverrideselect}}
-                                    <select class="custom-select custom-select-sm" name="fitmodeoverride_inline[{{id}}]" form="local-course-banner-builder-bulk-update" title="{{fitoverridehelp}}">
-                                        {{#fitoverrideoptions}}
-                                            <option value="{{value}}" {{#selected}}selected{{/selected}} {{#disabled}}disabled{{/disabled}}>{{label}}</option>
-                                        {{/fitoverrideoptions}}
-                                    </select>
-                                {{/showfitoverrideselect}}
-                                {{^showfitoverrideselect}}
-                                    <span class="text-muted">{{fitoverridedisplay}}</span>
-                                {{/showfitoverrideselect}}
-                                {{#hasfitoverride}}
-                                    <details class="local-course-banner-builder-help-bubble local-course-banner-builder-override-help">
-                                        <summary aria-label="{{fitoverridehelp}}">?</summary>
-                                        <div>{{fitoverridehelp}}</div>
+                                <div class="local-course-banner-builder-layer-details-disclosure-shell">
+                                    <details class="local-course-banner-builder-layer-details-accordion">
+                                    <summary>
+                                        <span>{{#str}}fitoverride, local_course_banner_builder{{/str}}</span>
+                                    </summary>
+                                    <div class="local-course-banner-builder-layer-details-accordion-content">
+                                        {{#haslayersummary}}
+                                            <div class="local-course-banner-builder-border-summary">
+                                                <dl class="local-course-banner-builder-border-summary-list">
+                                                    {{#layersummaryitems}}
+                                                        <div>
+                                                            <dt>{{label}}</dt>
+                                                            <dd>{{value}}</dd>
+                                                        </div>
+                                                    {{/layersummaryitems}}
+                                                </dl>
+                                            </div>
+                                        {{/haslayersummary}}
+                                        {{#hasbordersummary}}
+                                            <div class="local-course-banner-builder-border-summary">
+                                                <strong class="local-course-banner-builder-border-summary-title">{{bordersummarytitle}}</strong>
+                                                <dl class="local-course-banner-builder-border-summary-list">
+                                                    {{#bordersummaryitems}}
+                                                        <div>
+                                                            <dt>{{label}}</dt>
+                                                            <dd>{{value}}</dd>
+                                                        </div>
+                                                    {{/bordersummaryitems}}
+                                                </dl>
+                                            </div>
+                                        {{/hasbordersummary}}
+                                        {{#hasoverlaysummary}}
+                                            <div class="local-course-banner-builder-border-summary">
+                                                <strong class="local-course-banner-builder-border-summary-title">{{overlaysummarytitle}}</strong>
+                                                <dl class="local-course-banner-builder-border-summary-list">
+                                                    {{#overlaysummaryitems}}
+                                                        <div>
+                                                            <dt>{{label}}</dt>
+                                                            <dd>{{value}}</dd>
+                                                        </div>
+                                                    {{/overlaysummaryitems}}
+                                                </dl>
+                                            </div>
+                                        {{/hasoverlaysummary}}
+                                    </div>
                                     </details>
-                                {{/hasfitoverride}}
-                                {{#haslayersummary}}
-                                    <div class="local-course-banner-builder-border-summary mt-2">
-                                        <dl class="local-course-banner-builder-border-summary-list">
-                                            {{#layersummaryitems}}
-                                                <div>
-                                                    <dt>{{label}}</dt>
-                                                    <dd>{{value}}</dd>
-                                                </div>
-                                            {{/layersummaryitems}}
-                                        </dl>
-                                    </div>
-                                {{/haslayersummary}}
-                                {{#hasbordersummary}}
-                                    <div class="local-course-banner-builder-border-summary mt-2">
-                                        <strong class="local-course-banner-builder-border-summary-title">{{bordersummarytitle}}</strong>
-                                        <dl class="local-course-banner-builder-border-summary-list">
-                                            {{#bordersummaryitems}}
-                                                <div>
-                                                    <dt>{{label}}</dt>
-                                                    <dd>{{value}}</dd>
-                                                </div>
-                                            {{/bordersummaryitems}}
-                                        </dl>
-                                    </div>
-                                {{/hasbordersummary}}
-                                {{#hasoverlaysummary}}
-                                    <div class="local-course-banner-builder-border-summary mt-2">
-                                        <strong class="local-course-banner-builder-border-summary-title">{{overlaysummarytitle}}</strong>
-                                        <dl class="local-course-banner-builder-border-summary-list">
-                                            {{#overlaysummaryitems}}
-                                                <div>
-                                                    <dt>{{label}}</dt>
-                                                    <dd>{{value}}</dd>
-                                                </div>
-                                            {{/overlaysummaryitems}}
-                                        </dl>
-                                    </div>
-                                {{/hasoverlaysummary}}
+                                    <button type="button"
+                                        class="btn btn-link p-0 icon-no-margin local-course-banner-builder-table-help-icon local-course-banner-builder-layer-details-help"
+                                        data-local-course-banner-builder-hover-popover="1"
+                                        data-local-course-banner-builder-popover-variant="compact-centered"
+                                        data-placement="bottom"
+                                        data-content="{{#str}}layerinfoshelp, local_course_banner_builder{{/str}}"
+                                        aria-label="{{#str}}layerinfoshelp, local_course_banner_builder{{/str}}">
+                                        ?
+                                    </button>
+                                </div>
                             </td>
                             <td class="local-course-banner-builder-layer-render-cell">
                                 {{#haslayerpreviewhtml}}
@@ -437,11 +459,11 @@
                                         data-edit-layer-url="{{editurl}}"
                                         data-edit-layer-modal="{{editmodaltarget}}">
                                         <i class="icon fa fa-pen fa-fw" aria-hidden="true"></i>
-                                        {{editlabel}}
+                                        <span class="local-course-banner-builder-action-label">{{editlabel}}</span>
                                     </button>
                                     <a class="btn btn-danger btn-sm" href="{{deleteurl}}">
                                         <i class="icon fa fa-trash-can fa-fw" aria-hidden="true"></i>
-                                        {{#str}}delete{{/str}}
+                                        <span class="local-course-banner-builder-action-label">{{#str}}delete{{/str}}</span>
                                     </a>
                                 </div>
                             </td>

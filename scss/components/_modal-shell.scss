@@ -7,8 +7,49 @@
         grid-template-columns: 1fr;
     }
 
+    .local-course-banner-builder-source-preview-mode-control {
+        align-items: stretch;
+        justify-content: flex-start;
+    }
+
+    .local-course-banner-builder-source-preview-mode-label,
+    .local-course-banner-builder-source-preview-mode-buttons,
+    .local-course-banner-builder-source-preview-mode-help {
+        flex: 1 0 100%;
+        max-width: none;
+        text-align: left;
+    }
+
+    .local-course-banner-builder-source-preview-mode-buttons {
+        display: flex;
+    }
+
+    .local-course-banner-builder-source-preview-mode-button {
+        flex: 1 1 8rem;
+    }
+
+    .local-course-banner-builder-source-preview-bottom-row {
+        align-items: stretch;
+    }
+
+    .local-course-banner-builder-source-preview-random-notice,
+    .local-course-banner-builder-source-preview-primary-actions {
+        flex: 1 1 100%;
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .local-course-banner-builder-source-preview-primary-actions {
+        flex-direction: column;
+    }
+
+    .local-course-banner-builder-source-preview-primary-actions .local-course-banner-builder-source-preview-button {
+        width: 100%;
+        flex: 1 1 auto;
+    }
+
     .local-course-banner-builder-source-preview-controls {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
     }
 
     .local-course-banner-builder-source-preview-button {

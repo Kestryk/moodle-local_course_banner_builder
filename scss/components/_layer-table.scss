@@ -69,33 +69,3 @@
     justify-content: center;
     gap: 0.35rem;
 }
-
-.local-course-banner-builder-table-help-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex: 0 0 1rem;
-    width: 1rem !important;
-    min-width: 1rem !important;
-    max-width: 1rem !important;
-    height: 1rem !important;
-    min-height: 1rem !important;
-    max-height: 1rem !important;
-    aspect-ratio: 1 / 1;
-    padding: 0 !important;
-    border-radius: 50% !important;
-    background: var(--bs-info, #008196);
-    color: #fff;
-    font-size: 0.62rem;
-    font-weight: 700;
-    line-height: 1;
-    text-decoration: none !important;
-
-    &:hover,
-    &:focus {
-        border-color: #0f6cbf !important;
-        background: #0f6cbf !important;
-        color: #fff !important;
-        text-decoration: none !important;
-    }
-}

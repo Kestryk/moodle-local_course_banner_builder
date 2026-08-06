@@ -1,0 +1,27 @@
+// Shared keyboard-focus geometry for EasyEdu interactive components.
+//
+// Keep the ring outside the hit target and let each component retain its own
+// border radius. Semantic variants change colour only, never thickness.
+
+@mixin ring(
+  $color: var(--easyedu-focus-ring),
+  $border-color: null,
+  $base-shadow: null
+) {
+  @if $border-color != null {
+    border-color: $border-color;
+  }
+
+  @if $base-shadow != null {
+    box-shadow:
+      0 0 0 var(--easyedu-focus-ring-width) $color,
+      $base-shadow;
+  } @else {
+    box-shadow: 0 0 0 var(--easyedu-focus-ring-width) $color;
+  }
+
+  // Forced-colors mode suppresses box shadows and promotes this transparent
+  // outline to a system colour without adding a nested Sass rule.
+  outline: var(--easyedu-focus-outline-width) solid transparent;
+  outline-offset: var(--easyedu-focus-outline-offset);
+}

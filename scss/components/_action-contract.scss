@@ -1,0 +1,370 @@
+/* stylelint-disable -- CCB action contract intentionally spans several preview consumers. */
+// Shared CCB action placement contract. Keep semantic data-action and ARIA
+// attributes in the owning markup/AMD code; this file owns visual alignment.
+
+@use "../easyedu" as easyedu;
+
+.local-course-banner-builder-source-preview-panel,
+.local-course-banner-builder-banner-preview-panel,
+.local-course-banner-builder-slideshow-admin-preview--large {
+    --local-course-banner-builder-action-gap: 0.5rem;
+    --local-course-banner-builder-action-icon-size: 1rem;
+    --local-course-banner-builder-action-height: 2.45rem;
+}
+
+.local-course-banner-builder-source-actions-cell,
+.local-course-banner-builder-layer-actions-cell {
+    --local-course-banner-builder-action-gap: 0.5rem;
+    --local-course-banner-builder-action-icon-size: 1rem;
+}
+
+// Every CCB contextual question uses the Kit's help-icon primitive and its
+// positioned popover surface. Layer rows keep a native details trigger so it
+// remains keyboard-operable without adding a second popover lifecycle.
+.local-course-banner-builder-table-help-icon,
+.local-course-banner-builder-help-bubble > summary {
+    @include easyedu.help-tooltip;
+
+    & {
+        flex: 0 0 1.35rem;
+        width: 1.35rem !important;
+        min-width: 1.35rem !important;
+        max-width: 1.35rem !important;
+        height: 1.35rem !important;
+        min-height: 1.35rem !important;
+        max-height: 1.35rem !important;
+        padding: 0 !important;
+        text-decoration: none !important;
+    }
+
+    &:hover,
+    &:focus-visible {
+        border-color: color-mix(in srgb, var(--easyedu-primary) 44%, #fff 56%) !important;
+        background: color-mix(in srgb, var(--easyedu-primary-soft) 72%, #fff 28%) !important;
+        color: var(--easyedu-primary) !important;
+        text-decoration: none !important;
+    }
+}
+
+.local-course-banner-builder-help-bubble > div {
+    @include easyedu.popover-surface;
+
+    position: absolute;
+    top: calc(100% + 0.45rem);
+    left: 0;
+    z-index: 1095;
+    display: none;
+    width: min(22rem, calc(100vw - 1.5rem));
+    pointer-events: none;
+}
+
+.local-course-banner-builder-help-bubble:hover > div,
+.local-course-banner-builder-help-bubble:focus-within > div {
+    display: block;
+}
+
+// The table is for scanning and reordering layers, not for editing every
+// geometry mode in place. Keep only read-only layer metadata in the native
+// disclosure; sizing controls remain hidden while persisted values stay intact.
+.local-course-banner-builder-fit-override-cell {
+    vertical-align: top;
+}
+
+.local-course-banner-builder-layer-details-disclosure-shell {
+    position: relative;
+    min-width: 0;
+}
+
+.local-course-banner-builder-layer-details-accordion {
+    position: relative;
+    min-width: 0;
+    margin: 0;
+    border: 1px solid color-mix(in srgb, var(--easyedu-primary) 18%, var(--bs-border-color, #dee2e6) 82%);
+    border-radius: 0.6rem;
+    background: color-mix(in srgb, var(--easyedu-primary-soft) 22%, var(--bs-body-bg, #fff) 78%);
+    // The sibling header help bubble escapes the panel through its shell;
+    // the disclosure itself can keep a clean, clipped rounded surface.
+    overflow: clip;
+
+    > summary {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 0.75rem;
+        align-items: center;
+        gap: 0.45rem;
+        min-height: 2.4rem;
+        padding: 0.48rem 3.2rem 0.48rem 0.7rem;
+        color: var(--easyedu-text, var(--bs-body-color, #212529));
+        cursor: pointer;
+        font-size: 0.78rem;
+        font-weight: 720;
+        line-height: 1.2;
+        list-style: none;
+
+        &::-webkit-details-marker {
+            display: none;
+        }
+
+        &::after {
+            width: 0.48rem;
+            height: 0.48rem;
+            border-right: 0.12rem solid currentcolor;
+            border-bottom: 0.12rem solid currentcolor;
+            content: "";
+            transform: rotate(45deg) translateY(-0.12rem);
+            transition: transform var(--easyedu-motion-fast) var(--easyedu-motion-ease);
+        }
+
+        &:hover {
+            background: color-mix(in srgb, var(--easyedu-primary-soft) 48%, var(--bs-body-bg, #fff) 52%);
+        }
+
+        &:focus-visible {
+            outline: 0.16rem solid color-mix(in srgb, var(--easyedu-primary) 52%, transparent);
+            outline-offset: -0.16rem;
+        }
+    }
+
+    &[open] > summary {
+        border-bottom: 1px solid color-mix(in srgb, var(--easyedu-primary) 16%, var(--bs-border-color, #dee2e6) 84%);
+
+        &::after {
+            transform: rotate(225deg) translateY(-0.08rem);
+        }
+    }
+}
+
+.local-course-banner-builder-admin--native .local-course-banner-builder-layer-details-help {
+    position: absolute;
+    top: 0.52rem;
+    right: 0.72rem;
+    display: block;
+    margin: 0;
+}
+
+.local-course-banner-builder-layer-details-accordion-content {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.76rem 0.84rem 0.84rem;
+
+    > .local-course-banner-builder-table-help-icon {
+        justify-self: start;
+    }
+
+    .local-course-banner-builder-border-summary {
+        margin: 0;
+    }
+
+    .local-course-banner-builder-border-summary-list > div {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, auto);
+        column-gap: 0.85rem;
+        row-gap: 0.45rem;
+        align-items: baseline;
+        width: 100%;
+    }
+
+    .local-course-banner-builder-border-summary-list > div + div {
+        margin-top: 0.3rem;
+    }
+
+    .local-course-banner-builder-border-summary-list dt,
+    .local-course-banner-builder-border-summary-list dd {
+        min-width: 0;
+        margin: 0;
+    }
+
+    .local-course-banner-builder-border-summary-list dt {
+        justify-self: start;
+        text-align: start;
+    }
+
+    .local-course-banner-builder-border-summary-list dd {
+        justify-self: end;
+        overflow-wrap: anywhere;
+        text-align: end;
+    }
+}
+
+// A mobile preview changes the canvas frame only. The filmstrip and its
+// visibility row retain the available canvas width so layer selection and
+// action icons do not move or collapse when the mode is toggled.
+.local-course-banner-builder-source-preview-panel[data-source-preview-mode="mobile"]
+    .local-course-banner-builder-source-preview-filmstrip,
+.local-course-banner-builder-source-preview-panel[data-source-preview-mode="mobile"]
+    .local-course-banner-builder-source-preview-visibility-toggle-row {
+    width: min(100%, 1320px);
+    max-width: 100%;
+    margin-inline: auto;
+}
+
+// At genuine browser zoom the effective CSS viewport can be narrower than a
+// single filmstrip control row. Wrap visibility actions inside their owning
+// surface instead of allowing the row to widen the source-preview root.
+@media (max-width: 575.98px) {
+    .local-course-banner-builder-source-preview-visibility-toggle-row {
+        flex-wrap: wrap;
+        justify-content: center;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    .local-course-banner-builder-source-preview-visibility-toggle {
+        flex: 0 0 1.9rem;
+    }
+}
+
+.local-course-banner-builder-source-preview-button,
+.local-course-banner-builder-modal-preview-action-list .local-course-banner-builder-source-preview-button,
+.local-course-banner-builder-slideshow-side-actions .local-course-banner-builder-source-preview-button,
+.local-course-banner-builder-source-chain-preview-actions .local-course-banner-builder-source-preview-button,
+.local-course-banner-builder-source-actions-cell .btn,
+.local-course-banner-builder-source-actions-cell a.btn,
+.local-course-banner-builder-layer-actions-cell .btn,
+.local-course-banner-builder-layer-actions-cell a.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--local-course-banner-builder-action-gap);
+    line-height: 1.2;
+}
+
+.local-course-banner-builder-source-preview-button > .fa,
+.local-course-banner-builder-source-preview-button > .icon,
+.local-course-banner-builder-source-actions-cell .btn > .fa,
+.local-course-banner-builder-source-actions-cell .btn > .icon,
+.local-course-banner-builder-source-actions-cell a.btn > .fa,
+.local-course-banner-builder-source-actions-cell a.btn > .icon,
+.local-course-banner-builder-layer-actions-cell .btn > .fa,
+.local-course-banner-builder-layer-actions-cell .btn > .icon,
+.local-course-banner-builder-layer-actions-cell a.btn > .fa,
+.local-course-banner-builder-layer-actions-cell a.btn > .icon {
+    display: inline-flex;
+    flex: 0 0 var(--local-course-banner-builder-action-icon-size);
+    align-items: center;
+    justify-content: center;
+    width: var(--local-course-banner-builder-action-icon-size);
+    min-width: var(--local-course-banner-builder-action-icon-size);
+    margin-inline: 0 !important;
+    line-height: 1;
+}
+
+.local-course-banner-builder-source-preview-button > span,
+.local-course-banner-builder-source-actions-cell .local-course-banner-builder-action-label,
+.local-course-banner-builder-layer-actions-cell .local-course-banner-builder-action-label {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    text-align: start;
+}
+
+// The side panel is a real container: its buttons share the available width
+// instead of inheriting a single narrow, right-glued column.
+.local-course-banner-builder-modal-preview-action-list {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+    align-items: stretch;
+    width: min(100%, 26rem);
+    max-width: 100%;
+    margin-inline: auto;
+    padding: 0.35rem;
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    border-radius: 0.6rem;
+    background: var(--bs-tertiary-bg, var(--bs-body-bg, #fff));
+
+    .local-course-banner-builder-source-preview-button {
+        min-height: var(--local-course-banner-builder-action-height);
+        height: auto;
+        min-width: 0;
+        max-width: 100%;
+        justify-content: flex-start;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    // The base preview button uses an ellipsis for the dense source list.
+    // In the modal rail that would hide the action name exactly where the
+    // available width can become narrow at native browser zoom.
+    .local-course-banner-builder-source-preview-button > span {
+        margin-inline-start: 0.5rem;
+        overflow: visible;
+        text-overflow: clip;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+}
+
+.modal[id^="local-course-banner-builder-"]
+    .local-course-banner-builder-layer-modal-body
+    form.local-course-banner-builder-has-preview-proxy
+    > .local-course-banner-builder-modal-preview-action-list {
+    width: min(var(--local-course-banner-builder-modal-action-rail-width, 26rem), calc(100% - 2rem));
+    max-width: calc(100% - 2rem);
+    right: clamp(1rem, 2.5vw, 2.5rem);
+    // The desktop rail aligns with the preview frame. Keep its horizontal and
+    // lower breathing room, but do not leave a second visual top gap above the
+    // first action.
+    padding: 0 0.35rem 0.35rem;
+}
+
+// The visible modal disclosure is the action-rail button (the nested native
+// details summary is intentionally hidden by the panel contract). Keep its
+// state chevron at the leading edge, before the type icon, for Image, Border
+// and Overlay alike.
+.local-course-banner-builder-modal-preview-action-list
+    > .local-course-banner-builder-preview-side-accordion-trigger::after {
+    order: -1;
+    margin-left: 0;
+    margin-right: 0.1rem;
+}
+
+// Source and layer list actions use a mirrored icon grid: the leading icon is
+// stable while the visible label is centered across the whole action. The
+// empty final slot deliberately mirrors the icon slot, preventing the label
+// from being displaced when translations differ in length.
+.local-course-banner-builder-source-actions-cell .local-course-banner-builder-action-list {
+    align-items: stretch;
+}
+
+.local-course-banner-builder-source-actions-cell .local-course-banner-builder-action-list .btn,
+.local-course-banner-builder-source-actions-cell .local-course-banner-builder-action-list a.btn,
+.local-course-banner-builder-layer-actions-cell .local-course-banner-builder-action-list .btn,
+.local-course-banner-builder-layer-actions-cell .local-course-banner-builder-action-list a.btn {
+    // The existing Kit secondary-action mixin intentionally declares
+    // inline-flex with a more specific selector. This CCB-only list contract
+    // must supersede it so icon and label occupy their fixed grid slots.
+    display: grid !important;
+    grid-template-columns: var(--local-course-banner-builder-action-icon-size) minmax(0, 1fr) var(--local-course-banner-builder-action-icon-size);
+    column-gap: var(--local-course-banner-builder-action-gap);
+    min-height: 2.25rem;
+    align-items: center;
+    padding-block: 0.48rem;
+    white-space: normal;
+}
+
+.local-course-banner-builder-source-actions-cell .local-course-banner-builder-action-list > * .fa,
+.local-course-banner-builder-source-actions-cell .local-course-banner-builder-action-list > * .icon,
+.local-course-banner-builder-layer-actions-cell .local-course-banner-builder-action-list > * .fa,
+.local-course-banner-builder-layer-actions-cell .local-course-banner-builder-action-list > * .icon {
+    grid-column: 1;
+}
+
+.local-course-banner-builder-source-actions-cell .local-course-banner-builder-action-label,
+.local-course-banner-builder-layer-actions-cell .local-course-banner-builder-action-label {
+    grid-column: 2;
+    text-align: center;
+}
+
+@media (max-width: 991.98px) {
+    .local-course-banner-builder-modal-preview-action-list {
+        grid-template-columns: 1fr;
+        width: 100%;
+    }
+
+    .modal[id^="local-course-banner-builder-"]
+        .local-course-banner-builder-layer-modal-body
+        form.local-course-banner-builder-has-preview-proxy
+        > .local-course-banner-builder-modal-preview-action-list {
+        width: 100%;
+        max-width: 100%;
+        right: auto;
+        padding: 0;
+    }
+}

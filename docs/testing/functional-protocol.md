@@ -126,6 +126,7 @@ Status values:
 | ERR-02 | Server-side validation fails | Localised message and submitted data remain understandable | Behat | Blocked |
 | A11Y-01 | Scan admin root | No serious or critical plugin-region axe violations | Behat/Playwright | Existing smoke |
 | A11Y-02 | Keyboard-only core flow | Focus visible, modal focus restored, non-drag controls work | Manual/Behat | Manual |
+| A11Y-03 | Public banner title replacement | One Moodle-owned primary heading; decorative duplicate hidden; distinct context is secondary; no hidden focusable control | Playwright/manual | Existing opt-in / Manual screen reader |
 | TRF-01 | Export settings and files | Package contains selected supported data | PHPUnit/Behat | Blocked |
 | TRF-02 | Import package into clean site | Data maps safely and missing dependencies are reported | PHPUnit/Behat | Blocked |
 
@@ -177,6 +178,176 @@ Check at minimum:
 Verify the real banner and every applicable preview preserve crop, relative
 position, title frame proportions, border containment, overlay order, and
 slideshow controls.
+
+### Batch 2C DOM-geometry cells
+
+The opt-in CCB geometry specification lives in the shared Playwright harness
+at `local/groupimport/tools/playwright/ccb-banner-geometry.spec.js`. Run each
+format and viewport cell in a separate process; it restores the selected
+format in its `finally` block and asserts the restored value. The following example validates one Moodle 5.1
+desktop cell from that harness directory (credentials remain environment-only):
+
+```powershell
+$env:EASYEDU_CCB_FIXTURE_COURSE_ID = '2'
+$env:EASYEDU_CCB_FORMATS = 'fullwidthtop'
+$env:EASYEDU_CCB_VIEWPORT = 'desktop'
+$env:EASYEDU_CCB_THEME = 'boost'
+$env:EASYEDU_CCB_CAPTURE_SCREENSHOTS = '1'
+$env:EASYEDU_CCB_ARTIFACT_ROOT = '.\artifacts\ccb-batch2c'
+npx --yes node@20 .\node_modules\@playwright\test\cli.js test .\ccb-banner-geometry.spec.js --grep "required format" --reporter=line --workers=1
+```
+
+`EASYEDU_CCB_FORMATS` accepts a comma-separated subset of `standard`,
+`contentwide`, `fullwidthtop`, `fullwidthtopcompact`, and
+`fullwidthtopinset`. `EASYEDU_CCB_VIEWPORT` (or the plural
+`EASYEDU_CCB_VIEWPORTS`) accepts `desktop`, `tablet`, `portrait`, and
+`mobile`. `EASYEDU_CCB_THEME`, when set, is an assertion of the active Moodle
+theme rather than a theme switcher; prepare the target theme before starting a
+cell. Set `EASYEDU_CCB_CAPTURE_SCREENSHOTS` to `1` only for evidence cells;
+the JSON and trace are always retained. Set `EASYEDU_CCB_ARTIFACT_ROOT` to a
+stable, ignored evidence directory when executing separate processes, because
+Playwright clears its normal `test-results` directory before each process.
+
+The specification records `visualViewport.scale` and `devicePixelRatio` as
+diagnostic metadata, but this is not a substitute for browser zoom. A genuine
+200% zoom check must be performed in a headed browser using the browser zoom
+control; do not emulate it with `deviceScaleFactor`.
+
+At narrow effective viewports, including genuine 200% zoom on the 390x844
+cell, the source-preview visibility actions must wrap inside their preview
+surface. The responsive evidence must therefore check both root scroll width
+and descendant containment; a row that widens the visual-editor root is a
+failed cell even when the document itself has no horizontal scrollbar.
+The source-preview surface may use a centered viewport-width treatment below
+576 CSS pixels when the Moodle admin column is narrower than the viewport. This
+is an administration-only containment aid: the frame keeps the server-provided
+format ratio and must not alter public banner geometry.
+CDP captures must scroll the actual source-preview banner frame into the
+viewport before capture and retain the recorded scroll state; a page-top or
+mode-panel-only capture is not visual evidence for the source-preview
+rendering.
+
+### Batch 2F-B.1 genuine 200% continuation
+
+The CCB-owned scenario
+`local/course_banner_builder/tools/playwright/ccb-banner-public-title-accessibility-2fa.spec.js`
+is run through `tools/playwright/run-ccb-2fb1.ps1`. The runner uses the active
+Moodle 5.1 checkout, an external artifact root, an isolated Chrome profile,
+and a named CCB fixture lease. It runs Playwright discovery first and refuses
+to mutate the fixture unless exactly one B2F.1 test is selected.
+
+The stable fixture is course 11 / CMID 12. The source category is disposable
+and dynamically created; it must be removed after the run. The supervised
+runner imports the saved DPAPI credential into the child process; credentials
+must never be configured globally. A passing run must prove native 200% zoom,
+exactly one accessible H1, exactly one contextual H2, correct accessibility
+tree levels, no duplicate heading, no horizontal overflow, the 128px public
+minimum, no unexpected runtime errors, and complete cleanup.
+
+The approved passing evidence is run
+`ccb-2fb1-supervised-20260727T143916775Z-9640` under
+`%LOCALAPPDATA%\EasyEdu\artifacts\ccb\public-title-accessibility\supervised`.
+Do not use foreground screen capture for this gate; CDP captures stay external
+to avoid the workstation black-screen issue.
+
+### Batch 2E-A.1 public sizing cells
+
+`local/groupimport/tools/playwright/ccb-banner-public-floor-2ea.spec.js`
+measures production public CSS in an isolated browser process. It confirms that
+the post-theme inline runtime stylesheet and the compiled CSS fallback both
+contain the shared 128px non-standard selector, then records the computed
+winner, public dimensions, title/frame containment, overlay geometry, crop
+style, opacity, z-index and cleanup state. It never opens or changes an
+administration/modal preview.
+
+Run one process for each format/viewport pair (Boost): `standard`,
+`contentwide`, `fullwidthtop`, `fullwidthtopcompact`, `fullwidthtopinset` at
+1600x900, 1024x768, 768x1024 and 390x844. Add genuine headed-browser 200%
+cells for one desktop non-standard format and one restrictive mobile
+non-standard format, plus a repeat mobile cell. Each cell uses course 2,
+temporarily moves it from category 3 to category 8 through Moodle UI, and
+asserts restoration of category, title, title settings, format and 100% zoom.
+
+The required non-standard result is within one rendered pixel of
+`clamp(128, width / ratio, max-height)`; `standard` remains on its existing
+4:1 base rule. Keep full Playwright artifacts only for representative passing
+cells and all failures. Site-banner ownership is covered statically unless a
+reversible existing site fixture is available; do not configure a global site
+banner merely to run this protocol.
+
+`tests/hook_callbacks_runtime_css_test.php` is the matching PHPUnit coverage
+for the generated runtime stylesheet. It reflects the protected CSS factory
+only; it does not invoke a public hook or alter settings. When the Moodle
+PHPUnit dependency is installed, run the plugin test through Moodle's PHPUnit
+runner. If it is unavailable locally, run PHP lint and the documented
+reflection-based runtime smoke instead, and retain the browser evidence.
+
+#### 2026-07-22 Boost evidence
+
+Batch 2E-A.1 passed the five-format, four-viewport matrix at 100%, genuine
+200% desktop `fullwidthtop`, genuine 200% mobile
+`fullwidthtopcompact`, and a repeated 100% mobile inset cell. The inline
+runtime stylesheet was the observed computed winner; the compiled plugin
+stylesheet contained the matching grouped fallback. All successful cells
+restored category 3, title, title settings, format and browser zoom. The two
+early environment-only attempts are retained as failure artifacts: an
+unavailable Mustache cache write caused them to stop before fixture mutation;
+space was recovered by moving only CCB-owned temporary Chrome profiles to a
+recoverable D: quarantine.
+
+## Batch 2E-B selected-source mobile preview
+
+The opt-in specification
+`local/groupimport/tools/playwright/ccb-banner-admin-mobile-preview-2eb.spec.js`
+checks the selected source editor and its read-only source-chain modal without
+creating, deleting, or editing a source/layer. It changes only the selected
+banner format through the existing administration form and restores that
+format in `finally`. Preview mode is asserted to be transient and does not
+form part of the restore set.
+
+Use a unique scenario id and a D: artifact root. The specification creates an
+owned Chrome profile under that run directory, deletes it on completion, and
+never falls back to C:. Keep credentials exclusively in the wrapper child
+process; do not put them in a command history, artifact, source file, or report.
+
+```powershell
+$env:EASYEDU_CCB_2EB_ARTIFACT_ROOT = 'D:\EasyEdu\artifacts\ccb\admin-mobile-preview\2026-07-22'
+$env:EASYEDU_CCB_2EB_SCENARIO_ID = 'ccb-2eb-matrix'
+$env:EASYEDU_CCB_2EB_FORMATS = 'standard,contentwide,fullwidthtop,fullwidthtopcompact,fullwidthtopinset'
+$env:EASYEDU_CCB_2EB_VIEWPORTS = 'desktop,laptop,narrow,mobile'
+$env:EASYEDU_CCB_2EB_ZOOM = '100'
+.\Invoke-CCBPlaywrightWithSavedCredentials.ps1 `
+    -Spec ccb-banner-admin-mobile-preview-2eb.spec.js `
+    -PlaywrightArgument @('--reporter=line', '--workers=1')
+```
+
+Run from `local/groupimport/tools/playwright`; `-c .` and the bare test name
+are required because the shared Playwright configuration otherwise resolves a
+different test directory. Run the genuine 200% browser-zoom cell separately
+with `EASYEDU_CCB_2EB_ZOOM = '200'` in a headed desktop session. Retain the
+JSON evidence and failure screenshots, but retain passing screenshots only
+for representative cells.
+
+The full 100% matrix covers all five formats at 1600x900, 1024x768, 768x1024
+and 390x844. For every cell it records desktop/mobile frame dimensions,
+logical public-policy height, scale, normalised image/title/overlay/border
+rectangles, crop/fit/anchor/offset/opacity/z-index state, source form values
+(with `sesskey` redacted), control semantics, and document overflow baseline.
+It statically verifies that both public sizing authorities still contain the
+published floor/cap policy. The live fixture currently has an inherited
+original-fit image but no title, overlay, or border; absent layer kinds are
+recorded rather than fabricated.
+
+The geometry matrix opens the administration source-preview modal in a fresh
+Playwright page for each measurement. This preserves the real modal/fetch
+interaction while avoiding unrelated Moodle session requests left open by the
+public-surface page. The page uses the active matrix viewport and is closed in
+`finally` after the frame and layer measurements are captured.
+
+Success requires the original format, browser zoom, and owned profile to be
+restored/removed. `ownership.json`, `original-state.json`, `cleanup.json`, and
+`artifact-summary.json` carry the run marker, repository branch/head and
+cleanup result. A failure saves `failure.json` and a screenshot before cleanup.
 
 ## Reset and cleanup
 

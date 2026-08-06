@@ -838,9 +838,6 @@
 
     .local-course-banner-builder-title-side-panel {
         @include easyedu.preview-side-accordion-panel(var(--easyedu-primary));
-
-        border-top: 0;
-        margin-top: 0;
     }
 
     .local-course-banner-builder-border-style-side-panel {
@@ -998,6 +995,18 @@
 
         margin: 0;
     }
+
+    // The desktop table keeps compact controls. On a narrow touchscreen the
+    // same actions remain in the scrollable table, so their actual targets
+    // need the platform's practical 44px minimum without changing row hooks.
+    @media (max-width: 768px) {
+        .local-course-banner-builder-action-list .btn,
+        .local-course-banner-builder-inherited-layer-action,
+        .local-course-banner-builder-bulk-delete-button,
+        .local-course-banner-builder-bulk-save-button {
+            min-height: 44px !important;
+        }
+    }
 }
 
 .local-course-banner-builder-hover-popover {
@@ -1009,6 +1018,14 @@
 
 .local-course-banner-builder-hover-popover--warning {
     @include easyedu.popover-warning-variant;
+}
+
+// Short contextual questions share the Kit popover body but centre their
+// concise explanatory copy. A trigger chooses this reusable variant instead
+// of each surface redefining padding, weight or tooltip geometry.
+.local-course-banner-builder-hover-popover--compact-centered .popover-body {
+    text-align: center;
+    text-align-last: auto;
 }
 
 @include easyedu.positioned-popover-arrows(".local-course-banner-builder-hover-popover");
@@ -1109,7 +1126,8 @@
     .local-course-banner-builder-modal-preview-action-list
     > .local-course-banner-builder-preview-side-accordion-trigger[aria-expanded="true"]
     + .local-course-banner-builder-preview-side-accordion-panel:not(.is-collapsed) {
-    // Neutralise the action-list grid gap so trigger and panel read as one control.
-    margin-top: calc(-0.18rem - 1px);
+    // Keep an explicit boundary between the expanded trigger and its form panel.
+    // This prevents the panel's top edge from being visually hidden by the button.
+    margin-top: 0;
     margin-bottom: 0.18rem;
 }

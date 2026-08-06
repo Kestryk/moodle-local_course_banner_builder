@@ -8,6 +8,519 @@ many small sections.
 
 ## Unreleased
 
+### 2026-08-05
+
+#### Tests
+
+- Closed the local Sources/Layers K.3 validation with the single supervised
+  Moodle 5.1 `ccb-layer-object-row` scenario. It passed at 100% and genuine
+  native 200%, including the final image-layer modal assertion: the obsolete
+  sizing select is absent while any legacy `fitmodeoverride` field remains
+  hidden for compatibility. Fixture, temporary elements, profile and runtime
+  environment cleanup completed; the prior human visual review is accepted.
+
+### 2026-08-04
+
+#### Changed
+
+- Hardened the local modal-action-rail supervisor so it drains Playwright
+  stdout and stderr asynchronously, preventing verbose failures from filling
+  Windows redirected-output pipes and stalling until the watchdog.
+- Added bounded shared-runtime lease waiting to the Sources/Layers object-row
+  supervisor; it now serializes its fixture work with other CCB browser runs.
+
+- Stabilised the Selected source sticky tray with one AMD-owned state machine,
+  a final-layout placeholder scroll sentinel and a CSS fallback used only when
+  JavaScript is unavailable. The tray now returns cleanly from full-width
+  portal mode to its original source position without reacting to its own
+  layout changes.
+
+- Kept the Sources/Layers leading rail at one constant width for idle, hover,
+  focus and native-drag states. The Image type icon and six-point drag handle
+  now occupy the same centered 1rem box, while table cells use only one light
+  bottom separator.
+- Replaced the layer-details local help trigger with the established
+  Slideshow-style, body-portalled help component. It remains available while
+  the disclosure is closed and now shares the compact centred body, padding,
+  normal text weight and trigger arrow with the `Sort order` table-header help.
+  Read-only label/value pairs retain their additional spacing.
+- Rebalanced the eight configured-source columns after removing the sizing
+  column, reserving 20% for Actions without changing action hooks or values.
+- Constrained every inner Font Awesome type icon to the same centered 1rem
+  rail box as the six-point handle. The hover/focus swap retains its fuller
+  motion while reduced-motion users retain an immediate transition.
+- Gave locked Overlay rows a distinct low-contrast petrol-teal stripe and
+  aligned each layer metadata label left with its value right.
+- Removed the remaining editable `Image sizing mode` row from the Selected
+  source summary. Its persisted value and hidden source-settings submit field
+  remain intact for compatibility.
+
+#### Tests
+
+- `Test-CCBAsyncProcessDrain.ps1` passed with 1 MiB on each output stream;
+  it uses neither Moodle nor a browser.
+- The one-test Moodle 5.1 Sources/Layers object-row scenario passed at 100%
+  and native 200%, with complete fixture and profile cleanup.
+
+- The one-spec supervised Moodle 5.1 responsive scenario passed all five
+  100%/native-200% cells, including repeated sticky entry/release oscillations,
+  full-width portal geometry, normal-flow restoration, overflow, console and
+  request checks. Disposable fixture, profile and process-local environment
+  cleanup completed. Human visual acceptance of scrolling was recorded on
+  2026-08-05.
+
+- The single supervised Moodle 5.1 `ccb-layer-object-row` scenario passed at
+  100% and genuine native 200%. It covered the centred image/handle swap,
+  constant rail, petrol-teal Overlay stripes, both closed-disclosure and
+  `Sort order` help controls, their actual `document.body` portal, compact
+  centred normal-weight/padded help body and trigger arrow, left/right metadata
+  layout, absence of every visible sizing control, source-action layout,
+  native drag and keyboard ordering, overflow, console/request checks and
+  complete disposable-fixture/profile cleanup. Human visual review is still
+  required before K.3 is accepted.
+
+### 2026-08-03
+
+#### Changed
+
+- Refined the CCB Sources/Layers row surface with aligned low-contrast locked
+  stripes, a light row separator, a wider semantic rail and white type icons.
+  Reorderable images retain their image icon at rest and reveal the six-point
+  drag handle on hover or keyboard focus.
+- Redesigned `Layer infos & overrides` as a fully aligned metadata disclosure
+  with a keyboard-accessible contextual-help control. It no longer exposes the
+  image sizing control.
+- Removed the visible image sizing mode controls from source settings and
+  Sources/Layers summaries while preserving submitted and persisted sizing
+  values through the existing hidden field and data model.
+- Aligned the local layer-modal action rail with the top edge of its preview
+  frame; header and footer boundaries remain unchanged.
+
+#### Tests
+
+- The supervised Moodle 5.1 Sources/Layers scenario passed at 100% and genuine
+  native 200%, covering rail/stripe continuity, image-icon to drag-handle
+  transition, source-sizing-control absence, disclosure/help behavior, drag and
+  keyboard ordering, overflow, console/request checks and fixture/profile
+  cleanup. The final modal-form assertion is pending the release of the shared
+  Moodle runtime; human visual review remains pending.
+
+### 2026-08-02
+
+#### Changed
+
+- Harmonised locked source-layer rows into one lighter continuous surface,
+  keeping the Overlay sample unstriped and removing the legacy competing rail.
+- Moved ordering-lock status into the sort-order cell; locked rows now show a
+  layer-type icon while reorderable image rows show the shared six-point grip.
+- Applied the embedded EasyEdu selection-checkbox contract to CCB table
+  selectors, title-modal controls and native CCB mforms without changing
+  existing toggle switches.
+
+#### Tests
+
+- The focused Moodle 5.1 layer-row test passed at 100% and genuine native
+  200%, covering locked-row continuity, Overlay sample isolation, layer-type
+  identity, drag/keyboard ordering, selection controls, no overflow,
+  console/request checks and complete fixture/profile cleanup.
+
+### 2026-08-01
+
+#### Changed
+
+- Centered the transient layer-modal loading status within the available modal
+  body. The empty loading body now uses its full flex surface and does not
+  reserve space for an action rail that has not yet been rendered.
+- Restored the visible top edge of expanded Image, Border and Overlay side
+  panels. Their trigger and panel now remain distinct rounded surfaces instead
+  of overlapping into a single borderless control.
+- Refined CCB source-layer drag rows to use the shared six-point handle and a
+  single leading-cell rail. Reorderable rows now have a restrained whole-row
+  hover/focus state; locked Border and Overlay rows retain distinct striped
+  states without changing native ordering or keyboard controls.
+
+#### Tests
+
+- The isolated Moodle 5.1 layer-modal scenario delayed one real Overlay-modal
+  response and measured a centered loading spinner (0px horizontally and
+  1.59px vertically from the modal-body centre), then passed the full
+  Image/Border/Overlay responsive matrix with complete cleanup.
+- The same isolated matrix proved each expanded side panel has a solid visible
+  top border and a 2.875px trigger-to-panel gap, with no overflow, console or
+  request failures at every 100% and native-200% cell.
+- The one-test Moodle 5.1 layer-row scenario passed at 1600x900 at 100% and
+  genuine native 200%, including two reorderable and three locked rows, native
+  drag/keyboard ordering, no overflow, no console/request failure and complete
+  fixture/profile cleanup.
+
+### 2026-07-31
+
+#### Changed
+
+- Integrated the additive EasyEdu `object-row-cells` primitive for CCB layer
+  table rows. Existing native drag/order mechanics and CCB subtype colours stay
+  authoritative while hover, focus-within, drag-source, locked,
+  reduced-motion and forced-colors paint states now share the Kit contract.
+- Stabilised the selected-source sticky tray at its scroll threshold with a
+  small entry/release band, preventing rapid portal/restore transitions when
+  the holder crosses the Moodle navigation edge.
+- Reserved the live Moodle right block-drawer toggle footprint for the desktop
+  `Deselect` action, measured at runtime rather than hard-coded; narrow mobile
+  layouts retain their separate action row.
+- Unified the CCB layer-modal action-rail width with the content space it
+  reserves, preventing a desktop action rail from widening over preview/form
+  content. Small modals retain their full-width, normal-flow action panel, and
+  native-zoom micro-viewports use their available modal surface rather than
+  clipping action labels with the dense source-list ellipsis.
+- Harmonised CCB layer-list actions with the source-list icon/label contract:
+  each action now has a stable leading icon, a centered readable label and a
+  mirrored trailing slot without changing links, confirmations or layer
+  ordering mechanics.
+- Harmonised CCB contextual question controls with the embedded EasyEdu Kit:
+  table and layer override help now use one focusable help icon and the same
+  positioned popover surface, without duplicating native browser tooltips.
+- Replaced the dense inline layer sizing dropdown with a closed-by-default,
+  keyboard-operable details accordion. It keeps the active sizing mode visible,
+  moves read-only layer metadata into the same table cell and leaves full
+  sizing edits in the layer modal.
+- Aligned the visible Image, Border and Overlay modal-disclosure chevrons with
+  the CCB accordion convention: the state affordance now precedes the type
+  icon and label, while the existing accessible side-panel button, `data-*`
+  hooks and native disclosure markup remain unchanged.
+- Fixed the add-layer crop regression where Apply, action-rail Undo, then save
+  could submit the prior cropped state. The restored draft now updates the
+  canonical Moodle crop fields and `previewcropstate` payload before submit.
+
+#### Tests
+
+- Regenerated the affected AMD module with the documented Terser fallback;
+  JavaScript syntax checks and `git diff --check` pass.
+- Compiled the modal action-rail SCSS and ran its one-test supervised Moodle
+  5.1 matrix: 1600x900, 1024x768 and 390x844 at 100%, plus 1600x900 and
+  390x844 at genuine native 200%. Image, Border and Overlay modals passed
+  rail/form containment, readable action labels, keyboard disclosure and
+  focus, no document overflow, console/request checks, and complete
+  category/profile cleanup. External CDP evidence is retained by manifest.
+- The one-test Moodle 5.1 crop check now covers Apply followed by action-rail
+  Undo and save. It passes the restored preview, canonical crop fields,
+  `multilayerdraftsettings`, submitted payload and persisted-layer assertions.
+- Added strict `-CellId` resume support to the responsive supervisor. A
+  navigation-only desktop 200% interruption can now be resumed without
+  repeating the other approved cells; that native-zoom page navigation allows
+  60 seconds while all ordinary cells retain their 20-second threshold.
+- The initial corrected matrix passed desktop/tablet/mobile 100% and mobile
+  200%; its desktop 200% navigation timed out before CCB assertions. The
+  targeted desktop 200% resume then passed with no drawer overlap, no
+  console/request failures and complete fixture/profile cleanup. Evidence:
+  `C:\Users\kj220291\AppData\Local\EasyEdu\artifacts\ccb\responsive\supervised\ccb-source-preview-responsive-20260731T113428645Z-35944`.
+- Revalidated the CCB general source-preview panels through the same isolated
+  five-cell Moodle 5.1 matrix. The action rail filled its available grid
+  column; primary actions stayed contained, ordered and non-clipped through
+  Desktop authoring to Mobile public simulation and back; no filmstrip or
+  visibility-row overlap, console/request error, or cleanup residue remained.
+- The isolated one-test CCB layer-object-row scenario passed at 100% and
+  genuine native 200% after asserting each layer action's left icon, centered
+  label, no clipping and keyboard/drag preservation. Fixture/profile cleanup,
+  console and request checks all passed. The same scenario then proved the
+  corresponding configured-source Preview, Edit and destructive actions at
+  both zoom levels.
+- The same isolated scenario passed after focusing the layer override question
+  at 100% and genuine native 200%, asserting its Kit popover, accessible
+  tooltip linkage, no overflow, no console/request failure and full cleanup.
+- The same isolated scenario passed after opening the layer details accordion
+  with Enter at 100% and genuine native 200%, asserting the active sizing mode,
+  readable metadata, no root overflow, no console/request failure and cleanup.
+
+### 2026-07-30
+
+#### Changed
+
+- Synchronized the compatible Moodle 5.1 CCB primitives with the approved UI
+  Kit focus system: one `0.18rem` geometry, semantic focus colours, preserved
+  elevation and a forced-colors outline fallback. Product selectors and CCB's
+  older embedded component boundaries remain unchanged.
+- Harmonised the CCB source-selection surfaces: long dropdown labels now wrap
+  inside a protected label slot, used-source markers keep a fixed icon slot,
+  source tables retain rounded corners, and the selected-source holder has a
+  native sticky fallback behind its drawer-aware runtime positioning.
+- Unified the three layer-form accordion shells with a left chevron, explicit
+  `aria-expanded`/`aria-controls`, and cancellable reduced-motion-aware
+  disclosure animation without changing the form field names or modal hooks.
+- Corrected the source-preview responsive assertion so mobile simulation is
+  validated against containment in its owning preview surface and its logical
+  390px width cap, rather than an arbitrary ratio against the full desktop
+  editor root.
+- Added a localized, dismissible orientation suggestion to the CCB source
+  editor for narrow portrait viewports; it remains hidden on public pages,
+  read-only source-chain previews, wide screens and landscape orientation.
+- Shortened the supervised Batch 2F-B.1 artifact root so nested Playwright
+  evidence stays within Windows path limits during manifest registration.
+- Rebuilt `styles.css` with the documented Sass 1.89.2 script after the focus
+  synchronization. The build passed; only the repository's existing Sass
+  `@import` deprecation warnings remain.
+- Added an idempotent readable SVG fixture helper for the Moodle 5.1 course
+  source, preserving existing layers for visual banner review.
+- Re-ran the isolated CCB source-preview responsive matrix across all five
+  approved viewport/zoom cells; automated containment passed, and the initial
+  run identified the 200% selected-source sticky tray as a visual correction
+  target.
+- Corrected the selected-source sticky tray at native 200% by removing its
+  fixed horizontal offset and stacking the title/action on narrow widths;
+  added post-capture containment evidence for the tray and `Deselect` action.
+- Corrected the selected-source sticky tray vertically: nested Moodle scrolling
+  now promotes it at the navigation edge to the physical viewport top, while
+  preserving the drawer-aware width and the narrow mobile action stack.
+- Updated the selected-source sticky runtime to track Moodle's actual nested
+  scroll container, restore the holder at its original source position when
+  scrolling back up, use the full viewport width while floating, and remain
+  above the fixed navigation layer. Responsive mobile text remains centered.
+- Restored the native CCB token scope on the body-level selected-source portal,
+  so its floating tray retains an opaque surface, border and readable hierarchy
+  instead of rendering transparently over the editor.
+
+#### Documentation
+
+- Documented the orientation-hint scope, responsive contract and isolated
+  validation procedure in the CCB UI harmonisation records.
+
+#### Tests
+
+- The isolated orientation-hint scenario selected exactly one Playwright test
+  and passed at 100% and genuine 200% native zoom: portrait visibility,
+  keyboard dismissal, landscape/wide/public hiding, page overflow checks,
+  console/request checks and fixture/profile cleanup all passed. The local
+  Moodle language cache was refreshed under the runtime lease before the
+  final run; visible CDP captures are pinned in the external artifact
+  manifest.
+- The isolated `fullwidthtopinset` desktop 200% run reached the mobile-mode
+  assertion and exposed the obsolete root-width ratio (`0.6377` versus `0.70`),
+  with no console or request errors. After correction, the same single-cell
+  rerun passed with native 200% zoom, no overflow/overlap, no console/request
+  errors and complete fixture/profile cleanup; the subsequent supervised
+  five-cell rerun passed and closed the responsive gate.
+- Rebuilt `amd/build/admin_manage.min.js` and its source map from the current
+  `amd/src/admin_manage.js` using the documented Terser command; both generated
+  files passed syntax/marker checks. The subsequent single-test responsive
+  attempt stopped before fixture mutation because the shared Moodle lease was
+  owned by a live EasyStud/UI Kit process; no CCB cell or browser capture ran.
+- Corrected the floating selected-source width calculation to use the actual
+  document viewport client width instead of `window.innerWidth`, preventing an
+  8px scrollbar overrun in genuine native 200% cells.
+- Refined the responsive test contract so the selected-source sticky assertions
+  apply only after the holder is actually materialised in the viewport; an
+  offscreen normal-flow holder at native 200% is no longer reported as a
+  clipping failure.
+- Implemented the selected-source sticky portal: when its natural threshold is
+  crossed, the holder moves to a body-level fixed portal below Moodle
+  navigation, spans the usable viewport and leaves a height-preserving
+  placeholder; scrolling above the threshold restores the original DOM slot.
+  Narrow responsive layouts centre the selected-source text. The supervised
+  five-cell Moodle 5.1 run passed at 100% and genuine native 200% with full
+  fixture/profile cleanup; evidence is retained in the external artifact
+  directory documented in `docs/testing/ccb-ui-harmonisation.md`.
+- Strengthened that responsive scenario to require a non-transparent sticky
+  background and non-zero border. The corrected five-cell Moodle 5.1 rerun
+  passed with complete fixture/profile cleanup.
+
+### 2026-07-29
+
+#### Changed
+
+- Isolated the responsive geometry harness's administration preview modal in a
+  fresh Playwright page so pending Moodle background requests from the public
+  surface cannot block the real source-preview fetch; the modal frame and
+  layer assertions remain unchanged.
+- Wrapped source-preview visibility actions inside the owning surface at narrow
+  effective viewports, including genuine 200% browser zoom.
+- Let the source-preview surface reclaim the narrow viewport width at genuine
+  200% zoom, keeping the server-provided `fullwidthtopinset` ratios unchanged.
+- Made source-preview CDP captures scroll the real banner frame into the
+  viewport and record the capture scroll state, so visual evidence cannot
+  accidentally show an unrelated page region or only the tall mode panel.
+
+### 2026-07-28
+
+#### Changed
+
+- Aligned administration preview format modifiers with the selected
+  non-standard banner ratio by matching the native fallback specificity and
+  clearing its minimum-height clamp; the standard 4:1 fallback remains intact.
+- Materialized the CCB source-preview canvas, mode switcher, action group and
+  control rail as bounded cards. Primary actions stay on one row when the
+  available width permits it and reflow vertically below the responsive
+  breakpoint without changing AMD hooks, data-action attributes, banner
+  geometry, or the 128px policy.
+- Prepared the first CCB UI harmonisation source patch: the mobile simulation
+  keeps the filmstrip and visibility row independent from the logical canvas
+  width, modal/slideshow action lists use a bounded responsive container with
+  a shared icon/label alignment contract, and configured-source actions now
+  expose an explicit label slot. The generated CSS was rebuilt from the
+  current SCSS source; browser validation remains pending the controlled Gate 2
+  validation window.
+
+#### Documentation
+
+- Synchronized the local agent contract with the shared branch/runtime handoff
+  and response-routing procedure. Future windows must report the recommended
+  next Codex model and task, including for corrections and blocked tests.
+- Added the plan/state continuity and reusable Playwright scenario rules to the
+  local agent contract for future Docker/CI visual regression work.
+- Added the shared development-plan reference and scenario lifecycle guidance;
+  valuable Playwright source is retained while generated media stays external.
+- Added the portable EasyEdu documentation contract to the plugin instructions,
+  covering technical documentation, changelog grouping, AI contracts, batch
+  evidence, validation reporting and multi-machine preservation rules.
+- Added the shared Playwright visual-artifact retention rule to the agent
+  instructions: manifests are required for deletion, raw captures stay outside
+  Git/Syncthing and legacy unmanifested media is inventory-only.
+- CCB supervised Playwright runners now register completed visual artifacts
+  automatically with the shared EasyEdu retention manifest.
+- Added the shared lease-wait handoff rule to the agent instructions so a
+  parallel Playwright window can wait with a bounded timeout instead of
+  interrupting an active CCB run.
+- Adopted the environment portability and inventory gate: machine, checkout,
+  volume, Git identity and runtime dependencies are recorded before action;
+  fixed-root legacy examples are reported rather than moved or deleted.
+- Added the CCB UI harmonisation agent plan and ownership boundary. The next
+  CCB-only audit covers preview-mode isolation from the filmstrip, available
+  width for side action panels, consistent icon/label slots and heights across
+  preview/modal/slideshow/source-list actions, and keyboard-safe controls;
+  EasyStud, the EasyEdu UI Kit and Moodle/Boost remain separate handoffs.
+- Added the functional validation procedure for the Gate 2 UI harmonisation
+  matrix, lease/discovery contract, external artifact handling and five
+  responsive/zoom cells. It records the source/build checks already run and
+  keeps browser validation explicitly pending.
+
+#### Tests
+
+- Recorded the isolated Batch 2A.2 contentwide/tablet diagnostic and its
+  follow-up acceptance evidence; the initial 4:1 administration ratio drift
+  was corrected and the single rerun now measures the required 5:1 ratio on
+  both preview and public surfaces, with reversible cleanup.
+- Executed the focused CCB source-preview responsive matrix at 1600x900,
+  1024x768 and 390x844 at 100%, plus 1600x900 and 390x844 at genuine native
+  200% zoom as one sequential, one-test supervised run. The 390x844 100%,
+  1600x900 200% and 390x844 200% cells passed; the desktop 100% cell failed
+  during login/navigation and the tablet 100% cell timed out in `page.goto`,
+  before CCB geometry assertions. Cleanup restored the course/category/format
+  and removed profiles; the browser gate remains blocked pending a runtime
+  navigation diagnosis. Moodle/Boost and EasyEdu UI Kit administrative menus
+  remained outside this CCB validation scope.
+- Correlated the Gate 2 desktop/tablet failures with read-only local Apache
+  logs: Moodle returned successful 200/303 responses only after the protected
+  Playwright navigation budgets, while the PHP log showed existing warnings and
+  notices but no observed fatal response. The gate remains blocked pending a
+  local runtime remediation decision; no timeout, Moodle, AMD or CCB
+  integration source was changed.
+
+### 2026-07-29
+
+#### Documentation
+
+- Documented the narrowly scoped source-preview inline geometry exception:
+  only computed `--local-course-banner-builder-source-preview-*` properties
+  are permitted, with matching data attributes and SCSS fallbacks. This does
+  not relax the general prohibition on arbitrary inline UI styling.
+
+#### Tests
+
+- Re-ran the Gate 2 five-cell matrix once after the runtime became available:
+  desktop/tablet/mobile 100% and mobile native 200% passed; desktop native
+  200% failed before geometry assertions because `/my/` returned HTTP 500.
+  Apache/PHP recorded concurrent GroupImport requests and cache-store rename
+  `Access denied` warnings while the CCB lease was active. The gate is now
+  explicitly blocked on global Moodle runtime lease exclusivity; no timeout,
+  cache, GroupImport or CCB source was changed.
+
+### 2026-07-27
+
+#### Tests
+
+- Validated the CCB Batch 2F-B.1 narrow public-title contract at genuine 200%
+  native Chrome zoom, including H1/H2 accessibility, overflow, keyboard, and
+  reversible fixture cleanup evidence. The validation used external artifacts
+  and isolated profiles; no production banner behavior changed.
+- Added a shared DPAPI-backed Moodle 5.1 credential loader and Playwright
+  wrapper so later CCB specs can reuse the approved local credentials without
+  prompting again or creating global password environment variables. Updated
+  the accessibility and functional protocols to use the supervised runners.
+- Extended the fixture-aware supervised runner to validate 2F-A.1 at 100%
+  native zoom through the same disposable category and guaranteed cleanup
+  path as 2F-B.1. Batch selection is explicit and discovery-only remains
+  mutation-free.
+- Validated 2F-A.1 end to end with one passing Playwright test, complete
+  Moodle restoration, disposable-category removal, profile cleanup, and a
+  passing external secret scan. Fixed the supervisor's approved nested profile
+  root check so a successful child cannot be reported as a cleanup failure.
+
+### 2026-07-22
+
+#### Changed
+
+- Corrected the public banner title accessibility contract: Moodle's existing
+  page `h1` remains the single primary heading when a course title is visually
+  replaced, decorative banner layers stay hidden individually, and distinct
+  activity/site context titles use a secondary heading without altering title
+  styling, geometry, responsive sizing, cards, or administration previews.
+- Added a transient **Desktop authoring / Mobile public simulation** switch to
+  the selected source visual editor and its read-only source-chain preview.
+  The mobile surface uses a logical 390px width and the existing format ratio
+  plus public non-standard floor/cap policy, without saving a setting or
+  changing public runtime CSS.
+- Restored the approved public native-banner responsive minimum at 128px for
+  `contentwide`, `fullwidthtop`, `fullwidthtopcompact` and
+  `fullwidthtopinset` in both the post-theme runtime stylesheet and compiled
+  SCSS fallback. The 128px floor comes from the previously measured responsive
+  policy matrix; existing ratios and maximum heights remain unchanged, and the
+  `standard` 4:1 base rule is unchanged.
+
+#### Documentation
+
+- Documented public banner title ownership, decorative-layer treatment,
+  future-control mounting, focused accessibility-tree coverage, and the manual
+  NVDA/200% public-banner protocol; Moodle 4.5 remains static-review only.
+- Documented the dual public-CSS authority, course/site scope, focused browser
+  measurement contract, separate accessibility defect and outstanding mobile
+  administration-preview work.
+
+#### Tests
+
+- Added the opt-in Batch 2F-A Playwright scenario for authenticated public
+  heading snapshots, title replacement, keyboard control semantics, geometry
+  preservation, and reversible course/title-settings cleanup on D:.
+- Added the opt-in Batch 2E-B Playwright matrix for the selected-source
+  desktop/mobile simulation. It keeps profiles and evidence on D:, restores
+  only the existing format mutation, redacts session keys, and records the
+  pre-existing configured-source table overflow as a non-regression baseline.
+
+### 2026-07-21
+
+#### Changed
+
+- Added the pure, deterministic CCB banner geometry contract and focused
+  PHPUnit coverage as a foundation for later rendering harmonisation. It is
+  now used by public course-header HTML image overlays through a compatibility
+  adapter; generated backgrounds and all other renderers remain unchanged.
+- Aligned the administration source-preview frame with its existing selected
+  banner-format modifier, including source-chain modal previews outside the
+  native administration wrapper. The public overlay adapter and canonical
+  geometry contract remain unchanged.
+- Restored keyboard-accessible contextual help for Sources/Layers controls:
+  focused popover triggers retain focus, expose their described tooltip, and
+  close it only after focus leaves the control.
+- Increased narrow-screen Sources/Layers action targets to 44px without
+  changing table, drag/drop, source-chain, or modal interaction hooks.
+- Restored the enabled state of the non-drag layer-order controls after a
+  local preview layer is selected from the filmstrip.
+
+#### Documentation
+
+- Documented canonical coordinates, supported format ratios, rendering
+  policies, thumbnail adaptations, rounding, and the renderer migration order.
+- Recorded the Batch 2C preview-frame ownership, independent-cell DOM
+  geometry command, and the separate open localisation issue for the outdated
+  4:1 `fullwidthtop` help text.
+
 ### 2026-07-18
 
 #### Changed

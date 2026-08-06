@@ -42,6 +42,7 @@
 .local-course-banner-builder-banner-title-overlay {
     position: absolute;
     z-index: 80;
+    margin: 0;
     --local-course-banner-builder-title-anchor-x: 50%;
     --local-course-banner-builder-title-safe-left: 0px;
     --local-course-banner-builder-title-safe-right: 0px;
@@ -557,7 +558,16 @@
 .local-course-banner-builder-native-course-title-replaced #page-header h1,
 #page-header.local-course-banner-builder-native-course-title-replaced .page-header-headings,
 #page-header.local-course-banner-builder-native-course-title-replaced h1 {
-    display: none !important;
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: -1px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
 }
 
 .local-course-banner-builder-title-submit-actions::before {
@@ -745,8 +755,16 @@ html.local-course-banner-builder-fullwidth-banner-mounted {
     width: 100% !important;
     max-width: 1500px !important;
     aspect-ratio: 5 / 1;
-    min-height: 135px;
     max-height: 280px;
+}
+
+// Public native-banner policy: the runtime stylesheet repeats this grouped
+// selector because it is injected after Moodle's compiled plugin CSS.
+.local-course-banner-builder-native-course-banner--format-contentwide,
+.local-course-banner-builder-native-course-banner--format-fullwidthtop,
+.local-course-banner-builder-native-course-banner--format-fullwidthtopcompact,
+.local-course-banner-builder-native-course-banner--format-fullwidthtopinset {
+    min-height: 128px;
 }
 
 .local-course-banner-builder-native-course-banner--format-fullwidthtop {
@@ -754,7 +772,6 @@ html.local-course-banner-builder-fullwidth-banner-mounted {
     max-width: none !important;
     box-sizing: border-box;
     aspect-ratio: 5 / 1;
-    min-height: 180px;
     max-height: 360px;
     margin-top: 0;
     border-radius: 0;
@@ -765,7 +782,6 @@ html.local-course-banner-builder-fullwidth-banner-mounted {
     max-width: none !important;
     box-sizing: border-box;
     aspect-ratio: 8 / 1;
-    min-height: 110px;
     max-height: 210px;
     margin-top: 0;
     border-radius: 0;
@@ -776,7 +792,6 @@ html.local-course-banner-builder-fullwidth-banner-mounted {
     max-width: none !important;
     box-sizing: border-box;
     aspect-ratio: 6.1 / 1;
-    min-height: 150px;
     max-height: 300px;
     margin-top: 0;
     border-radius: 0;

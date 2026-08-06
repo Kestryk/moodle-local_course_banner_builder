@@ -352,10 +352,28 @@
 }
 
 .local-course-banner-builder-selected-source-sticky-holder {
-    position: relative;
+    position: sticky;
+    top: 0;
     display: block;
     width: 100%;
     max-width: none;
+    z-index: 30;
+}
+
+// Keep native sticky as the no-JavaScript fallback only. The AMD controller
+// promotes the live administration tray to a body-level fixed portal and
+// restores it explicitly; allowing both mechanisms to position the same
+// holder caused a threshold flicker during direction changes.
+html[data-local-course-banner-builder-sticky-runtime="1"]
+    .local-course-banner-builder-selected-source-sticky-holder:not(.focus-navigation-buttons-holder--floating) {
+    position: relative;
+    top: auto;
+}
+
+.local-course-banner-builder-selected-source-sticky-placeholder {
+    display: block;
+    width: 100%;
+    pointer-events: none;
 }
 
 .focus-navigation-buttons-holder--floating.local-course-banner-builder-selected-source-sticky-holder {
@@ -363,14 +381,16 @@
     right: 0;
     bottom: auto;
     left: 0;
-    z-index: 30;
+    z-index: 1031;
     width: auto;
     max-width: none;
     margin-top: 0;
-    top: calc(var(--navbar-height, 60px) + var(--local-course-banner-builder-breadcrumb-height, 0px));
+    top: 0;
 }
 
-.local-course-banner-builder-admin--native .focus-navigation-buttons-holder--floating.local-course-banner-builder-selected-source-sticky-holder {
+.local-course-banner-builder-admin--native .focus-navigation-buttons-holder--floating.local-course-banner-builder-selected-source-sticky-holder,
+.local-course-banner-builder-selected-source-sticky-holder--portal {
+    box-sizing: border-box;
     padding-right: 0;
 }
 
@@ -383,6 +403,38 @@
 .local-course-banner-builder-source-dropdown-menu {
     width: 100%;
     max-width: 100%;
+}
+
+.local-course-banner-builder-source-dropdown-toggle {
+    overflow-wrap: anywhere;
+    white-space: normal;
+}
+
+.local-course-banner-builder-source-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    width: 100%;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    text-align: left;
+}
+
+.local-course-banner-builder-source-option-label {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    white-space: normal;
+}
+
+.local-course-banner-builder-source-used-icon {
+    flex: 0 0 auto;
+    margin-left: auto;
+}
+
+.local-course-banner-builder-source-option.local-course-banner-builder-source-used:not(.active)::after {
+    display: none;
 }
 
 .local-course-banner-builder-admin .local-course-banner-builder-source-dropdown-menu,
@@ -427,8 +479,13 @@
 }
 
 .local-course-banner-builder-source-option {
-    display: block;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
     width: 100%;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    white-space: normal;
 }
 
 .local-course-banner-builder-source-dropdown-menu .dropdown-item:hover,
@@ -452,7 +509,6 @@
 
 .local-course-banner-builder-sticky-title,
 .local-course-banner-builder-source-dropdown-toggle,
-.local-course-banner-builder-source-option,
 .local-course-banner-builder-section-title-text {
     min-width: 0;
     overflow: hidden;
@@ -461,7 +517,6 @@
 
 .local-course-banner-builder-sticky-title,
 .local-course-banner-builder-source-dropdown-toggle,
-.local-course-banner-builder-source-option,
 .local-course-banner-builder-hierarchy {
     white-space: nowrap;
 }
@@ -1395,9 +1450,82 @@
 }
 
 .local-course-banner-builder-source-preview-panel {
+    box-sizing: border-box;
+    max-width: 100%;
     margin: 1.25rem 1rem 1rem;
     position: relative;
     z-index: 0;
+}
+
+.local-course-banner-builder-source-preview-orientation-hint {
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    box-sizing: border-box;
+    max-width: 100%;
+    margin: 0 0 0.85rem;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid color-mix(in srgb, var(--bs-primary, #0f6cbf) 28%, var(--bs-border-color, #dee2e6));
+    border-radius: 0.5rem;
+    color: var(--bs-body-color, #212529);
+    background: color-mix(in srgb, var(--bs-primary, #0f6cbf) 7%, var(--bs-body-bg, #fff));
+}
+
+.local-course-banner-builder-source-preview-orientation-hint[hidden] {
+    display: none !important;
+}
+
+.local-course-banner-builder-source-preview-orientation-hint-message {
+    flex: 1 1 auto;
+    min-width: 0;
+    line-height: 1.4;
+}
+
+.local-course-banner-builder-source-preview-orientation-hint-dismiss {
+    flex: 0 1 auto;
+    max-width: 100%;
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 360px) {
+    .local-course-banner-builder-source-preview-orientation-hint {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .local-course-banner-builder-source-preview-orientation-hint-dismiss {
+        align-self: flex-start;
+    }
+}
+
+@media (max-width: 576px) {
+    .local-course-banner-builder-source-preview-orientation-hint {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .local-course-banner-builder-source-preview-orientation-hint-message {
+        flex-basis: auto;
+    }
+
+    .local-course-banner-builder-source-preview-orientation-hint-dismiss {
+        align-self: flex-start;
+    }
+}
+
+// At genuine browser zoom the Moodle admin content column can be narrower
+// than the viewport even after the preview layout has stacked. Let this
+// plugin-owned surface use the available viewport width without changing the
+// banner's aspect ratio or touching the public rendering contract.
+@media (max-width: 575.98px) {
+    .local-course-banner-builder-source-preview-panel {
+        width: calc(100vw - 2rem);
+        max-width: calc(100vw - 2rem);
+        margin-inline: calc((100% - (100vw - 2rem)) / 2);
+    }
 }
 
 .local-course-banner-builder-source-preview-layout {
@@ -1405,16 +1533,82 @@
     grid-template-columns: minmax(0, 1fr) minmax(11rem, clamp(11.5rem, 17vw, 15rem));
     align-items: start;
     gap: clamp(1rem, 2.5vw, 2.25rem);
+    min-width: 0;
 }
 
 .local-course-banner-builder-source-preview-canvas,
 .local-course-banner-builder-source-preview-controls {
+    box-sizing: border-box;
     min-width: 0;
 }
 
+.local-course-banner-builder-source-preview-canvas {
+    padding: clamp(0.65rem, 1.2vw, 1rem);
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    border-radius: 0.7rem;
+    background: var(--bs-body-bg, #fff);
+    box-shadow: 0 0.25rem 0.8rem rgba(31, 42, 55, 0.08);
+}
+
 .local-course-banner-builder-source-preview-surface {
+    box-sizing: border-box;
+    min-width: 0;
+    padding: clamp(0.55rem, 1vw, 0.85rem);
+    border: 1px solid color-mix(in srgb, var(--bs-primary, #0f6cbf) 20%, var(--bs-border-color, #dee2e6));
+    border-radius: 0.55rem;
+    background: var(--bs-tertiary-bg, var(--bs-body-bg, #fff));
     position: relative;
     z-index: 0;
+}
+
+.local-course-banner-builder-source-preview-mode-control {
+    position: relative;
+    z-index: 36;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.7rem;
+    width: min(100%, 1320px);
+    margin: 0 auto 0.65rem;
+    box-sizing: border-box;
+    padding: 0.5rem 0.65rem;
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    border-radius: 0.5rem;
+    background: var(--bs-body-bg, #fff);
+}
+
+.local-course-banner-builder-source-preview-mode-label {
+    font-size: 0.8125rem;
+    font-weight: 700;
+}
+
+.local-course-banner-builder-source-preview-mode-buttons {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+.local-course-banner-builder-source-preview-mode-button {
+    min-height: 2rem;
+    min-width: 0;
+    padding: 0.35rem 0.7rem;
+    font-size: 0.8125rem;
+}
+
+.local-course-banner-builder-source-preview-mode-button.is-active {
+    border-color: var(--bs-primary, #0f6cbf);
+    box-shadow: 0 0 0 0.15rem rgba(15, 108, 191, 0.16);
+}
+
+.local-course-banner-builder-source-preview-mode-help {
+    flex: 1 0 100%;
+    max-width: 48rem;
+    color: var(--bs-secondary-color, #6c757d);
+    font-size: 0.75rem;
+    line-height: 1.35;
+    text-align: center;
 }
 
 .local-course-banner-builder-source-preview-empty-overlay {
@@ -1439,11 +1633,34 @@
     z-index: 0;
 }
 
+// The source editor alone can simulate the public mobile canvas. The logical
+// dimensions are rendered server-side from the authoritative format ratio and
+// public floor/cap policy; no public runtime selector is changed here.
+.local-course-banner-builder-source-preview-panel[data-source-preview-mode="mobile"]
+    .local-course-banner-builder-source-preview-surface
+    .local-course-banner-builder-border-preview-frame {
+    width: min(100%, var(--local-course-banner-builder-source-preview-logical-width-css));
+    max-width: 100%;
+    min-height: 0;
+    max-height: none;
+    aspect-ratio: var(--local-course-banner-builder-source-preview-logical-width) /
+        var(--local-course-banner-builder-source-preview-logical-height);
+}
+
+.local-course-banner-builder-source-preview-panel[data-source-preview-mode="mobile"]
+    .local-course-banner-builder-source-preview-filmstrip,
+.local-course-banner-builder-source-preview-panel[data-source-preview-mode="mobile"]
+    .local-course-banner-builder-source-preview-visibility-toggle-row {
+    width: min(100%, var(--local-course-banner-builder-source-preview-logical-width-css, 390px));
+}
+
 .local-course-banner-builder-source-preview-filmstrip {
     position: relative;
     display: block;
     width: min(100%, 1320px);
     max-width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
     margin: 0.65rem auto 0;
     padding: 0.45rem;
     border: 3px solid rgba(15, 108, 191, 0.32);
@@ -1462,6 +1679,7 @@
     align-items: center;
     gap: 0.28rem;
     width: min(100%, 1320px);
+    min-width: 0;
     margin: 0.22rem auto 0;
     position: relative;
     z-index: 35;

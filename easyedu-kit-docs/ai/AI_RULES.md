@@ -80,6 +80,11 @@ At minimum:
 - AMD modules must be valid Moodle AMD build sources;
 - SCSS should be component-scoped and avoid global leakage;
 - no inline CSS/JS for reusable UI;
+- controlled geometry exception: a server-rendered preview may carry only
+  computed `--local-course-banner-builder-source-preview-*` custom properties
+  when the value is derived from the authoritative banner geometry policy;
+  retain the matching `data-source-preview-*` attributes and SCSS fallbacks,
+  and do not add arbitrary visual declarations to the inline style;
 - Privacy API, security validation and Moodle parameter handling are mandatory
   plugin concerns.
 

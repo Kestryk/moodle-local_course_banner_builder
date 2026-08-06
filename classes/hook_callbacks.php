@@ -83,15 +83,18 @@ class hook_callbacks {
             manager::get_generated_course_image_url($courseid) :
             ($customcourseimageurl ?: ($hasbackground ? manager::get_course_banner_image_url($courseid) : null));
         $iscourseviewpage = self::is_course_view_page($page);
-        $iscoursemodulepage = !empty($page->cm);
+        $isactivitypage = self::is_course_activity_page($page);
         $titlecontext = $iscourseviewpage ? 'course' : 'activity';
         $coursetitle = (string)($page->course->fullname ?? '');
         $activitytitle = self::get_course_page_secondary_title($page);
+        $semanticactivitytitle = '';
+        $courseenabled = false;
+        $activityenabled = false;
         $titletext = $coursetitle;
         if ($titlecontext === 'activity') {
             $courseenabled = (bool)get_config('local_course_banner_builder', 'bannertitle_course_enabled');
             $activityenabled = (bool)get_config('local_course_banner_builder', 'bannertitle_activity_enabled');
-            if (!$iscoursemodulepage) {
+            if (!$isactivitypage) {
                 $titletext = $activityenabled ? $activitytitle : '';
             } else if (!$activityenabled && $courseenabled) {
                 $titlecontext = 'course';
@@ -116,6 +119,11 @@ class hook_callbacks {
                     $titletext = $activitytitle;
                 }
             }
+
+            if ($isactivitypage && ($courseenabled || $activityenabled) &&
+                    trim($coursetitle) !== '' && $activitytitle !== '') {
+                $semanticactivitytitle = trim($coursetitle . "\n" . $activitytitle);
+            }
         }
 
         return [
@@ -124,7 +132,7 @@ class hook_callbacks {
             'overlays' => $overlays,
             'border' => $border,
             'title' => self::get_banner_title_overlay($titlecontext, $titletext),
-            'replacemoodletitle' => $titlecontext === 'course' &&
+            'replacemoodletitle' => $iscourseviewpage && $titlecontext === 'course' &&
                 (bool)get_config('local_course_banner_builder', 'bannertitle_course_enabled') &&
                 (bool)get_config('local_course_banner_builder', 'bannertitle_course_replacemoodletitle'),
             'themehasbanner' => $themehasbanner,
@@ -132,7 +140,8 @@ class hook_callbacks {
             'hascourselayers' => $hascourselayers,
             'usesdefaultimage' => $usedefaultimage,
             'bannerformat' => manager::get_course_banner_format(),
-            'replacecoursetitle' => !$iscourseviewpage && !$iscoursemodulepage && $titletext !== '',
+            'replacecoursetitle' => !$iscourseviewpage && !$isactivitypage && $titletext !== '',
+            'semanticactivitytitle' => $semanticactivitytitle,
         ];
     }
 
@@ -145,6 +154,30 @@ class hook_callbacks {
     protected static function is_course_view_page(\moodle_page $page): bool {
         $path = $page->url ? $page->url->get_path() : '';
         return $path === '/course/view.php' && !empty($page->course->id) && (int)$page->course->id > SITEID;
+    }
+
+    /**
+     * Whether the current page is a real Moodle activity page.
+     *
+     * Moodle's module context is authoritative when available. The remaining
+     * signals cover early output and compatible page objects where cm has not
+     * yet been attached, without hard-coding a module name or identifier.
+     *
+     * @param \moodle_page $page
+     * @return bool
+     */
+    protected static function is_course_activity_page(\moodle_page $page): bool {
+        if (self::is_course_view_page($page)) {
+            return false;
+        }
+
+        if ((int)($page->context->contextlevel ?? 0) === CONTEXT_MODULE || !empty($page->cm)) {
+            return true;
+        }
+
+        $pagetype = (string)($page->pagetype ?? '');
+        $path = $page->url ? $page->url->get_path() : '';
+        return str_starts_with($pagetype, 'mod-') || str_starts_with($path, '/mod/');
     }
 
     /**
@@ -238,6 +271,24 @@ class hook_callbacks {
         }
 
         return '';
+    }
+
+    /**
+     * Compare two public title strings without treating whitespace or case as
+     * a semantic difference.
+     *
+     * @param string $first
+     * @param string $second
+     * @return bool
+     */
+    protected static function banner_title_texts_match(string $first, string $second): bool {
+        $normalise = static function(string $text): string {
+            $text = trim(strip_tags($text));
+            $text = preg_replace('/\s+/u', ' ', $text) ?? $text;
+            return \core_text::strtolower(trim($text));
+        };
+
+        return $normalise($first) !== '' && $normalise($first) === $normalise($second);
     }
 
     /**
@@ -850,21 +901,34 @@ class hook_callbacks {
             '.local-course-banner-builder-native-course-title-replaced #page-header h1,',
             '#page-header.local-course-banner-builder-native-course-title-replaced .page-header-headings,',
             '#page-header.local-course-banner-builder-native-course-title-replaced h1 {',
-            '    display: none !important;',
+            '    position: absolute !important;',
+            '    width: 1px !important;',
+            '    height: 1px !important;',
+            '    margin: -1px !important;',
+            '    padding: 0 !important;',
+            '    overflow: hidden !important;',
+            '    clip: rect(0 0 0 0) !important;',
+            '    clip-path: inset(50%) !important;',
+            '    white-space: nowrap !important;',
+            '    border: 0 !important;',
             '}',
             '.local-course-banner-builder-native-course-banner--format-contentwide {',
             '    width: 100% !important;',
             '    max-width: 1500px !important;',
             '    aspect-ratio: 5 / 1;',
-            '    min-height: 135px;',
             '    max-height: 280px;',
+            '}',
+            '.local-course-banner-builder-native-course-banner--format-contentwide,',
+            '.local-course-banner-builder-native-course-banner--format-fullwidthtop,',
+            '.local-course-banner-builder-native-course-banner--format-fullwidthtopcompact,',
+            '.local-course-banner-builder-native-course-banner--format-fullwidthtopinset {',
+            '    min-height: 128px;',
             '}',
             '.local-course-banner-builder-native-course-banner--format-fullwidthtop {',
             '    width: 100% !important;',
             '    max-width: none !important;',
             '    box-sizing: border-box;',
             '    aspect-ratio: 5 / 1;',
-            '    min-height: 180px;',
             '    max-height: 360px;',
             '    margin-top: 0;',
             '    border-radius: 0;',
@@ -874,7 +938,6 @@ class hook_callbacks {
             '    max-width: none !important;',
             '    box-sizing: border-box;',
             '    aspect-ratio: 8 / 1;',
-            '    min-height: 110px;',
             '    max-height: 210px;',
             '    margin-top: 0;',
             '    border-radius: 0;',
@@ -884,7 +947,6 @@ class hook_callbacks {
             '    max-width: none !important;',
             '    box-sizing: border-box;',
             '    aspect-ratio: 6.1 / 1;',
-            '    min-height: 150px;',
             '    max-height: 300px;',
             '    margin-top: 0;',
             '    border-radius: 0;',
@@ -1203,9 +1265,15 @@ class hook_callbacks {
      *
      * @param string $context
      * @param string $text
+     * @param int|null $semanticheadinglevel Secondary heading level when the
+     *     banner title adds context beyond Moodle's primary page heading.
      * @return array|null
      */
-    protected static function get_banner_title_overlay(string $context, string $text): ?array {
+    protected static function get_banner_title_overlay(
+        string $context,
+        string $text,
+        ?int $semanticheadinglevel = null
+    ): ?array {
         $context = in_array($context, ['course', 'activity', 'site'], true) ? $context : 'course';
         $prefix = 'bannertitle_' . $context . '_';
         $text = trim($text);
@@ -1336,6 +1404,7 @@ class hook_callbacks {
             'textscale' => $titleenabled ? max(0.25, min(4.8, $fontsize / 100)) : 1.0,
             'align' => $align ?? 'center',
             'overlaystyle' => $overlaystyle,
+            'semanticheadinglevel' => $titleenabled && $semanticheadinglevel === 2 ? 2 : null,
         ];
     }
 
@@ -1419,16 +1488,22 @@ class hook_callbacks {
                     ? \html_writer::span(self::render_scaled_banner_title_text($text, $textscale, $align), '', ['style' => $framestyle])
                     : self::render_scaled_banner_title_text($text, $textscale, $align);
             }
-            $out .= \html_writer::div(
+            $titleclass = 'local-course-banner-builder-banner-title-overlay' .
+                (($title['frametype'] ?? '') === 'highlight'
+                    ? ' local-course-banner-builder-banner-title-overlay--highlight-frame'
+                    : '');
+            $semanticheadinglevel = (int)($title['semanticheadinglevel'] ?? 0);
+            $titleattributes = ['style' => (string)$title['style']];
+            if ($semanticheadinglevel === 2) {
+                $titleattributes['data-course-banner-builder-semantic-title'] = 'secondary';
+            } else {
+                $titleattributes['aria-hidden'] = 'true';
+                $titleattributes['data-course-banner-builder-decorative-title'] = '1';
+            }
+            $out .= \html_writer::tag(
+                $semanticheadinglevel === 2 ? 'h2' : 'div',
                 $content,
-                'local-course-banner-builder-banner-title-overlay' .
-                    (($title['frametype'] ?? '') === 'highlight'
-                        ? ' local-course-banner-builder-banner-title-overlay--highlight-frame'
-                        : ''),
-                [
-                    'aria-hidden' => 'true',
-                    'style' => (string)$title['style'],
-                ]
+                array_merge(['class' => $titleclass], $titleattributes)
             );
         }
         return $out;
@@ -1486,6 +1561,20 @@ class hook_callbacks {
         }
         $content .= self::render_banner_title_overlay($payload['title'] ?? null);
 
+        $semantictitle = '';
+        if (!empty($payload['semanticactivitytitle'])) {
+            $semantictitle = \html_writer::tag(
+                'h2',
+                format_string((string)$payload['semanticactivitytitle']),
+                [
+                    'id' => 'local-course-banner-builder-native-semantic-title',
+                    'class' => 'local-course-banner-builder-native-semantic-title',
+                    'hidden' => 'hidden',
+                    'data-course-banner-builder-semantic-title' => 'secondary',
+                ]
+            );
+        }
+
         $borderinsetstyle = self::get_banner_title_border_inset_style(
             !empty($payload['border']) && is_array($payload['border']) ? $payload['border'] : null
         );
@@ -1500,12 +1589,11 @@ class hook_callbacks {
                 ($usesdefaultimage ? ' local-course-banner-builder-native-course-banner--moodle-generated' : ''),
             [
             'data-course-banner-builder-native' => '1',
-            'aria-hidden' => 'true',
             'style' => $contentstyle,
             ]
         );
 
-        return \html_writer::div($banner, 'header-maxwidth d-print-none local-course-banner-builder-native-shell ' .
+        return \html_writer::div($banner . $semantictitle, 'header-maxwidth d-print-none local-course-banner-builder-native-shell ' .
             'local-course-banner-builder-native-shell--format-' . $format, [
             'id' => 'local-course-banner-builder-native-shell',
             'data-banner-format' => $format,
@@ -1536,7 +1624,14 @@ class hook_callbacks {
         }
 
         $definition['bannerformat'] = manager::get_site_banner_format();
-        $definition['title'] = self::get_banner_title_overlay('site', self::get_site_page_banner_title($page));
+        // Site identity may add context beyond the current Moodle page h1.
+        // It is rendered as a secondary heading and deduplicated against that
+        // h1 at mount time when both strings are equivalent.
+        $definition['title'] = self::get_banner_title_overlay(
+            'site',
+            self::get_site_page_banner_title($page),
+            2
+        );
         return $definition;
     }
 
@@ -1607,7 +1702,6 @@ class hook_callbacks {
                 'local-course-banner-builder-native-course-banner--format-' . $format,
             [
                 'data-course-banner-builder-site' => '1',
-                'aria-hidden' => 'true',
                 'style' => self::get_banner_title_border_inset_style($directborder),
             ]
         );
@@ -1729,6 +1823,13 @@ class hook_callbacks {
         const isFullWidthTop = format === 'fullwidthtop' || format === 'fullwidthtopcompact' ||
             format === 'fullwidthtopinset';
         const replaceMoodleTitle = shell.getAttribute('data-replace-moodle-title') === '1';
+        const semanticTitles = Array.from(document.querySelectorAll(
+            '[data-course-banner-builder-semantic-title="secondary"]'
+        ));
+        const semanticTitle = semanticTitles.shift() || null;
+        semanticTitles.forEach(function (title) {
+            title.remove();
+        });
         if (pageHeader) {
             if (replaceMoodleTitle) {
                 pageHeader.classList.add('local-course-banner-builder-native-course-title-replaced');
@@ -1744,6 +1845,29 @@ class hook_callbacks {
             if (!alreadyPlaced) {
                 pageHeader.insertAdjacentElement(method, shell);
             }
+            const pageHeading = pageHeader.querySelector('h1');
+            const normaliseHeadingText = function (node) {
+                return (node && node.textContent ? node.textContent : '').replace(/\s+/g, ' ').trim();
+            };
+            const hasAccessibleHeading = function (heading) {
+                if (!heading || heading.closest('[aria-hidden="true"]')) {
+                    return false;
+                }
+                const style = window.getComputedStyle(heading);
+                return normaliseHeadingText(heading) !== '' && style.display !== 'none' &&
+                    style.visibility !== 'hidden' && heading.getClientRects().length > 0;
+            };
+            if (semanticTitle) {
+                if (!hasAccessibleHeading(pageHeading) ||
+                        normaliseHeadingText(semanticTitle) === normaliseHeadingText(pageHeading)) {
+                    semanticTitle.remove();
+                } else {
+                    if (pageHeading.nextElementSibling !== semanticTitle) {
+                        pageHeading.insertAdjacentElement('afterend', semanticTitle);
+                    }
+                    semanticTitle.hidden = false;
+                }
+            }
             shell.classList.add('local-course-banner-builder-native-shell--mounted');
             if (isFullWidthTop) {
                 alignFullWidthBanner(shell);
@@ -1753,6 +1877,8 @@ class hook_callbacks {
                     }, delay);
                 });
             }
+        } else if (semanticTitle) {
+            semanticTitle.remove();
         }
     };
 
@@ -1865,6 +1991,21 @@ JS;
         });
     };
 
+    const reconcileSecondaryBannerTitle = function (shell, pageHeader) {
+        const title = shell.querySelector('[data-course-banner-builder-semantic-title="secondary"]');
+        const heading = pageHeader && pageHeader.querySelector('h1');
+        if (!title || !heading) {
+            return;
+        }
+        const normalise = function (value) {
+            return String(value || '').replace(/\s+/g, ' ').trim().toLocaleLowerCase();
+        };
+        if (normalise(title.textContent) !== '' && normalise(title.textContent) === normalise(heading.textContent)) {
+            title.setAttribute('aria-hidden', 'true');
+            title.dataset.courseBannerBuilderSemanticTitle = 'duplicate-of-moodle-h1';
+        }
+    };
+
     const mount = function () {
         const shell = document.getElementById('local-course-banner-builder-site-shell');
         if (!shell) {
@@ -1883,6 +2024,7 @@ JS;
             if (!alreadyPlaced) {
                 pageHeader.insertAdjacentElement(method, shell);
             }
+            reconcileSecondaryBannerTitle(shell, pageHeader);
             shell.classList.add('local-course-banner-builder-native-shell--mounted');
             if (isFullWidthTop) {
                 alignFullWidthBanner(shell);
@@ -2660,7 +2802,6 @@ JS;
         const banner = document.createElement('div');
         banner.className = 'local-course-banner-builder ' + bannerClass;
         banner.setAttribute('data-course-banner-builder-native', '1');
-        banner.setAttribute('aria-hidden', 'true');
 
         if (payload.bannerurl) {
             banner.style.backgroundImage = 'url("' + payload.bannerurl + '")';

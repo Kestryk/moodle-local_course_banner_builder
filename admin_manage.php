@@ -312,15 +312,18 @@ function local_course_banner_builder_render_title_settings_modal(
     $checkbox = function (string $name, string $label, bool $checked) use ($modalid): string {
         $id = $modalid . '-' . $name;
         return html_writer::div(
-            html_writer::empty_tag('input', [
-                'type' => 'checkbox',
-                'name' => $name,
-                'value' => 1,
-                'class' => 'form-check-input',
-                'id' => $id,
-                'checked' => $checked ? 'checked' : null,
-                'data-title-control' => $name,
-            ]) .
+            html_writer::tag('label',
+                html_writer::empty_tag('input', [
+                    'type' => 'checkbox',
+                    'name' => $name,
+                    'value' => 1,
+                    'class' => 'form-check-input',
+                    'id' => $id,
+                    'checked' => $checked ? 'checked' : null,
+                    'data-title-control' => $name,
+                ]) . html_writer::span('', 'easyedu-selection-checkbox__ui', ['aria-hidden' => 'true']),
+                ['class' => 'local-course-banner-builder-selection-checkbox']
+            ) .
             html_writer::tag('label', $label, ['class' => 'form-check-label', 'for' => $id]),
             'form-check mb-3'
         );
@@ -1351,6 +1354,23 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
     );
     $bannerformatclass = 'local-course-banner-builder-border-preview-frame--format-' .
         preg_replace('/[^a-z0-9_-]+/i', '', $bannerformat);
+    // The mobile simulation reads the existing format ratio from the canonical
+    // geometry definition. Its height deliberately follows the public
+    // non-standard floor/cap policy at the fixed logical width of 390px.
+    $formatratios = \local_course_banner_builder\banner_geometry::get_format_aspect_ratios();
+    $mobilepreviewratio = (float)($formatratios[$bannerformat] ?? $formatratios['standard']);
+    $mobilepreviewmaxheight = match ($bannerformat) {
+        'contentwide' => 280.0,
+        'fullwidthtop' => 360.0,
+        'fullwidthtopcompact' => 210.0,
+        'fullwidthtopinset' => 300.0,
+        default => 0.0,
+    };
+    $mobilepreviewnaturalheight = 390.0 / $mobilepreviewratio;
+    $mobilepreviewheight = $bannerformat === 'standard'
+        ? $mobilepreviewnaturalheight
+        : min($mobilepreviewmaxheight, max(128.0, $mobilepreviewnaturalheight));
+    $mobilepreviewheightcss = rtrim(rtrim(number_format($mobilepreviewheight, 4, '.', ''), '0'), '.');
     $hassourcesettings = !empty($sourcesettings->id);
     $disabledattributes = $hassourcesettings ? [] : [
         'disabled' => 'disabled',
@@ -1682,6 +1702,60 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
             'data-confirm-title' => get_string('confirm', 'moodle'),
             'data-confirm-message' => get_string('deletealllayersconfirm', 'local_course_banner_builder'),
         ] + $disabledattributes + $deleteallbuttonattributes);
+    $previewmodehelpid = 'local-course-banner-builder-source-preview-mode-help';
+    $previewmodecontrol = html_writer::div(
+        html_writer::span(get_string('sourcepreviewmode', 'local_course_banner_builder'),
+            'local-course-banner-builder-source-preview-mode-label') .
+        html_writer::div(
+            html_writer::tag('button', get_string('sourcepreviewmodedesktop', 'local_course_banner_builder'), [
+                'type' => 'button',
+                'class' => 'btn btn-outline-secondary local-course-banner-builder-source-preview-mode-button is-active',
+                'data-action' => 'local-course-banner-builder-set-source-preview-mode',
+                'data-source-preview-mode-value' => 'desktop',
+                'aria-pressed' => 'true',
+            ]) .
+            html_writer::tag('button', get_string('sourcepreviewmodemobile', 'local_course_banner_builder'), [
+                'type' => 'button',
+                'class' => 'btn btn-outline-secondary local-course-banner-builder-source-preview-mode-button',
+                'data-action' => 'local-course-banner-builder-set-source-preview-mode',
+                'data-source-preview-mode-value' => 'mobile',
+                'aria-pressed' => 'false',
+            ]),
+            'local-course-banner-builder-source-preview-mode-buttons',
+            [
+                'role' => 'group',
+                'aria-label' => get_string('sourcepreviewmode', 'local_course_banner_builder'),
+                'aria-describedby' => $previewmodehelpid,
+            ]
+        ) .
+        html_writer::div(get_string('sourcepreviewmodehelp', 'local_course_banner_builder'),
+            'local-course-banner-builder-source-preview-mode-help', ['id' => $previewmodehelpid]),
+        'local-course-banner-builder-source-preview-mode-control',
+        ['data-source-preview-mode-control' => '1']
+    );
+    $orientationhint = html_writer::div(
+        html_writer::span(
+            get_string('sourceprevieworientationhint', 'local_course_banner_builder'),
+            'local-course-banner-builder-source-preview-orientation-hint-message'
+        ) .
+        html_writer::tag(
+            'button',
+            get_string('sourceprevieworientationdismiss', 'local_course_banner_builder'),
+            [
+                'type' => 'button',
+                'class' => 'btn btn-sm btn-outline-secondary local-course-banner-builder-source-preview-orientation-hint-dismiss',
+                'data-source-preview-orientation-dismiss' => '1',
+            ]
+        ),
+        'local-course-banner-builder-source-preview-orientation-hint',
+        [
+            'data-source-preview-orientation-hint' => '1',
+            'hidden' => 'hidden',
+            'role' => 'status',
+            'aria-live' => 'polite',
+            'aria-atomic' => 'true',
+        ]
+    );
 
     return html_writer::div(
         html_writer::tag('h4', get_string(
@@ -1692,9 +1766,11 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
         ), [
             'class' => 'h6 local-course-banner-builder-table-title mb-3',
         ]) .
+        $orientationhint .
         html_writer::div(
             html_writer::div(
                 html_writer::div(
+                    $previewmodecontrol .
                     html_writer::div(
                         $layershtml,
                         'local-course-banner-builder-border-preview-frame local-course-banner-builder-border-preview-frame--moodle ' .
@@ -1703,6 +1779,13 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
                             'data-source-preview-frame' => '1',
                             'data-default-fitmode' => (string)($definition['defaultfitmode'] ?? \local_course_banner_builder\manager::FIT_MODE_BANNER),
                             'data-banner-format' => $bannerformat,
+                            'data-source-preview-format-ratio' => (string)$mobilepreviewratio,
+                            'data-source-preview-mobile-logical-width' => '390',
+                            'data-source-preview-mobile-logical-height' => $mobilepreviewheightcss,
+                            'data-source-preview-mobile-max-height' => (string)$mobilepreviewmaxheight,
+                            'style' => '--local-course-banner-builder-source-preview-logical-width: 390; ' .
+                                '--local-course-banner-builder-source-preview-logical-width-css: 390px; ' .
+                                '--local-course-banner-builder-source-preview-logical-height: ' . $mobilepreviewheightcss . ';',
                         ]
                     ),
                     'local-course-banner-builder-source-preview-surface'
@@ -1741,6 +1824,7 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
         'data-source-has-direct-border' => $sourcehasdirectborder ? '1' : '0',
         'data-source-has-direct-overlay' => $sourcehasdirectoverlay ? '1' : '0',
         'data-source-preview-inherited-visible' => $useeffectivechain ? '1' : '0',
+        'data-source-preview-mode' => 'desktop',
         ]
     );
 }
@@ -4114,19 +4198,14 @@ if ($selectedsource) {
         echo html_writer::tag('div', get_string('compositionmode_help', 'local_course_banner_builder'), ['class' => 'form-text text-muted mt-2']);
         echo html_writer::end_div();
 
-        echo html_writer::start_div('mb-3 local-course-banner-builder-source-settings-field');
-        echo html_writer::label(get_string('fitmode', 'local_course_banner_builder'), 'id_fitmode', [
-            'class' => 'd-block',
+        // Keep the persisted mode in the submit payload while the sizing-mode
+        // UI remains intentionally unavailable to authors.
+        echo html_writer::empty_tag('input', [
+            'type' => 'hidden',
+            'name' => 'fitmode',
+            'id' => 'id_fitmode',
+            'value' => $categorysettings->fitmode ?? \local_course_banner_builder\manager::FIT_MODE_ORIGINAL,
         ]);
-        echo html_writer::select(
-            \local_course_banner_builder\manager::get_editable_fit_mode_options(),
-            'fitmode',
-            $categorysettings->fitmode ?? \local_course_banner_builder\manager::FIT_MODE_ORIGINAL,
-            false,
-            ['id' => 'id_fitmode', 'class' => 'custom-select w-100']
-        );
-        echo html_writer::tag('div', get_string('fitmode_help', 'local_course_banner_builder'), ['class' => 'form-text text-muted mt-2']);
-        echo html_writer::end_div();
 
     if (!\local_course_banner_builder\manager::is_site_source($selectedsource)) {
         echo html_writer::start_div('mb-3 local-course-banner-builder-source-settings-field');

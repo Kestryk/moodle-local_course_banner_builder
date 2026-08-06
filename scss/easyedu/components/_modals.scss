@@ -8,6 +8,7 @@
 // --easyedu-surface, --easyedu-modal-border, --easyedu-modal-radius,
 // --easyedu-modal-shadow.
 
+@use "focus";
 @use "typography";
 
 @mixin modal-surface {
@@ -478,8 +479,9 @@
   }
 
   &:focus-within {
-    border-color: color-mix(in srgb, var(--easyedu-primary) 44%, #fff 56%);
-    box-shadow: 0 0 0 0.18rem color-mix(in srgb, var(--easyedu-primary) 14%, transparent);
+    @include focus.ring(
+      $border-color: color-mix(in srgb, var(--easyedu-primary) 44%, #fff 56%)
+    );
   }
 
   input[type="file"] {

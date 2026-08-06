@@ -4,6 +4,8 @@
 // reusable visual structure for the tutorial launcher, modal, slides,
 // interface highlight and guided checklist without forcing global selectors.
 
+@use "focus";
+
 @mixin guide-launcher-button {
   align-items: center;
   background: transparent;
@@ -102,7 +104,7 @@
   }
 
   &:focus-visible {
-    box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--easyedu-accent) 22%, transparent);
+    @include focus.ring($color: var(--easyedu-focus-ring-accent));
   }
 }
 
@@ -541,6 +543,10 @@
       color: #fff !important;
     }
 
+    &:focus-visible {
+      @include focus.ring($border-color: var(--easyedu-primary-strong));
+    }
+
     .fa {
       align-items: center;
       display: inline-flex;
@@ -585,6 +591,10 @@
       color: #fff !important;
     }
 
+    &:focus-visible {
+      @include focus.ring($border-color: var(--easyedu-primary-strong));
+    }
+
     .fa {
       color: currentColor;
       flex: 0 0 auto;
@@ -627,6 +637,10 @@
       padding: var(--easyedu-guide-action-padding);
       text-align: center;
       white-space: normal;
+
+      &:focus-visible {
+        @include focus.ring;
+      }
     }
 
     [data-easyedu-guide-previous] {
@@ -669,6 +683,10 @@
       border-color: var(--easyedu-primary-strong) !important;
       color: #fff !important;
     }
+
+    &:focus-visible {
+      @include focus.ring($border-color: var(--easyedu-primary-strong));
+    }
   }
 
   [data-easyedu-guide-previous].btn {
@@ -681,6 +699,10 @@
       background: color-mix(in srgb, var(--easyedu-primary) 10%, #fff 90%);
       border-color: var(--easyedu-primary);
       color: var(--easyedu-primary-strong);
+    }
+
+    &:focus-visible {
+      @include focus.ring($border-color: var(--easyedu-primary));
     }
   }
 
@@ -759,6 +781,10 @@
       background-color: var(--easyedu-primary-strong) !important;
       border-color: var(--easyedu-primary-strong) !important;
       color: #fff !important;
+    }
+
+    &:focus-visible {
+      @include focus.ring($border-color: var(--easyedu-primary-strong));
     }
   }
 
@@ -991,8 +1017,7 @@
 
     &:focus-visible {
       background: #fff;
-      border-color: #aac9df;
-      outline: 0;
+      @include focus.ring($border-color: #aac9df);
     }
 
     &:disabled {
@@ -1057,6 +1082,10 @@
       border-color: #bfd3e4;
       color: var(--easyedu-primary-strong);
       outline: 0;
+    }
+
+    &:focus-visible {
+      @include focus.ring($border-color: #bfd3e4);
     }
 
     &.is-active {
@@ -1154,6 +1183,10 @@
       &:focus-visible {
         border-color: #d7e0e9;
         color: #697c90;
+      }
+
+      &:focus-visible {
+        @include focus.ring($border-color: #d7e0e9);
       }
     }
   }
@@ -2099,6 +2132,10 @@
       border-color: var(--easyedu-primary-strong) !important;
       color: #fff !important;
     }
+
+    &:focus-visible {
+      @include focus.ring($border-color: var(--easyedu-primary-strong));
+    }
   }
 }
 
@@ -2222,6 +2259,14 @@
           border-color: #ecd49b;
           box-shadow: 0 0.3rem 0.7rem rgba(122, 90, 18, 0.1);
         }
+
+        &:focus-visible {
+          @include focus.ring(
+            $color: var(--easyedu-focus-ring-warning),
+            $border-color: #ecd49b,
+            $base-shadow: 0 0.3rem 0.7rem rgba(122, 90, 18, 0.1)
+          );
+        }
       }
     }
   }
@@ -2297,6 +2342,10 @@
       border-color: #bdd4e7;
       color: #203244;
     }
+
+    &:focus-visible {
+      @include focus.ring($border-color: #bdd4e7);
+    }
   }
 
   .easyedu-guided-panel__steps {
@@ -2309,6 +2358,7 @@
     min-width: 0;
     opacity: 1;
     overflow: hidden;
+    padding: var(--easyedu-focus-ring-width);
     transition: max-height 0.34s var(--easyedu-motion-ease), opacity 0.18s ease, margin 0.22s ease;
     width: 100%;
   }
@@ -2347,6 +2397,14 @@
       border-color: #c3dfcd;
       box-shadow: 0 0.3rem 0.7rem rgba(41, 114, 77, 0.1);
       outline: 0;
+    }
+
+    &:focus-visible {
+      @include focus.ring(
+        $color: var(--easyedu-focus-ring-accent),
+        $border-color: #c3dfcd,
+        $base-shadow: 0 0.3rem 0.7rem rgba(41, 114, 77, 0.1)
+      );
     }
 
     &.is-complete {
@@ -2397,6 +2455,10 @@
           #f8fafc;
         border-color: #d7e0e9;
         box-shadow: none;
+      }
+
+      &:focus-visible {
+        @include focus.ring($border-color: #d7e0e9);
       }
 
       &[data-easyedu-guide-lock-message]::before {
@@ -2599,6 +2661,10 @@
       border-color: var(--easyedu-primary-strong) !important;
       color: #fff !important;
       outline: 0;
+    }
+
+    &:focus-visible {
+      @include focus.ring($border-color: var(--easyedu-primary-strong));
     }
   }
 }
