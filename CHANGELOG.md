@@ -8,6 +8,18 @@ many small sections.
 
 ## Unreleased
 
+### 2026-08-06
+
+#### Fixed
+
+- Kept the Slideshow administration modal preview readable at mobile widths by
+  giving the editor a minimum working height, preserving minimum text sizes and
+  keeping the default label group inside the preview. Public Slideshow banners
+  and their configured ratios are unchanged.
+- Extended the Slideshow matrix with the matching 390 px readability thresholds
+  and a settled-modal capture wait, so visual evidence is captured after the
+  opening animation rather than during it.
+
 ### 2026-08-05
 
 #### Tests
