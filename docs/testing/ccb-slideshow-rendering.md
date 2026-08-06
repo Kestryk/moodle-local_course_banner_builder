@@ -42,13 +42,21 @@ The runner waits for the shared Moodle 5.1 fixture lease for up to ten minutes
 by default. It never kills another window's test process or reclaims a lease
 from a live owner.
 
-## Initial preflight assertions
+## Rendering-matrix assertions
 
 The one selected test confirms that the Course and Site cards, their visual
 previews, overlay settings and configured limit fields render together. It
-captures one CDP image and rejects console or failed-network errors. It does
-not claim full option coverage, public rendering coverage or responsive
-acceptance; those belong to the later human-approved matrix.
+walks the desktop (1600 px), tablet (768 px) and mobile (390 px) viewports,
+captures an external CDP image for each, and proves that the labels, title,
+body and action remain visible, non-empty and inside each preview on all four
+edges. It also
+records the two contexts and the nine side-panel option groups per context.
+
+This is an administration-preview matrix. It does not claim public-runtime
+coverage with live Forum, Assignment, Quiz or Site-announcement slides: the
+disposable fixture deliberately does not create those Moodle activities. A
+later public-rendering fixture must create and clean up those sources before
+that claim can be made.
 
 Moodle may emit backup-controller diagnostics on stderr while its CLI process
 returns success during course deletion. The runner records that stream but uses
@@ -65,6 +73,7 @@ banner-image URLs answered `200`; this was a test-interaction defect, not a
 Slideshow failure. Its initial cleanup path also incorrectly promoted a
 successful Moodle stderr diagnostic; targeted recovery confirmed that the
 temporary course was removed and the Slideshow configuration was restored.
-The scenario now starts its request-failure window only after the Slideshow
-page is network-idle and redacts URL parameters in its JSON evidence. This is
-still not visual acceptance or a rendering-matrix result.
+The scenario starts its request-failure window only after the Slideshow page
+is network-idle and redacts URL parameters in its JSON evidence. Human visual
+acceptance is still required from the CDP images; the matrix's geometry checks
+do not replace it.

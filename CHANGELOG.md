@@ -520,6 +520,10 @@ many small sections.
 - Recorded the Batch 2C preview-frame ownership, independent-cell DOM
   geometry command, and the separate open localisation issue for the outdated
   4:1 `fullwidthtop` help text.
+- Extended the isolated Slideshow check into the Course/Site administration
+  preview matrix at desktop, tablet and mobile widths. It records external CDP
+  captures, all side-panel groups and geometry evidence for labels, title,
+  body and action; public-runtime slides remain explicitly out of scope.
 - Added the isolated Slideshow rendering-audit fixture, one-test Playwright
   preflight and DPAPI-compatible supervised runner. The fixture snapshots and
   restores only Slideshow configuration and removes its own temporary course;
