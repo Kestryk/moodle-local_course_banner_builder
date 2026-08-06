@@ -8,6 +8,21 @@ many small sections.
 
 ## Unreleased
 
+### 2026-08-05
+
+#### Tests
+
+- Added the isolated Slideshow rendering-audit fixture, one-test Playwright
+  preflight and DPAPI-compatible supervised runner. The fixture snapshots and
+  restores only Slideshow configuration and removes its own temporary course;
+  it does not use the shared course 2 fixture.
+- Made fixture cleanup rely on the Moodle CLI exit code and JSON restoration
+  proof rather than stderr alone, because Moodle may emit backup-controller
+  diagnostics during a successful temporary-course deletion.
+- Scoped Slideshow request-failure evidence to the stable target page and
+  redacted sensitive URL parameters, preventing Moodle login-navigation calls
+  from being misclassified as Slideshow regressions.
+
 ### 2026-07-18
 
 #### Changed
