@@ -58,6 +58,16 @@ disposable fixture deliberately does not create those Moodle activities. A
 later public-rendering fixture must create and clean up those sources before
 that claim can be made.
 
+At widths of 768 px and below, the administration modal uses an editor-specific
+working height instead of inheriting the public banner's very wide ratio. It
+also retains readable minimum sizes for labels, title, body and action. This
+rule is deliberately limited to the large administration preview; it does not
+change the public Slideshow layout or its configured ratios.
+
+At the 390 px mobile viewport, the matrix requires a preview at least 200 px
+high, label text at least 12 px, title text at least 16 px, and body/action
+text at least 13 px. The complete label group must remain within the preview.
+
 Moodle may emit backup-controller diagnostics on stderr while its CLI process
 returns success during course deletion. The runner records that stream but uses
 the fixture process exit code and its JSON restoration proof as the cleanup

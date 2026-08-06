@@ -7550,6 +7550,17 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
     padding-bottom: 0;
     box-shadow: none;
   }
+  .local-course-banner-builder-slideshow-admin-preview--large {
+    aspect-ratio: auto;
+    min-height: clamp(12.5rem, 58vw, 15rem);
+    --local-course-banner-builder-slideshow-title-font-size: clamp(1rem, 10cqh, 2.25rem) !important;
+    --local-course-banner-builder-slideshow-body-font-size: clamp(0.8125rem, 5.5cqh, 1.1875rem) !important;
+    --local-course-banner-builder-slideshow-action-font-size: clamp(0.8125rem, 6cqh, 1.125rem) !important;
+    --local-course-banner-builder-slideshow-label-font-size: clamp(0.75rem, 3.5cqh, 1rem) !important;
+  }
+  .local-course-banner-builder-slideshow-admin-preview--large .local-course-banner-builder-slideshow-labels {
+    left: clamp(3.5rem, var(--local-course-banner-builder-slideshow-label-x, 14%), 100%);
+  }
 }
 .local-course-banner-builder-slideshow-modal-footer {
   position: relative;

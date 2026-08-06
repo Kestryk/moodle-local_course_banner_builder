@@ -37,18 +37,36 @@ const matrixViewports = [
 const previewGeometry = async(preview) => preview.evaluate((element) => {
     const bounds = element.getBoundingClientRect();
     const elements = [
-        '.local-course-banner-builder-slideshow-labels',
-        '.local-course-banner-builder-slideshow-title-block',
-        '.local-course-banner-builder-slideshow-body-block',
-        '.local-course-banner-builder-slideshow-action-wrap',
+        {
+            name: 'labels',
+            selector: '.local-course-banner-builder-slideshow-labels',
+            textSelector: '.local-course-banner-builder-slideshow-label',
+        },
+        {
+            name: 'title',
+            selector: '.local-course-banner-builder-slideshow-title-block',
+            textSelector: '.local-course-banner-builder-slideshow-title',
+        },
+        {
+            name: 'body',
+            selector: '.local-course-banner-builder-slideshow-body-block',
+            textSelector: '.local-course-banner-builder-slideshow-body',
+        },
+        {
+            name: 'action',
+            selector: '.local-course-banner-builder-slideshow-action-wrap',
+            textSelector: '.local-course-banner-builder-slideshow-action',
+        },
     ];
-    const samples = elements.map((selector) => {
+    const samples = elements.map(({name, selector, textSelector}) => {
         const child = element.querySelector(selector);
         if (!child) {
-            return {selector, present: false};
+            return {name, selector, present: false};
         }
         const rect = child.getBoundingClientRect();
+        const text = child.querySelector(textSelector);
         return {
+            name,
             selector,
             present: true,
             width: rect.width,
@@ -57,6 +75,7 @@ const previewGeometry = async(preview) => preview.evaluate((element) => {
             right: rect.right - bounds.left,
             top: rect.top - bounds.top,
             bottom: rect.bottom - bounds.top,
+            fontSize: text ? Number.parseFloat(window.getComputedStyle(text).fontSize) : 0,
         };
     });
     return {width: bounds.width, height: bounds.height, samples};
@@ -74,6 +93,39 @@ const expectRenderableGeometry = (geometry) => {
         expect(sample.right, sample.selector + ' escapes the preview on the right').toBeLessThanOrEqual(geometry.width + 2);
         expect(sample.bottom, sample.selector + ' escapes the preview at the bottom').toBeLessThanOrEqual(geometry.height + 2);
     }
+};
+
+const expectMobileReadability = (geometry) => {
+    expect(geometry.height, 'mobile preview is too shallow').toBeGreaterThanOrEqual(200);
+    const thresholds = {labels: 12, title: 16, body: 13, action: 13};
+    for (const [name, minimum] of Object.entries(thresholds)) {
+        const sample = geometry.samples.find(item => item.name === name);
+        expect(sample, name + ' sample is missing').toBeDefined();
+        expect(sample.fontSize, name + ' text is too small at mobile').toBeGreaterThanOrEqual(minimum);
+    }
+    const labels = geometry.samples.find(item => item.name === 'labels');
+    expect(labels.left, 'labels escape the mobile preview on the left').toBeGreaterThanOrEqual(0);
+    expect(labels.top, 'labels escape the mobile preview at the top').toBeGreaterThanOrEqual(0);
+    expect(labels.right, 'labels escape the mobile preview on the right').toBeLessThanOrEqual(geometry.width);
+    expect(labels.bottom, 'labels escape the mobile preview at the bottom').toBeLessThanOrEqual(geometry.height);
+};
+
+const waitForSettledModal = async(page, modal) => {
+    await expect(modal).toBeVisible();
+    await expect.poll(async() => modal.evaluate((node) => {
+        const dialog = node.querySelector('.modal-dialog');
+        const content = node.querySelector('.modal-content');
+        if (!dialog || !content || !node.classList.contains('show')) {
+            return false;
+        }
+        const dialogRect = dialog.getBoundingClientRect();
+        const contentStyle = window.getComputedStyle(content);
+        const activeAnimations = node.getAnimations({subtree: true}).some((animation) =>
+            animation.playState === 'pending' || animation.playState === 'running');
+        return dialogRect.width > 0 && dialogRect.height > 0 &&
+            contentStyle.opacity === '1' && !activeAnimations;
+    }), {timeout: 3000}).toBeTruthy();
+    await page.evaluate(() => document.fonts.ready);
 };
 
 const environment = () => {
@@ -161,12 +213,16 @@ test('CCB Slideshow rendering matrix keeps course and site previews readable', a
                 await editButtons.nth(index).click();
                 const modal = page.locator('.local-course-banner-builder-slideshow-preview-modal.show');
                 await expect(modal).toHaveCount(1);
+                await waitForSettledModal(page, modal);
                 const preview = modal.locator('[data-slideshow-overlay-preview="1"][data-slideshow-preview-editor="1"]');
                 await expect(preview).toHaveCount(1);
                 const geometry = await previewGeometry(preview);
                 await captureCdp(page, context,
                     path.join(env.artifactRoot, `slideshow-admin-${viewport.name}-${index === 0 ? 'course' : 'site'}.png`));
                 expectRenderableGeometry(geometry);
+                if (viewport.name === 'mobile') {
+                    expectMobileReadability(geometry);
+                }
                 view.previews.push(geometry);
                 await modal.locator('[data-bs-dismiss="modal"]').click();
                 await expect(modal).toHaveCount(0);
