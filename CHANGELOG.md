@@ -520,6 +520,16 @@ many small sections.
 - Recorded the Batch 2C preview-frame ownership, independent-cell DOM
   geometry command, and the separate open localisation issue for the outdated
   4:1 `fullwidthtop` help text.
+- Added the isolated Slideshow rendering-audit fixture, one-test Playwright
+  preflight and DPAPI-compatible supervised runner. The fixture snapshots and
+  restores only Slideshow configuration and removes its own temporary course;
+  it does not use the shared course 2 fixture.
+- Made fixture cleanup rely on the Moodle CLI exit code and JSON restoration
+  proof rather than stderr alone, because Moodle may emit backup-controller
+  diagnostics during a successful temporary-course deletion.
+- Scoped Slideshow request-failure evidence to the stable target page and
+  redacted sensitive URL parameters, preventing Moodle login-navigation calls
+  from being misclassified as Slideshow regressions.
 
 ### 2026-07-18
 
