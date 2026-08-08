@@ -16,6 +16,20 @@ menus.
 - configured-source actions must keep icons and labels leading-aligned;
 - no preview, document or modal horizontal overflow is allowed.
 
+## Responsive Selected source containment (`EED-CCB-2026-0004`) - 2026-08-08
+
+At `max-width: 48rem`, the CCB-local sticky action now keeps the leading source
+description full-width while the **Deselect** link uses its intrinsic width,
+is centred with `align-self: center`, and cannot exceed the tray width. The
+rule applies to both native and body-portal sticky holders. Desktop rules,
+the PHP source-selection markup and the AMD sticky lifecycle are unchanged.
+
+The focused responsive scenario now records whether the visible Deselect link
+is centred in the sticky tray and asserts it only below the desktop breakpoint.
+The lease-gated browser matrix for 320 px, 390 px and the responsive/desktop
+boundary remains pending; this WIP contains static source, generated-CSS and
+syntax validation only, with no preview, cache or browser activity.
+
 ## Crop regression scope — 2026-08-01
 
 The focused Moodle 5.1 validation now covers the reported user flow: upload

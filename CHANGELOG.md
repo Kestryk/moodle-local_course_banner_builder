@@ -30,6 +30,13 @@ many small sections.
 - Made the responsive Navigation handle's expanded width consumer-configurable
   so the complete localized Course Banner Builder label remains visible.
 
+#### Fixed
+
+- At responsive widths only, returned the `Selected source` **Deselect**
+  action to its intrinsic, centre-aligned size while capping it to the sticky
+  tray. This keeps the action contained and usable at 320 px and 390 px
+  without changing desktop geometry or source-selection behaviour.
+
 #### Documentation
 
 - Recorded the planned relocation of the destructive all-settings reset into a
