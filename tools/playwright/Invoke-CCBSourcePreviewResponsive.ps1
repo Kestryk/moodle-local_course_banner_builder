@@ -4,6 +4,7 @@ param(
     [ValidateSet(
         'fullwidthtopinset-desktop-100',
         'fullwidthtopinset-tablet-100',
+        'fullwidthtopinset-mobile-320-100',
         'fullwidthtopinset-mobile-100',
         'fullwidthtopinset-desktop-200',
         'fullwidthtopinset-mobile-200'
@@ -54,6 +55,7 @@ $format = 'fullwidthtopinset'
 $cells = @(
     [ordered]@{ id = 'fullwidthtopinset-desktop-100'; viewport = '1600x900'; zoom = 100 },
     [ordered]@{ id = 'fullwidthtopinset-tablet-100'; viewport = '1024x768'; zoom = 100 },
+    [ordered]@{ id = 'fullwidthtopinset-mobile-320-100'; viewport = '320x844'; zoom = 100 },
     [ordered]@{ id = 'fullwidthtopinset-mobile-100'; viewport = '390x844'; zoom = 100 },
     [ordered]@{ id = 'fullwidthtopinset-desktop-200'; viewport = '1600x900'; zoom = 200 },
     [ordered]@{ id = 'fullwidthtopinset-mobile-200'; viewport = '390x844'; zoom = 200 }

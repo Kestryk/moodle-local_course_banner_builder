@@ -26,9 +26,10 @@ the PHP source-selection markup and the AMD sticky lifecycle are unchanged.
 
 The focused responsive scenario now records whether the visible Deselect link
 is centred in the sticky tray and asserts it only below the desktop breakpoint.
-The lease-gated browser matrix for 320 px, 390 px and the responsive/desktop
-boundary remains pending; this WIP contains static source, generated-CSS and
-syntax validation only, with no preview, cache or browser activity.
+Its supervised matrix includes 320 px, 390 px and desktop/tablet cells at
+100%, plus its existing native-zoom coverage. Its lease-gated execution remains
+pending; this WIP contains static source, generated-CSS and syntax validation
+only, with no preview, cache or browser activity.
 
 ## Crop regression scope — 2026-08-01
 
