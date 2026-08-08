@@ -53,6 +53,8 @@ many small sections.
 - Recorded the vendorable Navigation rule for plain desktop icons, EasyStud
   compact icon states, a fixed 44px trigger with configurable expanded width
   and a single Guide help label.
+- Recorded the authorised CCB preview republication and refreshed-cache handoff
+  after the unrelated Navigation runtime preview.
 
 ### 2026-08-07
 

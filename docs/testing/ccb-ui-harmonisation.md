@@ -47,6 +47,15 @@ course/category/format/profile cleanup. Their external evidence roots are:
 - `%LOCALAPPDATA%\EasyEdu\artifacts\ccb\responsive\supervised\ccb-source-preview-responsive-20260808T161535265Z-20396`;
 - `%LOCALAPPDATA%\EasyEdu\artifacts\ccb\responsive\supervised\ccb-source-preview-responsive-20260808T161644768Z-35008`.
 
+Following explicit authorisation on 2026-08-08, the controlled CCB preview was
+republished from the unrelated `preview/moodle51/ccb-nav-desktop-rail` runtime
+state (`2cd4c3dcaafcde87738f76503626cee953dc6778`) to
+`preview/moodle51/ccb-dev` (`26180252b464511027da559c36ea58be9c9065d5`). The
+corrective commit `9a4685f9e0e7e6fdcee5bad476d4c673c3630e22` was already
+present on that preview branch; Moodle caches were deliberately refreshed. The
+auditable promotion record is
+`%LOCALAPPDATA%\EasyEdu\orchestration\artifacts\preview-promotions\ccb\20260808T164625Z.json`.
+
 Human visual review remains required before production acceptance: inspect the
 320 px and 390 px `source-preview-desktop.png` captures for a visibly centred,
 fully usable Deselect action without right overflow.
