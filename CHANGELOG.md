@@ -38,6 +38,9 @@ many small sections.
 - Recorded the vendorable Navigation rule for plain desktop icons, EasyStud
   compact icon states, a fixed 44px trigger with configurable expanded width
   and a single Guide help label.
+- Recorded the managed-preview and human acceptance evidence for the CCB
+  Navigation/Guide consumer. This acceptance does not claim browser automation
+  or Moodle 4.5 compatibility coverage.
 
 ### 2026-08-07
 

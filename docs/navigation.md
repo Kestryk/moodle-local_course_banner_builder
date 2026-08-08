@@ -129,3 +129,22 @@ desktop and at 390 px:
 Store browser evidence outside Git with the required manifest. The exact
 source and generated-asset checks are listed in
 `docs/testing/functional-protocol.md` and `docs/testing/release-checklist.md`.
+
+## Closure evidence — 2026-08-08
+
+The CCB Navigation/Guide consumer was accepted by human review in the managed
+`ccb-moodle51` preview. The reviewed candidate is
+`79fdd790d3c4c2b7d78b74e6c5052d28e02aee2d` on
+`work/port4719pg3/eed-nav-2026-0006`; the preview request was
+`20260808T144246Z-41e5870841` and reported `currentlyVisible: true`.
+
+The local source gate passed with Node 22.11.0: readable and built Guide AMD
+syntax, the three focus-return contract assertions, the four Navigation
+contract assertions, and `git diff --check` from the batch base. The reviewer
+accepted the compact Navigation icons, the global Guide portal, ordinary and
+Escape focus return, and the intentional no-return focus handoff for interface
+and guided-path departures.
+
+No Playwright scenario or screenshot was created for this approval. It does
+not claim Moodle 4.5 compatibility or replace the future deterministic
+cross-viewport browser matrix; those remain separate validation work.

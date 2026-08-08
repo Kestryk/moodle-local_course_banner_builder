@@ -87,6 +87,8 @@ Status values:
 - `Candidate`: suitable after fixtures exist.
 - `Manual`: intentionally manual because the visual result is part of the
   contract.
+- `Manual accepted`: manually reviewed on the recorded managed preview; it is
+  not browser automation or cross-version compatibility evidence.
 - `Blocked`: required fixture or stable selector is missing.
 
 | ID | Flow | Expected result | Owner | Status |
@@ -124,7 +126,7 @@ Status values:
 | GUIDE-01 | Open guide and navigate slides | Slide state and keyboard navigation remain stable | Playwright | Blocked |
 | GUIDE-02 | Show target in interface | Highlight stays aligned and return panel appears | Playwright | Blocked |
 | GUIDE-03 | Complete guided path | Checklist, prerequisite, reload, and return state work | Playwright | Blocked |
-| GUIDE-04 | Open Guide from the CCB rail | Desktop label reveal does not shift destinations, clip its shadow or create a second tooltip; compact launcher closes the panel, opens Guide above it and returns focus after close | Playwright/manual | Candidate |
+| GUIDE-04 | Open Guide from the CCB rail | Desktop label reveal does not shift destinations, clip its shadow or create a second tooltip; compact launcher closes the panel, opens Guide above it and returns focus after close | Playwright/manual | Manual accepted — 2026-08-08 |
 | ERR-01 | Open builder without sources | Actionable empty state, no console error | Behat | Candidate |
 | ERR-02 | Server-side validation fails | Localised message and submitted data remain understandable | Behat | Blocked |
 | A11Y-01 | Scan admin root | No serious or critical plugin-region axe violations | Behat/Playwright | Existing smoke |
