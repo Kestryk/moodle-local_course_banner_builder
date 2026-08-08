@@ -22,12 +22,19 @@ many small sections.
   unclipped Guide shadow, and the left-centred responsive half-pill trigger.
 - Made the compact Guide launcher one full-width gradient row with a single
   icon-and-label target, including its inverse hover/focus treatment.
+- Removed the redundant Guide hover popover while retaining its animated label
+  and accessible name, restored plain untiled destination icons in desktop and
+  compact navigation, and fixed the compact half-pill at the shared 44px touch
+  target instead of an unresolved token-dependent size.
 
 #### Documentation
 
 - Recorded the planned relocation of the destructive all-settings reset into a
   dedicated general Plugin Settings danger zone; the existing secure action is
   unchanged in this Navigation correction.
+- Recorded the vendorable Navigation rule for untiled icons, a fixed 44px
+  compact trigger and a single Guide help label so future UI Kit consumers do
+  not reintroduce these CCB regressions.
 
 ### 2026-08-07
 

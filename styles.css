@@ -11142,6 +11142,7 @@ span[data-flexitour=container].orphan .modal-dialog {
   --easyedu-count-border: #d8e0e8;
   --easyedu-count-text: #6d7f91;
   --easyedu-control-height: 2.35rem;
+  --easyedu-touch-target-min: 2.75rem;
   --easyedu-control-radius: 0.72rem;
   --easyedu-control-border: #c8d6e3;
   --easyedu-control-focus-border: #8abce3;
@@ -11756,6 +11757,10 @@ span[data-flexitour=container].orphan .modal-dialog {
 }
 .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item > .easyedu-navigation__item-icon {
   align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
   display: inline-flex;
   flex: 0 0 1rem;
   height: 1rem;
@@ -11869,6 +11874,7 @@ span[data-flexitour=container].orphan .modal-dialog {
   min-width: var(--easyedu-control-height);
   padding: 0.36rem 0.75rem;
   transition: background-color var(--easyedu-motion-fast) ease, border-color var(--easyedu-motion-fast) ease, box-shadow var(--easyedu-motion-fast) ease, color var(--easyedu-motion-fast) ease, transform var(--easyedu-motion-fast) ease;
+  block-size: var(--easyedu-touch-target-min);
   background: color-mix(in srgb, var(--easyedu-card-border) 28%, var(--easyedu-surface) 72%);
   border: 1px solid var(--easyedu-card-border);
   border-radius: 0 999px 999px 0;
@@ -12148,16 +12154,19 @@ span[data-flexitour=container].orphan .modal-dialog {
 }
 .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__item > .fa:first-child {
   align-items: center;
-  background: var(--easyedu-surface);
-  border: 1px solid var(--easyedu-card-border);
-  border-radius: calc(var(--easyedu-control-radius) - 0.18rem);
-  color: var(--easyedu-primary-strong);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  color: currentColor;
   display: inline-flex;
-  flex: 0 0 1.85rem;
-  height: 1.85rem;
+  flex: 0 0 1rem;
+  height: 1rem;
   justify-content: center;
+  line-height: 1;
   margin: 0 !important;
-  width: 1.85rem;
+  min-inline-size: 1rem;
+  width: 1rem;
 }
 .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__item:hover, .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__item:focus-visible, .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__item[aria-current=page], .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__item.active {
   background: var(--easyedu-primary-soft);
@@ -12171,9 +12180,9 @@ span[data-flexitour=container].orphan .modal-dialog {
   transform: translateX(0.08rem);
 }
 .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__item[aria-current=page] > .fa:first-child, .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__item.active > .fa:first-child {
-  background: var(--easyedu-primary);
-  border-color: var(--easyedu-primary);
-  color: var(--easyedu-identity-icon-color);
+  background: transparent;
+  border-color: transparent;
+  color: currentColor;
 }
 .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__item:focus-visible {
   box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring);

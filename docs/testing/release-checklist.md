@@ -49,6 +49,7 @@ node --check .\amd\src\admin_manage.js
 node --check .\amd\src\easyedu_guide.js
 node --check .\amd\src\slideshow_admin.js
 node --test .\tests\amd\easyedu_guide_focus_return.test.mjs
+node --test .\tests\ui\easyedu_navigation_contract.test.mjs
 git diff --check
 ```
 
@@ -71,6 +72,9 @@ tests/manager_crop_test.php
 - [ ] PHP syntax checks pass.
 - [ ] Crop PHPUnit tests pass, or GD-dependent coverage is explicitly skipped.
 - [ ] `git diff --check` reports no whitespace errors.
+- [ ] Navigation icons have no independent tile in desktop or compact mode,
+      the compact trigger retains its 44px resting target, and the Guide
+      launcher exposes one visible help label without a duplicate popover.
 
 ## 4. Installation and upgrade
 
