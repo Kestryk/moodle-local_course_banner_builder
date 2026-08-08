@@ -2942,26 +2942,6 @@ local_course_banner_builder_render_banner_format_modal(
     \local_course_banner_builder\manager::get_site_banner_format(),
     \local_course_banner_builder\manager::SLIDESHOW_CONTEXT_SITE
 );
-$formatbutton = static function (string $context): string {
-    $issitecontext = $context === \local_course_banner_builder\manager::SLIDESHOW_CONTEXT_SITE;
-    $modalid = 'local-course-banner-builder-banner-format-' . ($issitecontext ? 'site' : 'course') . '-modal';
-    return html_writer::tag(
-        'button',
-        html_writer::tag('i', '', ['class' => 'fa fa-columns me-2', 'aria-hidden' => 'true']) .
-            html_writer::span(get_string(
-                $issitecontext ? 'sitebannerformatbutton' : 'coursebannerformatbutton',
-                'local_course_banner_builder'
-            )),
-        [
-            'type' => 'button',
-            'class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action local-course-banner-builder-admin-format-button',
-            'data-toggle' => 'modal',
-            'data-target' => '#' . $modalid,
-            'data-bs-toggle' => 'modal',
-            'data-bs-target' => '#' . $modalid,
-        ]
-    );
-};
 $deletepluginsettingsform = static function (string $action): string {
     return html_writer::tag(
         'form',
@@ -3425,10 +3405,8 @@ $navigationcontext = \local_course_banner_builder\output\navigation::context(
 );
 echo $OUTPUT->render_from_template('local_course_banner_builder/easyedu_navigation', $navigationcontext);
 echo html_writer::div(
-    $formatbutton(\local_course_banner_builder\manager::SLIDESHOW_CONTEXT_COURSE) .
-    $formatbutton(\local_course_banner_builder\manager::SLIDESHOW_CONTEXT_SITE) .
     $deletepluginsettingsform((new moodle_url($adminpagepath))->out(false)),
-    'local-course-banner-builder-admin-switcher mb-3'
+    'local-course-banner-builder-admin-utilities mb-3'
 );
 $statuspopoverattributes = static function (string $label): array {
     return [

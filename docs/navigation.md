@@ -22,11 +22,20 @@ does not make an unrelated JavaScript migration.
 | `site` | `admin_site.php` |
 | `slideshow` | `admin_slideshow.php` |
 | `transfer` | `admin_transfer.php` |
+| `course-format` | `admin_manage.php?openformatmodal=1&bannerformatcontext=course` |
+| `site-format` | `admin_site.php?openformatmodal=1&bannerformatcontext=site` |
 
 It supplies labels, URLs, icons and the active state to the shared Mustache
-templates. A caller must select a declared identifier; an unknown one is a
-coding error. CCB format and reset actions are intentionally retained outside
-the destination rail.
+templates. The format items reuse their existing destination and modal flow;
+they are not a second navigation bar. A caller must select a declared
+identifier; an unknown one is a coding error.
+
+The legacy reset form is deliberately rendered as a small generic utility,
+outside the navigation rail. Its definitive move to a dedicated **Plugin
+Settings / danger zone** is a planned CCB-settings follow-up: it must retain
+the existing capability, sesskey and confirmation flow. This is recorded here
+for Platform allocation; it is not part of `EED-NAV-2026-0006` and has not
+changed the destructive operation.
 
 ## Rendering and Guide boundary
 
@@ -36,7 +45,15 @@ contract and must not be renamed casually.
 
 `scss/components/_easyedu-adapter.scss` includes the imported Navigation mixin
 only below `.local-course-banner-builder-admin--native`; it does not apply
-Navigation styles to Moodle or Bootstrap globals.
+Navigation styles to Moodle or Bootstrap globals. The desktop Guide label is
+an out-of-flow capsule and the compact Guide projection is one full-width
+gradient row. Those two rules protect the centred destination rail, prevent
+launcher-shadow clipping, and keep the compact icon and label in one target.
+
+The compact trigger is a fixed left-edge half-pill centred in the viewport. It
+does not calculate a position from Moodle's native drawer control or from page
+scrolling, so the native top-edge control remains a separate, non-overlapping
+surface. Its text stays visually collapsed until hover or keyboard focus.
 
 The CCB embedded Responsive surface predates the five public mixins used by the
 snapshot. Its local supplement is deliberately limited to the Navigation panel,
@@ -82,12 +99,16 @@ from an approved full Moodle checkout, then request a lease-gated runtime
 preview. Human review must cover Course, Site, Slideshow and Transfer at
 desktop and at 390 px:
 
-- each route has the same four CCB destinations and correct active item;
+- each route has the same four CCB destinations, the two format entries and
+  the correct active item;
 - Tab, Escape, backdrop and focus return work in the compact panel;
-- the Guide button uses the shared rail presentation where available;
+- the desktop Guide capsule does not move the centred destinations or clip its
+  shadow, and the compact Guide is one full-width gradient target where
+  available;
 - a compact Guide opens in a viewport overlay above the panel, closes cleanly
   and has no console error or overflow; and
-- product-specific format and reset controls still work.
+- the two format links open their existing format modal flow, and the existing
+  reset confirmation still works from its temporary generic-utility location.
 
 Store browser evidence outside Git with the required manifest. The exact
 source and generated-asset checks are listed in

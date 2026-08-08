@@ -2649,36 +2649,8 @@ $guidehtml = $OUTPUT->render_from_template('local_course_banner_builder/easyedu_
 $navigationcontext = \local_course_banner_builder\output\navigation::context('slideshow', $guidehtml);
 echo $OUTPUT->render_from_template('local_course_banner_builder/easyedu_navigation', $navigationcontext);
 echo html_writer::div(
-    html_writer::tag(
-        'button',
-        html_writer::tag('i', '', ['class' => 'fa fa-columns me-2', 'aria-hidden' => 'true']) .
-            html_writer::span(get_string('sitebannerformatbutton', 'local_course_banner_builder')),
-        [
-            'type' => 'button',
-            'class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action ' .
-                'local-course-banner-builder-admin-format-button',
-            'data-toggle' => 'modal',
-            'data-target' => '#local-course-banner-builder-slideshow-site-format-modal',
-            'data-bs-toggle' => 'modal',
-            'data-bs-target' => '#local-course-banner-builder-slideshow-site-format-modal',
-        ]
-    ) .
-    html_writer::tag(
-        'button',
-        html_writer::tag('i', '', ['class' => 'fa fa-columns me-2', 'aria-hidden' => 'true']) .
-            html_writer::span(get_string('coursebannerformatbutton', 'local_course_banner_builder')),
-        [
-            'type' => 'button',
-            'class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action ' .
-                'local-course-banner-builder-admin-format-button',
-            'data-toggle' => 'modal',
-            'data-target' => '#local-course-banner-builder-slideshow-course-format-modal',
-            'data-bs-toggle' => 'modal',
-            'data-bs-target' => '#local-course-banner-builder-slideshow-course-format-modal',
-        ]
-    ) .
     $deletepluginsettingsform,
-    'local-course-banner-builder-admin-switcher mb-3'
+    'local-course-banner-builder-admin-utilities mb-3'
 );
 echo $siteformatmodal . $courseformatmodal;
 

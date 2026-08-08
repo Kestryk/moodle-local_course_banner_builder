@@ -27,25 +27,6 @@
     z-index: calc(var(--easyedu-navigation-layer-panel, 1066) + 1);
 }
 
-.local-course-banner-builder-admin-switcher > .local-course-banner-builder-easyedu-guide,
-.local-course-banner-builder-admin-switcher > .easyedu-guide {
-    display: inline-flex;
-    flex: 0 0 auto;
-    justify-content: flex-start;
-    margin-right: auto;
-    min-width: 2.55rem;
-    order: -1;
-}
-
-.local-course-banner-builder-admin-switcher
-    > :is(.local-course-banner-builder-easyedu-guide, .easyedu-guide)
-    .easyedu-guide__launcher {
-    box-sizing: border-box;
-    min-width: 2.55rem;
-    text-decoration: none;
-    white-space: nowrap;
-}
-
 .local-course-banner-builder-easyedu-guide .easyedu-guide__launcher-label,
 .path-admin-local-course_banner_builder .easyedu-guide .easyedu-guide__launcher-label {
     border: 0;

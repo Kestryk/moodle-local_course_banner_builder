@@ -53,36 +53,21 @@
         }
     }
 
-    .local-course-banner-builder-admin-switcher {
-        @include easyedu.admin-primary-nav;
-
-        .easyedu-guide__launcher {
-            align-self: center;
-            flex: 0 0 auto;
-            margin-right: 0;
-        }
-
-        .local-course-banner-builder-dashed-action {
-            @include easyedu.admin-primary-nav-action;
-        }
-
-        .local-course-banner-builder-admin-format-button,
-        [data-target*="format-modal"],
-        [data-bs-target*="format-modal"] {
-            @include easyedu.admin-primary-nav-action(format);
-        }
+    // Format choices now belong to the shared Navigation context. Keep the
+    // existing reset action visible only as a small generic utility until its
+    // dedicated Plugin Settings relocation batch is implemented.
+    .local-course-banner-builder-admin-utilities {
+        align-items: center;
+        display: flex;
+        justify-content: flex-end;
 
         .local-course-banner-builder-admin-reset-form {
-            align-items: center;
-            align-self: center;
-            display: inline-flex;
-            margin-left: auto;
+            margin: 0;
         }
 
         .local-course-banner-builder-admin-reset-button {
             @include easyedu.guide-adjacent-action(destructive);
         }
-
     }
 
     .local-course-banner-builder-course-banner-status-actions {

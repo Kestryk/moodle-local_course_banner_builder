@@ -10,8 +10,9 @@ The CCB adaptation provides:
 - one normalized server-prepared context;
 - separate desktop and compact Mustache wrappers;
 - one shared item partial;
-- a compact-panel controller with focus, Escape, backdrop and trigger-offset
-  handling;
+- a compact-panel controller with focus, Escape and backdrop handling; its
+  left-edge trigger is viewport-centred rather than calculated from another
+  page control;
 - an optional Navigation/Guide bridge that projects one launcher per
   presentation and portals the complete Guide root outside transformed panels;
 - examples for nested and empty navigation.
@@ -51,6 +52,12 @@ lifecycle exposes one, then call `bridge.destroy()`. The bridge moves the
 complete Guide root under `document.body`, preserves resolved `--easyedu-*`
 tokens, keeps desktop label reveal, closes the compact panel before opening
 Guide, and restores the original DOM on teardown.
+
+The CCB consumer alignment keeps the desktop Guide label as an out-of-flow
+capsule, so the label never reflows the centred rail. The compact projection is
+one full-width gradient row with its icon and label in the same target. These
+are consumer adaptations pending their next immutable UI Kit snapshot; do not
+copy product routes, format actions or Guide content into another consumer.
 
 The shared source contract does not reconnect EasyStud and CCB: their markup,
 module namespaces, normalized contexts, routes and product actions remain
