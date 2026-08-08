@@ -749,6 +749,8 @@ const openModal = (root, config) => {
     return;
   }
 
+  const returnFocus = !modal.contains(document.activeElement) ? document.activeElement : null;
+  root.easyeduGuideReturnFocus = returnFocus;
   hideChecklist(root, config, true);
   modal.hidden = false;
   modal.classList.add('is-open');
@@ -765,7 +767,7 @@ const openModal = (root, config) => {
   window.setTimeout(() => updateNavScrollButtons(root), 80);
 };
 
-const closeModal = (root, preserveHighlight = false) => {
+const closeModal = (root, preserveHighlight = false, restoreFocus = true) => {
   const modal = root.querySelector(SELECTORS.modal);
   if (!modal) {
     return;
@@ -776,6 +778,11 @@ const closeModal = (root, preserveHighlight = false) => {
   if (!preserveHighlight) {
     hideInterfaceReturn(root, true);
     clearHighlight(root);
+  }
+  const returnFocus = root.easyeduGuideReturnFocus;
+  root.easyeduGuideReturnFocus = null;
+  if (restoreFocus && isVisibleElement(returnFocus)) {
+    returnFocus.focus({preventScroll: true});
   }
 };
 
@@ -1174,7 +1181,7 @@ const bindGuide = (root, config) => {
     if (targetButton && root.contains(targetButton)) {
       event.preventDefault();
       const target = resolveTarget(activeConfig, targetButton.getAttribute('data-easyedu-guide-show-target'));
-      closeModal(root, true);
+      closeModal(root, true, false);
       scrollToTarget(root, target);
       showInterfaceReturn(root);
       return;
@@ -1185,7 +1192,7 @@ const bindGuide = (root, config) => {
       event.preventDefault();
       syncSlideLocks(root, activeConfig);
       renderChecklist(root, activeConfig, startPath.getAttribute('data-easyedu-guide-start-path'));
-      closeModal(root);
+      closeModal(root, false, false);
       const checklist = root.querySelector(SELECTORS.checklist);
       const activeItem = checklist ?
         checklist.querySelector('[data-easyedu-guide-step-index].is-active') :

@@ -12,6 +12,9 @@ many small sections.
 
 #### Changed
 
+- Restored keyboard focus to the visible Guide opener when the CCB Guide closes
+  normally or with Escape, while preserving intentional focus handoff for
+  `Show in interface` and guided-path starts.
 - Corrected the CCB consumer Navigation rail so Course format and Site format
   are first-class rail entries rather than a second legacy bar beneath it.
 - Restored the accepted EasyStud-style visual behavior in the CCB adapter:
