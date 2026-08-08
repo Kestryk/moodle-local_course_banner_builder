@@ -41,6 +41,9 @@ many small sections.
 
 - Added the 320 px mobile cell to the supervised Selected source responsive
   matrix, alongside its existing 390 px and desktop cells.
+- Passed the focused Moodle 5.1 sticky-action checks at 320 px and 390 px,
+  including native Chromium 200% at 390 px. Each run confirmed containment,
+  centring, no console/request failure and full fixture and profile cleanup.
 
 #### Documentation
 

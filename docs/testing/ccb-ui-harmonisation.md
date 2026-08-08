@@ -27,9 +27,29 @@ the PHP source-selection markup and the AMD sticky lifecycle are unchanged.
 The focused responsive scenario now records whether the visible Deselect link
 is centred in the sticky tray and asserts it only below the desktop breakpoint.
 Its supervised matrix includes 320 px, 390 px and desktop/tablet cells at
-100%, plus its existing native-zoom coverage. Its lease-gated execution remains
-pending; this WIP contains static source, generated-CSS and syntax validation
-only, with no preview, cache or browser activity.
+100%, plus its existing native-zoom coverage.
+
+The first full supervised run on 2026-08-08 proved the desktop/tablet cells
+but found the mobile action six pixels right of the outer tray centre at 320 px,
+390 px and native 200%. The source evidence at
+`%LOCALAPPDATA%\EasyEdu\artifacts\ccb\responsive\supervised\ccb-source-preview-responsive-20260808T160908479Z-28508`
+records that failure and its complete fixture/profile restoration. The cause
+was the mobile tray's inherited zero right inset beside its `0.75rem` left
+inset; the responsive CCB rule now restores the matching right inset only below
+the desktop breakpoint.
+
+After the preview promotion and cache purge, the targeted mobile reruns passed
+at 320x844/100%, 390x844/100% and 390x844/native 200%. Each confirms a centred
+and contained Deselect link, zero console or request failures, and complete
+course/category/format/profile cleanup. Their external evidence roots are:
+
+- `%LOCALAPPDATA%\EasyEdu\artifacts\ccb\responsive\supervised\ccb-source-preview-responsive-20260808T161412663Z-25540`;
+- `%LOCALAPPDATA%\EasyEdu\artifacts\ccb\responsive\supervised\ccb-source-preview-responsive-20260808T161535265Z-20396`;
+- `%LOCALAPPDATA%\EasyEdu\artifacts\ccb\responsive\supervised\ccb-source-preview-responsive-20260808T161644768Z-35008`.
+
+Human visual review remains required before production acceptance: inspect the
+320 px and 390 px `source-preview-desktop.png` captures for a visibly centred,
+fully usable Deselect action without right overflow.
 
 ## Crop regression scope — 2026-08-01
 
