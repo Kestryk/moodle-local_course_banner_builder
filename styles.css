@@ -11356,15 +11356,16 @@ span[data-flexitour=container].orphan .modal-dialog {
     gap: 0.6rem;
   }
   .local-course-banner-builder-admin--native .local-course-banner-builder-sticky-leading,
-  .local-course-banner-builder-admin--native .local-course-banner-builder-sticky-deselect,
-  .local-course-banner-builder-selected-source-sticky-holder--portal .local-course-banner-builder-sticky-leading,
-  .local-course-banner-builder-selected-source-sticky-holder--portal .local-course-banner-builder-sticky-deselect {
+  .local-course-banner-builder-selected-source-sticky-holder--portal .local-course-banner-builder-sticky-leading {
     width: 100%;
     max-width: 100%;
   }
   .local-course-banner-builder-admin--native .local-course-banner-builder-sticky-deselect,
   .local-course-banner-builder-selected-source-sticky-holder--portal .local-course-banner-builder-sticky-deselect {
-    align-self: stretch;
+    align-self: center;
+    box-sizing: border-box;
+    width: auto;
+    max-width: 100%;
     right: auto;
   }
   .local-course-banner-builder-admin--native .local-course-banner-builder-sticky-leading,

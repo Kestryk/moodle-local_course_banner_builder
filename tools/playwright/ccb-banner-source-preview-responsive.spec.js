@@ -188,6 +188,9 @@ const readSelectedSourceSticky = async page => page.evaluate(() => {
         drawerToggleRect,
         deselectOverlapsDrawerToggle: overlaps(deselectRect, drawerToggleRect),
         desktopTrayLayout: window.matchMedia('(min-width: 48.0625rem)').matches,
+        deselectCentered: Boolean(deselectRect && Math.abs(
+            (deselectRect.left + (deselectRect.width / 2)) - (stickyRect.left + (stickyRect.width / 2))
+        ) <= 1),
         withinViewport: within(viewport, stickyRect),
         leadingWithinSticky: Boolean(leadingRect && within(stickyRect, leadingRect)),
         deselectWithinSticky: Boolean(deselectRect && within(stickyRect, deselectRect)),
@@ -453,6 +456,9 @@ const assertSelectedSourceSticky = sticky => {
     expect(sticky.deselectWithinViewport).toBe(true);
     expect(sticky.titleOverlapsKicker).toBe(false);
     expect(sticky.leadingOverlapsDeselect).toBe(false);
+    if (!sticky.desktopTrayLayout) {
+        expect(sticky.deselectCentered).toBe(true);
+    }
     if (sticky.desktopTrayLayout && sticky.drawerToggleRect) {
         expect(sticky.deselectOverlapsDrawerToggle).toBe(false);
     }
