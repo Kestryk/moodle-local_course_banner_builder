@@ -12,6 +12,10 @@ many small sections.
 
 #### Changed
 
+- Restored the flat EasyStud desktop Navigation rail in Course Banner Builder:
+  destinations no longer render with a resting background, border or individual
+  capsule, while the active and hover indicators and keyboard focus remain
+  visible. The compact Navigation panel retains its existing tile buttons.
 - Restored keyboard focus to the visible Guide opener when the CCB Guide closes
   normally or with Escape, while preserving intentional focus handoff for
   `Show in interface` and guided-path starts.

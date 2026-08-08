@@ -72,10 +72,12 @@ tests/manager_crop_test.php
 - [ ] PHP syntax checks pass.
 - [ ] Crop PHPUnit tests pass, or GD-dependent coverage is explicitly skipped.
 - [ ] `git diff --check` reports no whitespace errors.
-- [ ] Navigation icons stay plain on desktop and use the EasyStud neutral and
-      active tile states in the compact panel; the compact trigger retains its
-      44px resting target, displays its complete localized label, and the Guide
-      launcher exposes one visible help label without a duplicate popover.
+- [ ] Desktop Navigation remains a flat EasyStud rail without a resting
+      background, border or capsule per destination; icons stay plain on
+      desktop and use the EasyStud neutral and active tile states in the
+      compact panel. The compact trigger retains its 44px resting target,
+      displays its complete localized label, and the Guide launcher exposes one
+      visible help label without a duplicate popover.
 
 ## 4. Installation and upgrade
 
