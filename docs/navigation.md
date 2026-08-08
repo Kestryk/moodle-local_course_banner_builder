@@ -57,10 +57,14 @@ surface. Its resting dimensions use the shared 2.75rem (44px) touch-target
 token on both axes; its text stays visually collapsed until hover or keyboard
 focus.
 
-Desktop destination icons remain plain glyphs in a fixed alignment slot. The
-compact panel deliberately restores the EasyStud icon treatment: a small
-neutral bordered tile at rest and a primary-colour tile for the active entry.
-The surrounding navigation row remains the single interactive target.
+Desktop CCB destinations use the flat EasyStud rail: the rail and each item
+have no resting background, border or individual capsule. Hover and active
+states use only a bottom rail indicator, while keyboard focus retains its
+visible ring. Desktop destination icons remain plain glyphs in a fixed
+alignment slot. The compact panel deliberately keeps the EasyStud icon
+treatment: a small neutral bordered tile at rest and a primary-colour tile for
+the active entry. The surrounding navigation row remains the single
+interactive target.
 
 The Guide launcher keeps `aria-label` as its accessible name. It deliberately
 omits `data-easyedu-navigation-popover`, `title` and equivalent tooltip hooks:

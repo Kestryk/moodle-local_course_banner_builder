@@ -45,3 +45,11 @@ test('expanded trigger width accommodates the CCB localized label', async() => {
     assert.match(tokens, /--easyedu-navigation-trigger-expanded-width:\s*22rem;/u);
     assert.match(navigation, /inline-size:\s*min\([\s\S]*?var\(--easyedu-navigation-trigger-expanded-width\)/u);
 });
+
+test('CCB desktop destinations retain a flat EasyStud rail', async() => {
+    const adapter = await read('scss/components/_easyedu-adapter.scss');
+
+    assert.match(adapter, /\.easyedu-navigation \[data-easyedu-navigation-desktop\] \{[\s\S]*?background:\s*transparent;[\s\S]*?border:\s*0;[\s\S]*?border-radius:\s*0;[\s\S]*?box-shadow:\s*none;/u);
+    assert.match(adapter, /\.easyedu-navigation \[data-easyedu-navigation-desktop\] \.easyedu-navigation__item \{[\s\S]*?background:\s*transparent;[\s\S]*?border:\s*0;[\s\S]*?border-radius:\s*0;[\s\S]*?box-shadow:\s*none;/u);
+    assert.match(adapter, /\.easyedu-navigation \[data-easyedu-navigation-desktop\] \.easyedu-navigation__item\[aria-current="page"\][\s\S]*?background:\s*transparent;[\s\S]*?inset 0 -0\.2rem 0 var\(--easyedu-primary\)/u);
+});
