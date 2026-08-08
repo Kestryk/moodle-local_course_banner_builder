@@ -892,9 +892,9 @@
     // Slideshow rendering is not affected.
     .local-course-banner-builder-slideshow-admin-preview--large
         .local-course-banner-builder-slideshow-action {
-        min-width: max(6rem, var(--local-course-banner-builder-slideshow-action-width, 0px)) !important;
-        height: max(2.25rem, var(--local-course-banner-builder-slideshow-action-height, 0px)) !important;
-        min-height: max(2.25rem, var(--local-course-banner-builder-slideshow-action-height, 0px)) !important;
+        width: var(--local-course-banner-builder-slideshow-action-width) !important;
+        min-width: 6rem !important;
+        min-height: 2.25rem !important;
     }
 
     .local-course-banner-builder-slideshow-admin-preview--large
