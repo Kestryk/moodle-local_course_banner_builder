@@ -252,7 +252,10 @@
       box-shadow: 0 0.3rem 0.7rem rgba(35, 53, 72, 0.22);
       color: var(--easyedu-primary-strong);
       gap: 0.42rem;
-      inline-size: min(12rem, calc(100vw - var(--easyedu-navigation-trigger-safe-edge)));
+      inline-size: min(
+        var(--easyedu-navigation-trigger-expanded-width),
+        calc(100vw - var(--easyedu-navigation-trigger-safe-edge))
+      );
       transform: translate(0.14rem, -50%);
     }
 
@@ -275,7 +278,9 @@
 
   .easyedu-navigation__trigger:hover .easyedu-navigation__trigger-label,
   .easyedu-navigation__trigger:focus-visible .easyedu-navigation__trigger-label {
-    max-inline-size: 10rem;
+    max-inline-size: calc(
+      var(--easyedu-navigation-trigger-expanded-width) - var(--easyedu-touch-target-min) - 1.5rem
+    );
     opacity: 1;
   }
 

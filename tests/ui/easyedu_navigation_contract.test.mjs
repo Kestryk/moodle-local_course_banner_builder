@@ -27,14 +27,21 @@ test('compact Navigation trigger has an explicit 44px token contract', async() =
     assert.match(navigation, /inline-size:\s*var\(--easyedu-touch-target-min\);/u);
 });
 
-test('responsive destination glyphs do not create an icon tile', async() => {
+test('responsive destination glyphs use the EasyStud icon tile states', async() => {
     const responsive = await read('scss/easyedu/components/_responsive.scss');
     const iconRule = responsive.match(/> \.fa:first-child \{(?<body>[\s\S]*?)\n  \}/u);
 
     assert.ok(iconRule?.groups?.body, 'The compact icon rule must remain explicit.');
-    assert.match(iconRule.groups.body, /background:\s*transparent;/u);
-    assert.match(iconRule.groups.body, /border:\s*0;/u);
-    assert.match(iconRule.groups.body, /border-radius:\s*0;/u);
-    assert.match(iconRule.groups.body, /flex:\s*0 0 1rem;/u);
-    assert.doesNotMatch(iconRule.groups.body, /1\.85rem/u);
+    assert.match(iconRule.groups.body, /background:\s*var\(--easyedu-surface\);/u);
+    assert.match(iconRule.groups.body, /border:\s*1px solid var\(--easyedu-card-border\);/u);
+    assert.match(iconRule.groups.body, /flex:\s*0 0 1\.85rem;/u);
+    assert.match(responsive, /&\[aria-current="page"\] > \.fa:first-child,[\s\S]*?background:\s*var\(--easyedu-primary\);/u);
+});
+
+test('expanded trigger width accommodates the CCB localized label', async() => {
+    const tokens = await read('scss/easyedu/_tokens.scss');
+    const navigation = await read('scss/easyedu/components/_navigation.scss');
+
+    assert.match(tokens, /--easyedu-navigation-trigger-expanded-width:\s*22rem;/u);
+    assert.match(navigation, /inline-size:\s*min\([\s\S]*?var\(--easyedu-navigation-trigger-expanded-width\)/u);
 });

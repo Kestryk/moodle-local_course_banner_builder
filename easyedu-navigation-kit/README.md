@@ -63,13 +63,15 @@ copy product routes, format actions or Guide content into another consumer.
 
 Every future Navigation consumer must preserve these shared details:
 
-- destination icons are plain glyphs in a fixed one-rem alignment slot on both
-  desktop and compact layouts; they must not gain an icon tile, border, rounded
-  box or independent active background;
+- desktop destination icons are plain glyphs in a fixed one-rem alignment
+  slot. Compact destinations use the established EasyStud icon tile: a neutral
+  bordered surface at rest and the primary colour on the active icon;
 - the compact left-edge half-pill uses the public
   `--easyedu-touch-target-min: 2.75rem` token for its resting block size,
   inline size and minimum dimensions, remains fixed at the viewport centre and
-  expands only its text label on hover or keyboard focus;
+  expands only its text label on hover or keyboard focus. Consumers with longer
+  localized labels configure `--easyedu-navigation-trigger-expanded-width`
+  rather than clipping or replacing that text;
 - a Guide launcher that already exposes the animated desktop label or the
   permanent compact label must not also opt into a browser, Moodle or
   Navigation popover. Keep its accessible name in `aria-label`, but omit

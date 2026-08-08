@@ -57,10 +57,10 @@ surface. Its resting dimensions use the shared 2.75rem (44px) touch-target
 token on both axes; its text stays visually collapsed until hover or keyboard
 focus.
 
-Navigation destination icons are plain glyphs in the same fixed alignment slot
-on desktop and in the compact panel. An icon never receives its own surface,
-border, rounded tile or active background; the navigation row remains the one
-interactive target.
+Desktop destination icons remain plain glyphs in a fixed alignment slot. The
+compact panel deliberately restores the EasyStud icon treatment: a small
+neutral bordered tile at rest and a primary-colour tile for the active entry.
+The surrounding navigation row remains the single interactive target.
 
 The Guide launcher keeps `aria-label` as its accessible name. It deliberately
 omits `data-easyedu-navigation-popover`, `title` and equivalent tooltip hooks:
@@ -118,8 +118,9 @@ desktop and at 390 px:
 - the desktop Guide capsule does not move the centred destinations or clip its
   shadow, has no second hover bubble, and the compact Guide is one full-width
   gradient target where available;
-- desktop and compact destination icons remain plain, aligned glyphs without
-  an icon tile, and the closed compact handle measures 44px by 44px;
+- desktop destination icons remain plain and compact icons use the EasyStud
+  neutral/active tile states; the closed compact handle measures 44px by 44px
+  and its expanded state shows the complete localized CCB label;
 - a compact Guide opens in a viewport overlay above the panel, closes cleanly
   and has no console error or overflow; and
 - the two format links open their existing format modal flow, and the existing

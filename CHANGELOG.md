@@ -23,18 +23,21 @@ many small sections.
 - Made the compact Guide launcher one full-width gradient row with a single
   icon-and-label target, including its inverse hover/focus treatment.
 - Removed the redundant Guide hover popover while retaining its animated label
-  and accessible name, restored plain untiled destination icons in desktop and
-  compact navigation, and fixed the compact half-pill at the shared 44px touch
-  target instead of an unresolved token-dependent size.
+  and accessible name, preserved plain desktop icons, restored the EasyStud
+  neutral/active icon treatment inside the compact panel, and fixed the compact
+  half-pill at the shared 44px touch target instead of an unresolved
+  token-dependent size.
+- Made the responsive Navigation handle's expanded width consumer-configurable
+  so the complete localized Course Banner Builder label remains visible.
 
 #### Documentation
 
 - Recorded the planned relocation of the destructive all-settings reset into a
   dedicated general Plugin Settings danger zone; the existing secure action is
   unchanged in this Navigation correction.
-- Recorded the vendorable Navigation rule for untiled icons, a fixed 44px
-  compact trigger and a single Guide help label so future UI Kit consumers do
-  not reintroduce these CCB regressions.
+- Recorded the vendorable Navigation rule for plain desktop icons, EasyStud
+  compact icon states, a fixed 44px trigger with configurable expanded width
+  and a single Guide help label.
 
 ### 2026-08-07
 

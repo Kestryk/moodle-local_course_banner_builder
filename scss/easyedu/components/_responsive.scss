@@ -211,19 +211,16 @@
 
   > .fa:first-child {
     align-items: center;
-    background: transparent;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
-    color: currentColor;
+    background: var(--easyedu-surface);
+    border: 1px solid var(--easyedu-card-border);
+    border-radius: calc(var(--easyedu-control-radius) - 0.18rem);
+    color: var(--easyedu-primary-strong);
     display: inline-flex;
-    flex: 0 0 1rem;
-    height: 1rem;
+    flex: 0 0 1.85rem;
+    height: 1.85rem;
     justify-content: center;
-    line-height: 1;
     margin: 0 !important;
-    min-inline-size: 1rem;
-    width: 1rem;
+    width: 1.85rem;
   }
 
   &:hover,
@@ -244,9 +241,9 @@
 
   &[aria-current="page"] > .fa:first-child,
   &.active > .fa:first-child {
-    background: transparent;
-    border-color: transparent;
-    color: currentColor;
+    background: var(--easyedu-primary);
+    border-color: var(--easyedu-primary);
+    color: var(--easyedu-identity-icon-color);
   }
 
   &:focus-visible {
