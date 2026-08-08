@@ -64,6 +64,12 @@ also retains readable minimum sizes for labels, title, body and action. This
 rule is deliberately limited to the large administration preview; it does not
 change the public Slideshow layout or its configured ratios.
 
+The editor also measures its rendered label group after the modal is visible
+and after a preview or label resize. If the group would cross the visible
+preview edge, it applies a temporary pixel offset to the administration
+preview only. The saved `labelx` value and public Slideshow CSS remain the
+authority, so this does not silently rewrite a banner's configured position.
+
 At the 390 px mobile viewport, the matrix requires a preview at least 200 px
 high, label text at least 12 px, title text at least 16 px, and body/action
 text at least 13 px. The complete label group must remain within the preview.
@@ -87,3 +93,9 @@ The scenario starts its request-failure window only after the Slideshow page
 is network-idle and redacts URL parameters in its JSON evidence. Human visual
 acceptance is still required from the CDP images; the matrix's geometry checks
 do not replace it.
+
+On 2026-08-07, the first localhost preview run correctly stopped at the tablet
+Course cell because the complete label group was 24.5 px outside the left
+preview edge. The source correction above is awaiting a fresh approved preview
+promotion and the same single-scenario rerun; no public rendering result is
+claimed.

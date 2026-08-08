@@ -892,6 +892,10 @@
             var(--local-course-banner-builder-slideshow-label-x, 14%),
             100%
         );
+        max-inline-size: calc(100% - 1rem);
+        transform:
+            translateX(var(--local-course-banner-builder-slideshow-label-admin-nudge-x, 0px))
+            translate(var(--local-course-banner-builder-slideshow-label-translate-x, -50%), -50%);
     }
 }
 
