@@ -48,6 +48,7 @@ powershell -ExecutionPolicy Bypass -File .\scss\build.ps1
 node --check .\amd\src\admin_manage.js
 node --check .\amd\src\easyedu_guide.js
 node --check .\amd\src\slideshow_admin.js
+node --test .\tests\amd\easyedu_guide_focus_return.test.mjs
 git diff --check
 ```
 
