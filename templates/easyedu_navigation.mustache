@@ -45,17 +45,19 @@
         {{/hasitems}}
     </nav>
 
-    <button
-        type="button"
-        class="easyedu-navigation__trigger"
-        data-easyedu-navigation-open="1"
-        aria-controls="{{panelid}}"
-        aria-expanded="false"
-        aria-label="{{triggerlabel}}"
-    >
-        <span class="{{triggericon}}" aria-hidden="true"></span>
-        <span>{{triggerlabel}}</span>
-    </button>
+    <div class="easyedu-navigation__trigger-row" data-easyedu-navigation-trigger-row="1">
+        <button
+            type="button"
+            class="easyedu-navigation__trigger"
+            data-easyedu-navigation-open="1"
+            aria-controls="{{panelid}}"
+            aria-expanded="false"
+            aria-label="{{triggerlabel}}"
+        >
+            <span class="{{triggericon}}" aria-hidden="true"></span>
+            <span class="easyedu-navigation__trigger-label">{{triggerlabel}}</span>
+        </button>
+    </div>
 
     <div
         class="easyedu-navigation__backdrop"

@@ -111,30 +111,6 @@ echo html_writer::start_div('local-course-banner-builder-admin local-course-bann
 $navigationcontext = \local_course_banner_builder\output\navigation::context('transfer');
 echo $OUTPUT->render_from_template('local_course_banner_builder/easyedu_navigation', $navigationcontext);
 echo html_writer::div(
-    html_writer::link(
-        new moodle_url('/local/course_banner_builder/admin_manage.php', [
-            'openformatmodal' => 1,
-            'bannerformatcontext' => 'course',
-        ]),
-        html_writer::tag('i', '', ['class' => 'fa fa-columns me-2', 'aria-hidden' => 'true']) .
-            html_writer::span(get_string('coursebannerformatbutton', 'local_course_banner_builder')),
-        [
-            'class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action ' .
-                'local-course-banner-builder-admin-format-button',
-        ]
-    ) .
-    html_writer::link(
-        new moodle_url('/local/course_banner_builder/admin_site.php', [
-            'openformatmodal' => 1,
-            'bannerformatcontext' => 'site',
-        ]),
-        html_writer::tag('i', '', ['class' => 'fa fa-columns me-2', 'aria-hidden' => 'true']) .
-            html_writer::span(get_string('sitebannerformatbutton', 'local_course_banner_builder')),
-        [
-            'class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action ' .
-                'local-course-banner-builder-admin-format-button',
-        ]
-    ) .
     html_writer::tag(
         'form',
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]) .
@@ -163,7 +139,7 @@ echo html_writer::div(
             'class' => 'd-inline local-course-banner-builder-admin-reset-form',
         ]
     ),
-    'local-course-banner-builder-admin-switcher mb-3'
+    'local-course-banner-builder-admin-utilities mb-3'
 );
 echo html_writer::tag(
     'p',

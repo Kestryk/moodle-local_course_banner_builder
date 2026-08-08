@@ -20,7 +20,7 @@ namespace local_course_banner_builder\output;
  * Prepares the product-owned Navigation destinations for the shared template.
  */
 final class navigation {
-    /** @var array<string, array{label: string, url: string, icon: string}> */
+    /** @var array<string, array{label: string, url: string, icon: string, params?: array<string, int|string>}> */
     private const DESTINATIONS = [
         'course' => [
             'label' => 'managecoursebannersquick',
@@ -41,6 +41,24 @@ final class navigation {
             'label' => 'transferconfig',
             'url' => '/local/course_banner_builder/admin_transfer.php',
             'icon' => 'fa fa-right-left',
+        ],
+        'course-format' => [
+            'label' => 'coursebannerformatbutton',
+            'url' => '/local/course_banner_builder/admin_manage.php',
+            'params' => [
+                'openformatmodal' => 1,
+                'bannerformatcontext' => 'course',
+            ],
+            'icon' => 'fa fa-columns',
+        ],
+        'site-format' => [
+            'label' => 'sitebannerformatbutton',
+            'url' => '/local/course_banner_builder/admin_site.php',
+            'params' => [
+                'openformatmodal' => 1,
+                'bannerformatcontext' => 'site',
+            ],
+            'icon' => 'fa fa-columns',
         ],
     ];
 
@@ -68,7 +86,7 @@ final class navigation {
                 'kind' => 'destination',
                 'label' => $label,
                 'accessiblelabel' => $label,
-                'url' => (new \moodle_url($destination['url']))->out(false),
+                'url' => (new \moodle_url($destination['url'], $destination['params'] ?? []))->out(false),
                 'icon' => $destination['icon'],
                 'islink' => true,
                 'current' => $id === $current,

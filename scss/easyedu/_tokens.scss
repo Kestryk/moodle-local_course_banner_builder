@@ -22,6 +22,14 @@
   --easyedu-navigation-layer-trigger: 1064;
   --easyedu-navigation-layer-backdrop: 1065;
   --easyedu-navigation-layer-panel: 1066;
+  --easyedu-navigation-guide-launcher-gradient: linear-gradient(
+    135deg,
+    var(--easyedu-primary) 0%,
+    var(--easyedu-accent) 100%
+  );
+  --easyedu-navigation-guide-launcher-border: rgba(255, 255, 255, 0.86);
+  --easyedu-navigation-guide-launcher-radius: 0.9rem;
+  --easyedu-navigation-guide-launcher-shadow: 0 0.48rem 1rem rgba(35, 93, 115, 0.28);
   --easyedu-navigation-guide-surface: linear-gradient(
     135deg,
     color-mix(in srgb, var(--easyedu-primary) 10%, var(--easyedu-surface) 90%) 0%,

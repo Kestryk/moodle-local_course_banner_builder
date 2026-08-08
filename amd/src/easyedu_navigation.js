@@ -86,20 +86,72 @@ const bindDisclosure = root => {
 
 const bindLabelReveal = root => {
     const entries = Array.from(root.querySelectorAll('[data-easyedu-navigation-label-reveal]'));
+    const navigation = root.querySelector('[data-easyedu-navigation-desktop]');
+    const isVisible = element => !!element && element.getClientRects().length > 0 &&
+        window.getComputedStyle(element).visibility !== 'hidden';
+    const overlaps = (first, second) => first.left < second.right && first.right > second.left &&
+        first.top < second.bottom && first.bottom > second.top;
+    const placeLabel = entry => {
+        const label = entry.querySelector('.easyedu-guide__launcher-label');
+        if (!label || !navigation || !isVisible(entry)) {
+            return;
+        }
+        entry.classList.remove('is-guide-label-top', 'is-guide-label-top-end');
+        const navigationItems = Array.from(navigation.querySelectorAll('[data-easyedu-navigation-item-id]'))
+            .filter(isVisible);
+        if (!navigationItems.some(item => overlaps(label.getBoundingClientRect(), item.getBoundingClientRect()))) {
+            return;
+        }
+        entry.classList.add('is-guide-label-top');
+        const rect = label.getBoundingClientRect();
+        if (rect.right > window.innerWidth - 8 || rect.top < 8) {
+            entry.classList.add('is-guide-label-top-end');
+        }
+    };
     const reveal = entry => entries.forEach(candidate => {
+        candidate.classList.remove('is-guide-label-suppressed');
         candidate.classList.toggle('is-label-revealed', candidate === entry);
     });
-    const clear = event => {
-        const entry = event.currentTarget;
+    const clear = (entry, event) => {
         if (!entry.contains(event.relatedTarget)) {
             entry.classList.remove('is-label-revealed');
+            const modal = document.querySelector('[data-easyedu-guide-modal].is-open:not([hidden])');
+            if (!modal) {
+                entry.classList.remove('is-guide-label-suppressed');
+            }
         }
     };
     entries.forEach(entry => {
-        entry.addEventListener('pointerenter', () => reveal(entry));
-        entry.addEventListener('focusin', () => reveal(entry));
-        entry.addEventListener('pointerleave', clear);
-        entry.addEventListener('focusout', clear);
+        const isDesktopLauncherEvent = event => {
+            const trigger = event.target.closest('[data-easyedu-navigation-guide-launcher="desktop"]');
+            return !!trigger && entry.contains(trigger);
+        };
+        // The Guide bridge appends the launcher after this controller has been
+        // initialised. Delegation keeps the label contract independent from
+        // that safe portal order.
+        entry.addEventListener('pointerover', event => {
+            if (!isDesktopLauncherEvent(event)) {
+                return;
+            }
+            placeLabel(entry);
+            reveal(entry);
+        });
+        entry.addEventListener('focusin', event => {
+            if (!isDesktopLauncherEvent(event)) {
+                return;
+            }
+            placeLabel(entry);
+            reveal(entry);
+        });
+        entry.addEventListener('click', event => {
+            if (!isDesktopLauncherEvent(event)) {
+                return;
+            }
+            entry.classList.add('is-guide-label-suppressed');
+            entry.classList.remove('is-label-revealed');
+        });
+        entry.addEventListener('pointerout', event => clear(entry, event));
+        entry.addEventListener('focusout', event => clear(entry, event));
     });
 };
 
@@ -116,34 +168,8 @@ const bindRoot = root => {
         return null;
     }
 
-    const anchorSelector = root.getAttribute('data-easyedu-navigation-anchor-selector');
-    let positionFrame = 0;
     const isCompactAvailable = () => window.getComputedStyle(trigger).display !== 'none' &&
         trigger.getClientRects().length > 0;
-
-    const syncTriggerPosition = () => {
-        positionFrame = 0;
-        let anchor = null;
-        if (anchorSelector) {
-            try {
-                anchor = document.querySelector(anchorSelector);
-            } catch (error) {
-                anchor = null;
-            }
-        }
-        if (!anchor || !anchor.getClientRects().length) {
-            root.style.removeProperty('--easyedu-navigation-native-trigger-edge');
-            return;
-        }
-        const edge = Math.max(0, Math.ceil(anchor.getBoundingClientRect().bottom));
-        root.style.setProperty('--easyedu-navigation-native-trigger-edge', `${edge}px`);
-    };
-
-    const scheduleTriggerPosition = () => {
-        if (!positionFrame) {
-            positionFrame = window.requestAnimationFrame(syncTriggerPosition);
-        }
-    };
 
     const setOpen = (open, restoreFocus = true, force = false) => {
         if (open && !force && !isCompactAvailable()) {
@@ -221,20 +247,16 @@ const bindRoot = root => {
         if (!isCompactAvailable()) {
             setOpen(false, false);
         }
-        scheduleTriggerPosition();
     };
 
     window.addEventListener('resize', onViewportChange);
-    window.addEventListener('scroll', scheduleTriggerPosition, {passive: true});
     bindDisclosure(root);
     bindLabelReveal(root);
-    syncTriggerPosition();
     setOpen(false, false);
 
     const controller = {
         close: restoreFocus => setOpen(false, restoreFocus !== false),
         open: () => setOpen(true),
-        syncPosition: syncTriggerPosition,
     };
     roots.set(root, controller);
     return controller;

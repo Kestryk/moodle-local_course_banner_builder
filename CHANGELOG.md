@@ -8,6 +8,24 @@ many small sections.
 
 ## Unreleased
 
+### 2026-08-08
+
+#### Changed
+
+- Corrected the CCB consumer Navigation rail so Course format and Site format
+  are first-class rail entries rather than a second legacy bar beneath it.
+- Restored the accepted EasyStud-style visual behavior in the CCB adapter:
+  plain fixed-slot rail icons, a non-shifting desktop Guide label capsule,
+  unclipped Guide shadow, and the left-centred responsive half-pill trigger.
+- Made the compact Guide launcher one full-width gradient row with a single
+  icon-and-label target, including its inverse hover/focus treatment.
+
+#### Documentation
+
+- Recorded the planned relocation of the destructive all-settings reset into a
+  dedicated general Plugin Settings danger zone; the existing secure action is
+  unchanged in this Navigation correction.
+
 ### 2026-08-07
 
 #### Changed
