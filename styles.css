@@ -11354,6 +11354,7 @@ span[data-flexitour=container].orphan .modal-dialog {
     align-items: stretch;
     flex-direction: column;
     gap: 0.6rem;
+    padding-right: 0.75rem;
   }
   .local-course-banner-builder-admin--native .local-course-banner-builder-sticky-leading,
   .local-course-banner-builder-selected-source-sticky-holder--portal .local-course-banner-builder-sticky-leading {
