@@ -53,7 +53,20 @@ launcher-shadow clipping, and keep the compact icon and label in one target.
 The compact trigger is a fixed left-edge half-pill centred in the viewport. It
 does not calculate a position from Moodle's native drawer control or from page
 scrolling, so the native top-edge control remains a separate, non-overlapping
-surface. Its text stays visually collapsed until hover or keyboard focus.
+surface. Its resting dimensions use the shared 2.75rem (44px) touch-target
+token on both axes; its text stays visually collapsed until hover or keyboard
+focus.
+
+Navigation destination icons are plain glyphs in the same fixed alignment slot
+on desktop and in the compact panel. An icon never receives its own surface,
+border, rounded tile or active background; the navigation row remains the one
+interactive target.
+
+The Guide launcher keeps `aria-label` as its accessible name. It deliberately
+omits `data-easyedu-navigation-popover`, `title` and equivalent tooltip hooks:
+the animated desktop label and the permanent compact label already provide the
+visible explanation, so an additional hover bubble would be redundant. This
+is a required consumer rule for the next canonical UI Kit snapshot.
 
 The CCB embedded Responsive surface predates the five public mixins used by the
 snapshot. Its local supplement is deliberately limited to the Navigation panel,
@@ -103,8 +116,10 @@ desktop and at 390 px:
   the correct active item;
 - Tab, Escape, backdrop and focus return work in the compact panel;
 - the desktop Guide capsule does not move the centred destinations or clip its
-  shadow, and the compact Guide is one full-width gradient target where
-  available;
+  shadow, has no second hover bubble, and the compact Guide is one full-width
+  gradient target where available;
+- desktop and compact destination icons remain plain, aligned glyphs without
+  an icon tile, and the closed compact handle measures 44px by 44px;
 - a compact Guide opens in a viewport overlay above the panel, closes cleanly
   and has no console error or overflow; and
 - the two format links open their existing format modal flow, and the existing

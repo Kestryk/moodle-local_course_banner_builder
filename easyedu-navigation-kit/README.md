@@ -59,6 +59,26 @@ one full-width gradient row with its icon and label in the same target. These
 are consumer adaptations pending their next immutable UI Kit snapshot; do not
 copy product routes, format actions or Guide content into another consumer.
 
+## Required visual and help contract
+
+Every future Navigation consumer must preserve these shared details:
+
+- destination icons are plain glyphs in a fixed one-rem alignment slot on both
+  desktop and compact layouts; they must not gain an icon tile, border, rounded
+  box or independent active background;
+- the compact left-edge half-pill uses the public
+  `--easyedu-touch-target-min: 2.75rem` token for its resting block size,
+  inline size and minimum dimensions, remains fixed at the viewport centre and
+  expands only its text label on hover or keyboard focus;
+- a Guide launcher that already exposes the animated desktop label or the
+  permanent compact label must not also opt into a browser, Moodle or
+  Navigation popover. Keep its accessible name in `aria-label`, but omit
+  `title`, `data-easyedu-navigation-popover` and equivalent tooltip attributes.
+
+These constraints are part of the vendorable Navigation contract, not CCB
+decoration. The canonical UI Kit owner must reproduce them in the next reviewed
+snapshot before another plugin imports Navigation.
+
 The shared source contract does not reconnect EasyStud and CCB: their markup,
 module namespaces, normalized contexts, routes and product actions remain
 local and must be changed in their own documented batches.

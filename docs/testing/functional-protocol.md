@@ -97,8 +97,8 @@ Status values:
 | AUTH-04 | Student opens builder | Access denied | Behat | Blocked |
 | LOAD-01 | Course banner admin loads with no configured source | CCB root remains available | Behat | Existing smoke |
 | LOAD-02 | Site, slideshow, and transfer views load | Correct CCB root and shared Navigation rail | Behat | Candidate |
-| NAV-01 | Open every CCB administration destination | Rail exposes Course, Site, Slideshow, Transfer, Course format and Site format; the active view is identified | Playwright/manual | Candidate |
-| NAV-02 | Open and close the compact rail | The left-centred half-pill trigger, backdrop, Escape and focus return work without horizontal overflow or collision with Moodle's native drawer control | Playwright/manual | Candidate |
+| NAV-01 | Open every CCB administration destination | Rail exposes Course, Site, Slideshow, Transfer, Course format and Site format; the active view is identified and every destination icon remains a plain aligned glyph without its own tile | Playwright/manual | Candidate |
+| NAV-02 | Open and close the compact rail | The closed left-centred half-pill is 44px by 44px; backdrop, Escape and focus return work without horizontal overflow or collision with Moodle's native drawer control | Playwright/manual | Candidate |
 | SRC-01 | Create and select category source | Source becomes active | Behat | Blocked |
 | SRC-02 | Create custom-field source | Value-specific source is available | Behat | Blocked |
 | SRC-03 | Configure inheritance chain | Final layer order follows inheritance rules | PHPUnit/Behat | Blocked |
@@ -124,7 +124,7 @@ Status values:
 | GUIDE-01 | Open guide and navigate slides | Slide state and keyboard navigation remain stable | Playwright | Blocked |
 | GUIDE-02 | Show target in interface | Highlight stays aligned and return panel appears | Playwright | Blocked |
 | GUIDE-03 | Complete guided path | Checklist, prerequisite, reload, and return state work | Playwright | Blocked |
-| GUIDE-04 | Open Guide from the CCB rail | Desktop label reveal does not shift destinations or clip its shadow; compact launcher closes the panel, opens Guide above it and returns focus after close | Playwright/manual | Candidate |
+| GUIDE-04 | Open Guide from the CCB rail | Desktop label reveal does not shift destinations, clip its shadow or create a second tooltip; compact launcher closes the panel, opens Guide above it and returns focus after close | Playwright/manual | Candidate |
 | ERR-01 | Open builder without sources | Actionable empty state, no console error | Behat | Candidate |
 | ERR-02 | Server-side validation fails | Localised message and submitted data remain understandable | Behat | Blocked |
 | A11Y-01 | Scan admin root | No serious or critical plugin-region axe violations | Behat/Playwright | Existing smoke |

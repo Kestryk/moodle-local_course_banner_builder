@@ -181,6 +181,10 @@
 
     > .easyedu-navigation__item-icon {
       align-items: center;
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
       display: inline-flex;
       flex: 0 0 1rem;
       height: 1rem;
@@ -206,6 +210,10 @@
   .easyedu-navigation__trigger {
     @include buttons.icon-button(regular);
 
+    // Keep the resting half-pill at the same 44px touch target as EasyStud.
+    // Explicit block and inline dimensions prevent inherited Moodle button
+    // sizing from shrinking either axis independently.
+    block-size: var(--easyedu-touch-target-min);
     background: color-mix(in srgb, var(--easyedu-card-border) 28%, var(--easyedu-surface) 72%);
     border: 1px solid var(--easyedu-card-border);
     border-radius: 0 999px 999px 0;
