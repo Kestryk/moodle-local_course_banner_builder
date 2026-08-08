@@ -18,6 +18,15 @@
     @include easyedu.guided-panel;
 }
 
+// EED-NAV-2026-0006 Navigation/Guide portal adapter. The bridge moves this
+// existing CCB Guide root under body. Keep its modal above the compact
+// Navigation panel without importing or altering the product-owned Guide
+// engine, content or progression state.
+.local-course-banner-builder-easyedu-guide[data-easyedu-guide-portalled="1"] .easyedu-guide-modal,
+.path-admin-local-course_banner_builder .easyedu-guide[data-easyedu-guide-portalled="1"] .easyedu-guide-modal {
+    z-index: calc(var(--easyedu-navigation-layer-panel, 1066) + 1);
+}
+
 .local-course-banner-builder-admin-switcher > .local-course-banner-builder-easyedu-guide,
 .local-course-banner-builder-admin-switcher > .easyedu-guide {
     display: inline-flex;

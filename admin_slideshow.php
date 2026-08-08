@@ -47,6 +47,9 @@ try {
 $PAGE->requires->css('/local/course_banner_builder/styles.css');
 $PAGE->requires->js_call_amd('local_course_banner_builder/slideshow_admin', 'init');
 $PAGE->requires->js_call_amd('local_course_banner_builder/admin_navigation', 'init');
+$PAGE->requires->js_call_amd('local_course_banner_builder/easyedu_navigation_guide', 'init', [
+    '[data-easyedu-navigation]',
+]);
 $PAGE->requires->js_call_amd('local_course_banner_builder/easyedu_guide', 'init', [
     '[data-easyedu-guide-root]',
     [
@@ -58,7 +61,7 @@ $PAGE->requires->js_call_amd('local_course_banner_builder/easyedu_guide', 'init'
             'visited' => get_string('guidevisitedlabel', 'local_course_banner_builder'),
         ],
         'targets' => [
-            'adminNav' => '.local-course-banner-builder-admin-switcher',
+            'adminNav' => '[data-easyedu-guide-target="adminNav"]',
             'contextCards' => '.local-course-banner-builder-slideshow-enable-button',
             'appearance' => '.local-course-banner-builder-slideshow-edit-appearance-button',
             'preview' => '.local-course-banner-builder-slideshow-admin-preview',
@@ -2643,35 +2646,9 @@ unset($guideslide);
 $guidecontext['slidecount'] = count($guidecontext['slides']);
 $guidecontext['initialprogress'] = $guidecontext['slidecount'] > 0 ? round(100 / $guidecontext['slidecount'], 2) : 0;
 $guidehtml = $OUTPUT->render_from_template('local_course_banner_builder/easyedu_guide', $guidecontext);
+$navigationcontext = \local_course_banner_builder\output\navigation::context('slideshow', $guidehtml);
+echo $OUTPUT->render_from_template('local_course_banner_builder/easyedu_navigation', $navigationcontext);
 echo html_writer::div(
-    $guidehtml .
-    html_writer::link(
-        new moodle_url('/local/course_banner_builder/admin_manage.php'),
-        html_writer::tag('i', '', ['class' => 'fa fa-image me-2', 'aria-hidden' => 'true']) .
-            html_writer::span(get_string('managecoursebannersquick', 'local_course_banner_builder')),
-        ['class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action']
-    ) .
-    html_writer::link(
-        new moodle_url('/local/course_banner_builder/admin_site.php'),
-        html_writer::tag('i', '', ['class' => 'fa fa-desktop me-2', 'aria-hidden' => 'true']) .
-            html_writer::span(get_string('managesitebannerquick', 'local_course_banner_builder')),
-        ['class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action']
-    ) .
-    html_writer::link(
-        new moodle_url('/local/course_banner_builder/admin_slideshow.php'),
-        html_writer::tag('i', '', ['class' => 'fa fa-images me-2', 'aria-hidden' => 'true']) .
-            html_writer::span(get_string('manageslideshowquick', 'local_course_banner_builder')),
-        [
-            'class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action active',
-            'aria-current' => 'page',
-        ]
-    ) .
-    html_writer::link(
-        new moodle_url('/local/course_banner_builder/admin_transfer.php'),
-        html_writer::tag('i', '', ['class' => 'fa fa-right-left me-2', 'aria-hidden' => 'true']) .
-            html_writer::span(get_string('transferconfig', 'local_course_banner_builder')),
-        ['class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action']
-    ) .
     html_writer::tag(
         'button',
         html_writer::tag('i', '', ['class' => 'fa fa-columns me-2', 'aria-hidden' => 'true']) .

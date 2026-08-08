@@ -54,6 +54,9 @@ $PAGE->set_title(get_string('exportimport', 'local_course_banner_builder'));
 $PAGE->set_heading(get_string('exportimport', 'local_course_banner_builder'));
 $PAGE->requires->css('/local/course_banner_builder/styles.css');
 $PAGE->requires->js_call_amd('local_course_banner_builder/admin_navigation', 'init');
+$PAGE->requires->js_call_amd('local_course_banner_builder/easyedu_navigation_guide', 'init', [
+    '[data-easyedu-navigation]',
+]);
 
 $importform = new \local_course_banner_builder\form\import_configuration_form($url);
 
@@ -105,34 +108,9 @@ if ($importdata = $importform->get_data()) {
 
 echo $OUTPUT->header();
 echo html_writer::start_div('local-course-banner-builder-admin local-course-banner-builder-admin--native');
+$navigationcontext = \local_course_banner_builder\output\navigation::context('transfer');
+echo $OUTPUT->render_from_template('local_course_banner_builder/easyedu_navigation', $navigationcontext);
 echo html_writer::div(
-    html_writer::link(
-        new moodle_url('/local/course_banner_builder/admin_manage.php'),
-        html_writer::tag('i', '', ['class' => 'fa fa-image me-2', 'aria-hidden' => 'true']) .
-            html_writer::span(get_string('managecoursebannersquick', 'local_course_banner_builder')),
-        ['class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action']
-    ) .
-    html_writer::link(
-        new moodle_url('/local/course_banner_builder/admin_site.php'),
-        html_writer::tag('i', '', ['class' => 'fa fa-desktop me-2', 'aria-hidden' => 'true']) .
-            html_writer::span(get_string('managesitebannerquick', 'local_course_banner_builder')),
-        ['class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action']
-    ) .
-    html_writer::link(
-        new moodle_url('/local/course_banner_builder/admin_slideshow.php'),
-        html_writer::tag('i', '', ['class' => 'fa fa-images me-2', 'aria-hidden' => 'true']) .
-            html_writer::span(get_string('manageslideshowquick', 'local_course_banner_builder')),
-        ['class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action']
-    ) .
-    html_writer::link(
-        new moodle_url('/local/course_banner_builder/admin_transfer.php'),
-        html_writer::tag('i', '', ['class' => 'fa fa-right-left me-2', 'aria-hidden' => 'true']) .
-            html_writer::span(get_string('transferconfig', 'local_course_banner_builder')),
-        [
-            'class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action active',
-            'aria-current' => 'page',
-        ]
-    ) .
     html_writer::link(
         new moodle_url('/local/course_banner_builder/admin_manage.php', [
             'openformatmodal' => 1,

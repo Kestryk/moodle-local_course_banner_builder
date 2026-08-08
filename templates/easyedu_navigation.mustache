@@ -1,0 +1,109 @@
+{{!
+    @template local_course_banner_builder/easyedu_navigation
+
+    Reference wrapper for one normalized navigation context.
+    Consumers must adapt the namespace of the shared item partial.
+}}
+<div
+    id="{{rootid}}"
+    class="easyedu-navigation"
+    data-easyedu-navigation="1"
+    {{#anchorselector}}data-easyedu-navigation-anchor-selector="{{anchorselector}}"{{/anchorselector}}
+    {{#guidetarget}}data-easyedu-guide-target="{{guidetarget}}"{{/guidetarget}}
+>
+    <nav
+        class="easyedu-navigation__desktop"
+        data-easyedu-navigation-desktop="1"
+        aria-label="{{navigationlabel}}"
+    >
+        {{#hasparticipantdropdown}}
+        <div class="easyedu-navigation__participant-source" data-easyedu-navigation-participant-source="1">
+            {{#participantdropdown}}{{> core/select_menu }}{{/participantdropdown}}
+        </div>
+        {{/hasparticipantdropdown}}
+        {{#hasguide}}
+        <div class="easyedu-navigation__guide-source" data-easyedu-navigation-guide-source="1" data-easyedu-navigation-label-reveal="1">
+            {{{guidehtml}}}
+        </div>
+        {{/hasguide}}
+        {{#hasitems}}
+        <div class="easyedu-navigation__sections">
+            {{#sections}}
+            <section class="easyedu-navigation__section" data-easyedu-navigation-section="{{id}}">
+                <h2 class="easyedu-navigation__section-title">{{label}}</h2>
+                <ul class="easyedu-navigation__items">
+                    {{#items}}
+                        {{> local_course_banner_builder/easyedu_navigation_items }}
+                    {{/items}}
+                </ul>
+            </section>
+            {{/sections}}
+        </div>
+        {{/hasitems}}
+        {{^hasitems}}
+        <p class="easyedu-navigation__empty">{{emptylabel}}</p>
+        {{/hasitems}}
+    </nav>
+
+    <button
+        type="button"
+        class="easyedu-navigation__trigger"
+        data-easyedu-navigation-open="1"
+        aria-controls="{{panelid}}"
+        aria-expanded="false"
+        aria-label="{{triggerlabel}}"
+    >
+        <span class="{{triggericon}}" aria-hidden="true"></span>
+        <span>{{triggerlabel}}</span>
+    </button>
+
+    <div
+        class="easyedu-navigation__backdrop"
+        data-easyedu-navigation-backdrop="1"
+        hidden
+    ></div>
+
+    <aside
+        id="{{panelid}}"
+        class="easyedu-navigation__panel"
+        data-easyedu-navigation-panel="1"
+        role="dialog"
+        aria-modal="true"
+        aria-label="{{navigationlabel}}"
+        aria-hidden="true"
+        inert
+    >
+        <header class="easyedu-navigation__panel-header">
+            <h2 class="easyedu-navigation__panel-title">{{navigationlabel}}</h2>
+            <button
+                type="button"
+                class="easyedu-navigation__close"
+                data-easyedu-navigation-close="1"
+                aria-label="{{closelabel}}"
+            >
+                <span class="{{closeicon}}" aria-hidden="true"></span>
+            </button>
+        </header>
+
+        <div class="easyedu-navigation__participant-slot" data-easyedu-navigation-participant-slot="1"></div>
+        <div class="easyedu-navigation__guide-slot" data-easyedu-navigation-guide-slot="1"></div>
+
+        {{#hasitems}}
+        <div class="easyedu-navigation__sections">
+            {{#sections}}
+            <section class="easyedu-navigation__section" data-easyedu-navigation-section="{{id}}">
+                <h3 class="easyedu-navigation__section-title">{{label}}</h3>
+                <ul class="easyedu-navigation__items">
+                    {{#items}}
+                        {{> local_course_banner_builder/easyedu_navigation_items }}
+                    {{/items}}
+                </ul>
+            </section>
+            {{/sections}}
+        </div>
+        {{/hasitems}}
+        {{^hasitems}}
+        <p class="easyedu-navigation__empty">{{emptylabel}}</p>
+        {{/hasitems}}
+    </aside>
+</div>

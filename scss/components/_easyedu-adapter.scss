@@ -18,6 +18,10 @@
 }
 
 .local-course-banner-builder-admin--native {
+    .easyedu-navigation {
+        @include easyedu.navigation-component;
+    }
+
     .local-course-banner-builder-dashed-action {
         border-style: solid !important;
         border-color: var(--easyedu-control-border);

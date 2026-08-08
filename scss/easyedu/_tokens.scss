@@ -11,6 +11,24 @@
 @mixin token-defaults {
   // Layout rhythm.
   --easyedu-gap: 1rem;
+  --easyedu-navigation-following-gap: 2.5rem;
+  --easyedu-navigation-panel-width: 88vw;
+  --easyedu-navigation-panel-max-width: 22rem;
+  --easyedu-navigation-item-indent: 0.8rem;
+  --easyedu-navigation-trigger-inline-start: 0.75rem;
+  --easyedu-navigation-trigger-gap: 0.5rem;
+  --easyedu-navigation-trigger-fallback-top: 0.75rem;
+  --easyedu-navigation-trigger-safe-edge: 0.75rem;
+  --easyedu-navigation-layer-trigger: 1064;
+  --easyedu-navigation-layer-backdrop: 1065;
+  --easyedu-navigation-layer-panel: 1066;
+  --easyedu-navigation-guide-surface: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--easyedu-primary) 10%, var(--easyedu-surface) 90%) 0%,
+    color-mix(in srgb, var(--easyedu-accent) 14%, var(--easyedu-surface) 86%) 100%
+  );
+  --easyedu-navigation-guide-border: color-mix(in srgb, var(--easyedu-accent) 28%, var(--easyedu-card-border) 72%);
+  --easyedu-navigation-guide-shadow: 0 0.4rem 1rem rgba(22, 45, 68, 0.12);
   --easyedu-radius: 0.75rem;
   --easyedu-radius-sm: 0.5rem;
   --easyedu-radius-lg: 1rem;

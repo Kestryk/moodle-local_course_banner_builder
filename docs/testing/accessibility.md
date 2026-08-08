@@ -87,6 +87,11 @@ and the EasyEdu theme when available.
 - Reach every primary navigation entry with `Tab`.
 - Confirm the active view is not communicated by colour alone.
 - Confirm focus remains visible at 200% browser zoom.
+- At compact widths, open the CCB Navigation rail, close it with Escape and
+  confirm that focus returns to its trigger.
+- From the compact rail, open the CCB Guide and confirm its modal is above the
+  panel, uses a viewport-sized surface, and returns focus to its launcher on
+  close.
 - Open and close the course or site banner options with the keyboard.
 - Confirm disabled options cannot be activated and expose their disabled state.
 

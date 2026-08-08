@@ -2762,6 +2762,9 @@ $guideunlockpathlabels = [
 
 $PAGE->requires->js_call_amd('local_course_banner_builder/admin_manage', 'init');
 $PAGE->requires->js_call_amd('local_course_banner_builder/admin_navigation', 'init');
+$PAGE->requires->js_call_amd('local_course_banner_builder/easyedu_navigation_guide', 'init', [
+    '[data-easyedu-navigation]',
+]);
 $PAGE->requires->js_call_amd('local_course_banner_builder/easyedu_guide', 'init', [
     '[data-easyedu-guide-root]',
     [
@@ -2776,7 +2779,7 @@ $PAGE->requires->js_call_amd('local_course_banner_builder/easyedu_guide', 'init'
         'unlockPaths' => $guidesourceunlockpaths,
         'pathLabels' => $guideunlockpathlabels,
         'targets' => [
-            'adminNav' => '.local-course-banner-builder-admin-switcher',
+            'adminNav' => '[data-easyedu-guide-target="adminNav"]',
             'sourceList' => '[data-easyedu-guide-target="source-pickers"]',
             'sourcePicker' => '[data-easyedu-guide-target="source-pickers"]',
             'sourceOption' => '.local-course-banner-builder-source-option',
@@ -3332,52 +3335,16 @@ unset($guideslide);
 $guidecontext['slidecount'] = count($guidecontext['slides']);
 $guidecontext['initialprogress'] = $guidecontext['slidecount'] > 0 ? round(100 / $guidecontext['slidecount'], 2) : 0;
 $guidehtml = $OUTPUT->render_from_template('local_course_banner_builder/easyedu_guide', $guidecontext);
-$coursebannersurl = new moodle_url('/local/course_banner_builder/admin_manage.php');
-$sitebannerurl = new moodle_url('/local/course_banner_builder/admin_site.php');
-$coursebuttonclasses = 'btn btn-outline-secondary local-course-banner-builder-dashed-action ' .
-    'local-course-banner-builder-admin-switch-button' . (!$issitebanneradmin ? ' active' : '');
-$sitebuttonclasses = 'btn btn-outline-secondary local-course-banner-builder-dashed-action ' .
-    'local-course-banner-builder-admin-switch-button' . ($issitebanneradmin ? ' active' : '');
-$coursebuttonattributes = ['class' => $coursebuttonclasses];
-$sitebuttonattributes = ['class' => $sitebuttonclasses];
-if (!$issitebanneradmin) {
-    $coursebuttonattributes['aria-current'] = 'page';
-} else {
-    $sitebuttonattributes['aria-current'] = 'page';
-}
+$navigationcontext = \local_course_banner_builder\output\navigation::context(
+    $issitebanneradmin ? 'site' : 'course',
+    $guidehtml
+);
+echo $OUTPUT->render_from_template('local_course_banner_builder/easyedu_navigation', $navigationcontext);
 echo html_writer::div(
-    $guidehtml .
-    html_writer::link(
-        $coursebannersurl,
-        html_writer::tag('i', '', ['class' => 'fa fa-image me-2', 'aria-hidden' => 'true']) .
-            html_writer::span(get_string('managecoursebannersquick', 'local_course_banner_builder')),
-        $coursebuttonattributes
-    ) .
-    html_writer::link(
-        $sitebannerurl,
-        html_writer::tag('i', '', ['class' => 'fa fa-desktop me-2', 'aria-hidden' => 'true']) .
-            html_writer::span(get_string('managesitebannerquick', 'local_course_banner_builder')),
-        $sitebuttonattributes
-    ) .
-    html_writer::link(
-        new moodle_url('/local/course_banner_builder/admin_slideshow.php'),
-        html_writer::tag('i', '', ['class' => 'fa fa-images me-2', 'aria-hidden' => 'true']) .
-            html_writer::span(get_string('manageslideshowquick', 'local_course_banner_builder')),
-        ['class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action local-course-banner-builder-admin-slideshow-button']
-    ) .
-    html_writer::link(
-        new moodle_url('/local/course_banner_builder/admin_transfer.php'),
-        html_writer::tag('i', '', ['class' => 'fa fa-right-left me-2', 'aria-hidden' => 'true']) .
-            html_writer::span(get_string('transferconfig', 'local_course_banner_builder')),
-        ['class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action']
-    ) .
     $formatbutton(\local_course_banner_builder\manager::SLIDESHOW_CONTEXT_COURSE) .
     $formatbutton(\local_course_banner_builder\manager::SLIDESHOW_CONTEXT_SITE) .
     $deletepluginsettingsform((new moodle_url($adminpagepath))->out(false)),
-    'local-course-banner-builder-admin-switcher mb-3',
-    [
-        'data-easyedu-guide-target' => 'adminNav',
-    ]
+    'local-course-banner-builder-admin-switcher mb-3'
 );
 $statuspopoverattributes = static function (string $label): array {
     return [
