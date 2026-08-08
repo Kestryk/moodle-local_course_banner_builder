@@ -10,6 +10,14 @@ many small sections.
 
 ### 2026-08-08
 
+#### Added
+
+- Added the fail-open Slideshow administration page Skeleton: an accessible,
+  local loading shell with a dedicated AMD lifecycle, stable navigation and
+  card placeholders, reduced-motion and forced-colors handling, and a future
+  lease-gated validation scenario. It does not alter Slideshow settings,
+  previews or public rendering.
+
 #### Changed
 
 - Restored keyboard focus to the visible Guide opener when the CCB Guide closes

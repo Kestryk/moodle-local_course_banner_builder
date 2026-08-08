@@ -45,6 +45,7 @@ try {
 }
 
 $PAGE->requires->css('/local/course_banner_builder/styles.css');
+$PAGE->requires->js_call_amd('local_course_banner_builder/admin_slideshow_skeleton', 'init');
 $PAGE->requires->js_call_amd('local_course_banner_builder/slideshow_admin', 'init');
 $PAGE->requires->js_call_amd('local_course_banner_builder/admin_navigation', 'init');
 $PAGE->requires->js_call_amd('local_course_banner_builder/easyedu_navigation_guide', 'init', [
@@ -2413,7 +2414,68 @@ function local_course_banner_builder_render_slideshow_form(string $context): str
 
 echo $OUTPUT->header();
 
-echo html_writer::start_div('local-course-banner-builder-admin local-course-banner-builder-admin--native local-course-banner-builder-slideshow-admin');
+$slideshowpageloadinglabel = get_string('loading', 'moodle');
+$slideshowpageskeleton = html_writer::start_div(
+    'local-course-banner-builder-slideshow-page-skeleton',
+    [
+        'aria-hidden' => 'true',
+        'data-local-course-banner-builder-slideshow-skeleton-placeholder' => '1',
+    ]
+);
+$slideshowpageskeleton .= html_writer::start_div(
+    'local-course-banner-builder-slideshow-page-skeleton__navigation'
+);
+$slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slideshow-page-skeleton__navigation-mark');
+$slideshowpageskeleton .= html_writer::start_div(
+    'local-course-banner-builder-slideshow-page-skeleton__navigation-items'
+);
+$slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slideshow-page-skeleton__navigation-item');
+$slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slideshow-page-skeleton__navigation-item');
+$slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slideshow-page-skeleton__navigation-item');
+$slideshowpageskeleton .= html_writer::end_div();
+$slideshowpageskeleton .= html_writer::end_div();
+$slideshowpageskeleton .= html_writer::start_div('local-course-banner-builder-slideshow-page-skeleton__heading');
+$slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slideshow-page-skeleton__eyebrow');
+$slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slideshow-page-skeleton__title');
+$slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slideshow-page-skeleton__description');
+$slideshowpageskeleton .= html_writer::end_div();
+$slideshowpageskeleton .= html_writer::start_div('local-course-banner-builder-slideshow-page-skeleton__cards');
+for ($slideshowpageskeletonindex = 0; $slideshowpageskeletonindex < 2; $slideshowpageskeletonindex++) {
+    $slideshowpageskeleton .= html_writer::start_div('local-course-banner-builder-slideshow-page-skeleton__card');
+    $slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slideshow-page-skeleton__card-title');
+    $slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slideshow-page-skeleton__preview');
+    $slideshowpageskeleton .= html_writer::start_div('local-course-banner-builder-slideshow-page-skeleton__rows');
+    $slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slideshow-page-skeleton__row');
+    $slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slideshow-page-skeleton__row');
+    $slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slideshow-page-skeleton__row');
+    $slideshowpageskeleton .= html_writer::end_div();
+    $slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slideshow-page-skeleton__action');
+    $slideshowpageskeleton .= html_writer::end_div();
+}
+$slideshowpageskeleton .= html_writer::end_div();
+$slideshowpageskeleton .= html_writer::end_div();
+
+echo html_writer::start_div('local-course-banner-builder-slideshow-page-shell', [
+    'aria-busy' => 'false',
+    'data-local-course-banner-builder-slideshow-skeleton' => '1',
+    'data-local-course-banner-builder-slideshow-skeleton-state' => 'ready',
+]);
+echo $slideshowpageskeleton;
+echo html_writer::div(
+    s($slideshowpageloadinglabel),
+    'visually-hidden',
+    [
+        'aria-atomic' => 'true',
+        'aria-live' => 'polite',
+        'data-local-course-banner-builder-slideshow-skeleton-status' => '1',
+        'hidden' => 'hidden',
+        'role' => 'status',
+    ]
+);
+echo html_writer::start_div(
+    'local-course-banner-builder-admin local-course-banner-builder-admin--native local-course-banner-builder-slideshow-admin',
+    ['data-local-course-banner-builder-slideshow-skeleton-live' => '1']
+);
 $deletepluginsettingsform = html_writer::tag(
     'form',
     html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]) .
@@ -2677,5 +2739,6 @@ echo html_writer::div(
     'local-course-banner-builder-slideshow-global-actions'
 );
 
+echo html_writer::end_div();
 echo html_writer::end_div();
 echo $OUTPUT->footer();

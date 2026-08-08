@@ -120,6 +120,15 @@
       }
     }
 
+    @keyframes easyedu-skeleton-shimmer {
+      from {
+        background-position: 110% 0;
+      }
+      to {
+        background-position: -110% 0;
+      }
+    }
+
     @keyframes easyedu-busy-pop {
       0%,
       100% {

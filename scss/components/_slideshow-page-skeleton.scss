@@ -1,0 +1,167 @@
+// Page-level loading shell for the Slideshow administration surface.
+//
+// The markup and readiness lifecycle remain CCB-owned. The imported EasyEdu
+// primitives provide only the shared skeleton surface, shimmer and fade.
+
+@use "../easyedu" as easyedu;
+
+$loading-surface: var(--easyedu-loading-surface, #dce7f0);
+$loading-highlight: var(--easyedu-loading-highlight, #edf3f7);
+$loading-border: var(--easyedu-loading-border, #cfdee9);
+$loading-radius: var(--easyedu-loading-radius, 0.72rem);
+$loading-shimmer-duration: var(--easyedu-loading-shimmer-duration, 2s);
+$loading-reveal-duration: var(--easyedu-loading-reveal-duration, 180ms);
+
+@mixin slideshow-skeleton-surface($height) {
+    min-height: $height;
+
+    @include easyedu.skeleton-surface($loading-surface, $loading-border, $loading-radius);
+    @include easyedu.skeleton-shimmer-direct(
+        $duration: $loading-shimmer-duration,
+        $surface: $loading-surface,
+        $highlight: $loading-highlight
+    );
+}
+
+.local-course-banner-builder-slideshow-page-shell {
+    position: relative;
+}
+
+.local-course-banner-builder-slideshow-page-skeleton {
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    display: grid;
+    align-content: start;
+    gap: clamp(1rem, 2vw, 1.5rem);
+    min-height: 100%;
+    padding: clamp(0.75rem, 2vw, 1.5rem);
+    background: var(--bs-body-bg, #fff);
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+
+    @include easyedu.loading-opacity-transition($loading-reveal-duration);
+}
+
+.local-course-banner-builder-slideshow-page-shell[data-local-course-banner-builder-slideshow-skeleton-state="loading"]
+    .local-course-banner-builder-slideshow-page-skeleton {
+    opacity: 1;
+    visibility: visible;
+}
+
+.local-course-banner-builder-slideshow-page-shell[data-local-course-banner-builder-slideshow-skeleton-state="loading"]
+    [data-local-course-banner-builder-slideshow-skeleton-live] {
+    @include easyedu.loading-opacity-hidden;
+    @include easyedu.loading-opacity-transition($loading-reveal-duration);
+}
+
+.local-course-banner-builder-slideshow-page-skeleton__navigation {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.9rem;
+    align-items: center;
+    min-height: 5.4rem;
+    padding: 0.9rem;
+
+    @include easyedu.skeleton-surface($loading-surface, $loading-border, $loading-radius);
+    @include easyedu.skeleton-stack(0.9rem);
+}
+
+.local-course-banner-builder-slideshow-page-skeleton__navigation-mark {
+    width: 3.2rem;
+    border-radius: 50%;
+
+    @include slideshow-skeleton-surface(3.2rem);
+}
+
+.local-course-banner-builder-slideshow-page-skeleton__navigation-items {
+    grid-template-columns: repeat(3, minmax(5rem, 1fr));
+
+    @include easyedu.skeleton-stack(0.65rem);
+}
+
+.local-course-banner-builder-slideshow-page-skeleton__navigation-item {
+    @include slideshow-skeleton-surface(2.35rem);
+}
+
+.local-course-banner-builder-slideshow-page-skeleton__heading {
+    width: min(100%, 54rem);
+
+    @include easyedu.skeleton-stack(0.7rem);
+}
+
+.local-course-banner-builder-slideshow-page-skeleton__eyebrow {
+    width: min(10rem, 32%);
+
+    @include slideshow-skeleton-surface(0.78rem);
+}
+
+.local-course-banner-builder-slideshow-page-skeleton__title {
+    width: min(30rem, 82%);
+
+    @include slideshow-skeleton-surface(2.05rem);
+}
+
+.local-course-banner-builder-slideshow-page-skeleton__description {
+    width: min(48rem, 96%);
+
+    @include slideshow-skeleton-surface(1rem);
+}
+
+.local-course-banner-builder-slideshow-page-skeleton__cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.local-course-banner-builder-slideshow-page-skeleton__card {
+    padding: 1rem;
+
+    @include easyedu.skeleton-surface(var(--bs-body-bg, #fff), $loading-border, $loading-radius);
+    @include easyedu.skeleton-stack(1rem);
+}
+
+.local-course-banner-builder-slideshow-page-skeleton__card-title {
+    width: min(14rem, 58%);
+
+    @include slideshow-skeleton-surface(1.25rem);
+}
+
+.local-course-banner-builder-slideshow-page-skeleton__preview {
+    @include slideshow-skeleton-surface(clamp(9rem, 18vw, 14rem));
+}
+
+.local-course-banner-builder-slideshow-page-skeleton__rows {
+    @include easyedu.skeleton-stack(0.7rem);
+}
+
+.local-course-banner-builder-slideshow-page-skeleton__row {
+    @include slideshow-skeleton-surface(2.3rem);
+}
+
+.local-course-banner-builder-slideshow-page-skeleton__action {
+    width: min(100%, 16rem);
+    justify-self: end;
+
+    @include slideshow-skeleton-surface(2.5rem);
+}
+
+@media (max-width: 48rem) {
+    .local-course-banner-builder-slideshow-page-skeleton__navigation-items {
+        grid-template-columns: 1fr;
+    }
+
+    .local-course-banner-builder-slideshow-page-skeleton__navigation {
+        align-items: start;
+    }
+
+    .local-course-banner-builder-slideshow-page-skeleton__cards {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (forced-colors: active) {
+    .local-course-banner-builder-slideshow-page-skeleton {
+        background: Canvas;
+    }
+}
