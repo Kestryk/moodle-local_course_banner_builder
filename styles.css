@@ -7558,6 +7558,11 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
     --local-course-banner-builder-slideshow-action-font-size: clamp(0.8125rem, 6cqh, 1.125rem) !important;
     --local-course-banner-builder-slideshow-label-font-size: clamp(0.75rem, 3.5cqh, 1rem) !important;
   }
+  .local-course-banner-builder-slideshow-admin-preview--large .local-course-banner-builder-slideshow-action {
+    min-width: max(6rem, var(--local-course-banner-builder-slideshow-action-width, 0px)) !important;
+    height: max(2.25rem, var(--local-course-banner-builder-slideshow-action-height, 0px)) !important;
+    min-height: max(2.25rem, var(--local-course-banner-builder-slideshow-action-height, 0px)) !important;
+  }
   .local-course-banner-builder-slideshow-admin-preview--large .local-course-banner-builder-slideshow-labels {
     left: clamp(3.5rem, var(--local-course-banner-builder-slideshow-label-x, 14%), 100%);
     max-inline-size: calc(100% - 1rem);

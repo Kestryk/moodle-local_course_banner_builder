@@ -110,6 +110,14 @@ const expectMobileReadability = (geometry) => {
     expect(labels.bottom, 'labels escape the mobile preview at the bottom').toBeLessThanOrEqual(geometry.height);
 };
 
+const expectCompactActionReadability = (geometry, viewportName) => {
+    const action = geometry.samples.find(item => item.name === 'action');
+    expect(action, viewportName + ' action sample is missing').toBeDefined();
+    expect(action.width, viewportName + ' action is too narrow to operate').toBeGreaterThanOrEqual(96);
+    expect(action.height, viewportName + ' action is too short to operate').toBeGreaterThanOrEqual(36);
+    expect(action.fontSize, viewportName + ' action text is too small').toBeGreaterThanOrEqual(13);
+};
+
 const waitForSettledModal = async(page, modal) => {
     await expect(modal).toBeVisible();
     await expect.poll(async() => modal.evaluate((node) => {
@@ -220,6 +228,9 @@ test('CCB Slideshow rendering matrix keeps course and site previews readable', a
                 await captureCdp(page, context,
                     path.join(env.artifactRoot, `slideshow-admin-${viewport.name}-${index === 0 ? 'course' : 'site'}.png`));
                 expectRenderableGeometry(geometry);
+                if (viewport.name === 'tablet' || viewport.name === 'mobile') {
+                    expectCompactActionReadability(geometry, viewport.name);
+                }
                 if (viewport.name === 'mobile') {
                     expectMobileReadability(geometry);
                 }

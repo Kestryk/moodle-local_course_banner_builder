@@ -34,6 +34,9 @@ many small sections.
 
 #### Fixed
 
+- Kept the Slideshow administration-preview action button legible and usable at
+  tablet and mobile widths with a 96 px by 36 px editor-only minimum. Existing
+  public-banner action dimensions and stored style choices remain unchanged.
 - Kept the Slideshow administration modal preview readable at mobile widths by
   giving the editor a minimum working height, preserving minimum text sizes and
   keeping the complete label group inside the preview with an ephemeral

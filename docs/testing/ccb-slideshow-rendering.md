@@ -72,7 +72,10 @@ authority, so this does not silently rewrite a banner's configured position.
 
 At the 390 px mobile viewport, the matrix requires a preview at least 200 px
 high, label text at least 12 px, title text at least 16 px, and body/action
-text at least 13 px. The complete label group must remain within the preview.
+text at least 13 px. At the tablet and mobile viewports, the preview action is
+also at least 96 px wide and 36 px high. These are administration-preview
+floors only: a stored public banner action remains governed by its configured
+size. The complete label group must remain within the preview.
 
 Moodle may emit backup-controller diagnostics on stderr while its CLI process
 returns success during course deletion. The runner records that stream but uses
