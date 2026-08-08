@@ -37,6 +37,11 @@ many small sections.
   tray. This keeps the action contained and usable at 320 px and 390 px
   without changing desktop geometry or source-selection behaviour.
 
+#### Tests
+
+- Added the 320 px mobile cell to the supervised Selected source responsive
+  matrix, alongside its existing 390 px and desktop cells.
+
 #### Documentation
 
 - Recorded the planned relocation of the destructive all-settings reset into a
