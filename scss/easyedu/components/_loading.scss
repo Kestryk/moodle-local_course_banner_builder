@@ -1,0 +1,111 @@
+// Shared loading and skeleton primitives.
+//
+// Consumers own their DOM selectors, page geometry and readiness lifecycle.
+// The kit owns only the visual surface, shimmer, bounded stack rhythm and
+// opacity handoff used by proven EasyEdu loading states.
+
+@mixin skeleton-surface(
+  $surface: var(--easyedu-loading-surface),
+  $border: var(--easyedu-loading-border),
+  $radius: var(--easyedu-loading-radius)
+) {
+  & {
+    background: $surface;
+    border: 0.0625rem solid $border;
+    border-radius: $radius;
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    position: relative;
+  }
+
+  @media (forced-colors: active) {
+    background: Canvas;
+    border-color: CanvasText;
+  }
+}
+
+// Use for simple bars whose complete background moves with the shimmer.
+@mixin skeleton-shimmer-direct(
+  $animation-name: easyedu-skeleton-shimmer,
+  $duration: var(--easyedu-loading-shimmer-duration),
+  $surface: var(--easyedu-loading-surface),
+  $highlight: var(--easyedu-loading-highlight)
+) {
+  & {
+    animation: $animation-name $duration linear infinite;
+    background: linear-gradient(
+      90deg,
+      $surface 0%,
+      $highlight 48%,
+      $surface 100%
+    );
+    background-size: 220% 100%;
+  }
+
+  @media (prefers-reduced-motion: reduce), (forced-colors: active) {
+    animation: none;
+  }
+}
+
+// Use when a stable base colour must remain visible below a light sweep.
+@mixin skeleton-shimmer-overlay(
+  $animation-name: easyedu-skeleton-shimmer,
+  $duration: var(--easyedu-loading-shimmer-duration),
+  $soft: var(--easyedu-loading-shimmer-soft),
+  $highlight: var(--easyedu-loading-shimmer-highlight)
+) {
+  &::after {
+    animation: $animation-name $duration linear infinite;
+    background-image: linear-gradient(
+      108deg,
+      transparent 30%,
+      $soft 42%,
+      $highlight 50%,
+      $soft 58%,
+      transparent 70%
+    );
+    background-position: -110% 0;
+    background-repeat: no-repeat;
+    background-size: 190% 100%;
+    border-radius: inherit;
+    content: "";
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+  }
+
+  @media (prefers-reduced-motion: reduce), (forced-colors: active) {
+    &::after {
+      animation: none;
+    }
+  }
+}
+
+// Prevent touching rows and accidental large voids in grid-based skeletons.
+// Product tests must still assert the allowed minimum and maximum measured gap.
+@mixin skeleton-stack($gap: var(--easyedu-loading-stack-gap)) {
+  & {
+    align-content: start;
+    display: grid;
+    gap: $gap;
+    grid-auto-rows: max-content;
+  }
+}
+
+@mixin loading-opacity-transition($duration: var(--easyedu-loading-reveal-duration)) {
+  & {
+    transition: opacity $duration var(--easyedu-motion-ease, ease);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition-duration: 0.001ms;
+  }
+}
+
+@mixin loading-opacity-hidden {
+  & {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
