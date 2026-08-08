@@ -1,0 +1,13 @@
+{
+  "rootid": "local-example-navigation",
+  "panelid": "local-example-navigation-panel",
+  "anchorselector": "",
+  "navigationlabel": "Example navigation",
+  "triggerlabel": "Open example navigation",
+  "closelabel": "Close example navigation",
+  "triggericon": "fa fa-bars",
+  "closeicon": "fa fa-times",
+  "emptylabel": "No navigation destinations are available.",
+  "hasitems": false,
+  "sections": []
+}

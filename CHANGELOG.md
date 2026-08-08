@@ -8,6 +8,28 @@ many small sections.
 
 ## Unreleased
 
+### 2026-08-07
+
+#### Changed
+
+- Replaced the duplicated Course Banner Builder administration destination
+  buttons on Course, Site, Slideshow and Transfer with the shared EasyEdu
+  Navigation rail, while retaining product-specific format and reset actions.
+- Added the CCB Navigation/Guide adapter: the existing CCB Guide launcher is
+  projected into the desktop and compact rail and its modal root is portalled
+  above the transformed compact panel.
+- Added localised labels and a CCB-owned server context so visibility, URLs,
+  labels, icons and active state stay product-owned rather than being inferred
+  by client-side code.
+- Added only the five public Responsive helpers required by the immutable
+  Navigation SCSS after the CCB embedded copy was found to predate them; no
+  unrelated Responsive, Focus or Loading component was imported.
+
+#### Documentation
+
+- Recorded the CCB adaptation boundary, source snapshot and required manual
+  Navigation/Guide validation in the local Navigation contract.
+
 ### 2026-08-06
 
 #### Fixed

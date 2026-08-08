@@ -1,0 +1,354 @@
+@use "buttons";
+@use "guide";
+@use "responsive";
+
+// Canonical navigation composition for EasyEdu plugin surfaces.
+//
+// Consumers render desktop and compact wrappers from one prepared context.
+// Existing button/responsive mixins remain the visual authorities so adopting
+// this component does not fork the established EasyStud/CCB contracts.
+@mixin navigation-component($compact-breakpoint: 64rem) {
+  position: relative;
+
+  [data-easyedu-navigation-desktop] {
+    @include buttons.admin-primary-nav;
+  }
+
+  [data-easyedu-navigation-desktop] > .easyedu-navigation__sections {
+    align-items: stretch;
+    display: flex;
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  [data-easyedu-navigation-desktop] .easyedu-navigation__guide-source,
+  [data-easyedu-navigation-desktop] .easyedu-navigation__participant-source {
+    align-items: center;
+    display: flex;
+    flex: 0 0 auto;
+  }
+
+  [data-easyedu-navigation-desktop] .easyedu-navigation__participant-source {
+    .select-menu {
+      align-items: stretch;
+      display: inline-flex;
+    }
+
+    .select-menu > .dropdown-toggle {
+      align-items: center;
+      display: inline-flex;
+      @include buttons.admin-primary-nav-action;
+    }
+  }
+
+  [data-easyedu-navigation-desktop] .easyedu-navigation__guide-source {
+    margin-inline-end: 0.4rem;
+    overflow: hidden;
+  }
+
+  [data-easyedu-navigation-guide-launcher] {
+    @include guide.guide-launcher-button;
+  }
+
+  [data-easyedu-navigation-desktop] .easyedu-guide__launcher {
+    gap: 0;
+  }
+
+  [data-easyedu-navigation-desktop] .easyedu-guide__launcher-label {
+    max-inline-size: 0;
+    opacity: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: max-inline-size var(--easyedu-motion-fast) var(--easyedu-motion-ease), opacity var(--easyedu-motion-fast) var(--easyedu-motion-ease), margin-inline-start var(--easyedu-motion-fast) var(--easyedu-motion-ease);
+    white-space: nowrap;
+  }
+
+  [data-easyedu-navigation-desktop] .easyedu-navigation__guide-source.is-label-revealed .easyedu-guide__launcher-label,
+  [data-easyedu-navigation-desktop] .easyedu-navigation__guide-source:hover .easyedu-guide__launcher-label,
+  [data-easyedu-navigation-desktop] .easyedu-navigation__guide-source:focus-within .easyedu-guide__launcher-label {
+    margin-inline-start: 0.45rem;
+    max-inline-size: min(12rem, 24vw);
+    opacity: 1;
+  }
+
+  [data-easyedu-navigation-desktop] .easyedu-navigation__section {
+    align-items: stretch;
+    display: flex;
+  }
+
+  [data-easyedu-navigation-desktop] .easyedu-navigation__items {
+    align-items: stretch;
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  [data-easyedu-navigation-desktop] .easyedu-navigation__section-title {
+    // Keep section ownership in the accessibility tree without changing the
+    // established compact desktop rail.
+    border: 0;
+    clip-path: inset(50%);
+    height: 0.0625rem;
+    margin: -0.0625rem;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
+    width: 0.0625rem;
+  }
+
+  [data-easyedu-navigation-desktop] .easyedu-navigation__item {
+    @include buttons.admin-primary-nav-action;
+  }
+
+  [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive {
+    @include buttons.admin-primary-nav-action(destructive);
+  }
+
+  .easyedu-navigation__trigger {
+    @include responsive.mobile-primary-nav-trigger;
+
+    inset-block-start: min(
+      calc(
+        var(
+          --easyedu-navigation-native-trigger-edge,
+          var(--easyedu-navigation-trigger-fallback-top)
+        ) + var(--easyedu-navigation-trigger-gap)
+      ),
+      calc(100dvh - var(--easyedu-touch-target-min) - var(--easyedu-navigation-trigger-safe-edge))
+    );
+    inset-inline-start: var(--easyedu-navigation-trigger-inline-start);
+    max-width: calc(100vw - (2 * var(--easyedu-navigation-trigger-inline-start)));
+    position: fixed;
+    z-index: var(--easyedu-navigation-layer-trigger);
+  }
+
+  .easyedu-navigation__backdrop {
+    @include responsive.mobile-primary-nav-backdrop(var(--easyedu-navigation-layer-backdrop));
+  }
+
+  .easyedu-navigation__panel {
+    @include responsive.mobile-primary-nav-panel(var(--easyedu-navigation-layer-panel));
+
+    border: 0;
+    border-inline-end: 0.0625rem solid var(--easyedu-card-border);
+    max-width: var(--easyedu-navigation-panel-max-width);
+    width: var(--easyedu-navigation-panel-width);
+
+    &[aria-hidden="true"] {
+      visibility: hidden;
+    }
+
+    &[aria-hidden="false"] {
+      visibility: visible;
+    }
+  }
+
+  .easyedu-navigation__guide-slot,
+  .easyedu-navigation__participant-slot {
+    margin: 0.8rem 1rem 0;
+  }
+
+  .easyedu-navigation__guide-slot:empty,
+  .easyedu-navigation__participant-slot:empty {
+    display: none;
+  }
+
+  .easyedu-navigation__guide-slot [data-easyedu-navigation-guide-launcher="compact"] {
+    align-items: center;
+    background: var(--easyedu-navigation-guide-surface);
+    border: 0.0625rem solid var(--easyedu-navigation-guide-border);
+    border-radius: var(--easyedu-control-radius);
+    box-shadow: var(--easyedu-navigation-guide-shadow);
+    gap: 0.65rem;
+    justify-content: flex-start;
+    min-width: 0;
+    padding: 0.55rem 0.65rem;
+    width: 100%;
+
+    .easyedu-guide__launcher-label {
+      min-width: 0;
+      overflow-wrap: anywhere;
+      text-align: start;
+      white-space: normal;
+    }
+  }
+
+  .easyedu-navigation__panel-header {
+    align-items: center;
+    background: var(--easyedu-surface);
+    display: flex;
+    flex: 0 0 auto;
+    gap: 0.75rem;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  .easyedu-navigation__panel-title {
+    color: var(--easyedu-text);
+    font-size: var(--easyedu-font-size-section-title);
+    font-weight: var(--easyedu-font-weight-strong);
+    margin: 0;
+  }
+
+  .easyedu-navigation__close {
+    @include buttons.close-button;
+  }
+
+  .easyedu-navigation__sections {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .easyedu-navigation__section {
+    @include responsive.mobile-navigation-section;
+
+    &:first-child {
+      border-top: 0;
+      padding-top: 0;
+    }
+  }
+
+  .easyedu-navigation__section-title {
+    color: var(--easyedu-text-muted);
+    font-size: var(--easyedu-font-size-eyebrow);
+    font-weight: var(--easyedu-font-weight-strong);
+    letter-spacing: 0.045em;
+    margin: 0;
+    text-transform: uppercase;
+  }
+
+  .easyedu-navigation__items {
+    display: grid;
+    gap: 0.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .easyedu-navigation__items .easyedu-navigation__items {
+    border-inline-start: 0.0625rem solid var(--easyedu-card-border);
+    margin-block-start: 0.25rem;
+    margin-inline-start: var(--easyedu-navigation-item-indent);
+    padding-inline-start: var(--easyedu-navigation-item-indent);
+  }
+
+  .easyedu-navigation__item {
+    @include responsive.mobile-navigation-link;
+
+    &[aria-disabled="true"],
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+      pointer-events: none;
+    }
+  }
+
+  .easyedu-navigation__item-label {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .easyedu-navigation__badge {
+    flex: 0 0 auto;
+    margin-inline-start: auto;
+  }
+
+  .easyedu-navigation__disclosure-icon {
+    margin-inline-start: auto;
+    transition: transform var(--easyedu-motion-fast) var(--easyedu-motion-ease);
+  }
+
+  [aria-expanded="true"] > .easyedu-navigation__disclosure-icon {
+    transform: rotate(180deg);
+  }
+
+  .easyedu-navigation__empty {
+    color: var(--easyedu-text-muted);
+    margin: 0;
+    padding: 0.75rem;
+  }
+
+  @media (min-width: calc(#{$compact-breakpoint} + 0.001rem)) {
+    .easyedu-navigation__trigger,
+    .easyedu-navigation__backdrop,
+    .easyedu-navigation__panel {
+      display: none !important;
+    }
+
+    .easyedu-navigation__guide-slot,
+    .easyedu-navigation__participant-slot {
+      display: none !important;
+    }
+  }
+
+  @media (max-width: $compact-breakpoint), (pointer: coarse) {
+    .easyedu-guide__launcher-label {
+      margin-inline-start: 0.45rem;
+      max-inline-size: none;
+      opacity: 1;
+    }
+  }
+
+  @media (max-width: $compact-breakpoint) {
+    [data-easyedu-navigation-desktop] {
+      display: none !important;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .easyedu-navigation__panel,
+    .easyedu-navigation__item,
+    .easyedu-navigation__disclosure-icon,
+    [data-easyedu-navigation-guide-launcher],
+    [data-easyedu-navigation-guide-launcher] .easyedu-guide__launcher-icon {
+      scroll-behavior: auto;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .easyedu-navigation__trigger,
+    .easyedu-navigation__panel,
+    .easyedu-navigation__item,
+    [data-easyedu-navigation-guide-launcher] {
+      border: 0.0625rem solid CanvasText;
+      forced-color-adjust: auto;
+    }
+
+    .easyedu-navigation__guide-slot [data-easyedu-navigation-guide-launcher="compact"] {
+      background: Canvas;
+      box-shadow: none;
+      color: CanvasText;
+    }
+
+    .easyedu-navigation__item[aria-current="page"] {
+      outline: 0.125rem solid Highlight;
+      outline-offset: -0.125rem;
+    }
+  }
+
+  [dir="rtl"] & .easyedu-navigation__panel,
+  &[dir="rtl"] .easyedu-navigation__panel {
+    inset: 0 0 0 auto;
+    border-inline-end: 0.0625rem solid var(--easyedu-card-border);
+    transform: translateX(105%);
+
+    &.is-open {
+      transform: none;
+    }
+  }
+
+  [dir="rtl"] & .easyedu-navigation__item:hover,
+  &[dir="rtl"] .easyedu-navigation__item:hover {
+    transform: translateX(-0.08rem);
+  }
+}
+
+@mixin navigation-document-open-state {
+  overflow: hidden;
+  overscroll-behavior: none;
+}

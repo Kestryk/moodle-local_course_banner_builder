@@ -1,0 +1,94 @@
+# Course Banner Builder Navigation contract
+
+## Scope
+
+`EED-NAV-2026-0006` adapts the immutable EasyEdu UI Kit Navigation/Guide
+snapshot `f032a18aefc8f0816a2f36c52d6e6867cd9664b8` to the
+`local_course_banner_builder` component. It does not import the UI Kit WIP,
+the Guide engine or content, EasyStud destinations, or Focus and Loading
+components.
+
+Course Banner Builder declares Moodle 4.5 as its compatibility floor in
+`version.php`. The adapter keeps the plugin's existing AMD architecture; it
+does not make an unrelated JavaScript migration.
+
+## Product-owned context
+
+`classes/output/navigation.php` is the sole owner of CCB destinations:
+
+| Identifier | Route |
+| --- | --- |
+| `course` | `admin_manage.php` |
+| `site` | `admin_site.php` |
+| `slideshow` | `admin_slideshow.php` |
+| `transfer` | `admin_transfer.php` |
+
+It supplies labels, URLs, icons and the active state to the shared Mustache
+templates. A caller must select a declared identifier; an unknown one is a
+coding error. CCB format and reset actions are intentionally retained outside
+the destination rail.
+
+## Rendering and Guide boundary
+
+The rail is rendered by `templates/easyedu_navigation.mustache` and its item
+partial. Public `data-easyedu-navigation-*` attributes are part of the local
+contract and must not be renamed casually.
+
+`scss/components/_easyedu-adapter.scss` includes the imported Navigation mixin
+only below `.local-course-banner-builder-admin--native`; it does not apply
+Navigation styles to Moodle or Bootstrap globals.
+
+The CCB embedded Responsive surface predates the five public mixins used by the
+snapshot. Its local supplement is deliberately limited to the Navigation panel,
+backdrop, trigger, section and link helpers copied from the same immutable
+snapshot. It does not import the broader Responsive component, Focus or
+Loading.
+
+Course, Site and Slideshow provide their existing rendered Guide root through
+the `guidehtml` slot. The content remains CCB-owned. The Navigation/Guide
+bridge:
+
+1. initialises the rail;
+2. moves the complete Guide root to `document.body`;
+3. retains the existing CCB Guide root class and resolved EasyEdu tokens;
+4. projects one launcher into desktop and compact navigation; and
+5. closes the compact panel before it opens the Guide.
+
+The compact navigation panel is transformed during its animation and sits at
+layer `1066`. The local portal adapter raises only a portalled CCB Guide modal
+above that panel. Raising a z-index without the portal is not sufficient,
+because a transformed ancestor creates a separate stacking context.
+
+`admin_transfer.php` uses the same rail but has no Guide root, so the Guide
+slot remains absent there.
+
+## Runtime order
+
+For pages with a Guide, Moodle registers the modules in this order:
+
+1. product page module;
+2. existing CCB administration-navigation module;
+3. `easyedu_navigation_guide.init('[data-easyedu-navigation]')`;
+4. existing `easyedu_guide.init(...)`.
+
+The bridge invokes the idempotent Navigation controller itself. This means the
+complete Guide root is already portalled before the existing CCB Guide binds
+its events and target selectors.
+
+## Required validation
+
+Before runtime promotion, execute source checks, build the SCSS and AMD assets
+from an approved full Moodle checkout, then request a lease-gated runtime
+preview. Human review must cover Course, Site, Slideshow and Transfer at
+desktop and at 390 px:
+
+- each route has the same four CCB destinations and correct active item;
+- Tab, Escape, backdrop and focus return work in the compact panel;
+- the Guide button uses the shared rail presentation where available;
+- a compact Guide opens in a viewport overlay above the panel, closes cleanly
+  and has no console error or overflow; and
+- product-specific format and reset controls still work.
+
+Store browser evidence outside Git with the required manifest. The exact
+source and generated-asset checks are listed in
+`docs/testing/functional-protocol.md` and `docs/testing/release-checklist.md`.

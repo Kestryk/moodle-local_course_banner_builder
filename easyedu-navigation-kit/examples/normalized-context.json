@@ -1,0 +1,81 @@
+{
+  "rootid": "local-example-navigation",
+  "panelid": "local-example-navigation-panel",
+  "anchorselector": "[data-region=\"drawer-toggle\"]",
+  "navigationlabel": "Example navigation",
+  "triggerlabel": "Open example navigation",
+  "closelabel": "Close example navigation",
+  "triggericon": "fa fa-bars",
+  "closeicon": "fa fa-times",
+  "emptylabel": "No navigation destinations are available.",
+  "hasitems": true,
+  "sections": [
+    {
+      "id": "tools",
+      "label": "Tools",
+      "items": [
+        {
+          "id": "manager",
+          "kind": "destination",
+          "label": "Manager",
+          "accessiblelabel": "Open manager",
+          "url": "/local/example/manage.php?id=2",
+          "icon": "fa fa-users",
+          "islink": true,
+          "current": true,
+          "disabled": false,
+          "destructive": false,
+          "badge": "",
+          "haschildren": false
+        },
+        {
+          "id": "reports",
+          "kind": "destination",
+          "label": "Reports",
+          "accessiblelabel": "Show report destinations",
+          "icon": "fa fa-chart-bar",
+          "isdisclosure": true,
+          "expanded": false,
+          "disabled": false,
+          "badge": "2",
+          "disclosureicon": "fa fa-chevron-down",
+          "haschildren": true,
+          "children": [
+            {
+              "id": "summary-report",
+              "kind": "destination",
+              "label": "Summary report with a long translated label",
+              "url": "/local/example/report.php?id=2",
+              "icon": "fa fa-file-alt",
+              "islink": true,
+              "current": false,
+              "disabled": false,
+              "destructive": false,
+              "badge": "",
+              "haschildren": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "utilities",
+      "label": "Utilities",
+      "items": [
+        {
+          "id": "clipboard",
+          "kind": "utility",
+          "label": "Open clipboard import",
+          "action": "open-clipboard",
+          "icon": "fa fa-clipboard-list",
+          "isbutton": true,
+          "current": false,
+          "disabled": false,
+          "destructive": false,
+          "badge": "",
+          "haschildren": false
+        }
+      ]
+    }
+  ]
+}
