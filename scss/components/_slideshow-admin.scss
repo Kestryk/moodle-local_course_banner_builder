@@ -890,8 +890,9 @@
     // control that is too small to read or operate. Keep an editor-only floor;
     // the configured dimensions remain effective above that floor and public
     // Slideshow rendering is not affected.
-    .local-course-banner-builder-slideshow-admin-preview--large
-        .local-course-banner-builder-slideshow-action {
+    .local-course-banner-builder-slideshow-preview-modal
+        .local-course-banner-builder-slideshow-admin-preview--large
+        .local-course-banner-builder-slideshow-action.btn {
         width: var(--local-course-banner-builder-slideshow-action-width) !important;
         min-width: 6rem !important;
         min-height: 2.25rem !important;

@@ -65,6 +65,7 @@ const previewGeometry = async(preview) => preview.evaluate((element) => {
         }
         const rect = child.getBoundingClientRect();
         const text = child.querySelector(textSelector);
+        const textStyle = text ? window.getComputedStyle(text) : null;
         return {
             name,
             selector,
@@ -75,7 +76,13 @@ const previewGeometry = async(preview) => preview.evaluate((element) => {
             right: rect.right - bounds.left,
             top: rect.top - bounds.top,
             bottom: rect.bottom - bounds.top,
-            fontSize: text ? Number.parseFloat(window.getComputedStyle(text).fontSize) : 0,
+            fontSize: textStyle ? Number.parseFloat(textStyle.fontSize) : 0,
+            computedSize: name === 'action' && textStyle ? {
+                height: textStyle.height,
+                minHeight: textStyle.minHeight,
+                minWidth: textStyle.minWidth,
+                width: textStyle.width,
+            } : null,
         };
     });
     return {width: bounds.width, height: bounds.height, samples};
@@ -113,8 +120,9 @@ const expectMobileReadability = (geometry) => {
 const expectCompactActionReadability = (geometry, viewportName) => {
     const action = geometry.samples.find(item => item.name === 'action');
     expect(action, viewportName + ' action sample is missing').toBeDefined();
-    expect(action.width, viewportName + ' action is too narrow to operate').toBeGreaterThanOrEqual(96);
-    expect(action.height, viewportName + ' action is too short to operate').toBeGreaterThanOrEqual(36);
+    const computedSize = JSON.stringify(action.computedSize);
+    expect(action.width, viewportName + ' action is too narrow to operate: ' + computedSize).toBeGreaterThanOrEqual(96);
+    expect(action.height, viewportName + ' action is too short to operate: ' + computedSize).toBeGreaterThanOrEqual(36);
     expect(action.fontSize, viewportName + ' action text is too small').toBeGreaterThanOrEqual(13);
 };
 
