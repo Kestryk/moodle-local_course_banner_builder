@@ -8,6 +8,17 @@ many small sections.
 
 ## Unreleased
 
+### 2026-08-09
+
+#### Tests
+
+- Added a separate, cleanup-first public Course Slideshow fixture. When a
+  later lease-authorized public gate runs it, the fixture will create one
+  hidden disposable course, a real Announcements discussion and an explicit
+  Student enrolment for the test administrator. It restores only its captured
+  CCB configuration and removes the course, discussion and enrolment. No
+  public runtime or browser validation has been run by this change.
+
 ### 2026-08-06
 
 #### Fixed

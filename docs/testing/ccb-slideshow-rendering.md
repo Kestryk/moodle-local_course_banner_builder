@@ -11,12 +11,14 @@ scenario is deliberately a **preflight**, not the complete responsive matrix.
 - `tools/playwright/ccb-slideshow-rendering-fixture.php`
 - `tools/playwright/ccb-slideshow-rendering.spec.js`
 - `tools/playwright/Invoke-CCBSlideshowRenderingValidation.ps1`
+- `tools/playwright/ccb-slideshow-public-rendering-fixture.php`
 
-The fixture creates one hidden temporary course, records all existing plugin
-configuration entries beginning with `slideshow_course_` or `slideshow_site_`,
-applies a contrasting valid profile, then restores exactly those records and
-removes the course in the runner's `finally` block. It never uses course 2,
-an EasyStud fixture, a Sources/Layers fixture, or a browser profile inside Git.
+The administration-preview fixture creates one hidden temporary course, records
+all existing plugin configuration entries beginning with `slideshow_course_` or
+`slideshow_site_`, applies a contrasting valid profile, then restores exactly
+those records and removes the course in the runner's `finally` block. It never
+uses course 2, an EasyStud fixture, a Sources/Layers fixture, or a browser
+profile inside Git.
 
 ## Required process-local configuration
 
@@ -57,6 +59,24 @@ coverage with live Forum, Assignment, Quiz or Site-announcement slides: the
 disposable fixture deliberately does not create those Moodle activities. A
 later public-rendering fixture must create and clean up those sources before
 that claim can be made.
+
+## Prepared public-course fixture
+
+`ccb-slideshow-public-rendering-fixture.php` is the separate source fixture
+for the future Course public-rendering gate. It has not been executed by this
+administration-preview batch. Under the Moodle 5.1 fixture lease, its `setup`
+command will create one hidden disposable course, retain its native
+Announcements forum, add one real announcement and enrol the test administrator
+explicitly with the Moodle Student role in that course. It also enables only
+the generated native course-banner and Course Slideshow configuration needed
+to mount the public Slideshow on the real course page.
+
+Its manifest records the temporary course, forum discussion, forum post and
+enrolment identifiers. `cleanup` restores exactly the captured CCB
+configuration, deletes the whole disposable course and proves that the course,
+discussion and enrolment are gone. The fixture deliberately does not create a
+Site announcement, Assignment or Quiz; those source families need their own
+scoped fixture additions before any complete public matrix is claimed.
 
 At widths of 768 px and below, the administration modal uses an editor-specific
 working height instead of inheriting the public banner's very wide ratio. It
