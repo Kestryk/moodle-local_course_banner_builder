@@ -91,6 +91,25 @@ test.describe('CCB admin Slideshow page skeleton', () => {
         await expect(skeleton).toBeHidden();
         await expect(status).toBeHidden();
 
+        const visualContract = await skeleton.locator(
+            '.local-course-banner-builder-slideshow-page-skeleton__title'
+        ).evaluate((surface) => {
+            const baseStyle = window.getComputedStyle(surface);
+            const shimmerStyle = window.getComputedStyle(surface, '::after');
+            return {
+                animationDirection: shimmerStyle.animationDirection,
+                animationDuration: shimmerStyle.animationDuration,
+                animationName: shimmerStyle.animationName,
+                backgroundColor: baseStyle.backgroundColor,
+                backgroundImage: shimmerStyle.backgroundImage,
+            };
+        });
+        expect(visualContract.backgroundColor).toBe('rgb(220, 231, 240)');
+        expect(visualContract.backgroundImage).toContain('108deg');
+        expect(visualContract.animationName).toContain('easyedu-skeleton-shimmer');
+        expect(visualContract.animationDuration).toBe('2s');
+        expect(visualContract.animationDirection).toBe('normal');
+
         const timeline = await page.evaluate(() => window.__ccbSlideshowSkeletonTimeline);
         expect(timeline[0].state).toBe('loading');
         expect(timeline.some((entry) => entry.state === 'ready')).toBe(true);

@@ -9,6 +9,8 @@ $loading-surface: var(--easyedu-loading-surface);
 $loading-highlight: var(--easyedu-loading-highlight);
 $loading-border: var(--easyedu-loading-border);
 $loading-radius: var(--easyedu-loading-radius);
+$loading-shimmer-soft: var(--easyedu-loading-shimmer-soft);
+$loading-shimmer-highlight: var(--easyedu-loading-shimmer-highlight);
 $loading-shimmer-duration: var(--easyedu-loading-shimmer-duration);
 $loading-reveal-duration: var(--easyedu-loading-reveal-duration);
 
@@ -16,10 +18,10 @@ $loading-reveal-duration: var(--easyedu-loading-reveal-duration);
     min-height: $height;
 
     @include easyedu.skeleton-surface($loading-surface, $loading-border, $loading-radius);
-    @include easyedu.skeleton-shimmer-direct(
+    @include easyedu.skeleton-shimmer-overlay(
         $duration: $loading-shimmer-duration,
-        $surface: $loading-surface,
-        $highlight: $loading-highlight
+        $soft: $loading-shimmer-soft,
+        $highlight: $loading-shimmer-highlight
     );
 }
 
@@ -141,6 +143,11 @@ $loading-reveal-duration: var(--easyedu-loading-reveal-duration);
     @include slideshow-skeleton-surface(1rem);
 }
 
+.local-course-banner-builder-slideshow-page-skeleton__eyebrow,
+.local-course-banner-builder-slideshow-page-skeleton__description {
+    background: $loading-highlight;
+}
+
 .local-course-banner-builder-slideshow-page-skeleton__cards {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -207,15 +214,15 @@ $loading-reveal-duration: var(--easyedu-loading-reveal-duration);
 }
 
 [dir="rtl"] .local-course-banner-builder-slideshow-page-skeleton {
-    .local-course-banner-builder-slideshow-page-skeleton__navigation-mark,
-    .local-course-banner-builder-slideshow-page-skeleton__navigation-item,
-    .local-course-banner-builder-slideshow-page-skeleton__eyebrow,
-    .local-course-banner-builder-slideshow-page-skeleton__title,
-    .local-course-banner-builder-slideshow-page-skeleton__description,
-    .local-course-banner-builder-slideshow-page-skeleton__card-title,
-    .local-course-banner-builder-slideshow-page-skeleton__preview,
-    .local-course-banner-builder-slideshow-page-skeleton__row,
-    .local-course-banner-builder-slideshow-page-skeleton__action {
+    .local-course-banner-builder-slideshow-page-skeleton__navigation-mark::after,
+    .local-course-banner-builder-slideshow-page-skeleton__navigation-item::after,
+    .local-course-banner-builder-slideshow-page-skeleton__eyebrow::after,
+    .local-course-banner-builder-slideshow-page-skeleton__title::after,
+    .local-course-banner-builder-slideshow-page-skeleton__description::after,
+    .local-course-banner-builder-slideshow-page-skeleton__card-title::after,
+    .local-course-banner-builder-slideshow-page-skeleton__preview::after,
+    .local-course-banner-builder-slideshow-page-skeleton__row::after,
+    .local-course-banner-builder-slideshow-page-skeleton__action::after {
         animation-direction: reverse;
     }
 }

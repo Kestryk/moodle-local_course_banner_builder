@@ -122,10 +122,10 @@
 
     @keyframes easyedu-skeleton-shimmer {
       from {
-        background-position: 110% 0;
+        background-position: -110% 0;
       }
       to {
-        background-position: -110% 0;
+        background-position: 110% 0;
       }
     }
 

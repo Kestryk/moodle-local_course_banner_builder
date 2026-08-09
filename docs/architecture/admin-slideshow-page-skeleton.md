@@ -49,6 +49,27 @@ tokens for the surface, shimmer, bounded stack spacing and opacity handoff.
 The Skeleton stays in normal document flow during loading, so underlying live
 controls cannot leak through or briefly affect page geometry.
 
+### Visual parity audit
+
+The visual reference is the Student Management Skeleton served by EasyStud
+commit `986b23e229cec2cf325656e506b59a761bc75d46`, not a new CCB variation.
+The accepted CCB layout remains product-owned, but every placeholder now uses
+the same shared treatment:
+
+- stable `#dce7f0` surface and `#cfdee9` border;
+- 108-degree overlay sweep rather than a moving full-surface gradient;
+- `rgba(255, 255, 255, 0.16)` soft edges and `0.5` centre highlight;
+- two-second linear travel from `-110%` to `110%`, reversed in RTL;
+- static surfaces for reduced motion and forced colours.
+
+The audit found that UI Kit commit
+`f5aa5f72df80d8ae2a2b00c9628fcffadc5e7f56` documents the overlay as the
+default integration example, but its shared keyframe travels in the opposite
+direction and its centre token is `0.52` rather than EasyStud's `0.5`. The CCB
+embedded Loading primitive is aligned to the proven product reference pending
+a separately owned UI Kit canonical correction. Future consumers must import
+that corrected primitive instead of recreating shimmer values locally.
+
 The audit compared the active EasyStud runtime commit
 `986b23e229cec2cf325656e506b59a761bc75d46` with the published UI Kit. The Kit
 already documents the required server-first state, inert live controls,
