@@ -62,6 +62,13 @@ the same shared treatment:
 - two-second linear travel from `-110%` to `110%`, reversed in RTL;
 - static surfaces for reduced motion and forced colours.
 
+EasyStud applies the moving sweep to content cues, not to every large panel.
+CCB follows the same composition rule: the Navigation frame, cards and preview
+frames remain pale static containers, while their marks, labels, rows and
+preview text/action cues use the animated Loading primitive. The outer preview
+dimensions are unchanged. This prevents expensive full-panel repaints and
+makes the two-second loop retain the same perceived cadence on both products.
+
 The audit found that UI Kit commit
 `f5aa5f72df80d8ae2a2b00c9628fcffadc5e7f56` documents the overlay as the
 default integration example, but its shared keyframe travels in the opposite

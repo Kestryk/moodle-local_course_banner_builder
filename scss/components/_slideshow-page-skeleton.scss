@@ -97,8 +97,11 @@ $loading-reveal-duration: var(--easyedu-loading-reveal-duration);
     align-items: center;
     min-height: 5.4rem;
     padding: 0.9rem;
+    background: #f4f8fb;
+    border: 1px solid $loading-border;
+    border-radius: 1.15rem;
+    box-shadow: 0 0.38rem 0.8rem rgba(31, 68, 104, 0.08);
 
-    @include easyedu.skeleton-surface($loading-surface, $loading-border, $loading-radius);
     @include easyedu.skeleton-stack(0.9rem);
 }
 
@@ -144,7 +147,8 @@ $loading-reveal-duration: var(--easyedu-loading-reveal-duration);
 }
 
 .local-course-banner-builder-slideshow-page-skeleton__eyebrow,
-.local-course-banner-builder-slideshow-page-skeleton__description {
+.local-course-banner-builder-slideshow-page-skeleton__description,
+.local-course-banner-builder-slideshow-page-skeleton__navigation-item {
     background: $loading-highlight;
 }
 
@@ -155,9 +159,11 @@ $loading-reveal-duration: var(--easyedu-loading-reveal-duration);
 }
 
 .local-course-banner-builder-slideshow-page-skeleton__card {
+    background: #f9fbfd;
+    border: 1px solid $loading-border;
+    border-radius: 1rem;
     padding: 1rem;
 
-    @include easyedu.skeleton-surface(var(--bs-body-bg, #fff), $loading-border, $loading-radius);
     @include easyedu.skeleton-stack(1rem);
 }
 
@@ -168,7 +174,34 @@ $loading-reveal-duration: var(--easyedu-loading-reveal-duration);
 }
 
 .local-course-banner-builder-slideshow-page-skeleton__preview {
-    @include slideshow-skeleton-surface(clamp(9rem, 18vw, 14rem));
+    align-content: center;
+    background: #f3f7fa;
+    border: 1px solid #dbe6ee;
+    border-radius: $loading-radius;
+    display: grid;
+    gap: 0.75rem;
+    min-height: clamp(9rem, 18vw, 14rem);
+    padding: clamp(0.9rem, 2vw, 1.4rem);
+}
+
+.local-course-banner-builder-slideshow-page-skeleton__preview-line {
+    @include slideshow-skeleton-surface(0.72rem);
+}
+
+.local-course-banner-builder-slideshow-page-skeleton__preview-line--title {
+    min-height: 1.15rem;
+    width: min(64%, 18rem);
+}
+
+.local-course-banner-builder-slideshow-page-skeleton__preview-line--body {
+    background: $loading-highlight;
+    width: min(82%, 28rem);
+}
+
+.local-course-banner-builder-slideshow-page-skeleton__preview-line--action {
+    min-height: 2.25rem;
+    margin-top: 0.35rem;
+    width: min(34%, 9rem);
 }
 
 .local-course-banner-builder-slideshow-page-skeleton__rows {
@@ -220,7 +253,7 @@ $loading-reveal-duration: var(--easyedu-loading-reveal-duration);
     .local-course-banner-builder-slideshow-page-skeleton__title::after,
     .local-course-banner-builder-slideshow-page-skeleton__description::after,
     .local-course-banner-builder-slideshow-page-skeleton__card-title::after,
-    .local-course-banner-builder-slideshow-page-skeleton__preview::after,
+    .local-course-banner-builder-slideshow-page-skeleton__preview-line::after,
     .local-course-banner-builder-slideshow-page-skeleton__row::after,
     .local-course-banner-builder-slideshow-page-skeleton__action::after {
         animation-direction: reverse;

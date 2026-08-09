@@ -21,6 +21,10 @@ many small sections.
   reference: stable pale surfaces now receive the same 108-degree overlay
   sweep, direction, two-second cycle and soft/highlight contrast as EasyStud,
   while the already accepted CCB page geometry remains unchanged.
+- Kept large Navigation and Slideshow-preview placeholders as the same pale,
+  static EasyStud panels and moved the shimmer onto their internal content
+  cues. This preserves the approved CCB geometry while avoiding the large-area
+  repaints that made the otherwise identical loop appear jerky.
 
 #### Documentation
 
