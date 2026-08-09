@@ -12,6 +12,8 @@ scenario is deliberately a **preflight**, not the complete responsive matrix.
 - `tools/playwright/ccb-slideshow-rendering.spec.js`
 - `tools/playwright/Invoke-CCBSlideshowRenderingValidation.ps1`
 - `tools/playwright/ccb-slideshow-public-rendering-fixture.php`
+- `tools/playwright/ccb-slideshow-public-rendering.spec.js`
+- `tools/playwright/Invoke-CCBSlideshowPublicRenderingValidation.ps1`
 
 The administration-preview fixture creates one hidden temporary course, records
 all existing plugin configuration entries beginning with `slideshow_course_` or
@@ -77,6 +79,30 @@ configuration, deletes the whole disposable course and proves that the course,
 discussion and enrolment are gone. The fixture deliberately does not create a
 Site announcement, Assignment or Quiz; those source families need their own
 scoped fixture additions before any complete public matrix is claimed.
+
+## Prepared public Course scenario
+
+`ccb-slideshow-public-rendering.spec.js` and
+`Invoke-CCBSlideshowPublicRenderingValidation.ps1` prepare exactly one future
+Moodle 5.1 scenario: `CCB Slideshow public Course fixture renders a real forum
+announcement at 100 percent`. It uses the public fixture above, waits for the
+real Course Slideshow region, moves from the intentional empty banner slide to
+the real Forum announcement, then verifies the Forum label, title, action URL,
+geometry and stable post-transition CDP capture.
+
+The runner performs discovery first, requires exactly one selected test and
+acquires `moodle51-active-fixture-write` before it creates the fixture. It
+loads credentials only into its own process, keeps its isolated Chromium
+profile and all raw evidence outside Git, and requires four cleanup facts:
+course removed, Forum discussion removed, Student enrolment removed and CCB
+configuration restored. It preserves the existing watchdog and drains both
+Node output streams from process start to avoid an output-buffer deadlock.
+
+This prepared scenario is limited to a 1600 by 900 default-zoom public Course
+page. It does not claim mobile, native 200 percent browser zoom, Site
+announcements, Assignment, Quiz, non-administrator permissions or any full
+public rendering matrix. No runtime execution is claimed until a separate
+lease-authorized run is requested.
 
 At widths of 768 px and below, the administration modal uses an editor-specific
 working height instead of inheriting the public banner's very wide ratio. It

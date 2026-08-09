@@ -18,6 +18,10 @@ many small sections.
   Student enrolment for the test administrator. It restores only its captured
   CCB configuration and removes the course, discussion and enrolment. No
   public runtime or browser validation has been run by this change.
+- Added the matching one-test public Course scenario and supervised runner. It
+  will capture only after the real Forum announcement slide has settled and
+  requires cleanup proof for the temporary course, announcement, enrolment and
+  CCB configuration. The public runtime scenario has not been executed.
 
 ### 2026-08-06
 
