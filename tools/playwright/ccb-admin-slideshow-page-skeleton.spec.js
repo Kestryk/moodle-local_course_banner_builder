@@ -31,6 +31,41 @@ test.describe('CCB admin Slideshow page skeleton', () => {
             'Set process-local CCB Moodle credentials before running this leased scenario.'
         );
 
+        await page.addInitScript(() => {
+            window.__ccbSlideshowSkeletonTimeline = [];
+
+            const recordShell = (shell) => {
+                if (!shell) {
+                    return;
+                }
+                const state = shell.getAttribute(
+                    'data-local-course-banner-builder-slideshow-skeleton-state'
+                );
+                const timeline = window.__ccbSlideshowSkeletonTimeline;
+                const previous = timeline[timeline.length - 1];
+                if (!previous || previous.state !== state) {
+                    timeline.push({state, time: performance.now()});
+                }
+            };
+
+            const observer = new MutationObserver(() => {
+                recordShell(document.querySelector(
+                    '[data-local-course-banner-builder-slideshow-skeleton="1"]'
+                ));
+            });
+            observer.observe(document, {
+                attributes: true,
+                attributeFilter: ['data-local-course-banner-builder-slideshow-skeleton-state'],
+                childList: true,
+                subtree: true,
+            });
+            document.addEventListener('DOMContentLoaded', () => {
+                recordShell(document.querySelector(
+                    '[data-local-course-banner-builder-slideshow-skeleton="1"]'
+                ));
+            }, {once: true});
+        });
+
         await page.goto(moodlePath('/login/index.php'));
         await page.locator('#username').fill(username);
         await page.locator('#password').fill(password);
@@ -55,5 +90,10 @@ test.describe('CCB admin Slideshow page skeleton', () => {
         await expect(live).not.toHaveAttribute('inert');
         await expect(skeleton).toBeHidden();
         await expect(status).toBeHidden();
+
+        const timeline = await page.evaluate(() => window.__ccbSlideshowSkeletonTimeline);
+        expect(timeline[0].state).toBe('loading');
+        expect(timeline.some((entry) => entry.state === 'ready')).toBe(true);
+        expect(timeline.find((entry) => entry.state === 'ready').time - timeline[0].time).toBeGreaterThanOrEqual(1100);
     });
 });

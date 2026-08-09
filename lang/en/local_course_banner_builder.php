@@ -23,6 +23,7 @@
  */
 
 $string['actions'] = 'Actions';
+$string['actioninprogress'] = 'Loading in progress';
 $string['additionalborderandoverlaylayers'] = '+{$a->borders} border layer / +{$a->overlays} overlay layer';
 $string['additionalborderlayers'] = '+{$a} border layer';
 $string['additionaloverlaylayers'] = '+{$a} overlay layer';

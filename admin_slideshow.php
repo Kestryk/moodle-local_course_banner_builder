@@ -45,8 +45,9 @@ try {
 }
 
 $PAGE->requires->css('/local/course_banner_builder/styles.css');
-$PAGE->requires->js_call_amd('local_course_banner_builder/admin_slideshow_skeleton', 'init');
+$PAGE->requires->js('/local/course_banner_builder/js/admin_slideshow_skeleton_bootstrap.js', true);
 $PAGE->requires->js_call_amd('local_course_banner_builder/slideshow_admin', 'init');
+$PAGE->requires->js_call_amd('local_course_banner_builder/admin_slideshow_skeleton', 'init');
 $PAGE->requires->js_call_amd('local_course_banner_builder/admin_navigation', 'init');
 $PAGE->requires->js_call_amd('local_course_banner_builder/easyedu_navigation_guide', 'init', [
     '[data-easyedu-navigation]',
@@ -2414,7 +2415,7 @@ function local_course_banner_builder_render_slideshow_form(string $context): str
 
 echo $OUTPUT->header();
 
-$slideshowpageloadinglabel = get_string('loading', 'moodle');
+$slideshowpageloadinglabel = get_string('actioninprogress', 'local_course_banner_builder');
 $slideshowpageskeleton = html_writer::start_div(
     'local-course-banner-builder-slideshow-page-skeleton',
     [
@@ -2455,10 +2456,12 @@ for ($slideshowpageskeletonindex = 0; $slideshowpageskeletonindex < 2; $slidesho
 $slideshowpageskeleton .= html_writer::end_div();
 $slideshowpageskeleton .= html_writer::end_div();
 
-echo html_writer::start_div('local-course-banner-builder-slideshow-page-shell', [
-    'aria-busy' => 'false',
+echo html_writer::start_div('local-course-banner-builder-slideshow-page-shell is-action-busy', [
+    'aria-busy' => 'true',
+    'data-easyedu-action-busy-label' => $slideshowpageloadinglabel,
     'data-local-course-banner-builder-slideshow-skeleton' => '1',
-    'data-local-course-banner-builder-slideshow-skeleton-state' => 'ready',
+    'data-local-course-banner-builder-slideshow-skeleton-state' => 'loading',
+    'data-local-course-banner-builder-slideshow-reveal-duration' => '180',
 ]);
 echo $slideshowpageskeleton;
 echo html_writer::div(
@@ -2468,9 +2471,20 @@ echo html_writer::div(
         'aria-atomic' => 'true',
         'aria-live' => 'polite',
         'data-local-course-banner-builder-slideshow-skeleton-status' => '1',
-        'hidden' => 'hidden',
         'role' => 'status',
     ]
+);
+echo html_writer::tag(
+    'noscript',
+    html_writer::tag(
+        'style',
+        '.local-course-banner-builder-slideshow-page-shell::before,' .
+        '.local-course-banner-builder-slideshow-page-shell::after,' .
+        '[data-local-course-banner-builder-slideshow-skeleton-placeholder],' .
+        '[data-local-course-banner-builder-slideshow-skeleton-status]{display:none!important}' .
+        '[data-local-course-banner-builder-slideshow-skeleton-live]{display:block!important;' .
+        'opacity:1!important;pointer-events:auto!important;visibility:visible!important}'
+    )
 );
 echo html_writer::start_div(
     'local-course-banner-builder-admin local-course-banner-builder-admin--native local-course-banner-builder-slideshow-admin',
