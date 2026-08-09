@@ -23,6 +23,7 @@
  */
 
 $string['actions'] = 'Actions';
+$string['actioninprogress'] = 'Chargement en cours';
 $string['additionalborderandoverlaylayers'] = '+{$a->borders} calque de bordure / +{$a->overlays} calque overlay';
 $string['additionalborderlayers'] = '+{$a} calque de bordure';
 $string['additionaloverlaylayers'] = '+{$a} calque overlay';

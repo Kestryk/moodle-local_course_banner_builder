@@ -14,7 +14,7 @@
 // along with Moodle. If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Fail-open loading lifecycle for the Slideshow administration shell.
+ * Signals that the Slideshow administration controllers have been scheduled.
  *
  * @module     local_course_banner_builder/admin_slideshow_skeleton
  * @copyright  2026 Kevin Jarniac
@@ -22,10 +22,7 @@
  */
 define('local_course_banner_builder/admin_slideshow_skeleton', [], function() {
     var rootSelector = '[data-local-course-banner-builder-slideshow-skeleton="1"]';
-    var liveSelector = '[data-local-course-banner-builder-slideshow-skeleton-live="1"]';
-    var statusSelector = '[data-local-course-banner-builder-slideshow-skeleton-status="1"]';
-    var quietDelay = 180;
-    var failOpenDelay = 1500;
+    var readyAttribute = 'data-local-course-banner-builder-slideshow-ready';
 
     /**
      * Runs a callback after a browser paint, with a timeout fallback.
@@ -58,114 +55,15 @@ define('local_course_banner_builder/admin_slideshow_skeleton', [], function() {
     };
 
     /**
-     * Updates the semantic and interaction state of one Slideshow shell.
-     *
-     * @param {Element} root Page shell.
-     * @param {Element} live Live content wrapper.
-     * @param {Element} status Live loading status.
-     * @param {boolean} isLoading Whether the shell is loading.
-     */
-    var setState = function(root, live, status, isLoading) {
-        root.setAttribute(
-            'data-local-course-banner-builder-slideshow-skeleton-state',
-            isLoading ? 'loading' : 'ready'
-        );
-        root.setAttribute('aria-busy', isLoading ? 'true' : 'false');
-
-        if (live) {
-            if (isLoading) {
-                live.setAttribute('aria-hidden', 'true');
-                live.setAttribute('inert', '');
-            } else {
-                live.removeAttribute('aria-hidden');
-                live.removeAttribute('inert');
-            }
-        }
-
-        if (status) {
-            status.hidden = !isLoading;
-        }
-    };
-
-    /**
-     * Starts one deterministic, fail-open Slideshow shell lifecycle.
-     *
-     * @param {Element} root Page shell.
-     */
-    var initialise = function(root) {
-        var live = root.querySelector(liveSelector);
-        var status = root.querySelector(statusSelector);
-        var observer = null;
-        var quietTimer = null;
-        var failOpenTimer = null;
-        var released = false;
-
-        var release = function() {
-            if (released) {
-                return;
-            }
-
-            released = true;
-            if (observer) {
-                observer.disconnect();
-            }
-            if (quietTimer) {
-                window.clearTimeout(quietTimer);
-            }
-            if (failOpenTimer) {
-                window.clearTimeout(failOpenTimer);
-            }
-
-            afterPaint(function() {
-                setState(root, live, status, false);
-            });
-        };
-
-        var scheduleRelease = function() {
-            if (released) {
-                return;
-            }
-            if (quietTimer) {
-                window.clearTimeout(quietTimer);
-            }
-            quietTimer = window.setTimeout(release, quietDelay);
-        };
-
-        try {
-            setState(root, live, status, true);
-
-            if (!live) {
-                release();
-                return;
-            }
-
-            if (window.MutationObserver) {
-                observer = new MutationObserver(scheduleRelease);
-                observer.observe(live, {
-                    attributes: true,
-                    attributeFilter: ['class', 'hidden', 'style', 'aria-expanded'],
-                    childList: true,
-                    subtree: true,
-                });
-            }
-
-            if (document.fonts && document.fonts.ready) {
-                document.fonts.ready.then(scheduleRelease, scheduleRelease);
-            }
-
-            failOpenTimer = window.setTimeout(release, failOpenDelay);
-            scheduleRelease();
-        } catch (error) {
-            release();
-        }
-    };
-
-    /**
      * Initialises all Slideshow page shells present in the document.
      */
     var init = function() {
         onReady(function() {
-            Array.prototype.slice.call(document.querySelectorAll(rootSelector)).forEach(initialise);
+            afterPaint(function() {
+                Array.prototype.slice.call(document.querySelectorAll(rootSelector)).forEach(function(root) {
+                    root.setAttribute(readyAttribute, '1');
+                });
+            });
         });
     };
 

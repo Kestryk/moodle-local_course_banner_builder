@@ -8,6 +8,21 @@ many small sections.
 
 ## Unreleased
 
+### 2026-08-09
+
+#### Fixed
+
+- Corrected the Slideshow administration Skeleton to render before the live
+  page instead of flashing after it: CCB now follows the proven EasyStud
+  server-first lifecycle, keeps the Skeleton visible through initial visual
+  settling, performs an ordered fade, retains a bounded fail-open and restores
+  the historical bottom-end `Loading in progress` indicator.
+
+#### Documentation
+
+- Recorded the EasyStud/UI Kit loading audit, the missing consumer primitives
+  and the exact CCB-owned readiness boundary for future Skeleton consumers.
+
 ### 2026-08-08
 
 #### Added

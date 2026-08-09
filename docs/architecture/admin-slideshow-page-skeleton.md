@@ -4,9 +4,12 @@
 
 `EED-CCB-2026-0005` adds a page-level loading shell around the existing
 Slideshow administration content. It owns only the semantic shell in
-`admin_slideshow.php`, the dedicated AMD lifecycle, the local page geometry
-and the explicitly allocated Loading primitives copied from the immutable UI
-Kit commit `003a3f2f1a2b5dd55c6778fd4711ef292b5778cc`.
+`admin_slideshow.php`, the pre-RequireJS fail-open bootstrap, the dedicated AMD
+readiness signal, the local page geometry and the explicitly allocated Loading
+primitives. The initial Loading surface came from immutable UI Kit commit
+`003a3f2f1a2b5dd55c6778fd4711ef292b5778cc`; the corrective audit synchronized
+the published Loading tokens and bottom-end busy indicator from UI Kit commit
+`f5aa5f72df80d8ae2a2b00c9628fcffadc5e7f56`.
 
 The shell deliberately does not change Slideshow settings, modal previews,
 format-picker controls, `slideshow_admin`, Navigation, Guide, Sources/Layers,
@@ -14,16 +17,24 @@ or public banner rendering.
 
 ## Lifecycle
 
-The PHP page is fail-open: without JavaScript the live Slideshow content is
-immediately available and the skeleton remains hidden. Once the dedicated AMD
-module runs, it marks the shell busy, makes the status text available to
-assistive technology, and makes the existing live wrapper inert and hidden
-from the accessibility tree while the visual skeleton is shown.
+The PHP response starts in `loading`, before interactive JavaScript: the
+Skeleton is already present, `aria-busy` is true, the historical bottom-end
+`Loading in progress` indicator is active and the live Slideshow controls are
+not painted. A `noscript` override reveals the real page when JavaScript is
+unavailable.
 
-The lifecycle releases after 180 ms of DOM quiet followed by two animation
-frames. It also has a 1.5 second fail-open deadline. A missing wrapper,
-unsupported observer, font failure or unexpected JavaScript exception always
-releases the live page instead of trapping it behind the skeleton.
+The classic `js/admin_slideshow_skeleton_bootstrap.js` runs before RequireJS
+and owns the bounded handoff. The dedicated AMD module is registered after
+`slideshow_admin` and signals that the interactive initializers have been
+scheduled. The bootstrap then waits for 240 ms of visual quiet, font readiness
+and a 1.2 second minimum visible interval. A 1.5 second deadline starts a
+degraded fail-open handoff if that signal never arrives.
+
+The handoff is ordered rather than simultaneous: the Skeleton fades out for
+180 ms, is removed from layout, then the live page fades in for 180 ms after
+two animation frames. A missing wrapper, unsupported observer, font failure or
+unexpected bootstrap exception always reveals the live page instead of
+trapping it behind the Skeleton.
 
 On release, `aria-busy` becomes `false`, `aria-hidden` and `inert` are
 removed from the live wrapper, and the loading status is hidden. No skeleton
@@ -33,15 +44,19 @@ placeholder contains a focusable control.
 
 `scss/components/_slideshow-page-skeleton.scss` owns only the Slideshow page
 layout: navigation-sized shell, heading, two administration cards, previews,
-rows and actions. It uses the vendored Loading mixins for the surface, shimmer,
-stack spacing and opacity handoff. The CCB copy supplies CSS-variable fallbacks
-because this snapshot does not otherwise allocate Loading tokens; themes can
-still override the public `--easyedu-loading-*` variables.
+rows and actions. It uses the vendored Loading mixins and official public
+tokens for the surface, shimmer, bounded stack spacing and opacity handoff.
+The Skeleton stays in normal document flow during loading, so underlying live
+controls cannot leak through or briefly affect page geometry.
 
-The shared Loading source, `easyedu-skeleton-shimmer` keyframe and component
-forward are copied unchanged from the approved UI Kit snapshot. Reduced-motion
-and forced-colors behavior is supplied by those primitives; the local shell
-also uses Canvas in forced-colors mode.
+The audit compared the active EasyStud runtime commit
+`986b23e229cec2cf325656e506b59a761bc75d46` with the published UI Kit. The Kit
+already documents the required server-first state, inert live controls,
+bounded fail-open, complete page-region geometry, reduced-motion and
+forced-colors behavior. The original CCB consumer had not followed that
+contract: it rendered `ready` first and switched to `loading` from AMD, causing
+the observed content flash. No EasyStud or UI Kit file was changed by this
+correction.
 
 The official `scss/build.ps1` rebuilds the one CCB `styles.css` asset from the
 whole existing source entry point. At this baseline, that controlled rebuild
@@ -55,8 +70,9 @@ generated asset remains the reproducible output of the approved source build.
 `tools/playwright/ccb-admin-slideshow-page-skeleton.spec.js` is the focused,
 future lease-gated browser scenario. It uses only process-local credentials and
 must be run with the normal isolated profile, external artifact manifest and
-fixture/runtime lease. It proves that the final page is ready, non-busy, not
-inert, and no longer exposes its placeholder or live status.
+fixture/runtime lease. It records the state timeline and proves that `loading`
+is the first observed state, remains visible for the bounded minimum, then
+releases a ready, non-busy and non-inert live page.
 
 This batch performs static validation only. Runtime, cache promotion,
 Playwright execution, visual review, Moodle 4.5 execution and Moodle 5.2 CI
