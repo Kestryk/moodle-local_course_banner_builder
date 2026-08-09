@@ -7902,7 +7902,7 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
   --easyedu-loading-highlight: #edf3f7;
   --easyedu-loading-border: #cfdee9;
   --easyedu-loading-shimmer-soft: rgba(255, 255, 255, 0.16);
-  --easyedu-loading-shimmer-highlight: rgba(255, 255, 255, 0.52);
+  --easyedu-loading-shimmer-highlight: rgba(255, 255, 255, 0.5);
   --easyedu-loading-radius: 0.72rem;
   --easyedu-loading-stack-gap: 0.9rem;
   --easyedu-loading-shimmer-duration: 2s;
@@ -8140,13 +8140,20 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
     border-color: CanvasText;
   }
 }
-.local-course-banner-builder-slideshow-page-skeleton__navigation-mark {
+.local-course-banner-builder-slideshow-page-skeleton__navigation-mark::after {
   animation: easyedu-skeleton-shimmer var(--easyedu-loading-shimmer-duration) linear infinite;
-  background: linear-gradient(90deg, var(--easyedu-loading-surface) 0%, var(--easyedu-loading-highlight) 48%, var(--easyedu-loading-surface) 100%);
-  background-size: 220% 100%;
+  background-image: linear-gradient(108deg, transparent 30%, var(--easyedu-loading-shimmer-soft) 42%, var(--easyedu-loading-shimmer-highlight) 50%, var(--easyedu-loading-shimmer-soft) 58%, transparent 70%);
+  background-position: -110% 0;
+  background-repeat: no-repeat;
+  background-size: 190% 100%;
+  border-radius: inherit;
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
 }
 @media (prefers-reduced-motion: reduce), (forced-colors: active) {
-  .local-course-banner-builder-slideshow-page-skeleton__navigation-mark {
+  .local-course-banner-builder-slideshow-page-skeleton__navigation-mark::after {
     animation: none;
   }
 }
@@ -8179,13 +8186,20 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
     border-color: CanvasText;
   }
 }
-.local-course-banner-builder-slideshow-page-skeleton__navigation-item {
+.local-course-banner-builder-slideshow-page-skeleton__navigation-item::after {
   animation: easyedu-skeleton-shimmer var(--easyedu-loading-shimmer-duration) linear infinite;
-  background: linear-gradient(90deg, var(--easyedu-loading-surface) 0%, var(--easyedu-loading-highlight) 48%, var(--easyedu-loading-surface) 100%);
-  background-size: 220% 100%;
+  background-image: linear-gradient(108deg, transparent 30%, var(--easyedu-loading-shimmer-soft) 42%, var(--easyedu-loading-shimmer-highlight) 50%, var(--easyedu-loading-shimmer-soft) 58%, transparent 70%);
+  background-position: -110% 0;
+  background-repeat: no-repeat;
+  background-size: 190% 100%;
+  border-radius: inherit;
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
 }
 @media (prefers-reduced-motion: reduce), (forced-colors: active) {
-  .local-course-banner-builder-slideshow-page-skeleton__navigation-item {
+  .local-course-banner-builder-slideshow-page-skeleton__navigation-item::after {
     animation: none;
   }
 }
@@ -8219,13 +8233,20 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
     border-color: CanvasText;
   }
 }
-.local-course-banner-builder-slideshow-page-skeleton__eyebrow {
+.local-course-banner-builder-slideshow-page-skeleton__eyebrow::after {
   animation: easyedu-skeleton-shimmer var(--easyedu-loading-shimmer-duration) linear infinite;
-  background: linear-gradient(90deg, var(--easyedu-loading-surface) 0%, var(--easyedu-loading-highlight) 48%, var(--easyedu-loading-surface) 100%);
-  background-size: 220% 100%;
+  background-image: linear-gradient(108deg, transparent 30%, var(--easyedu-loading-shimmer-soft) 42%, var(--easyedu-loading-shimmer-highlight) 50%, var(--easyedu-loading-shimmer-soft) 58%, transparent 70%);
+  background-position: -110% 0;
+  background-repeat: no-repeat;
+  background-size: 190% 100%;
+  border-radius: inherit;
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
 }
 @media (prefers-reduced-motion: reduce), (forced-colors: active) {
-  .local-course-banner-builder-slideshow-page-skeleton__eyebrow {
+  .local-course-banner-builder-slideshow-page-skeleton__eyebrow::after {
     animation: none;
   }
 }
@@ -8249,13 +8270,20 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
     border-color: CanvasText;
   }
 }
-.local-course-banner-builder-slideshow-page-skeleton__title {
+.local-course-banner-builder-slideshow-page-skeleton__title::after {
   animation: easyedu-skeleton-shimmer var(--easyedu-loading-shimmer-duration) linear infinite;
-  background: linear-gradient(90deg, var(--easyedu-loading-surface) 0%, var(--easyedu-loading-highlight) 48%, var(--easyedu-loading-surface) 100%);
-  background-size: 220% 100%;
+  background-image: linear-gradient(108deg, transparent 30%, var(--easyedu-loading-shimmer-soft) 42%, var(--easyedu-loading-shimmer-highlight) 50%, var(--easyedu-loading-shimmer-soft) 58%, transparent 70%);
+  background-position: -110% 0;
+  background-repeat: no-repeat;
+  background-size: 190% 100%;
+  border-radius: inherit;
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
 }
 @media (prefers-reduced-motion: reduce), (forced-colors: active) {
-  .local-course-banner-builder-slideshow-page-skeleton__title {
+  .local-course-banner-builder-slideshow-page-skeleton__title::after {
     animation: none;
   }
 }
@@ -8279,15 +8307,27 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
     border-color: CanvasText;
   }
 }
-.local-course-banner-builder-slideshow-page-skeleton__description {
+.local-course-banner-builder-slideshow-page-skeleton__description::after {
   animation: easyedu-skeleton-shimmer var(--easyedu-loading-shimmer-duration) linear infinite;
-  background: linear-gradient(90deg, var(--easyedu-loading-surface) 0%, var(--easyedu-loading-highlight) 48%, var(--easyedu-loading-surface) 100%);
-  background-size: 220% 100%;
+  background-image: linear-gradient(108deg, transparent 30%, var(--easyedu-loading-shimmer-soft) 42%, var(--easyedu-loading-shimmer-highlight) 50%, var(--easyedu-loading-shimmer-soft) 58%, transparent 70%);
+  background-position: -110% 0;
+  background-repeat: no-repeat;
+  background-size: 190% 100%;
+  border-radius: inherit;
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
 }
 @media (prefers-reduced-motion: reduce), (forced-colors: active) {
-  .local-course-banner-builder-slideshow-page-skeleton__description {
+  .local-course-banner-builder-slideshow-page-skeleton__description::after {
     animation: none;
   }
+}
+
+.local-course-banner-builder-slideshow-page-skeleton__eyebrow,
+.local-course-banner-builder-slideshow-page-skeleton__description {
+  background: var(--easyedu-loading-highlight);
 }
 
 .local-course-banner-builder-slideshow-page-skeleton__cards {
@@ -8340,13 +8380,20 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
     border-color: CanvasText;
   }
 }
-.local-course-banner-builder-slideshow-page-skeleton__card-title {
+.local-course-banner-builder-slideshow-page-skeleton__card-title::after {
   animation: easyedu-skeleton-shimmer var(--easyedu-loading-shimmer-duration) linear infinite;
-  background: linear-gradient(90deg, var(--easyedu-loading-surface) 0%, var(--easyedu-loading-highlight) 48%, var(--easyedu-loading-surface) 100%);
-  background-size: 220% 100%;
+  background-image: linear-gradient(108deg, transparent 30%, var(--easyedu-loading-shimmer-soft) 42%, var(--easyedu-loading-shimmer-highlight) 50%, var(--easyedu-loading-shimmer-soft) 58%, transparent 70%);
+  background-position: -110% 0;
+  background-repeat: no-repeat;
+  background-size: 190% 100%;
+  border-radius: inherit;
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
 }
 @media (prefers-reduced-motion: reduce), (forced-colors: active) {
-  .local-course-banner-builder-slideshow-page-skeleton__card-title {
+  .local-course-banner-builder-slideshow-page-skeleton__card-title::after {
     animation: none;
   }
 }
@@ -8369,13 +8416,20 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
     border-color: CanvasText;
   }
 }
-.local-course-banner-builder-slideshow-page-skeleton__preview {
+.local-course-banner-builder-slideshow-page-skeleton__preview::after {
   animation: easyedu-skeleton-shimmer var(--easyedu-loading-shimmer-duration) linear infinite;
-  background: linear-gradient(90deg, var(--easyedu-loading-surface) 0%, var(--easyedu-loading-highlight) 48%, var(--easyedu-loading-surface) 100%);
-  background-size: 220% 100%;
+  background-image: linear-gradient(108deg, transparent 30%, var(--easyedu-loading-shimmer-soft) 42%, var(--easyedu-loading-shimmer-highlight) 50%, var(--easyedu-loading-shimmer-soft) 58%, transparent 70%);
+  background-position: -110% 0;
+  background-repeat: no-repeat;
+  background-size: 190% 100%;
+  border-radius: inherit;
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
 }
 @media (prefers-reduced-motion: reduce), (forced-colors: active) {
-  .local-course-banner-builder-slideshow-page-skeleton__preview {
+  .local-course-banner-builder-slideshow-page-skeleton__preview::after {
     animation: none;
   }
 }
@@ -8405,13 +8459,20 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
     border-color: CanvasText;
   }
 }
-.local-course-banner-builder-slideshow-page-skeleton__row {
+.local-course-banner-builder-slideshow-page-skeleton__row::after {
   animation: easyedu-skeleton-shimmer var(--easyedu-loading-shimmer-duration) linear infinite;
-  background: linear-gradient(90deg, var(--easyedu-loading-surface) 0%, var(--easyedu-loading-highlight) 48%, var(--easyedu-loading-surface) 100%);
-  background-size: 220% 100%;
+  background-image: linear-gradient(108deg, transparent 30%, var(--easyedu-loading-shimmer-soft) 42%, var(--easyedu-loading-shimmer-highlight) 50%, var(--easyedu-loading-shimmer-soft) 58%, transparent 70%);
+  background-position: -110% 0;
+  background-repeat: no-repeat;
+  background-size: 190% 100%;
+  border-radius: inherit;
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
 }
 @media (prefers-reduced-motion: reduce), (forced-colors: active) {
-  .local-course-banner-builder-slideshow-page-skeleton__row {
+  .local-course-banner-builder-slideshow-page-skeleton__row::after {
     animation: none;
   }
 }
@@ -8436,13 +8497,20 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
     border-color: CanvasText;
   }
 }
-.local-course-banner-builder-slideshow-page-skeleton__action {
+.local-course-banner-builder-slideshow-page-skeleton__action::after {
   animation: easyedu-skeleton-shimmer var(--easyedu-loading-shimmer-duration) linear infinite;
-  background: linear-gradient(90deg, var(--easyedu-loading-surface) 0%, var(--easyedu-loading-highlight) 48%, var(--easyedu-loading-surface) 100%);
-  background-size: 220% 100%;
+  background-image: linear-gradient(108deg, transparent 30%, var(--easyedu-loading-shimmer-soft) 42%, var(--easyedu-loading-shimmer-highlight) 50%, var(--easyedu-loading-shimmer-soft) 58%, transparent 70%);
+  background-position: -110% 0;
+  background-repeat: no-repeat;
+  background-size: 190% 100%;
+  border-radius: inherit;
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
 }
 @media (prefers-reduced-motion: reduce), (forced-colors: active) {
-  .local-course-banner-builder-slideshow-page-skeleton__action {
+  .local-course-banner-builder-slideshow-page-skeleton__action::after {
     animation: none;
   }
 }
@@ -8469,15 +8537,15 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
     animation: none;
   }
 }
-[dir=rtl] .local-course-banner-builder-slideshow-page-skeleton .local-course-banner-builder-slideshow-page-skeleton__navigation-mark,
-[dir=rtl] .local-course-banner-builder-slideshow-page-skeleton .local-course-banner-builder-slideshow-page-skeleton__navigation-item,
-[dir=rtl] .local-course-banner-builder-slideshow-page-skeleton .local-course-banner-builder-slideshow-page-skeleton__eyebrow,
-[dir=rtl] .local-course-banner-builder-slideshow-page-skeleton .local-course-banner-builder-slideshow-page-skeleton__title,
-[dir=rtl] .local-course-banner-builder-slideshow-page-skeleton .local-course-banner-builder-slideshow-page-skeleton__description,
-[dir=rtl] .local-course-banner-builder-slideshow-page-skeleton .local-course-banner-builder-slideshow-page-skeleton__card-title,
-[dir=rtl] .local-course-banner-builder-slideshow-page-skeleton .local-course-banner-builder-slideshow-page-skeleton__preview,
-[dir=rtl] .local-course-banner-builder-slideshow-page-skeleton .local-course-banner-builder-slideshow-page-skeleton__row,
-[dir=rtl] .local-course-banner-builder-slideshow-page-skeleton .local-course-banner-builder-slideshow-page-skeleton__action {
+[dir=rtl] .local-course-banner-builder-slideshow-page-skeleton .local-course-banner-builder-slideshow-page-skeleton__navigation-mark::after,
+[dir=rtl] .local-course-banner-builder-slideshow-page-skeleton .local-course-banner-builder-slideshow-page-skeleton__navigation-item::after,
+[dir=rtl] .local-course-banner-builder-slideshow-page-skeleton .local-course-banner-builder-slideshow-page-skeleton__eyebrow::after,
+[dir=rtl] .local-course-banner-builder-slideshow-page-skeleton .local-course-banner-builder-slideshow-page-skeleton__title::after,
+[dir=rtl] .local-course-banner-builder-slideshow-page-skeleton .local-course-banner-builder-slideshow-page-skeleton__description::after,
+[dir=rtl] .local-course-banner-builder-slideshow-page-skeleton .local-course-banner-builder-slideshow-page-skeleton__card-title::after,
+[dir=rtl] .local-course-banner-builder-slideshow-page-skeleton .local-course-banner-builder-slideshow-page-skeleton__preview::after,
+[dir=rtl] .local-course-banner-builder-slideshow-page-skeleton .local-course-banner-builder-slideshow-page-skeleton__row::after,
+[dir=rtl] .local-course-banner-builder-slideshow-page-skeleton .local-course-banner-builder-slideshow-page-skeleton__action::after {
   animation-direction: reverse;
 }
 
@@ -8917,10 +8985,10 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 }
 @keyframes easyedu-skeleton-shimmer {
   from {
-    background-position: 110% 0;
+    background-position: -110% 0;
   }
   to {
-    background-position: -110% 0;
+    background-position: 110% 0;
   }
 }
 @keyframes easyedu-busy-pop {
@@ -12568,7 +12636,7 @@ span[data-flexitour=container].orphan .modal-dialog {
   --easyedu-loading-highlight: #edf3f7;
   --easyedu-loading-border: #cfdee9;
   --easyedu-loading-shimmer-soft: rgba(255, 255, 255, 0.16);
-  --easyedu-loading-shimmer-highlight: rgba(255, 255, 255, 0.52);
+  --easyedu-loading-shimmer-highlight: rgba(255, 255, 255, 0.5);
   --easyedu-loading-radius: 0.72rem;
   --easyedu-loading-stack-gap: 0.9rem;
   --easyedu-loading-shimmer-duration: 2s;

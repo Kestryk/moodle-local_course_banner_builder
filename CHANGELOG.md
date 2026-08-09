@@ -17,11 +17,17 @@ many small sections.
   server-first lifecycle, keeps the Skeleton visible through initial visual
   settling, performs an ordered fade, retains a bounded fail-open and restores
   the historical bottom-end `Loading in progress` indicator.
+- Aligned the Slideshow placeholder treatment with the Student Management
+  reference: stable pale surfaces now receive the same 108-degree overlay
+  sweep, direction, two-second cycle and soft/highlight contrast as EasyStud,
+  while the already accepted CCB page geometry remains unchanged.
 
 #### Documentation
 
 - Recorded the EasyStud/UI Kit loading audit, the missing consumer primitives
   and the exact CCB-owned readiness boundary for future Skeleton consumers.
+- Recorded the visual-parity drift found between EasyStud, the published UI
+  Kit and its CCB consumer so the shared theme can be corrected at its source.
 
 ### 2026-08-08
 
