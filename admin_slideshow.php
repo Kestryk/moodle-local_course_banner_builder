@@ -2444,7 +2444,23 @@ $slideshowpageskeleton .= html_writer::start_div('local-course-banner-builder-sl
 for ($slideshowpageskeletonindex = 0; $slideshowpageskeletonindex < 2; $slideshowpageskeletonindex++) {
     $slideshowpageskeleton .= html_writer::start_div('local-course-banner-builder-slideshow-page-skeleton__card');
     $slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slideshow-page-skeleton__card-title');
-    $slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slideshow-page-skeleton__preview');
+    $slideshowpageskeleton .= html_writer::start_div('local-course-banner-builder-slideshow-page-skeleton__preview');
+    $slideshowpageskeleton .= html_writer::div(
+        '',
+        'local-course-banner-builder-slideshow-page-skeleton__preview-line ' .
+        'local-course-banner-builder-slideshow-page-skeleton__preview-line--title'
+    );
+    $slideshowpageskeleton .= html_writer::div(
+        '',
+        'local-course-banner-builder-slideshow-page-skeleton__preview-line ' .
+        'local-course-banner-builder-slideshow-page-skeleton__preview-line--body'
+    );
+    $slideshowpageskeleton .= html_writer::div(
+        '',
+        'local-course-banner-builder-slideshow-page-skeleton__preview-line ' .
+        'local-course-banner-builder-slideshow-page-skeleton__preview-line--action'
+    );
+    $slideshowpageskeleton .= html_writer::end_div();
     $slideshowpageskeleton .= html_writer::start_div('local-course-banner-builder-slideshow-page-skeleton__rows');
     $slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slideshow-page-skeleton__row');
     $slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slideshow-page-skeleton__row');
