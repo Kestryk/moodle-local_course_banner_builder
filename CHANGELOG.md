@@ -8,6 +8,23 @@ many small sections.
 
 ## Unreleased
 
+### 2026-08-10
+
+#### Changed
+
+- Reordered the Slideshow administration identity to match EasyStud Mass Group
+  Import: the EasyStud mark, page title and concise description now precede
+  Navigation. The loading shell reserves the same header sequence and heights,
+  preventing a header jump during the Skeleton-to-page handoff.
+- Consumed the immutable UI Kit Navigation Skeleton primitive from
+  `c9277a82fb471018f4cc07b24dd336d2adfa310d`: the CCB Navigation frame stays
+  static while only its decorative cues shimmer.
+
+#### Documentation
+
+- Documented the CCB-only page-identity boundary, the Mass Import parity
+  reference and the immutable UI Kit snapshot used by this consumer.
+
 ### 2026-08-09
 
 #### Fixed

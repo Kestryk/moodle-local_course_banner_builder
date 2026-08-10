@@ -97,6 +97,7 @@ Status values:
 | AUTH-04 | Student opens builder | Access denied | Behat | Blocked |
 | LOAD-01 | Course banner admin loads with no configured source | CCB root remains available | Behat | Existing smoke |
 | LOAD-02 | Site, slideshow, and transfer views load | Correct CCB root and shared Navigation rail | Behat | Candidate |
+| LOAD-03 | Slideshow identity and Skeleton handoff | EasyStud mark, title and description appear before Navigation in both loading and ready states; the header does not jump when the live page appears | Playwright/manual | Candidate |
 | NAV-01 | Open every CCB administration destination | Rail exposes Course, Site, Slideshow, Transfer, Course format and Site format; desktop icons remain plain, while compact icons use the EasyStud neutral tile and primary active state | Playwright/manual | Candidate |
 | NAV-02 | Open and close the compact rail | The closed left-centred half-pill is 44px by 44px and its hover/focus state shows the complete localized label; backdrop, Escape and focus return work without horizontal overflow or collision with Moodle's native drawer control | Playwright/manual | Candidate |
 | SRC-01 | Create and select category source | Source becomes active | Behat | Blocked |

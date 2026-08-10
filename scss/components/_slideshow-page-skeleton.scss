@@ -4,6 +4,7 @@
 // server-first EasyStud contract represented by the shared Loading primitives.
 
 @use "../easyedu" as easyedu;
+@use "../easyedu/components/navigation-skeleton" as navigation;
 
 $loading-surface: var(--easyedu-loading-surface);
 $loading-highlight: var(--easyedu-loading-highlight);
@@ -30,6 +31,34 @@ $loading-reveal-duration: var(--easyedu-loading-reveal-duration);
 
     @include easyedu.token-defaults;
     @include easyedu.action-busy-indicator-bottom-end("data-easyedu-action-busy-label");
+}
+
+// The live identity shares the Skeleton component so this legacy Sass entry
+// loads the UI Kit once. CCB owns placement; the Kit owns all type roles.
+.local-course-banner-builder-slideshow-page-identity {
+    display: grid;
+    gap: 0.55rem;
+    max-inline-size: 42rem;
+    min-width: 0;
+}
+
+.local-course-banner-builder-slideshow-page-identity__eyebrow {
+    @include easyedu.type-eyebrow;
+
+    margin: 0;
+}
+
+.local-course-banner-builder-slideshow-page-identity__title {
+    @include easyedu.type-page-title;
+
+    margin: 0;
+}
+
+.local-course-banner-builder-slideshow-page-identity__description {
+    @include easyedu.type-body;
+
+    color: var(--easyedu-text-muted);
+    margin: 0;
 }
 
 .local-course-banner-builder-slideshow-page-skeleton {
@@ -97,58 +126,60 @@ $loading-reveal-duration: var(--easyedu-loading-reveal-duration);
     align-items: center;
     min-height: 5.4rem;
     padding: 0.9rem;
-    background: #f4f8fb;
-    border: 1px solid $loading-border;
-    border-radius: 1.15rem;
     box-shadow: 0 0.38rem 0.8rem rgba(31, 68, 104, 0.08);
 
-    @include easyedu.skeleton-stack(0.9rem);
+    @include navigation.navigation-skeleton-frame(
+        $surface: #f4f8fb,
+        $border: $loading-border,
+        $radius: 1.15rem
+    );
 }
 
 .local-course-banner-builder-slideshow-page-skeleton__navigation-mark {
     width: 3.2rem;
-    border-radius: 50%;
+    min-height: 3.2rem;
 
-    @include slideshow-skeleton-surface(3.2rem);
+    @include navigation.navigation-skeleton-cue-overlay($radius: 50%);
 }
 
 .local-course-banner-builder-slideshow-page-skeleton__navigation-items {
     grid-template-columns: repeat(3, minmax(5rem, 1fr));
 
-    @include easyedu.skeleton-stack(0.65rem);
+    @include navigation.navigation-skeleton-cue-stack(0.65rem);
 }
 
 .local-course-banner-builder-slideshow-page-skeleton__navigation-item {
-    @include slideshow-skeleton-surface(2.35rem);
+    min-height: 2.35rem;
+
+    @include navigation.navigation-skeleton-cue-overlay;
 }
 
 .local-course-banner-builder-slideshow-page-skeleton__heading {
     width: min(100%, 54rem);
 
-    @include easyedu.skeleton-stack(0.7rem);
+    @include easyedu.skeleton-stack(0.55rem);
 }
 
 .local-course-banner-builder-slideshow-page-skeleton__eyebrow {
-    width: min(10rem, 32%);
+    width: min(9rem, 32%);
 
-    @include slideshow-skeleton-surface(0.78rem);
+    @include slideshow-skeleton-surface(0.72rem);
 }
 
 .local-course-banner-builder-slideshow-page-skeleton__title {
-    width: min(30rem, 82%);
+    width: min(21rem, 58%);
 
-    @include slideshow-skeleton-surface(2.05rem);
+    @include slideshow-skeleton-surface(1.55rem);
 }
 
 .local-course-banner-builder-slideshow-page-skeleton__description {
-    width: min(48rem, 96%);
+    width: min(42rem, 82%);
 
-    @include slideshow-skeleton-surface(1rem);
+    @include slideshow-skeleton-surface(0.82rem);
 }
 
 .local-course-banner-builder-slideshow-page-skeleton__eyebrow,
-.local-course-banner-builder-slideshow-page-skeleton__description,
-.local-course-banner-builder-slideshow-page-skeleton__navigation-item {
+.local-course-banner-builder-slideshow-page-skeleton__description {
     background: $loading-highlight;
 }
 
