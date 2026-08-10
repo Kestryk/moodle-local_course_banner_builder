@@ -1980,16 +1980,13 @@ JS;
         return node;
     };
 
-    // Labels are a CCB visual contract, not activity icons. Use the same
-    // Font Awesome families as the Slideshow editor so the public banner does
-    // not depend on a Moodle module's monologo or its intrinsic dimensions.
     const activityIconMap = {
-        forums: 'comments',
-        siteannouncements: 'bullhorn',
-        assignments: 'tasks',
-        assignment: 'tasks',
-        quizzes: 'question-circle',
-        quiz: 'question-circle'
+        forums: ['mod_forum', 'monologo', 'comments'],
+        siteannouncements: ['mod_forum', 'monologo', 'bullhorn'],
+        assignments: ['mod_assign', 'monologo', 'tasks'],
+        assignment: ['mod_assign', 'monologo', 'tasks'],
+        quizzes: ['mod_quiz', 'monologo', 'question-circle'],
+        quiz: ['mod_quiz', 'monologo', 'question-circle']
     };
 
     const createActivityIcon = function (type) {
@@ -1997,7 +1994,18 @@ JS;
         if (!definition) {
             return null;
         }
-        return createIcon(definition);
+        if (window.M && M.util && typeof M.util.image_url === 'function') {
+            const icon = document.createElement('img');
+            icon.className = 'icon activityicon local-course-banner-builder-slideshow-label-icon';
+            icon.src = M.util.image_url(definition[1], definition[0]);
+            icon.alt = '';
+            icon.setAttribute('aria-hidden', 'true');
+            icon.addEventListener('error', function () {
+                icon.replaceWith(createIcon(definition[2]));
+            }, {once: true});
+            return icon;
+        }
+        return createIcon(definition[2]);
     };
 
     const createLabel = function (type, text, withIcon) {

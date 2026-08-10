@@ -1218,6 +1218,7 @@ class manage_banner_form extends \moodleform {
      * @return string
      */
     protected function render_overlay_slideshow_target_preview(): string {
+        global $OUTPUT;
         $issitebanneradmin = !empty($this->_customdata['issitebanneradmin']);
         $context = $issitebanneradmin
             ? \local_course_banner_builder\manager::SLIDESHOW_CONTEXT_SITE
@@ -1415,7 +1416,7 @@ class manage_banner_form extends \moodleform {
                 s($stylergb((string)($colors['shadow'] ?? '#000000'))) . ';';
         }
 
-        $previewlabelicon = $context === \local_course_banner_builder\manager::SLIDESHOW_CONTEXT_SITE ? 'fa-bullhorn' : 'fa-comments';
+        $previewlabelcomponent = 'mod_forum';
         $previewlabelkey = $context === \local_course_banner_builder\manager::SLIDESHOW_CONTEXT_SITE
             ? 'slideshow:type:siteannouncements'
             : 'slideshow:type:courseforum';
@@ -1426,8 +1427,10 @@ class manage_banner_form extends \moodleform {
             \html_writer::div(
                 \html_writer::div(
                     \html_writer::span(
-                        \html_writer::tag('i', '', [
-                            'class' => 'fa ' . $previewlabelicon . ' local-course-banner-builder-slideshow-label-icon',
+                        \html_writer::empty_tag('img', [
+                            'class' => 'icon activityicon local-course-banner-builder-slideshow-label-icon',
+                            'src' => $OUTPUT->image_url('monologo', $previewlabelcomponent),
+                            'alt' => '',
                             'aria-hidden' => 'true',
                         ]) . \html_writer::span(get_string($previewlabelkey, 'local_course_banner_builder')),
                         'local-course-banner-builder-slideshow-label local-course-banner-builder-slideshow-label--' .

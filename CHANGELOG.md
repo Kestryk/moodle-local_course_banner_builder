@@ -10,9 +10,9 @@ many small sections.
 
 ### Fixed
 
-- Aligned public Slideshow source-label icons with the editor contract: Forum,
-  Site announcement, Assignment and Quiz labels now use their stable CCB Font
-  Awesome families instead of variable Moodle activity monologos.
+- Aligned Slideshow source-label icons with Moodle's native activity monologos:
+  the administration preview and public Forum, Site announcement, Assignment
+  and Quiz labels now share the same Moodle-owned icon family and dimensions.
 
 ### Tests
 
