@@ -13198,27 +13198,6 @@ span[data-flexitour=container].orphan .modal-dialog {
 }
 .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item {
   align-items: center;
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
-  color: color-mix(in srgb, var(--easyedu-text-muted) 82%, var(--easyedu-text) 18%);
-  display: inline-flex;
-  flex: 0 0 auto;
-  font-family: inherit;
-  font-size: 0.89rem;
-  font-weight: 500;
-  gap: var(--easyedu-action-icon-gap, 0.65rem);
-  justify-content: center;
-  line-height: 1.2;
-  min-height: 3rem;
-  min-width: 0;
-  padding: 0.58rem 0.82rem;
-  text-decoration: none;
-  transform: none;
-  transition: color 180ms ease, box-shadow 180ms ease, transform 160ms ease;
-  white-space: nowrap;
-  align-items: center;
   display: inline-flex;
   gap: 0.4rem;
   justify-content: center;
@@ -13227,67 +13206,6 @@ span[data-flexitour=container].orphan .modal-dialog {
   min-height: var(--easyedu-control-height);
   min-width: var(--easyedu-control-height);
   padding: 0.36rem 0.75rem;
-}
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item > .easyedu-navigation__item-icon,
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item > .fa {
-  align-items: center;
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
-  color: color-mix(in srgb, currentColor 82%, var(--easyedu-primary) 18%);
-  display: inline-flex;
-  flex: 0 0 1rem;
-  font-size: 0.88rem;
-  height: 1rem;
-  justify-content: center;
-  line-height: 1;
-  min-inline-size: 1rem;
-  padding: 0;
-  width: 1rem;
-}
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item:hover, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item:focus-visible {
-  background: transparent;
-  border-color: transparent;
-  box-shadow: inset 0 -0.16rem 0 color-mix(in srgb, var(--easyedu-primary) 42%, transparent 58%);
-  color: var(--easyedu-primary-strong);
-  text-decoration: none;
-}
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item:active {
-  transform: scale(0.985);
-}
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item.active, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item.is-active, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item[aria-current=page], .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item[aria-pressed=true] {
-  background: transparent;
-  border-color: transparent;
-  box-shadow: inset 0 -0.2rem 0 var(--easyedu-primary);
-  color: var(--easyedu-primary-strong);
-}
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item.active > .easyedu-navigation__item-icon,
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item.active > .fa, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item.is-active > .easyedu-navigation__item-icon,
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item.is-active > .fa, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item[aria-current=page] > .easyedu-navigation__item-icon,
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item[aria-current=page] > .fa, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item[aria-pressed=true] > .easyedu-navigation__item-icon,
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item[aria-pressed=true] > .fa {
-  color: var(--easyedu-primary);
-}
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item:focus-visible {
-  box-shadow: 0 0 0 var(--easyedu-focus-ring-width, 0.18rem) var(--easyedu-focus-ring, rgba(15, 108, 191, 0.22)), inset 0 -0.16rem 0 color-mix(in srgb, var(--easyedu-primary) 42%, transparent 58%);
-  outline: var(--easyedu-focus-outline-width, 0.125rem) solid transparent;
-  outline-offset: var(--easyedu-focus-outline-offset, 0.125rem);
-}
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item.active:focus-visible, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item.is-active:focus-visible, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item[aria-current=page]:focus-visible, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item[aria-pressed=true]:focus-visible {
-  box-shadow: 0 0 0 var(--easyedu-focus-ring-width, 0.18rem) var(--easyedu-focus-ring, rgba(15, 108, 191, 0.22)), inset 0 -0.2rem 0 var(--easyedu-primary);
-  outline: var(--easyedu-focus-outline-width, 0.125rem) solid transparent;
-  outline-offset: var(--easyedu-focus-outline-offset, 0.125rem);
-}
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item:disabled, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item[aria-disabled=true] {
-  background: transparent;
-  border-color: transparent;
-  box-shadow: none;
-  color: var(--easyedu-text-muted);
-  cursor: not-allowed;
-  opacity: 0.62;
-  pointer-events: none;
-  transform: none;
 }
 .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item:hover, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item:focus-visible, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item[aria-expanded=true], .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item[aria-pressed=true], .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item.active, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item.is-active {
   background: var(--easyedu-primary-soft);
@@ -13369,29 +13287,20 @@ span[data-flexitour=container].orphan .modal-dialog {
   outline: var(--easyedu-focus-outline-width) solid transparent;
   outline-offset: var(--easyedu-focus-outline-offset);
 }
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive {
+.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item {
+  gap: 0.5rem;
+}
+.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item > .easyedu-navigation__item-icon {
   align-items: center;
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
-  color: color-mix(in srgb, var(--easyedu-text-muted) 82%, var(--easyedu-text) 18%);
   display: inline-flex;
-  flex: 0 0 auto;
-  font-family: inherit;
-  font-size: 0.89rem;
-  font-weight: 500;
-  gap: var(--easyedu-action-icon-gap, 0.65rem);
+  flex: 0 0 1rem;
+  height: 1rem;
   justify-content: center;
-  line-height: 1.2;
-  min-height: 3rem;
-  min-width: 0;
-  padding: 0.58rem 0.82rem;
-  text-decoration: none;
-  transform: none;
-  transition: color 180ms ease, box-shadow 180ms ease, transform 160ms ease;
-  white-space: nowrap;
-  color: var(--easyedu-danger);
+  line-height: 1;
+  min-inline-size: 1rem;
+  width: 1rem;
+}
+.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive {
   align-items: center;
   display: inline-flex;
   gap: 0.4rem;
@@ -13401,93 +13310,6 @@ span[data-flexitour=container].orphan .modal-dialog {
   min-height: var(--easyedu-control-height);
   min-width: var(--easyedu-control-height);
   padding: 0.36rem 0.75rem;
-}
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive > .easyedu-navigation__item-icon,
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive > .fa {
-  align-items: center;
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
-  color: color-mix(in srgb, currentColor 82%, var(--easyedu-primary) 18%);
-  display: inline-flex;
-  flex: 0 0 1rem;
-  font-size: 0.88rem;
-  height: 1rem;
-  justify-content: center;
-  line-height: 1;
-  min-inline-size: 1rem;
-  padding: 0;
-  width: 1rem;
-}
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive:hover, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive:focus-visible {
-  background: transparent;
-  border-color: transparent;
-  box-shadow: inset 0 -0.16rem 0 color-mix(in srgb, var(--easyedu-primary) 42%, transparent 58%);
-  color: var(--easyedu-primary-strong);
-  text-decoration: none;
-}
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive:active {
-  transform: scale(0.985);
-}
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive.active, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive.is-active, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive[aria-current=page], .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive[aria-pressed=true] {
-  background: transparent;
-  border-color: transparent;
-  box-shadow: inset 0 -0.2rem 0 var(--easyedu-primary);
-  color: var(--easyedu-primary-strong);
-}
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive.active > .easyedu-navigation__item-icon,
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive.active > .fa, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive.is-active > .easyedu-navigation__item-icon,
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive.is-active > .fa, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive[aria-current=page] > .easyedu-navigation__item-icon,
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive[aria-current=page] > .fa, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive[aria-pressed=true] > .easyedu-navigation__item-icon,
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive[aria-pressed=true] > .fa {
-  color: var(--easyedu-primary);
-}
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive:focus-visible {
-  box-shadow: 0 0 0 var(--easyedu-focus-ring-width, 0.18rem) var(--easyedu-focus-ring, rgba(15, 108, 191, 0.22)), inset 0 -0.16rem 0 color-mix(in srgb, var(--easyedu-primary) 42%, transparent 58%);
-  outline: var(--easyedu-focus-outline-width, 0.125rem) solid transparent;
-  outline-offset: var(--easyedu-focus-outline-offset, 0.125rem);
-}
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive.active:focus-visible, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive.is-active:focus-visible, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive[aria-current=page]:focus-visible, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive[aria-pressed=true]:focus-visible {
-  box-shadow: 0 0 0 var(--easyedu-focus-ring-width, 0.18rem) var(--easyedu-focus-ring, rgba(15, 108, 191, 0.22)), inset 0 -0.2rem 0 var(--easyedu-primary);
-  outline: var(--easyedu-focus-outline-width, 0.125rem) solid transparent;
-  outline-offset: var(--easyedu-focus-outline-offset, 0.125rem);
-}
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive:disabled, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive[aria-disabled=true] {
-  background: transparent;
-  border-color: transparent;
-  box-shadow: none;
-  color: var(--easyedu-text-muted);
-  cursor: not-allowed;
-  opacity: 0.62;
-  pointer-events: none;
-  transform: none;
-}
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive > .easyedu-navigation__item-icon,
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive > .fa {
-  color: var(--easyedu-danger);
-}
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive:hover, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive:focus-visible {
-  background: transparent;
-  border-color: transparent;
-  box-shadow: inset 0 -0.16rem 0 var(--easyedu-danger);
-  color: var(--easyedu-danger);
-}
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive.active, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive.is-active, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive[aria-current=page], .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive[aria-pressed=true] {
-  background: transparent;
-  border-color: transparent;
-  box-shadow: inset 0 -0.2rem 0 var(--easyedu-danger);
-  color: var(--easyedu-danger);
-}
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive:focus-visible {
-  box-shadow: 0 0 0 var(--easyedu-focus-ring-width, 0.18rem) var(--easyedu-focus-ring-danger, var(--easyedu-focus-ring, rgba(161, 43, 43, 0.22))), inset 0 -0.16rem 0 var(--easyedu-danger);
-  outline: var(--easyedu-focus-outline-width, 0.125rem) solid transparent;
-  outline-offset: var(--easyedu-focus-outline-offset, 0.125rem);
-}
-.local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive.active:focus-visible, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive.is-active:focus-visible, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive[aria-current=page]:focus-visible, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive[aria-pressed=true]:focus-visible {
-  box-shadow: 0 0 0 var(--easyedu-focus-ring-width, 0.18rem) var(--easyedu-focus-ring-danger, var(--easyedu-focus-ring, rgba(161, 43, 43, 0.22))), inset 0 -0.2rem 0 var(--easyedu-danger);
-  outline: var(--easyedu-focus-outline-width, 0.125rem) solid transparent;
-  outline-offset: var(--easyedu-focus-outline-offset, 0.125rem);
 }
 .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive:hover, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive:focus-visible, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive[aria-expanded=true], .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive[aria-pressed=true], .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive.active, .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive.is-active {
   background: var(--easyedu-primary-soft);
@@ -13865,7 +13687,7 @@ span[data-flexitour=container].orphan .modal-dialog {
   margin-inline-start: var(--easyedu-navigation-item-indent);
   padding-inline-start: var(--easyedu-navigation-item-indent);
 }
-.local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__item {
+.local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__panel .easyedu-navigation__item {
   align-items: center;
   background: var(--easyedu-surface-soft);
   border: 1px solid var(--easyedu-card-border);
@@ -13882,7 +13704,7 @@ span[data-flexitour=container].orphan .modal-dialog {
   transition: background-color var(--easyedu-motion-fast) ease, border-color var(--easyedu-motion-fast) ease, box-shadow var(--easyedu-motion-fast) ease, color var(--easyedu-motion-fast) ease, transform var(--easyedu-motion-fast) ease;
   width: 100%;
 }
-.local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__item > .fa:first-child {
+.local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__panel .easyedu-navigation__item > .fa:first-child {
   align-items: center;
   background: var(--easyedu-surface);
   border: 1px solid var(--easyedu-card-border);
@@ -13895,26 +13717,26 @@ span[data-flexitour=container].orphan .modal-dialog {
   margin: 0 !important;
   width: 1.85rem;
 }
-.local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__item:hover, .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__item:focus-visible, .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__item[aria-current=page], .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__item.active {
+.local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__panel .easyedu-navigation__item:hover, .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__panel .easyedu-navigation__item:focus-visible, .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__panel .easyedu-navigation__item[aria-current=page], .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__panel .easyedu-navigation__item.active {
   background: var(--easyedu-primary-soft);
   border-color: var(--easyedu-control-focus-border);
   color: var(--easyedu-primary-strong);
   outline: 0;
   text-decoration: none !important;
 }
-.local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__item:hover {
+.local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__panel .easyedu-navigation__item:hover {
   box-shadow: 0 0.22rem 0.55rem rgba(31, 68, 104, 0.08);
   transform: translateX(0.08rem);
 }
-.local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__item[aria-current=page] > .fa:first-child, .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__item.active > .fa:first-child {
+.local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__panel .easyedu-navigation__item[aria-current=page] > .fa:first-child, .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__panel .easyedu-navigation__item.active > .fa:first-child {
   background: var(--easyedu-primary);
   border-color: var(--easyedu-primary);
   color: var(--easyedu-identity-icon-color);
 }
-.local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__item:focus-visible {
+.local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__panel .easyedu-navigation__item:focus-visible {
   box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring);
 }
-.local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__item[aria-disabled=true], .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__item:disabled {
+.local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__panel .easyedu-navigation__item[aria-disabled=true], .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__panel .easyedu-navigation__item:disabled {
   cursor: not-allowed;
   opacity: 0.55;
   pointer-events: none;
