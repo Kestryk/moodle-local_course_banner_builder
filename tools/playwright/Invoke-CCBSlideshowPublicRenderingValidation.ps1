@@ -3,6 +3,7 @@ param(
     [switch]$DiscoveryOnly,
     [ValidateSet(100, 200)]
     [int]$Zoom = 100,
+    [switch]$Parity,
     [ValidateRange(120, 1800)]
     [int]$WatchdogSeconds = 900,
     [ValidateRange(0, 900)]
@@ -26,13 +27,15 @@ $artifactBase = if ($env:EASYEDU_PLAYWRIGHT_ARTIFACTS_ROOT) { $env:EASYEDU_PLAYW
     Join-Path $env:LOCALAPPDATA 'EasyEdu\artifacts'
 }
 $artifactBase = [IO.Path]::GetFullPath($artifactBase)
-$runId = 'ccb-slideshow-public-{0}-{1}-{2}' -f $Zoom, [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ'), $PID
+$runKind = if ($Parity) { 'parity' } else { 'public' }
+$runId = 'ccb-slideshow-{0}-{1}-{2}-{3}' -f $runKind, $Zoom, [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ'), $PID
 $runRoot = Join-Path $artifactBase ('ccb\slideshow\public\supervised\' + $runId)
 $playwrightConfig = Join-Path $runRoot 'playwright.config.cjs'
 $profile = Join-Path $runRoot 'profile'
 $manifestFile = Join-Path $runRoot 'restoration-manifest.json'
 $cleanupFile = Join-Path $runRoot 'cleanup.json'
 $summaryFile = Join-Path $runRoot 'artifact-summary.json'
+$parityConfigFile = Join-Path $runRoot 'parity-course-config.json'
 $discoveryFile = Join-Path $runRoot 'playwright.discovery.txt'
 $child = $null
 $lease = $null
@@ -198,14 +201,28 @@ try {
             'CCB_MOODLE_USERNAME',
             'CCB_MOODLE_PASSWORD'
         )
-        $setup = Invoke-Fixture 'setup'
+        $setup = Invoke-Fixture $(if ($Parity) { 'setup-parity' } else { 'setup' })
         $manifest = [ordered]@{
             courseid = [int]$setup.courseid
             snapshot = @($setup.snapshot)
             discussionid = [int]$setup.discussionid
             enrolmentid = [int]$setup.enrolmentid
+            parityMode = [bool]$setup.parityMode
+            savedCourseConfig = $setup.savedCourseConfig
+            forcedRuntimeValues = $setup.forcedRuntimeValues
         }
         Set-Content -LiteralPath $manifestFile -Value ($manifest | ConvertTo-Json -Depth 20) -Encoding UTF8
+        if ($Parity) {
+            if (-not $setup.parityMode -or -not $setup.savedCourseConfig -or -not $setup.forcedRuntimeValues) {
+                throw 'The public Slideshow parity fixture did not return its configuration proof.'
+            }
+            Set-Content -LiteralPath $parityConfigFile -Value (([ordered]@{
+                savedCourseConfig = $setup.savedCourseConfig
+                forcedRuntimeValues = $setup.forcedRuntimeValues
+            } | ConvertTo-Json -Depth 20)) -Encoding UTF8
+            $env:EASYEDU_CCB_SLIDESHOW_PUBLIC_PARITY_CONFIG = $parityConfigFile
+            $loadedEnvironment += 'EASYEDU_CCB_SLIDESHOW_PUBLIC_PARITY_CONFIG'
+        }
         $env:EASYEDU_CCB_SLIDESHOW_PUBLIC_COURSE_ID = [string]$setup.courseid
         $env:EASYEDU_CCB_SLIDESHOW_PUBLIC_DISCUSSION_ID = [string]$setup.discussionid
         $env:EASYEDU_CCB_SLIDESHOW_PUBLIC_ANNOUNCEMENT_TITLE = [string]$setup.announcementTitle

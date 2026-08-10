@@ -141,6 +141,42 @@ function local_course_banner_builder_slideshow_public_fixture_profile(): array {
 }
 
 /**
+ * Return the saved Course profile with only the non-visual test prerequisites.
+ *
+ * This is used by the admin/public parity gate. It deliberately preserves the
+ * saved styling, typography, positions, colours and dimensions so the public
+ * course renders the same Course configuration that the administrator sees.
+ *
+ * @return array{profile:array<string,mixed>,forced:array<string,mixed>,saved:array<string,mixed>}
+ */
+function local_course_banner_builder_slideshow_public_fixture_parity_profile(): array {
+    $saved = \local_course_banner_builder\manager::get_slideshow_config(
+        \local_course_banner_builder\manager::SLIDESHOW_CONTEXT_COURSE
+    );
+    $profile = $saved;
+    $forced = [
+        'enabled' => 1,
+        'forums' => 1,
+        'siteannouncements' => 0,
+        'assignments' => 0,
+        'quizzes' => 0,
+        'autoplay' => 0,
+        'arrows' => 1,
+        'dots' => 1,
+        'maxslides' => max(2, (int)$saved['maxslides']),
+    ];
+    foreach ($forced as $name => $value) {
+        $profile[$name] = $value;
+    }
+
+    return [
+        'profile' => $profile,
+        'forced' => $forced,
+        'saved' => $saved,
+    ];
+}
+
+/**
  * Enrol the active administrator explicitly with the Student role.
  *
  * @param stdClass $course Disposable course.
@@ -230,16 +266,24 @@ function local_course_banner_builder_slideshow_public_fixture_forum_slide_count(
     return count($matching);
 }
 
-if ($command === 'setup') {
+if ($command === 'setup' || $command === 'setup-parity') {
     $snapshot = local_course_banner_builder_slideshow_public_fixture_snapshot_config();
     $courseid = 0;
     try {
+        $parity = $command === 'setup-parity';
+        $profile = $parity
+            ? local_course_banner_builder_slideshow_public_fixture_parity_profile()
+            : [
+                'profile' => local_course_banner_builder_slideshow_public_fixture_profile(),
+                'forced' => [],
+                'saved' => [],
+            ];
         set_config('enabled', 1, $plugin);
         set_config('coursebannerenabled', 1, $plugin);
         set_config('coursebannerdefaultimageenabled', 1, $plugin);
         \local_course_banner_builder\manager::set_slideshow_config(
             \local_course_banner_builder\manager::SLIDESHOW_CONTEXT_COURSE,
-            local_course_banner_builder_slideshow_public_fixture_profile()
+            $profile['profile']
         );
 
         $suffix = gmdate('YmdHis');
@@ -275,6 +319,9 @@ if ($command === 'setup') {
             'postid' => $announcement['postid'],
             'announcementTitle' => $announcement['title'],
             'forumSlideCount' => $forumslidecount,
+            'parityMode' => $parity,
+            'savedCourseConfig' => $profile['saved'],
+            'forcedRuntimeValues' => $profile['forced'],
         ]);
     } catch (Throwable $exception) {
         local_course_banner_builder_slideshow_public_fixture_restore_config($snapshot);

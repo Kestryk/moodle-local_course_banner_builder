@@ -112,6 +112,18 @@ const environment = () => {
     ]) {
         ensure(/^\d+$/.test(process.env[name]), name + ' must be numeric.');
     }
+    const parityConfigPath = process.env.EASYEDU_CCB_SLIDESHOW_PUBLIC_PARITY_CONFIG || '';
+    let parityConfig = null;
+    if (parityConfigPath) {
+        const resolvedParityConfigPath = path.resolve(parityConfigPath);
+        ensure(resolvedParityConfigPath.toLowerCase().startsWith((artifactRoot + path.sep).toLowerCase()),
+            'Parity configuration proof must be owned by the external artifact root.');
+        parityConfig = JSON.parse(fs.readFileSync(resolvedParityConfigPath, 'utf8'));
+        ensure(parityConfig.savedCourseConfig?.context === 'course',
+            'Parity fixture did not preserve a Course Slideshow configuration.');
+        ensure(parityConfig.forcedRuntimeValues?.forums === 1,
+            'Parity fixture did not enable its real Forum source.');
+    }
     return {
         announcementTitle: process.env.EASYEDU_CCB_SLIDESHOW_PUBLIC_ANNOUNCEMENT_TITLE,
         artifactRoot,
@@ -124,6 +136,7 @@ const environment = () => {
         profile,
         username: process.env.EASYEDU_MOODLE_USERNAME,
         zoom,
+        parityConfig,
     };
 };
 
@@ -145,6 +158,57 @@ const waitForSettledSlide = async(root, index) => {
             active.getAttribute('aria-hidden') === 'false' && !hasActiveAnimation;
     }, index), {timeout: 5000}).toBeTruthy();
 };
+
+const waitForSettledModal = async(modal) => {
+    await expect(modal).toBeVisible();
+    await expect.poll(async() => modal.evaluate(node => {
+        const dialog = node.querySelector('.modal-dialog');
+        const content = node.querySelector('.modal-content');
+        const animations = node.getAnimations({subtree: true});
+        return !!dialog && !!content && node.classList.contains('show') &&
+            dialog.getBoundingClientRect().width > 0 &&
+            window.getComputedStyle(content).opacity === '1' &&
+            !animations.some(animation => animation.playState === 'pending' || animation.playState === 'running');
+    }), {timeout: 5000}).toBeTruthy();
+};
+
+const previewEvidence = async(preview) => preview.evaluate(node => {
+    const bounds = node.getBoundingClientRect();
+    const sample = (name, selector) => {
+        const element = node.querySelector(selector);
+        if (!element) {
+            return {name, present: false};
+        }
+        const rect = element.getBoundingClientRect();
+        const style = window.getComputedStyle(element);
+        return {
+            name,
+            present: true,
+            left: rect.left - bounds.left,
+            top: rect.top - bounds.top,
+            width: rect.width,
+            height: rect.height,
+            color: style.color,
+            fontSize: style.fontSize,
+            fontWeight: style.fontWeight,
+            textAlign: style.textAlign,
+            textTransform: style.textTransform,
+        };
+    };
+    return {
+        width: bounds.width,
+        height: bounds.height,
+        styleVariables: Array.from(node.style)
+            .filter(name => name.startsWith('--local-course-banner-builder-slideshow-'))
+            .reduce((values, name) => ({...values, [name]: node.style.getPropertyValue(name)}), {}),
+        samples: [
+            sample('label', '.local-course-banner-builder-slideshow-label--forums'),
+            sample('title', '.local-course-banner-builder-slideshow-title'),
+            sample('body', '.local-course-banner-builder-slideshow-body'),
+            sample('action', '.local-course-banner-builder-slideshow-action'),
+        ],
+    };
+});
 
 const publicGeometry = async(host) => host.evaluate(hostNode => {
     const slideNode = hostNode.querySelector('[data-slideshow-slide="1"].is-active');
@@ -209,6 +273,7 @@ test('CCB Slideshow public Course fixture renders a real forum announcement at t
     let chromeProcess = null;
     let context = null;
     let page = null;
+    let parityEvidence = null;
     const zoomCleanup = {
         requested: env.zoom,
         zoomAttempted: false,
@@ -257,6 +322,28 @@ test('CCB Slideshow public Course fixture renders a real forum announcement at t
             await page.setViewportSize({width: 1600, height: 900});
         }
         await login(page, env);
+        if (env.parityConfig) {
+            await page.goto(env.baseUrl + '/local/course_banner_builder/admin_slideshow.php', {waitUntil: 'networkidle'});
+            const courseCard = page.locator('form.local-course-banner-builder-slideshow-card').filter({
+                has: page.locator('input[name="context"][value="course"]'),
+            });
+            await expect(courseCard).toHaveCount(1);
+            await courseCard.locator('.local-course-banner-builder-slideshow-edit-appearance-button').click();
+            const modal = page.locator('.local-course-banner-builder-slideshow-preview-modal.show');
+            await expect(modal).toHaveCount(1);
+            await waitForSettledModal(modal);
+            const preview = modal.locator('[data-slideshow-overlay-preview="1"][data-slideshow-preview-editor="1"]');
+            await expect(preview).toHaveCount(1);
+            parityEvidence = {
+                savedCourseConfig: env.parityConfig.savedCourseConfig,
+                forcedRuntimeValues: env.parityConfig.forcedRuntimeValues,
+                adminPreview: await previewEvidence(preview),
+            };
+            await captureCdp(page, context,
+                path.join(env.artifactRoot, 'slideshow-admin-course-parity-' + env.zoom + '.png'));
+            await modal.locator('[data-bs-dismiss="modal"]').click();
+            await expect(modal).toHaveCount(0);
+        }
         await page.goto(env.baseUrl + '/course/view.php?id=' + env.courseId, {waitUntil: 'networkidle'});
         consoleErrors.length = 0;
         requestFailures.length = 0;
@@ -331,7 +418,9 @@ test('CCB Slideshow public Course fixture renders a real forum announcement at t
             scope: {
                 source: 'real-course-forum-announcement',
                 requestedBrowserZoom: env.zoom,
+                parityMode: !!env.parityConfig,
             },
+            parity: parityEvidence,
             zoomEvidence,
         });
         expect(consoleErrors).toEqual([]);

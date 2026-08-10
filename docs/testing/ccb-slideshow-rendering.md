@@ -120,6 +120,27 @@ This is technical evidence for one real Forum source at native 200 percent,
 not an acceptance of other public source families, mobile rendering or Moodle
 4.5/5.2 coverage. Human visual review remains required.
 
+### Prepared admin/public Course configuration parity gate
+
+`Invoke-CCBSlideshowPublicRenderingValidation.ps1 -Parity` prepares one
+focused comparison at the requested zoom. Unlike the existing public fixture
+profile, parity mode starts from the saved Course Slideshow configuration. It
+preserves its visual values (colours, typography, dimensions, alignment and
+positions), then forces only the disposable-test prerequisites: the Course
+Slideshow is enabled, its real Forum source is enabled, other source families
+are disabled, autoplay is paused and the navigation needed to reach the Forum
+slide is available. The fixture records both the saved configuration and this
+short forced-values list, then restores the exact captured plugin records.
+
+The one selected scenario captures the Course editor preview after its modal is
+fully settled and the matching real Course Forum slide. It writes the two CDP
+captures, the saved/forced configuration proof and the observed admin preview
+style variables into the external run directory. The title and background are
+still source-specific content, so this gate proves shared settings and makes
+their visual result comparable; it does not claim byte-for-byte image identity.
+It is prepared and statically validated only. No Moodle fixture, browser or
+localhost preview has been run for this parity gate yet.
+
 The runner performs discovery first, requires exactly one selected test and
 acquires `moodle51-active-fixture-write` before it creates the fixture. It
 loads credentials only into its own process, keeps its isolated Chromium

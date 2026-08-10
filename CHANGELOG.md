@@ -8,6 +8,14 @@ many small sections.
 
 ## Unreleased
 
+### Tests
+
+- Prepared a focused Course Slideshow admin/public parity gate. It preserves
+  the saved visual Course configuration while forcing only disposable Forum
+  fixture prerequisites, records both configuration states and creates settled
+  CDP evidence for the editor preview and real public slide. It has not yet
+  mutated Moodle or run a browser scenario.
+
 ### 2026-08-10
 
 #### Tests
