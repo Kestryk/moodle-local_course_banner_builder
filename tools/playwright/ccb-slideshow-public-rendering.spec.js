@@ -118,7 +118,7 @@ const environment = () => {
         const resolvedParityConfigPath = path.resolve(parityConfigPath);
         ensure(resolvedParityConfigPath.toLowerCase().startsWith((artifactRoot + path.sep).toLowerCase()),
             'Parity configuration proof must be owned by the external artifact root.');
-        parityConfig = JSON.parse(fs.readFileSync(resolvedParityConfigPath, 'utf8'));
+        parityConfig = JSON.parse(fs.readFileSync(resolvedParityConfigPath, 'utf8').replace(/^\uFEFF/, ''));
         ensure(parityConfig.savedCourseConfig?.context === 'course',
             'Parity fixture did not preserve a Course Slideshow configuration.');
         ensure(parityConfig.forcedRuntimeValues?.forums === 1,

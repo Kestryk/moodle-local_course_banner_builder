@@ -13,8 +13,9 @@ many small sections.
 - Prepared a focused Course Slideshow admin/public parity gate. It preserves
   the saved visual Course configuration while forcing only disposable Forum
   fixture prerequisites, records both configuration states and creates settled
-  CDP evidence for the editor preview and real public slide. It has not yet
-  mutated Moodle or run a browser scenario.
+  CDP evidence for the editor preview and real public slide. Its first Moodle
+  5.1 run passed cleanup and isolated an editor-preview overlay-opacity parity
+  defect for a separate product correction.
 
 ### 2026-08-10
 

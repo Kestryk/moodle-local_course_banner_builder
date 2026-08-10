@@ -141,6 +141,14 @@ their visual result comparable; it does not claim byte-for-byte image identity.
 It is prepared and statically validated only. No Moodle fixture, browser or
 localhost preview has been run for this parity gate yet.
 
+The initial Moodle 5.1 run at 100 percent selected exactly one scenario and
+completed its course, Forum, enrolment, configuration and external-profile
+cleanup. It also isolated a parity defect for follow-up: the saved Course
+overlay opacity was `0.38`, while the editor preview emitted its overlay CSS
+variable as `0.00`. The public capture therefore remains useful as the saved
+Course configuration evidence, but the administrator preview must not yet be
+accepted as an exact visual representation of that setting.
+
 The runner performs discovery first, requires exactly one selected test and
 acquires `moodle51-active-fixture-write` before it creates the fixture. It
 loads credentials only into its own process, keeps its isolated Chromium
