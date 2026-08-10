@@ -8,6 +8,12 @@ many small sections.
 
 ## Unreleased
 
+### Fixed
+
+- Aligned public Slideshow source-label icons with the editor contract: Forum,
+  Site announcement, Assignment and Quiz labels now use their stable CCB Font
+  Awesome families instead of variable Moodle activity monologos.
+
 ### Tests
 
 - Prepared a focused Course Slideshow admin/public parity gate. It preserves

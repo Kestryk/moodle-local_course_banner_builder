@@ -393,7 +393,10 @@ test('CCB Slideshow public Course fixture renders a real forum announcement at t
         const activeSlide = root.locator('[data-slideshow-slide="1"].is-active');
         await expect(activeSlide).toHaveCount(1);
         await expect(activeSlide).toHaveAttribute('aria-hidden', 'false');
-        await expect(activeSlide.locator('.local-course-banner-builder-slideshow-label--forums')).toHaveCount(1);
+        const forumLabel = activeSlide.locator('.local-course-banner-builder-slideshow-label--forums');
+        await expect(forumLabel).toHaveCount(1);
+        await expect(forumLabel.locator('i.local-course-banner-builder-slideshow-label-icon.fa-comments')).toHaveCount(1);
+        await expect(forumLabel.locator('img.local-course-banner-builder-slideshow-label-icon')).toHaveCount(0);
         await expect(activeSlide.locator('.local-course-banner-builder-slideshow-title')).toHaveText(env.announcementTitle);
         const action = activeSlide.locator('.local-course-banner-builder-slideshow-action');
         await expect(action).toHaveCount(1);
