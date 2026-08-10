@@ -351,11 +351,26 @@
   }
 
   [data-easyedu-navigation-desktop] .easyedu-navigation__item {
-    @include navigation-desktop-item;
+    @include buttons.admin-primary-nav-action;
+
+    & {
+      gap: 0.5rem;
+    }
+
+    > .easyedu-navigation__item-icon {
+      align-items: center;
+      display: inline-flex;
+      flex: 0 0 1rem;
+      height: 1rem;
+      justify-content: center;
+      line-height: 1;
+      min-inline-size: 1rem;
+      width: 1rem;
+    }
   }
 
   [data-easyedu-navigation-desktop] .easyedu-navigation__item--destructive {
-    @include navigation-desktop-item(destructive);
+    @include buttons.admin-primary-nav-action(destructive);
   }
 
   // Keep the compact handle at the viewport's left centre. It deliberately
@@ -629,7 +644,7 @@
     padding-inline-start: var(--easyedu-navigation-item-indent);
   }
 
-  .easyedu-navigation__item {
+  .easyedu-navigation__panel .easyedu-navigation__item {
     @include responsive.mobile-navigation-link;
 
     &[aria-disabled="true"],

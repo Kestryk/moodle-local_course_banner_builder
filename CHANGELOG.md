@@ -15,6 +15,9 @@ many small sections.
 - Restored the single framed desktop navigation rail shared with EasyStud.
   CCB destinations now use plain glyphs and labels inside that rail, without
   individual icon capsules; the compact panel remains unchanged.
+- Scoped responsive destination tiles exclusively to the compact panel and
+  delegated desktop hover, focus and active motion directly to the EasyStud
+  `admin-primary-nav-action` contract.
 
 ### 2026-08-09
 
