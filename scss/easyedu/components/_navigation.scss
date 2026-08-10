@@ -5,14 +5,15 @@
 // Canonical navigation composition for EasyEdu plugin surfaces.
 //
 // Consumers render desktop and compact wrappers from one prepared context.
-// Desktop destinations deliberately use a flat rail. The compact panel is the
-// only Navigation presentation that renders destination tiles.
+// Desktop Navigation has one shared rail surface. Destinations inside it stay
+// flat; the compact panel is the only presentation that renders destination
+// tiles.
 @mixin navigation-desktop-rail {
+  @include buttons.admin-primary-nav;
+
+  // Keep the rail as the single shared surface. Do not turn its destinations
+  // into individual capsules.
   align-items: stretch;
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
   display: flex;
   flex-wrap: nowrap;
   gap: 0;
@@ -30,6 +31,8 @@
 }
 
 @mixin navigation-desktop-item($variant: default) {
+  @include buttons.admin-primary-nav-action($variant);
+
   align-items: center;
   background: transparent;
   border: 0;
@@ -55,9 +58,13 @@
     transform 160ms ease;
   white-space: nowrap;
 
-  .easyedu-navigation__item-icon,
-  .fa {
+  > .easyedu-navigation__item-icon,
+  > .fa {
     align-items: center;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
     color: color-mix(in srgb, currentColor 82%, var(--easyedu-primary) 18%);
     display: inline-flex;
     flex: 0 0 1rem;
@@ -66,6 +73,7 @@
     justify-content: center;
     line-height: 1;
     min-inline-size: 1rem;
+    padding: 0;
     width: 1rem;
   }
 
@@ -91,8 +99,8 @@
     box-shadow: inset 0 -0.2rem 0 var(--easyedu-primary);
     color: var(--easyedu-primary-strong);
 
-    .easyedu-navigation__item-icon,
-    .fa {
+    > .easyedu-navigation__item-icon,
+    > .fa {
       color: var(--easyedu-primary);
     }
   }
@@ -131,8 +139,8 @@
   @if $variant == destructive {
     color: var(--easyedu-danger);
 
-    .easyedu-navigation__item-icon,
-    .fa {
+    > .easyedu-navigation__item-icon,
+    > .fa {
       color: var(--easyedu-danger);
     }
 

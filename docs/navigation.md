@@ -3,8 +3,9 @@
 ## Scope
 
 `EED-NAV-2026-0006` adapts the immutable EasyEdu UI Kit Navigation/Guide
-snapshot `f032a18aefc8f0816a2f36c52d6e6867cd9664b8` plus the flat desktop
-rail correction at `e6aab3d7ca1c022efe7895b7d38a35b92b06aaa2` to the
+snapshot `f032a18aefc8f0816a2f36c52d6e6867cd9664b8` plus the framed desktop
+rail correction `f58e290fd4bd5ed3039d7a74ff8c4d52c2a06dce` (following
+`e6aab3d7ca1c022efe7895b7d38a35b92b06aaa2`) to the
 `local_course_banner_builder` component. It does not import the UI Kit WIP,
 the Guide engine or content, EasyStud destinations, or Focus and Loading
 components.
@@ -59,8 +60,10 @@ surface. Its resting dimensions use the shared 2.75rem (44px) touch-target
 token on both axes; its text stays visually collapsed until hover or keyboard
 focus.
 
-Desktop destination icons remain plain glyphs in a fixed alignment slot. The
-compact panel deliberately restores the EasyStud icon treatment: a small
+Desktop Navigation renders one shared framed rail, matching EasyStud. Its
+destination icons remain plain glyphs in fixed alignment slots: they do not
+carry their own backgrounds, borders or capsules. The compact panel
+deliberately restores the EasyStud icon treatment: a small
 neutral bordered tile at rest and a primary-colour tile for the active entry.
 The surrounding navigation row remains the single interactive target.
 
