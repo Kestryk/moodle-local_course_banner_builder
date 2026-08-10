@@ -45,6 +45,10 @@ many small sections.
 
 #### Changed
 
+- Replaced the temporary CCB-only desktop Navigation override with the shared
+  EasyEdu UI Kit flat-rail primitive. Course, Site, Slideshow and Transfer now
+  consume the same transparent desktop destination states, while compact
+  Navigation keeps its tile buttons and the Guide launcher remains distinct.
 - Restored keyboard focus to the visible Guide opener when the CCB Guide closes
   normally or with Escape, while preserving intentional focus handoff for
   `Show in interface` and guided-path starts.
