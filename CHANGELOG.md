@@ -8,6 +8,14 @@ many small sections.
 
 ## Unreleased
 
+### 2026-08-10
+
+#### Fixed
+
+- Restored the single framed desktop navigation rail shared with EasyStud.
+  CCB destinations now use plain glyphs and labels inside that rail, without
+  individual icon capsules; the compact panel remains unchanged.
+
 ### 2026-08-09
 
 #### Fixed
