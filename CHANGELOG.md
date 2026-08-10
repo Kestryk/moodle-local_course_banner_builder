@@ -8,9 +8,25 @@ many small sections.
 
 ## Unreleased
 
+### 2026-08-10
+
+#### Tests
+
+- The isolated real Course Forum Slideshow scenario passed at genuine Chrome
+  200 percent zoom on Moodle 5.1. It records exact twofold browser-metric
+  proof, a CDP-only capture and complete cleanup of the temporary browser
+  profile and Moodle fixture. The administrator chrome and ordinary-Student
+  layout remain distinct visual scopes; human visual acceptance is separate.
+
 ### 2026-08-09
 
 #### Tests
+
+- Extended the isolated public Course Slideshow protocol with an opt-in,
+  genuine Chrome 200 percent zoom mode. It uses a dedicated temporary
+  Chrome profile and CDP-only page evidence; it never takes a Windows desktop
+  capture. Its cleanup proof requires the browser zoom to be reset before the
+  disposable Moodle course and profile are removed.
 
 - Added a separate, cleanup-first public Course Slideshow fixture. When a
   later lease-authorized public gate runs it, the fixture will create one

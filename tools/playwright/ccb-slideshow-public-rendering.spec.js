@@ -1,4 +1,5 @@
 const {test, expect, chromium} = require('@playwright/test');
+const {execFileSync, spawn} = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
@@ -31,6 +32,53 @@ const captureCdp = async(page, context, file) => {
     }
 };
 
+const wait = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds));
+
+const connectOverCdp = async(port) => {
+    const endpoint = 'http://127.0.0.1:' + port;
+    let lastError = null;
+    for (let attempt = 0; attempt < 40; attempt++) {
+        try {
+            return await chromium.connectOverCDP(endpoint);
+        } catch (error) {
+            lastError = error;
+            await wait(250);
+        }
+    }
+    throw lastError || new Error('Dedicated Chrome did not expose CDP.');
+};
+
+const stopOwnedChromeProcessTree = process => {
+    if (!process || !process.pid) {
+        return;
+    }
+    try {
+        execFileSync('taskkill.exe', ['/PID', String(process.pid), '/T', '/F'], {
+            stdio: 'ignore', windowsHide: true,
+        });
+    } catch (error) {
+        // Chrome may already have exited after the CDP connection closed.
+    }
+};
+
+const nativeZoom = (pid, operation) => {
+    const count = operation === 'reset' ? 1 : 5;
+    const command = `$ErrorActionPreference='Stop'; $root=${Number(pid)}; $deadline=(Get-Date).AddSeconds(10); $window=$null; ` +
+        `do {$ids=[Collections.Generic.HashSet[int]]::new(); [void]$ids.Add($root); $processes=Get-CimInstance Win32_Process; ` +
+        `do {$countBefore=$ids.Count; foreach($process in $processes){if($ids.Contains([int]$process.ParentProcessId)){[void]$ids.Add([int]$process.ProcessId)}}}while($ids.Count -gt $countBefore); ` +
+        `$window=$ids | ForEach-Object {Get-Process -Id $_ -ErrorAction SilentlyContinue} | Where-Object {$_.MainWindowHandle -ne 0} | Select-Object -First 1; ` +
+        `if(-not $window){Start-Sleep -Milliseconds 250}}while(-not $window -and (Get-Date) -lt $deadline); ` +
+        `if(-not $window){throw 'Dedicated Chrome has no visible window.'}; ` +
+        `Add-Type -TypeDefinition 'using System; using System.Runtime.InteropServices; namespace EasyEdu { public static class NativeInput { [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hWnd); [DllImport("user32.dll")] public static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo); } }'; ` +
+        `if(-not [EasyEdu.NativeInput]::SetForegroundWindow($window.MainWindowHandle)){throw 'Dedicated Chrome activation failed.'}; ` +
+        `function Send-Key([byte]$key){[EasyEdu.NativeInput]::keybd_event($key,0,0,[UIntPtr]::Zero); Start-Sleep -Milliseconds 40; [EasyEdu.NativeInput]::keybd_event($key,0,2,[UIntPtr]::Zero)}; ` +
+        `Start-Sleep -Milliseconds 350; 1..${count} | ForEach-Object {[EasyEdu.NativeInput]::keybd_event(0x11,0,0,[UIntPtr]::Zero); Send-Key ($(if('${operation}' -eq 'reset'){0x30}else{0xBB})); [EasyEdu.NativeInput]::keybd_event(0x11,0,2,[UIntPtr]::Zero); Start-Sleep -Milliseconds 200}; ` +
+        `Start-Sleep -Milliseconds 700; Write-Output ($window.Id.ToString()+'|'+$window.MainWindowHandle.ToString())`;
+    return execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', command], {
+        encoding: 'utf8', windowsHide: true,
+    }).trim();
+};
+
 const environment = () => {
     const required = [
         'EASYEDU_MOODLE_URL',
@@ -42,6 +90,14 @@ const environment = () => {
         'EASYEDU_CCB_SLIDESHOW_PUBLIC_PROFILE',
         'EASYEDU_CCB_SLIDESHOW_PUBLIC_ARTIFACT_ROOT',
     ];
+    const zoom = Number(process.env.EASYEDU_CCB_SLIDESHOW_PUBLIC_ZOOM || '100');
+    ensure([100, 200].includes(zoom), 'Public Slideshow zoom must be 100 or 200.');
+    if (zoom === 200) {
+        required.push(
+            'EASYEDU_CCB_SLIDESHOW_PUBLIC_CHROME_EXECUTABLE',
+            'EASYEDU_CCB_SLIDESHOW_PUBLIC_CDP_PORT'
+        );
+    }
     const missing = required.filter(name => !process.env[name]);
     ensure(missing.length === 0, 'Missing public Slideshow validation values: ' + missing.join(', '));
     const artifactRoot = path.resolve(process.env.EASYEDU_CCB_SLIDESHOW_PUBLIC_ARTIFACT_ROOT);
@@ -61,10 +117,13 @@ const environment = () => {
         artifactRoot,
         baseUrl: String(process.env.EASYEDU_MOODLE_URL).replace(/\/$/, ''),
         courseId: Number(process.env.EASYEDU_CCB_SLIDESHOW_PUBLIC_COURSE_ID),
+        cdpPort: Number(process.env.EASYEDU_CCB_SLIDESHOW_PUBLIC_CDP_PORT || '0'),
+        chromeExecutable: process.env.EASYEDU_CCB_SLIDESHOW_PUBLIC_CHROME_EXECUTABLE || '',
         discussionId: Number(process.env.EASYEDU_CCB_SLIDESHOW_PUBLIC_DISCUSSION_ID),
         password: process.env.EASYEDU_MOODLE_PASSWORD,
         profile,
         username: process.env.EASYEDU_MOODLE_USERNAME,
+        zoom,
     };
 };
 
@@ -115,6 +174,8 @@ const publicGeometry = async(host) => host.evaluate(hostNode => {
         };
     });
     return {
+        documentClientWidth: document.documentElement.clientWidth,
+        documentScrollWidth: document.documentElement.scrollWidth,
         hostHeight: hostBounds.height,
         hostWidth: hostBounds.width,
         samples,
@@ -125,7 +186,9 @@ const publicGeometry = async(host) => host.evaluate(hostNode => {
 const expectPublicGeometry = geometry => {
     expect(geometry.hostWidth, 'public Slideshow host is too narrow').toBeGreaterThan(240);
     expect(geometry.hostHeight, 'public Slideshow host has no height').toBeGreaterThan(40);
-    expect(geometry.viewportScale, 'public scenario must remain at the default 100 percent zoom').toBe(1);
+    expect(geometry.documentScrollWidth, 'public Slideshow causes horizontal page overflow').toBeLessThanOrEqual(
+        geometry.documentClientWidth + 1
+    );
     for (const sample of geometry.samples) {
         expect(sample.present, sample.name + ' is missing from the real forum slide').toBeTruthy();
         expect(sample.width, sample.name + ' has no visible width').toBeGreaterThan(0);
@@ -137,13 +200,46 @@ const expectPublicGeometry = geometry => {
     }
 };
 
-test('CCB Slideshow public Course fixture renders a real forum announcement at 100 percent', async() => {
+test('CCB Slideshow public Course fixture renders a real forum announcement at the requested browser zoom', async() => {
     const env = environment();
     const consoleErrors = [];
     const requestFailures = [];
     let collectRuntimeFailures = false;
-    const context = await chromium.launchPersistentContext(env.profile, {headless: true});
-    const page = await context.newPage();
+    let browser = null;
+    let chromeProcess = null;
+    let context = null;
+    let page = null;
+    const zoomCleanup = {
+        requested: env.zoom,
+        zoomAttempted: false,
+        zoomApplied: false,
+        zoomRestored: env.zoom === 100,
+    };
+    if (env.zoom === 200) {
+        chromeProcess = spawn(env.chromeExecutable, [
+            `--remote-debugging-port=${env.cdpPort}`,
+            '--remote-debugging-address=127.0.0.1',
+            `--user-data-dir=${env.profile}`,
+            '--no-first-run',
+            '--no-default-browser-check',
+            '--disable-save-password-bubble',
+            '--new-window',
+            '--window-size=1600,900',
+            `${env.baseUrl}/login/index.php`,
+        ], {stdio: 'ignore', windowsHide: false});
+        try {
+            browser = await connectOverCdp(env.cdpPort);
+            context = browser.contexts()[0];
+            ensure(context, 'Dedicated Chrome did not expose a browser context.');
+            page = context.pages()[0] || await context.newPage();
+        } catch (error) {
+            stopOwnedChromeProcessTree(chromeProcess);
+            throw error;
+        }
+    } else {
+        context = await chromium.launchPersistentContext(env.profile, {headless: true});
+        page = await context.newPage();
+    }
     page.on('console', message => {
         if (message.type() === 'error') {
             consoleErrors.push(message.text());
@@ -157,7 +253,9 @@ test('CCB Slideshow public Course fixture renders a real forum announcement at 1
     });
 
     try {
-        await page.setViewportSize({width: 1600, height: 900});
+        if (env.zoom === 100) {
+            await page.setViewportSize({width: 1600, height: 900});
+        }
         await login(page, env);
         await page.goto(env.baseUrl + '/course/view.php?id=' + env.courseId, {waitUntil: 'networkidle'});
         consoleErrors.length = 0;
@@ -169,6 +267,36 @@ test('CCB Slideshow public Course fixture renders a real forum announcement at 1
         await expect(root).toHaveAttribute('role', 'region');
         await expect(root).toHaveAttribute('aria-label', /\S+/);
         await waitForSettledSlide(root, 0);
+
+        let zoomEvidence = null;
+        if (env.zoom === 200) {
+            const before = await page.evaluate(() => ({innerWidth, innerHeight, devicePixelRatio}));
+            zoomEvidence = nativeZoom(chromeProcess.pid, 'zoom');
+            zoomCleanup.zoomAttempted = true;
+            let after = before;
+            let achieved = false;
+            for (let attempt = 0; attempt < 20 && !achieved; attempt++) {
+                await wait(250);
+                after = await page.evaluate(() => ({innerWidth, innerHeight, devicePixelRatio}));
+                const devicePixelRatioRatio = after.devicePixelRatio / Math.max(before.devicePixelRatio, 1);
+                const widthRatio = before.innerWidth / Math.max(after.innerWidth, 1);
+                achieved = devicePixelRatioRatio >= 1.9 && devicePixelRatioRatio <= 2.1 &&
+                    widthRatio >= 1.9 && widthRatio <= 2.1;
+            }
+            zoomEvidence = {
+                before,
+                after,
+                chromeWindow: zoomEvidence,
+                devicePixelRatioRatio: after.devicePixelRatio / Math.max(before.devicePixelRatio, 1),
+                widthRatio: before.innerWidth / Math.max(after.innerWidth, 1),
+            };
+            writeJson(path.join(env.artifactRoot, 'slideshow-public-course-forum-200-zoom-probe.json'), {
+                achieved,
+                zoomEvidence,
+            });
+            zoomCleanup.zoomApplied = achieved;
+            expect(achieved, 'Chrome did not apply a genuine 200 percent browser zoom.').toBeTruthy();
+        }
 
         const next = root.locator('.local-course-banner-builder-slideshow-nav--next');
         await expect(next).toHaveCount(1);
@@ -191,8 +319,9 @@ test('CCB Slideshow public Course fixture renders a real forum announcement at 1
         const geometry = await publicGeometry(host);
         expectPublicGeometry(geometry);
         await page.evaluate(() => document.fonts.ready);
-        await captureCdp(page, context, path.join(env.artifactRoot, 'slideshow-public-course-forum-100.png'));
-        writeJson(path.join(env.artifactRoot, 'slideshow-public-course-forum-100.json'), {
+        const evidenceBase = 'slideshow-public-course-forum-' + env.zoom;
+        await captureCdp(page, context, path.join(env.artifactRoot, evidenceBase + '.png'));
+        writeJson(path.join(env.artifactRoot, evidenceBase + '.json'), {
             announcementTitle: env.announcementTitle,
             consoleErrors,
             courseId: env.courseId,
@@ -201,14 +330,40 @@ test('CCB Slideshow public Course fixture renders a real forum announcement at 1
             requestFailures,
             scope: {
                 source: 'real-course-forum-announcement',
-                viewport: {width: 1600, height: 900},
-                zoom: 100,
+                requestedBrowserZoom: env.zoom,
             },
+            zoomEvidence,
         });
         expect(consoleErrors).toEqual([]);
         expect(requestFailures).toEqual([]);
     } finally {
         collectRuntimeFailures = false;
-        await context.close();
+        if (env.zoom === 200 && chromeProcess && zoomCleanup.zoomAttempted) {
+            try {
+                zoomCleanup.chromeWindow = nativeZoom(chromeProcess.pid, 'reset');
+                zoomCleanup.zoomRestored = true;
+            } catch (error) {
+                zoomCleanup.error = String(error && error.stack || error);
+            }
+        } else if (env.zoom === 200) {
+            zoomCleanup.zoomRestored = true;
+            zoomCleanup.resetNotRequired = true;
+        }
+        if (browser) {
+            await browser.close().catch(() => {});
+        } else if (context) {
+            await context.close().catch(() => {});
+        }
+        stopOwnedChromeProcessTree(chromeProcess);
+        try {
+            fs.rmSync(env.profile, {recursive: true, force: true, maxRetries: 40, retryDelay: 250});
+        } catch (error) {
+            zoomCleanup.error = zoomCleanup.error || String(error && error.stack || error);
+        }
+        zoomCleanup.profileRemoved = !fs.existsSync(env.profile);
+        writeJson(path.join(env.artifactRoot, 'slideshow-public-course-forum-' + env.zoom + '-browser-cleanup.json'), zoomCleanup);
+        if (env.zoom === 200) {
+            ensure(zoomCleanup.zoomRestored, 'Dedicated Chrome browser zoom was not restored.');
+        }
     }
 });

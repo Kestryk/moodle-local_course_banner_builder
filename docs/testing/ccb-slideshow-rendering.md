@@ -83,12 +83,42 @@ scoped fixture additions before any complete public matrix is claimed.
 ## Prepared public Course scenario
 
 `ccb-slideshow-public-rendering.spec.js` and
-`Invoke-CCBSlideshowPublicRenderingValidation.ps1` prepare exactly one future
-Moodle 5.1 scenario: `CCB Slideshow public Course fixture renders a real forum
-announcement at 100 percent`. It uses the public fixture above, waits for the
-real Course Slideshow region, moves from the intentional empty banner slide to
-the real Forum announcement, then verifies the Forum label, title, action URL,
-geometry and stable post-transition CDP capture.
+`Invoke-CCBSlideshowPublicRenderingValidation.ps1` prepare exactly one Moodle
+5.1 scenario: `CCB Slideshow public Course fixture renders a real forum
+announcement at the requested browser zoom`. At `-Zoom 100` it uses headless
+Chromium; at `-Zoom 200` it uses a dedicated temporary Chrome window, applies
+the real Chrome zoom shortcut and proves the effective 200 percent scale from
+the browser metrics. Neither mode uses a Windows desktop capture: its visual
+proof is a stable post-transition CDP capture of the page only. Both modes use
+the public fixture above, move from the intentional empty banner slide to the
+real Forum announcement, then verify the Forum label, title, action URL,
+geometry and page-overflow containment.
+
+The `-Zoom 200` mode records `zoomEvidence` alongside the page capture and a
+`slideshow-public-course-forum-200-browser-cleanup.json` proof. The runner
+marks the run failed unless that proof confirms the dedicated Chrome zoom was
+reset, in addition to the fixture configuration/course cleanup and external
+profile removal.
+
+### Moodle 5.1 public Course, native 200 percent technical result
+
+The 2026-08-10 native-zoom run passed exactly one public Course scenario in
+32.3 seconds. It rendered the disposable Course Forum announcement after
+Chrome changed from a 1540 px CSS viewport at device-pixel-ratio 1.25 to a
+770 px CSS viewport at device-pixel-ratio 2.5: both independent ratios are
+exactly 2.0. The stable CDP capture and JSON evidence are external under
+`<EASYEDU_PLAYWRIGHT_ARTIFACTS_ROOT>\ccb\slideshow\public\supervised\ccb-slideshow-public-200-20260810T082731096Z-36648`.
+
+The scenario found no console errors, no request failures and no horizontal
+page overflow. Its cleanup confirms that the Chrome zoom was reset, the
+temporary profile was removed, the temporary course/forum/enrolment were
+removed and the captured public Slideshow configuration was restored. It uses
+an authenticated Moodle administrator who is also enrolled as Student in the
+temporary course; it therefore includes the administrator's global Moodle
+chrome and does not prove the separate ordinary-Student chrome/drawer layout.
+This is technical evidence for one real Forum source at native 200 percent,
+not an acceptance of other public source families, mobile rendering or Moodle
+4.5/5.2 coverage. Human visual review remains required.
 
 The runner performs discovery first, requires exactly one selected test and
 acquires `moodle51-active-fixture-write` before it creates the fixture. It

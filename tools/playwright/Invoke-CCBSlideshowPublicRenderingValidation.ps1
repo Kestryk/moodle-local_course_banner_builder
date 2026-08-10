@@ -1,6 +1,8 @@
 [CmdletBinding()]
 param(
     [switch]$DiscoveryOnly,
+    [ValidateSet(100, 200)]
+    [int]$Zoom = 100,
     [ValidateRange(120, 1800)]
     [int]$WatchdogSeconds = 900,
     [ValidateRange(0, 900)]
@@ -24,7 +26,7 @@ $artifactBase = if ($env:EASYEDU_PLAYWRIGHT_ARTIFACTS_ROOT) { $env:EASYEDU_PLAYW
     Join-Path $env:LOCALAPPDATA 'EasyEdu\artifacts'
 }
 $artifactBase = [IO.Path]::GetFullPath($artifactBase)
-$runId = 'ccb-slideshow-public-{0}-{1}' -f [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ'), $PID
+$runId = 'ccb-slideshow-public-{0}-{1}-{2}' -f $Zoom, [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ'), $PID
 $runRoot = Join-Path $artifactBase ('ccb\slideshow\public\supervised\' + $runId)
 $playwrightConfig = Join-Path $runRoot 'playwright.config.cjs'
 $profile = Join-Path $runRoot 'profile'
@@ -41,6 +43,9 @@ $profilesRemoved = $false
 $childExitCode = 70
 $loadedEnvironment = @()
 $runError = $null
+$zoomRestored = ($Zoom -eq 100)
+$zoomApplied = ($Zoom -eq 100)
+$zoomCleanupError = $null
 $originalNodePath = $env:NODE_PATH
 $nodePathWasSet = Test-Path Env:NODE_PATH
 
@@ -126,6 +131,24 @@ function Remove-OwnedProfile {
     return -not (Test-Path -LiteralPath $resolved)
 }
 
+function Get-FreeLoopbackPort {
+    $listener = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, 0)
+    try {
+        $listener.Start()
+        return ([Net.IPEndPoint]$listener.LocalEndpoint).Port
+    } finally {
+        $listener.Stop()
+    }
+}
+
+function Resolve-ChromeExecutable {
+    $command = Get-Command 'chrome.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($command -and (Test-Path -LiteralPath $command.Source)) { return $command.Source }
+    $candidate = Join-Path $env:ProgramFiles 'Google\Chrome\Application\chrome.exe'
+    if (Test-Path -LiteralPath $candidate) { return $candidate }
+    throw 'Google Chrome is required for the genuine 200 percent browser-zoom validation.'
+}
+
 New-Item -ItemType Directory -Path $runRoot -Force | Out-Null
 $javascriptScriptDir = $scriptDir -replace '\\', '\\\\'
 $javascriptOutputDir = (Join-Path $runRoot 'playwright-output') -replace '\\', '\\\\'
@@ -188,13 +211,23 @@ try {
         $env:EASYEDU_CCB_SLIDESHOW_PUBLIC_ANNOUNCEMENT_TITLE = [string]$setup.announcementTitle
         $env:EASYEDU_CCB_SLIDESHOW_PUBLIC_PROFILE = $profile
         $env:EASYEDU_CCB_SLIDESHOW_PUBLIC_ARTIFACT_ROOT = $runRoot
+        $env:EASYEDU_CCB_SLIDESHOW_PUBLIC_ZOOM = [string]$Zoom
         $loadedEnvironment += @(
             'EASYEDU_CCB_SLIDESHOW_PUBLIC_COURSE_ID',
             'EASYEDU_CCB_SLIDESHOW_PUBLIC_DISCUSSION_ID',
             'EASYEDU_CCB_SLIDESHOW_PUBLIC_ANNOUNCEMENT_TITLE',
             'EASYEDU_CCB_SLIDESHOW_PUBLIC_PROFILE',
-            'EASYEDU_CCB_SLIDESHOW_PUBLIC_ARTIFACT_ROOT'
+            'EASYEDU_CCB_SLIDESHOW_PUBLIC_ARTIFACT_ROOT',
+            'EASYEDU_CCB_SLIDESHOW_PUBLIC_ZOOM'
         )
+        if ($Zoom -eq 200) {
+            $env:EASYEDU_CCB_SLIDESHOW_PUBLIC_CHROME_EXECUTABLE = Resolve-ChromeExecutable
+            $env:EASYEDU_CCB_SLIDESHOW_PUBLIC_CDP_PORT = [string](Get-FreeLoopbackPort)
+            $loadedEnvironment += @(
+                'EASYEDU_CCB_SLIDESHOW_PUBLIC_CHROME_EXECUTABLE',
+                'EASYEDU_CCB_SLIDESHOW_PUBLIC_CDP_PORT'
+            )
+        }
         $child = Start-Node @(
             $playwrightCli,
             'test',
@@ -220,6 +253,18 @@ try {
             -Value (Safe $child.StandardOutput.GetAwaiter().GetResult()) -Encoding UTF8
         Set-Content -LiteralPath (Join-Path $runRoot 'playwright.stderr.txt') `
             -Value (Safe $child.StandardError.GetAwaiter().GetResult()) -Encoding UTF8
+        if ($Zoom -eq 200) {
+            $zoomCleanupFile = Join-Path $runRoot 'slideshow-public-course-forum-200-browser-cleanup.json'
+            if (-not (Test-Path -LiteralPath $zoomCleanupFile)) {
+                $zoomRestored = $false
+                $zoomCleanupError = 'The 200 percent browser-cleanup proof was not written.'
+            } else {
+                $zoomCleanup = Get-Content -LiteralPath $zoomCleanupFile -Raw | ConvertFrom-Json
+                $zoomRestored = [bool]$zoomCleanup.zoomRestored
+                $zoomApplied = [bool]$zoomCleanup.zoomApplied
+                if (-not $zoomRestored -or -not $zoomApplied) { $zoomCleanupError = [string]$zoomCleanup.error }
+            }
+        }
     }
 } catch {
     $runError = Safe $_.Exception.Message
@@ -243,7 +288,9 @@ try {
             $cleanupResult.courseRemoved -and
             $cleanupResult.forumDiscussionRemoved -and
             $cleanupResult.studentEnrolmentRemoved -and
-            $cleanupResult.publicSlideshowConfigRestored
+            $cleanupResult.publicSlideshowConfigRestored -and
+            $zoomApplied -and
+            $zoomRestored
         )) -and $profilesRemoved)
         courseRemoved = if ($cleanupResult) { $cleanupResult.courseRemoved } else { $null }
         forumDiscussionRemoved = if ($cleanupResult) { $cleanupResult.forumDiscussionRemoved } else { $null }
@@ -253,8 +300,10 @@ try {
         } else {
             $null
         }
+        browserZoomRestored = $zoomRestored
+        browserZoomApplied = $zoomApplied
         profilesRemoved = $profilesRemoved
-        cleanupError = $cleanupError
+        cleanupError = if ($cleanupError) { $cleanupError } else { $zoomCleanupError }
     }
     Set-Content -LiteralPath $cleanupFile -Value ($cleanup | ConvertTo-Json -Depth 20) -Encoding UTF8
     $status = if ($DiscoveryOnly -and $childExitCode -eq 0) {
@@ -267,6 +316,7 @@ try {
     Set-Content -LiteralPath $summaryFile -Value (([ordered]@{
         runId = $runId
         status = $status
+        zoom = $Zoom
         cleanup = $cleanup
         error = $runError
         artifactDirectory = $runRoot
