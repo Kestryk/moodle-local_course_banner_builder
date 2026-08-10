@@ -101,8 +101,14 @@ Node output streams from process start to avoid an output-buffer deadlock.
 This prepared scenario is limited to a 1600 by 900 default-zoom public Course
 page. It does not claim mobile, native 200 percent browser zoom, Site
 announcements, Assignment, Quiz, non-administrator permissions or any full
-public rendering matrix. No runtime execution is claimed until a separate
-lease-authorized run is requested.
+public rendering matrix.
+
+On 2026-08-09, one lease-authorized Moodle 5.1 execution passed in 32.5
+seconds. It selected exactly this scenario, rendered the real Forum
+announcement at a 1600 by 900 default-zoom viewport, reported no console or
+non-aborted request failure, and completed all four fixture-cleanup checks plus
+profile removal. Its CDP capture was accepted by human visual review. This does
+not validate the deferred public matrix variants.
 
 At widths of 768 px and below, the administration modal uses an editor-specific
 working height instead of inheriting the public banner's very wide ratio. It

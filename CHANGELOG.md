@@ -21,7 +21,10 @@ many small sections.
 - Added the matching one-test public Course scenario and supervised runner. It
   will capture only after the real Forum announcement slide has settled and
   requires cleanup proof for the temporary course, announcement, enrolment and
-  CCB configuration. The public runtime scenario has not been executed.
+  CCB configuration. Its first Moodle 5.1 execution passed at default 100
+  percent browser zoom; public mobile, native 200 percent and the other source
+  families remain outside that result. The matching CDP capture was accepted by
+  human visual review.
 
 ### 2026-08-06
 
