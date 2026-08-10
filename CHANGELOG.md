@@ -12,6 +12,10 @@ many small sections.
 
 #### Changed
 
+- Replaced the temporary CCB-only desktop Navigation override with the shared
+  EasyEdu UI Kit flat-rail primitive. Course, Site, Slideshow and Transfer now
+  consume the same transparent desktop destination states, while compact
+  Navigation keeps its tile buttons and the Guide launcher remains distinct.
 - Restored the flat EasyStud desktop Navigation rail in Course Banner Builder:
   destinations no longer render with a resting background, border or individual
   capsule, while the active and hover indicators and keyboard focus remain

@@ -3,7 +3,8 @@
 ## Scope
 
 `EED-NAV-2026-0006` adapts the immutable EasyEdu UI Kit Navigation/Guide
-snapshot `f032a18aefc8f0816a2f36c52d6e6867cd9664b8` to the
+snapshot `f032a18aefc8f0816a2f36c52d6e6867cd9664b8` plus the flat desktop
+rail correction at `e6aab3d7ca1c022efe7895b7d38a35b92b06aaa2` to the
 `local_course_banner_builder` component. It does not import the UI Kit WIP,
 the Guide engine or content, EasyStud destinations, or Focus and Loading
 components.
@@ -45,10 +46,11 @@ contract and must not be renamed casually.
 
 `scss/components/_easyedu-adapter.scss` includes the imported Navigation mixin
 only below `.local-course-banner-builder-admin--native`; it does not apply
-Navigation styles to Moodle or Bootstrap globals. The desktop Guide label is
-an out-of-flow capsule and the compact Guide projection is one full-width
-gradient row. Those two rules protect the centred destination rail, prevent
-launcher-shadow clipping, and keep the compact icon and label in one target.
+Navigation styles to Moodle or Bootstrap globals and no longer restyles desktop
+destinations locally. The desktop Guide label is an out-of-flow capsule and the
+compact Guide projection is one full-width gradient row. Those two rules
+protect the centred destination rail, prevent launcher-shadow clipping, and
+keep the compact icon and label in one target.
 
 The compact trigger is a fixed left-edge half-pill centred in the viewport. It
 does not calculate a position from Moodle's native drawer control or from page
