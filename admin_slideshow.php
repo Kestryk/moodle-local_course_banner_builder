@@ -2423,6 +2423,11 @@ $slideshowpageskeleton = html_writer::start_div(
         'data-local-course-banner-builder-slideshow-skeleton-placeholder' => '1',
     ]
 );
+$slideshowpageskeleton .= html_writer::start_div('local-course-banner-builder-slideshow-page-skeleton__heading');
+$slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slideshow-page-skeleton__eyebrow');
+$slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slideshow-page-skeleton__title');
+$slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slideshow-page-skeleton__description');
+$slideshowpageskeleton .= html_writer::end_div();
 $slideshowpageskeleton .= html_writer::start_div(
     'local-course-banner-builder-slideshow-page-skeleton__navigation'
 );
@@ -2434,11 +2439,6 @@ $slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slid
 $slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slideshow-page-skeleton__navigation-item');
 $slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slideshow-page-skeleton__navigation-item');
 $slideshowpageskeleton .= html_writer::end_div();
-$slideshowpageskeleton .= html_writer::end_div();
-$slideshowpageskeleton .= html_writer::start_div('local-course-banner-builder-slideshow-page-skeleton__heading');
-$slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slideshow-page-skeleton__eyebrow');
-$slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slideshow-page-skeleton__title');
-$slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slideshow-page-skeleton__description');
 $slideshowpageskeleton .= html_writer::end_div();
 $slideshowpageskeleton .= html_writer::start_div('local-course-banner-builder-slideshow-page-skeleton__cards');
 for ($slideshowpageskeletonindex = 0; $slideshowpageskeletonindex < 2; $slideshowpageskeletonindex++) {
@@ -2738,18 +2738,27 @@ unset($guideslide);
 $guidecontext['slidecount'] = count($guidecontext['slides']);
 $guidecontext['initialprogress'] = $guidecontext['slidecount'] > 0 ? round(100 / $guidecontext['slidecount'], 2) : 0;
 $guidehtml = $OUTPUT->render_from_template('local_course_banner_builder/easyedu_guide', $guidecontext);
+$slideshowpageidentity = html_writer::div(
+    html_writer::span(
+        get_string('easystudlabel', 'local_course_banner_builder'),
+        'local-course-banner-builder-slideshow-page-identity__eyebrow'
+    ) .
+    html_writer::tag('h2', get_string('manageslideshow', 'local_course_banner_builder'), [
+        'class' => 'local-course-banner-builder-slideshow-page-identity__title',
+    ]) .
+    html_writer::tag('p', get_string('manageslideshow_desc', 'local_course_banner_builder'), [
+        'class' => 'local-course-banner-builder-slideshow-page-identity__description',
+    ]),
+    'local-course-banner-builder-slideshow-page-identity'
+);
 $navigationcontext = \local_course_banner_builder\output\navigation::context('slideshow', $guidehtml);
+echo $slideshowpageidentity;
 echo $OUTPUT->render_from_template('local_course_banner_builder/easyedu_navigation', $navigationcontext);
 echo html_writer::div(
     $deletepluginsettingsform,
     'local-course-banner-builder-admin-utilities mb-3'
 );
 echo $siteformatmodal . $courseformatmodal;
-
-echo $OUTPUT->heading(get_string('manageslideshow', 'local_course_banner_builder'));
-echo html_writer::tag('p', get_string('manageslideshow_desc', 'local_course_banner_builder'), [
-    'class' => 'text-muted local-course-banner-builder-admin-small-text',
-]);
 
 echo html_writer::div(
     local_course_banner_builder_render_slideshow_form(manager::SLIDESHOW_CONTEXT_COURSE) .

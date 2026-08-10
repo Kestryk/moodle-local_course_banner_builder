@@ -91,6 +91,28 @@ test.describe('CCB admin Slideshow page skeleton', () => {
         await expect(skeleton).toBeHidden();
         await expect(status).toBeHidden();
 
+        const headerOrder = await shell.evaluate((pageShell) => {
+            const identity = pageShell.querySelector(
+                '.local-course-banner-builder-slideshow-page-identity'
+            );
+            const navigation = pageShell.querySelector('[data-easyedu-navigation]');
+            const skeletonHeading = pageShell.querySelector(
+                '.local-course-banner-builder-slideshow-page-skeleton__heading'
+            );
+            const skeletonNavigation = pageShell.querySelector(
+                '.local-course-banner-builder-slideshow-page-skeleton__navigation'
+            );
+            const appearsBefore = (first, second) => Boolean(first && second) &&
+                Boolean(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING);
+
+            return {
+                liveIdentityBeforeNavigation: appearsBefore(identity, navigation),
+                skeletonIdentityBeforeNavigation: appearsBefore(skeletonHeading, skeletonNavigation),
+            };
+        });
+        expect(headerOrder.liveIdentityBeforeNavigation).toBe(true);
+        expect(headerOrder.skeletonIdentityBeforeNavigation).toBe(true);
+
         const visualContract = await skeleton.locator(
             '.local-course-banner-builder-slideshow-page-skeleton__title'
         ).evaluate((surface) => {
@@ -121,6 +143,20 @@ test.describe('CCB admin Slideshow page skeleton', () => {
         }));
         expect(previewMotion.frame).toBe('none');
         expect(previewMotion.cue).toContain('easyedu-skeleton-shimmer');
+
+        const navigationMotion = await skeleton.locator(
+            '.local-course-banner-builder-slideshow-page-skeleton__navigation'
+        ).evaluate((navigation) => ({
+            frame: window.getComputedStyle(navigation, '::after').animationName,
+            cue: window.getComputedStyle(
+                navigation.querySelector(
+                    '.local-course-banner-builder-slideshow-page-skeleton__navigation-mark'
+                ),
+                '::after'
+            ).animationName,
+        }));
+        expect(navigationMotion.frame).toBe('none');
+        expect(navigationMotion.cue).toContain('easyedu-skeleton-shimmer');
 
         const timeline = await page.evaluate(() => window.__ccbSlideshowSkeletonTimeline);
         expect(timeline[0].state).toBe('loading');

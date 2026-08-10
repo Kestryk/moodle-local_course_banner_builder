@@ -243,6 +243,7 @@ $string['editoverlaylayer'] = 'Edit overlay layer';
 $string['editsitebannertitle'] = 'Edit site title';
 $string['editsourcebutton'] = 'Edit source';
 $string['editsourceoflayer'] = 'Edit the source of this layer';
+$string['easystudlabel'] = 'EasyStud';
 $string['enabled'] = 'Enabled';
 $string['enabledcustomfields'] = 'Custom fields available as sources';
 $string['enabledcustomfields_desc'] = 'Select course custom fields of type text, text area, or dropdown that can be offered as layer sources in banner management.';

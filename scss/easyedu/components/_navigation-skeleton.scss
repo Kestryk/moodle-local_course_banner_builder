@@ -1,0 +1,92 @@
+// Navigation Skeleton primitives.
+//
+// Synchronized from the immutable EasyEdu UI Kit snapshot
+// c9277a82fb471018f4cc07b24dd336d2adfa310d. The outer frame remains
+// static; consumers animate decorative cues only.
+
+@use "loading";
+
+@mixin navigation-skeleton-frame(
+    $surface: var(--easyedu-loading-surface),
+    $border: var(--easyedu-loading-border),
+    $radius: var(--easyedu-loading-radius)
+) {
+    @include loading.skeleton-surface($surface, $border, $radius);
+}
+
+@mixin navigation-skeleton-cue(
+    $surface: var(--easyedu-loading-surface),
+    $highlight: var(--easyedu-loading-highlight),
+    $radius: var(--easyedu-loading-radius)
+) {
+    & {
+        border-radius: $radius;
+        display: block;
+        max-inline-size: 100%;
+        min-inline-size: 0;
+    }
+
+    @include loading.skeleton-shimmer-direct(
+        $surface: $surface,
+        $highlight: $highlight
+    );
+
+    &:dir(rtl),
+    [dir="rtl"] & {
+        animation-direction: reverse;
+    }
+
+    @media (forced-colors: active) {
+        & {
+            background: CanvasText;
+            border: 0.0625rem solid CanvasText;
+        }
+    }
+}
+
+@mixin navigation-skeleton-cue-overlay(
+    $surface: var(--easyedu-loading-surface),
+    $soft: var(--easyedu-loading-shimmer-soft),
+    $highlight: var(--easyedu-loading-shimmer-highlight),
+    $radius: var(--easyedu-loading-radius)
+) {
+    & {
+        background: $surface;
+        border-radius: $radius;
+        display: block;
+        max-inline-size: 100%;
+        min-inline-size: 0;
+        position: relative;
+    }
+
+    @include loading.skeleton-shimmer-overlay(
+        $soft: $soft,
+        $highlight: $highlight
+    );
+
+    &:dir(rtl)::after,
+    [dir="rtl"] &::after {
+        animation-direction: reverse;
+    }
+
+    @media (forced-colors: active) {
+        & {
+            background: CanvasText;
+            border: 0.0625rem solid CanvasText;
+        }
+
+        &::after {
+            background-image: none;
+        }
+    }
+}
+
+@mixin navigation-skeleton-cue-stack($gap: var(--easyedu-loading-stack-gap)) {
+    & {
+        align-content: start;
+        display: grid;
+        gap: $gap;
+        justify-items: start;
+        min-inline-size: 0;
+    }
+}
