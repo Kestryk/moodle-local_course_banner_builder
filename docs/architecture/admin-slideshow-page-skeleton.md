@@ -15,6 +15,20 @@ The shell deliberately does not change Slideshow settings, modal previews,
 format-picker controls, `slideshow_admin`, Navigation, Guide, Sources/Layers,
 or public banner rendering.
 
+## 2026-08-10 page identity parity (`EED-CCB-2026-0006`)
+
+The Slideshow shell now mirrors the EasyStud Mass Group Import header order:
+the EasyStud product mark, page title and short description appear before the
+shared Navigation. The Skeleton uses the same order and the Mass Import header
+heights (`0.72rem`, `1.55rem`, `0.82rem`) so it reserves the final header's
+space before the live page is revealed.
+
+The page identity remains CCB-owned. Its typography composes the existing UI
+Kit eyebrow, page-title and body roles. CCB consumes the Navigation Skeleton
+frame and cue primitives unchanged from immutable UI Kit snapshot
+`c9277a82fb471018f4cc07b24dd336d2adfa310d`; Navigation destinations, Guide
+content, lifecycle timing and geometry remain outside that snapshot boundary.
+
 ## Lifecycle
 
 The PHP response starts in `loading`, before interactive JavaScript: the
