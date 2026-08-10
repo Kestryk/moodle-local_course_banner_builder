@@ -9,8 +9,6 @@
 // flat; the compact panel is the only presentation that renders destination
 // tiles.
 @mixin navigation-desktop-rail {
-  @include buttons.admin-primary-nav;
-
   // Keep the rail as the single shared surface. Do not turn its destinations
   // into individual capsules.
   align-items: stretch;
@@ -28,11 +26,11 @@
   &::-webkit-scrollbar {
     display: none;
   }
+
+  @include buttons.admin-primary-nav;
 }
 
 @mixin navigation-desktop-item($variant: default) {
-  @include buttons.admin-primary-nav-action($variant);
-
   align-items: center;
   background: transparent;
   border: 0;
@@ -181,6 +179,8 @@
       outline-offset: var(--easyedu-focus-outline-offset, 0.125rem);
     }
   }
+
+  @include buttons.admin-primary-nav-action($variant);
 }
 
 @mixin navigation-component($compact-breakpoint: 64rem) {
