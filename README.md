@@ -299,6 +299,11 @@ Category and custom field creation can be made optional during transfer, so an
 administrator can decide whether the destination Moodle should create missing
 structures or only map existing ones.
 
+The destructive reset of all Course Banner Builder configuration is available
+only from the plugin's general Moodle settings. It requires the plugin manage
+capability and a Moodle confirmation before files, settings and banner data are
+deleted.
+
 ---
 
 ## Guided Tours

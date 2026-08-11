@@ -64,6 +64,22 @@ if ($hassiteconfig || has_capability('local/course_banner_builder:manage', conte
             $customfieldoptions
         ));
     }
+
+    $settings->add(new admin_setting_heading(
+        'local_course_banner_builder/deleteallpluginsettings',
+        '',
+        \html_writer::div(
+            \html_writer::div(
+                get_string('deleteallpluginsettingsconfirm', 'local_course_banner_builder'),
+                'mb-2'
+            ) . \html_writer::link(
+                new moodle_url('/local/course_banner_builder/admin_reset.php'),
+                get_string('deleteallpluginsettings', 'local_course_banner_builder'),
+                ['class' => 'btn btn-danger']
+            ),
+            'alert alert-warning mb-0'
+        )
+    ));
     $ADMIN->add('local_course_banner_builder', $settings);
 
     $ADMIN->add('local_course_banner_builder', new admin_externalpage(

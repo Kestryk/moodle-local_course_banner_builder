@@ -106,15 +106,6 @@ $PAGE->requires->js_call_amd('local_course_banner_builder/easyedu_guide', 'init'
     ],
 ]);
 
-$deleteallpluginsettings = optional_param('deleteallpluginsettings', 0, PARAM_BOOL);
-if ($deleteallpluginsettings && confirm_sesskey()) {
-    manager::delete_all_plugin_configuration();
-    redirect(
-        new moodle_url('/local/course_banner_builder/admin_slideshow.php'),
-        get_string('allpluginsettingsdeleted', 'local_course_banner_builder')
-    );
-}
-
 /**
  * Clean one bulk-posted slideshow form payload.
  *
@@ -2514,34 +2505,6 @@ echo html_writer::start_div(
     'local-course-banner-builder-admin local-course-banner-builder-admin--native local-course-banner-builder-slideshow-admin',
     ['data-local-course-banner-builder-slideshow-skeleton-live' => '1']
 );
-$deletepluginsettingsform = html_writer::tag(
-    'form',
-    html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]) .
-    html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'deleteallpluginsettings', 'value' => 1]) .
-    html_writer::tag(
-        'button',
-        html_writer::tag('i', '', ['class' => 'fa fa-trash-can', 'aria-hidden' => 'true']),
-        [
-            'type' => 'submit',
-            'aria-label' => get_string('deleteallpluginsettings', 'local_course_banner_builder'),
-            'class' => 'btn btn-outline-danger local-course-banner-builder-dashed-action local-course-banner-builder-admin-reset-button',
-            'data-modal' => 'confirmation',
-            'data-modal-title' => get_string('confirm', 'moodle'),
-            'data-modal-content' => get_string('deleteallpluginsettingsconfirm', 'local_course_banner_builder'),
-            'data-modal-yes-button' => get_string('delete', 'moodle'),
-            'data-easyedu-warning-popover' => get_string(
-                'deleteallpluginsettingsconfirm',
-                'local_course_banner_builder'
-            ),
-            'data-easyedu-warning-popover-placement' => 'bottom',
-        ]
-    ),
-    [
-        'method' => 'post',
-        'action' => (new moodle_url('/local/course_banner_builder/admin_slideshow.php'))->out(false),
-        'class' => 'd-inline local-course-banner-builder-admin-reset-form',
-    ]
-);
 $courseformatmodal = local_course_banner_builder_render_slideshow_banner_format_modal(
     manager::SLIDESHOW_CONTEXT_COURSE,
     manager::get_course_banner_format()
@@ -2762,10 +2725,6 @@ $slideshowpageidentity = html_writer::div(
 $navigationcontext = \local_course_banner_builder\output\navigation::context('slideshow', $guidehtml);
 echo $slideshowpageidentity;
 echo $OUTPUT->render_from_template('local_course_banner_builder/easyedu_navigation', $navigationcontext);
-echo html_writer::div(
-    $deletepluginsettingsform,
-    'local-course-banner-builder-admin-utilities mb-3'
-);
 echo $siteformatmodal . $courseformatmodal;
 
 echo html_writer::div(
