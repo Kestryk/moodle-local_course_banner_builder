@@ -16,6 +16,9 @@ many small sections.
   with the same native Moodle Forum, Assignment and Quiz monologos used by
   the public banner. Site announcements intentionally reuse the Forum
   monologo because they are Forum posts.
+- Kept native Moodle label icons legible in the large Slideshow administration
+  preview when its responsive label text becomes smaller; public-banner icon
+  proportions are unchanged.
 
 ### 2026-08-10
 
