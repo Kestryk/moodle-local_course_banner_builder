@@ -14,6 +14,11 @@ Forum and Site Announcements, Assignment for Assignment, and Quiz for Quiz.
 Site Announcements are Forum posts, so the Forum monologo is intentional. The
 same component mapping is used by the public banner runtime.
 
+When a selected banner format makes the large administration-preview label
+text small, that preview keeps a 1rem minimum icon size. This editor-only
+readability floor does not alter a public Slideshow label or its configured
+proportions.
+
 ## Owned test sources
 
 - `tools/playwright/ccb-slideshow-rendering-fixture.php`
