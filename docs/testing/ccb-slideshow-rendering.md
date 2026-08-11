@@ -6,6 +6,14 @@
 Builder Slideshow administration and public rendering surfaces. The initial
 scenario is deliberately a **preflight**, not the complete responsive matrix.
 
+## Label icon authority
+
+The Slideshow administration preview and its label-colour samples use Moodle
+activity monologos, rather than Font Awesome approximations: Forum for Course
+Forum and Site Announcements, Assignment for Assignment, and Quiz for Quiz.
+Site Announcements are Forum posts, so the Forum monologo is intentional. The
+same component mapping is used by the public banner runtime.
+
 ## Owned test sources
 
 - `tools/playwright/ccb-slideshow-rendering-fixture.php`
