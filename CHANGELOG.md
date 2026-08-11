@@ -8,6 +8,15 @@ many small sections.
 
 ## Unreleased
 
+### 2026-08-11
+
+#### Fixed
+
+- Replaced the Slideshow administration's static Font Awesome label samples
+  with the same native Moodle Forum, Assignment and Quiz monologos used by
+  the public banner. Site announcements intentionally reuse the Forum
+  monologo because they are Forum posts.
+
 ### 2026-08-10
 
 #### Fixed

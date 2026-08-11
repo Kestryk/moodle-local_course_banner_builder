@@ -714,6 +714,8 @@ function local_course_banner_builder_render_slideshow_font_select(
  * @return string
  */
 function local_course_banner_builder_render_slideshow_overlay_settings(array $config, string $context = ''): string {
+    global $OUTPUT;
+
     $opacity = (int)round(((float)($config['overlayopacity'] ?? manager::SLIDESHOW_DEFAULT_OVERLAY_OPACITY)) * 100);
     $color = (string)($config['overlaycolor'] ?? manager::SLIDESHOW_DEFAULT_OVERLAY_COLOR);
     $colorid = 'slideshow-overlay-color-' . uniqid();
@@ -1312,12 +1314,18 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
         return $html . html_writer::end_div();
     };
 
-    $previewlabelicon = $context === manager::SLIDESHOW_CONTEXT_SITE ? 'fa-bullhorn' : 'fa-comments';
     $previewlabelkey = $context === manager::SLIDESHOW_CONTEXT_SITE
         ? 'slideshow:type:siteannouncements'
         : 'slideshow:type:courseforum';
     $previewlabelclass = $context === manager::SLIDESHOW_CONTEXT_SITE ? 'siteannouncements' : 'forums';
     $previewsecondarylabel = $context === manager::SLIDESHOW_CONTEXT_SITE ? 'CAT2' : 'COURSE101';
+    // Site announcements are forum posts and therefore share Moodle's Forum monologo.
+    $previewlabelicon = html_writer::empty_tag('img', [
+        'class' => 'icon activityicon local-course-banner-builder-slideshow-label-icon',
+        'src' => $OUTPUT->image_url('monologo', 'mod_forum'),
+        'alt' => '',
+        'aria-hidden' => 'true',
+    ]);
 
     $previewcontent = html_writer::div('', 'local-course-banner-builder-slideshow-admin-preview-backdrop') .
         html_writer::div('', 'local-course-banner-builder-slideshow-admin-preview-overlay') .
@@ -1335,10 +1343,7 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
                 ]) .
                 $cornertoggle('label', get_string('slideshowtogglecorners', 'local_course_banner_builder')) .
                 html_writer::span(
-                    html_writer::tag('i', '', [
-                        'class' => 'fa ' . $previewlabelicon . ' local-course-banner-builder-slideshow-label-icon',
-                        'aria-hidden' => 'true',
-                    ]) .
+                    $previewlabelicon .
                     html_writer::span(get_string($previewlabelkey, 'local_course_banner_builder')),
                     'local-course-banner-builder-slideshow-label local-course-banner-builder-slideshow-label--' .
                         $previewlabelclass
@@ -2103,11 +2108,12 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
             'local-course-banner-builder-slideshow-label-color-heading--sample'
     );
     $controls .= html_writer::end_div();
-    $sampleicons = [
-        'forums' => 'fa-comments',
-        'siteannouncements' => 'fa-bullhorn',
-        'assignments' => 'fa-tasks',
-        'quizzes' => 'fa-question-circle',
+    $sampleiconcomponents = [
+        // Site announcements are forum posts, so their Moodle identity is the Forum monologo.
+        'forums' => 'mod_forum',
+        'siteannouncements' => 'mod_forum',
+        'assignments' => 'mod_assign',
+        'quizzes' => 'mod_quiz',
     ];
     foreach ($labeldefaults as $type => $defaults) {
         $colors = $labelcolors[$type] ?? $defaults;
@@ -2138,9 +2144,11 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
         $controls .= $labelcolourfield($type, 'shadow', get_string('slideshowlabelsshadowcolor', 'local_course_banner_builder'),
             $colors, $defaults);
         $samplecontent = '';
-        if (!empty($sampleicons[$type])) {
-            $samplecontent .= html_writer::tag('i', '', [
-                'class' => 'fa ' . $sampleicons[$type] . ' local-course-banner-builder-slideshow-label-icon',
+        if (!empty($sampleiconcomponents[$type])) {
+            $samplecontent .= html_writer::empty_tag('img', [
+                'class' => 'icon activityicon local-course-banner-builder-slideshow-label-icon',
+                'src' => $OUTPUT->image_url('monologo', $sampleiconcomponents[$type]),
+                'alt' => '',
                 'aria-hidden' => 'true',
             ]);
         }
