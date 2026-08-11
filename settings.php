@@ -24,6 +24,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+if (optional_param('section', '', PARAM_ALPHANUMEXT) === 'local_course_banner_builder_settings') {
+    $PAGE->requires->css('/local/course_banner_builder/styles.css');
+}
+
 if ($hassiteconfig || has_capability('local/course_banner_builder:manage', context_system::instance())) {
     $ADMIN->add('localplugins', new admin_category(
         'local_course_banner_builder',
@@ -35,6 +39,29 @@ if ($hassiteconfig || has_capability('local/course_banner_builder:manage', conte
         get_string('settings', 'local_course_banner_builder'),
         'local/course_banner_builder:manage'
     );
+
+    $settings->add(new admin_setting_heading(
+        'local_course_banner_builder/settingslayout',
+        '',
+        \html_writer::div(
+            \html_writer::tag('span', '', [
+                'class' => 'fa fa-sliders local-course-banner-builder-settings-hero-icon',
+                'aria-hidden' => 'true',
+            ]) . \html_writer::div(
+                \html_writer::tag(
+                    'span',
+                    get_string('settings', 'local_course_banner_builder'),
+                    ['class' => 'local-course-banner-builder-settings-hero-eyebrow']
+                ) . \html_writer::tag(
+                    'h2',
+                    get_string('pluginname', 'local_course_banner_builder'),
+                    ['class' => 'local-course-banner-builder-settings-hero-title']
+                ),
+                'local-course-banner-builder-settings-hero-copy'
+            ),
+            'local-course-banner-builder-settings-hero'
+        )
+    ));
 
     if (\local_course_banner_builder\manager::theme_seems_to_provide_course_banner()) {
         $settings->add(new admin_setting_heading(
@@ -77,7 +104,7 @@ if ($hassiteconfig || has_capability('local/course_banner_builder:manage', conte
                 get_string('deleteallpluginsettings', 'local_course_banner_builder'),
                 ['class' => 'btn btn-danger']
             ),
-            'alert alert-warning mb-0'
+            'alert alert-warning mb-0 local-course-banner-builder-settings-reset'
         )
     ));
     $ADMIN->add('local_course_banner_builder', $settings);
