@@ -12,6 +12,9 @@ many small sections.
 
 #### Fixed
 
+- Aligned the Slideshow administration preview label with the public Moodle
+  native Forum monologo, including the shared activity-icon dimensions.
+
 - Restored the single framed desktop navigation rail shared with EasyStud.
   CCB destinations now use plain glyphs and labels inside that rail, without
   individual icon capsules; the compact panel remains unchanged.
