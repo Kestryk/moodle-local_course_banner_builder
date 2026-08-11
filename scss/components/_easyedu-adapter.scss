@@ -287,12 +287,15 @@
             align-items: flex-start;
             display: flex;
             gap: 0.55rem;
+            padding-left: 0;
         }
 
         input[type="checkbox"] {
             accent-color: var(--easyedu-primary);
             flex: 0 0 auto;
+            margin-left: 0;
             margin-top: 0.2rem;
+            position: static;
         }
 
         label {
@@ -351,12 +354,15 @@
                 display: flex;
                 gap: 0.55rem;
                 min-width: 0;
+                padding-left: 0;
             }
 
             input[type="checkbox"] {
                 accent-color: var(--easyedu-accent);
                 flex: 0 0 auto;
+                margin-left: 0;
                 margin-top: 0.18rem;
+                position: static;
             }
 
             label {
@@ -372,6 +378,10 @@
             border: 1px solid color-mix(in srgb, var(--easyedu-danger) 28%, var(--easyedu-card-border) 72%);
             border-radius: var(--easyedu-control-radius);
             background: color-mix(in srgb, var(--easyedu-danger) 5%, var(--easyedu-surface) 95%);
+
+            .form-check {
+                align-items: center;
+            }
 
             label {
                 color: color-mix(in srgb, var(--easyedu-danger) 72%, var(--easyedu-text) 28%);
@@ -404,6 +414,14 @@
 
             > .col-md-9 {
                 padding: 0;
+            }
+
+            .filepicker {
+                margin-top: 0.45rem;
+            }
+
+            .fp-btn-add {
+                margin-top: 0.35rem;
             }
         }
 

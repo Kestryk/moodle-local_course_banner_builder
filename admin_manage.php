@@ -1858,7 +1858,6 @@ $updatecoursecustomoverviewimages = optional_param('updatecoursecustomoverviewim
 $forcecourseoverviewreplacement = optional_param('forcecourseoverviewreplacement', 0, PARAM_BOOL);
 $updatebannertitlesettings = optional_param('updatebannertitlesettings', 0, PARAM_BOOL);
 $savebannerformat = optional_param('savebannerformat', 0, PARAM_BOOL);
-$deleteallpluginsettings = optional_param('deleteallpluginsettings', 0, PARAM_BOOL);
 
 $issitebanneradmin = defined('LOCAL_COURSE_BANNER_BUILDER_SITE_ADMIN') && LOCAL_COURSE_BANNER_BUILDER_SITE_ADMIN;
 $adminpageid = $issitebanneradmin ? 'local_course_banner_builder_site' : 'local_course_banner_builder_manage';
@@ -2148,11 +2147,6 @@ $PAGE->navbar->add($adminpagetitle, new moodle_url($adminpagepath));
 
 if ($selectedsource) {
     $PAGE->navbar->add($selectedsource->label, $url);
-}
-
-if ($deleteallpluginsettings && confirm_sesskey()) {
-    \local_course_banner_builder\manager::delete_all_plugin_configuration();
-    redirect(new moodle_url($adminpagepath), get_string('allpluginsettingsdeleted', 'local_course_banner_builder'));
 }
 
 if ($deletealllayersajax && confirm_sesskey() && $selectedsource) {
@@ -2942,36 +2936,6 @@ local_course_banner_builder_render_banner_format_modal(
     \local_course_banner_builder\manager::get_site_banner_format(),
     \local_course_banner_builder\manager::SLIDESHOW_CONTEXT_SITE
 );
-$deletepluginsettingsform = static function (string $action): string {
-    return html_writer::tag(
-        'form',
-        html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]) .
-        html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'deleteallpluginsettings', 'value' => 1]) .
-        html_writer::tag(
-            'button',
-            html_writer::tag('i', '', ['class' => 'fa fa-trash-can', 'aria-hidden' => 'true']),
-            [
-                'type' => 'submit',
-                'aria-label' => get_string('deleteallpluginsettings', 'local_course_banner_builder'),
-                'class' => 'btn btn-outline-danger local-course-banner-builder-dashed-action local-course-banner-builder-admin-reset-button',
-                'data-modal' => 'confirmation',
-                'data-modal-title' => get_string('confirm', 'moodle'),
-                'data-modal-content' => get_string('deleteallpluginsettingsconfirm', 'local_course_banner_builder'),
-                'data-modal-yes-button' => get_string('delete', 'moodle'),
-                'data-easyedu-warning-popover' => get_string(
-                    'deleteallpluginsettingsconfirm',
-                    'local_course_banner_builder'
-                ),
-                'data-easyedu-warning-popover-placement' => 'bottom',
-            ]
-        ),
-        [
-            'method' => 'post',
-            'action' => $action,
-            'class' => 'd-inline local-course-banner-builder-admin-reset-form',
-        ]
-    );
-};
 $guidecategoryactions = get_string('guidecategoryactions', 'local_course_banner_builder');
 $guidecategorybasics = get_string('guidecategorybasics', 'local_course_banner_builder');
 $guidecategorypractice = get_string('guidecategorypractice', 'local_course_banner_builder');
@@ -3404,10 +3368,6 @@ $navigationcontext = \local_course_banner_builder\output\navigation::context(
     $guidehtml
 );
 echo $OUTPUT->render_from_template('local_course_banner_builder/easyedu_navigation', $navigationcontext);
-echo html_writer::div(
-    $deletepluginsettingsform((new moodle_url($adminpagepath))->out(false)),
-    'local-course-banner-builder-admin-utilities mb-3'
-);
 $statuspopoverattributes = static function (string $label): array {
     return [
         'data-action' => 'local-course-banner-builder-submit-setting',

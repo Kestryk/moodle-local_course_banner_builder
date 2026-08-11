@@ -12,6 +12,13 @@ many small sections.
 
 #### Fixed
 
+- Moved the global Course Banner Builder configuration reset out of Course,
+  Site, Slideshow and Transfer pages into the general plugin settings, where a
+  Moodle confirmation, capability and sesskey gate the existing destructive
+  operation.
+- Made Transfer use theme checkbox classes in both columns, aligned checkbox
+  controls, visually distinguished the destructive import option and added
+  breathing room around the ZIP file selector.
 - Replaced the Slideshow administration's static Font Awesome label samples
   with the same native Moodle Forum, Assignment and Quiz monologos used by
   the public banner. Site announcements intentionally reuse the Forum

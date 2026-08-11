@@ -60,11 +60,6 @@ $PAGE->requires->js_call_amd('local_course_banner_builder/easyedu_navigation_gui
 
 $importform = new \local_course_banner_builder\form\import_configuration_form($url);
 
-if (optional_param('deleteallpluginsettings', 0, PARAM_BOOL) && confirm_sesskey()) {
-    \local_course_banner_builder\manager::delete_all_plugin_configuration();
-    redirect($url, get_string('allpluginsettingsdeleted', 'local_course_banner_builder'));
-}
-
 if ($action === 'export' && confirm_sesskey()) {
     $archivepath = \local_course_banner_builder\manager::create_configuration_export_zip($exportsections, [
         \local_course_banner_builder\manager::EXPORT_OPTION_INCLUDE_CATEGORIES => (bool)$exportincludecategories,
@@ -110,37 +105,6 @@ echo $OUTPUT->header();
 echo html_writer::start_div('local-course-banner-builder-admin local-course-banner-builder-admin--native');
 $navigationcontext = \local_course_banner_builder\output\navigation::context('transfer');
 echo $OUTPUT->render_from_template('local_course_banner_builder/easyedu_navigation', $navigationcontext);
-echo html_writer::div(
-    html_writer::tag(
-        'form',
-        html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]) .
-        html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'deleteallpluginsettings', 'value' => 1]) .
-        html_writer::tag(
-            'button',
-            html_writer::tag('i', '', ['class' => 'fa fa-trash-can', 'aria-hidden' => 'true']),
-            [
-                'type' => 'submit',
-                'aria-label' => get_string('deleteallpluginsettings', 'local_course_banner_builder'),
-                'class' => 'btn btn-outline-danger local-course-banner-builder-dashed-action local-course-banner-builder-admin-reset-button',
-                'data-modal' => 'confirmation',
-                'data-modal-title' => get_string('confirm', 'moodle'),
-                'data-modal-content' => get_string('deleteallpluginsettingsconfirm', 'local_course_banner_builder'),
-                'data-modal-yes-button' => get_string('delete', 'moodle'),
-                'data-easyedu-warning-popover' => get_string(
-                    'deleteallpluginsettingsconfirm',
-                    'local_course_banner_builder'
-                ),
-                'data-easyedu-warning-popover-placement' => 'bottom',
-            ]
-        ),
-        [
-            'method' => 'post',
-            'action' => $url->out(false),
-            'class' => 'd-inline local-course-banner-builder-admin-reset-form',
-        ]
-    ),
-    'local-course-banner-builder-admin-utilities mb-3'
-);
 echo html_writer::tag(
     'p',
     get_string('exportconfigdesc', 'local_course_banner_builder'),
@@ -165,7 +129,14 @@ echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'exportsecti
 echo html_writer::start_div('local-course-banner-builder-transfer-option-list');
 foreach (\local_course_banner_builder\manager::get_export_section_options() as $section => $label) {
     echo html_writer::div(
-        html_writer::checkbox('exportsections[]', $section, true, $label),
+        html_writer::checkbox(
+            'exportsections[]',
+            $section,
+            true,
+            $label,
+            ['class' => 'form-check-input'],
+            ['class' => 'form-check-label']
+        ),
         'form-check mb-2'
     );
 }
@@ -174,7 +145,9 @@ echo html_writer::div(
         'exportincludecategories',
         1,
         (bool)$exportincludecategories,
-        get_string('exportincludecategories', 'local_course_banner_builder')
+        get_string('exportincludecategories', 'local_course_banner_builder'),
+        ['class' => 'form-check-input'],
+        ['class' => 'form-check-label']
     ),
     'form-check mb-2'
 );
@@ -183,7 +156,9 @@ echo html_writer::div(
         'exportincludecustomfields',
         1,
         (bool)$exportincludecustomfields,
-        get_string('exportincludecustomfields', 'local_course_banner_builder')
+        get_string('exportincludecustomfields', 'local_course_banner_builder'),
+        ['class' => 'form-check-input'],
+        ['class' => 'form-check-label']
     ),
     'form-check mb-2'
 );
