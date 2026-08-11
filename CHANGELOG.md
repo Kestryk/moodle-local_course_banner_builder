@@ -19,6 +19,9 @@ many small sections.
 - Made Transfer use theme checkbox classes in both columns, aligned checkbox
   controls, visually distinguished the destructive import option and added
   breathing room around the ZIP file selector.
+- Restyled the general Course Banner Builder settings with the embedded Kit's
+  compact identity, setting panels, multi-select treatment and destructive
+  action surface without changing Moodle setting behaviour.
 - Replaced the Slideshow administration's static Font Awesome label samples
   with the same native Moodle Forum, Assignment and Quiz monologos used by
   the public banner. Site announcements intentionally reuse the Forum

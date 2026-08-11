@@ -605,6 +605,19 @@ Captured after the source patch and CSS rebuild (2026-07-28):
 
 The pre-patch `styles.css` checkpoint was `79A7D498794FCAEC74DE575B9E47FA4596AB5F873E7C577F5C597AC1BF6516B7`; that difference predates this step's source edit and is now superseded by the intentional rebuild.
 
+## Lot Settings - general CCB settings
+
+- Keep Moodle `admin_setting_*` components, their capability gates, persistence,
+  existing values and validation messages intact.
+- Give the page a CCB shell aligned with the embedded Kit: compact identity,
+  setting panels, readable multi-select control and an explicitly semantic
+  destructive action surface.
+- Load CCB CSS only for the CCB settings section so other Moodle administration
+  pages retain their native styling.
+- Validate normal, focus and forced-value states, multi-select behaviour and
+  the deletion confirmation at desktop and mobile widths when a targeted
+  lease-protected browser scenario is registered and authorised.
+
 ## Why this plan exists
 
 The next UI work must be repeatable instead of making one-off placement

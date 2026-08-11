@@ -12604,7 +12604,11 @@ span[data-flexitour=container].orphan .modal-dialog {
 .local-course-banner-builder-modal,
 .local-course-banner-builder-layer-modal-content,
 .local-course-banner-builder-slideshow-preview-modal,
-.local-course-banner-builder-title-settings-modal {
+.local-course-banner-builder-title-settings-modal,
+.local-course-banner-builder-settings-hero,
+#admin-enabled,
+#admin-enabledcustomfields,
+.local-course-banner-builder-settings-reset {
   --easyedu-gap: 1rem;
   --easyedu-navigation-following-gap: 2.5rem;
   --easyedu-navigation-panel-width: 88vw;
@@ -12798,7 +12802,15 @@ span[data-flexitour=container].orphan .modal-dialog {
 .local-course-banner-builder-slideshow-preview-modal[data-easyedu-motion-policy=disabled],
 .local-course-banner-builder-slideshow-preview-modal.is-easyedu-motion-off,
 .local-course-banner-builder-title-settings-modal[data-easyedu-motion-policy=disabled],
-.local-course-banner-builder-title-settings-modal.is-easyedu-motion-off {
+.local-course-banner-builder-title-settings-modal.is-easyedu-motion-off,
+.local-course-banner-builder-settings-hero[data-easyedu-motion-policy=disabled],
+.local-course-banner-builder-settings-hero.is-easyedu-motion-off,
+#admin-enabled[data-easyedu-motion-policy=disabled],
+#admin-enabled.is-easyedu-motion-off,
+#admin-enabledcustomfields[data-easyedu-motion-policy=disabled],
+#admin-enabledcustomfields.is-easyedu-motion-off,
+.local-course-banner-builder-settings-reset[data-easyedu-motion-policy=disabled],
+.local-course-banner-builder-settings-reset.is-easyedu-motion-off {
   scroll-behavior: auto !important;
 }
 .local-course-banner-builder-admin[data-easyedu-motion-policy=disabled] *,
@@ -12829,7 +12841,31 @@ span[data-flexitour=container].orphan .modal-dialog {
 .local-course-banner-builder-title-settings-modal[data-easyedu-motion-policy=disabled] *::after,
 .local-course-banner-builder-title-settings-modal.is-easyedu-motion-off *,
 .local-course-banner-builder-title-settings-modal.is-easyedu-motion-off *::before,
-.local-course-banner-builder-title-settings-modal.is-easyedu-motion-off *::after {
+.local-course-banner-builder-title-settings-modal.is-easyedu-motion-off *::after,
+.local-course-banner-builder-settings-hero[data-easyedu-motion-policy=disabled] *,
+.local-course-banner-builder-settings-hero[data-easyedu-motion-policy=disabled] *::before,
+.local-course-banner-builder-settings-hero[data-easyedu-motion-policy=disabled] *::after,
+.local-course-banner-builder-settings-hero.is-easyedu-motion-off *,
+.local-course-banner-builder-settings-hero.is-easyedu-motion-off *::before,
+.local-course-banner-builder-settings-hero.is-easyedu-motion-off *::after,
+#admin-enabled[data-easyedu-motion-policy=disabled] *,
+#admin-enabled[data-easyedu-motion-policy=disabled] *::before,
+#admin-enabled[data-easyedu-motion-policy=disabled] *::after,
+#admin-enabled.is-easyedu-motion-off *,
+#admin-enabled.is-easyedu-motion-off *::before,
+#admin-enabled.is-easyedu-motion-off *::after,
+#admin-enabledcustomfields[data-easyedu-motion-policy=disabled] *,
+#admin-enabledcustomfields[data-easyedu-motion-policy=disabled] *::before,
+#admin-enabledcustomfields[data-easyedu-motion-policy=disabled] *::after,
+#admin-enabledcustomfields.is-easyedu-motion-off *,
+#admin-enabledcustomfields.is-easyedu-motion-off *::before,
+#admin-enabledcustomfields.is-easyedu-motion-off *::after,
+.local-course-banner-builder-settings-reset[data-easyedu-motion-policy=disabled] *,
+.local-course-banner-builder-settings-reset[data-easyedu-motion-policy=disabled] *::before,
+.local-course-banner-builder-settings-reset[data-easyedu-motion-policy=disabled] *::after,
+.local-course-banner-builder-settings-reset.is-easyedu-motion-off *,
+.local-course-banner-builder-settings-reset.is-easyedu-motion-off *::before,
+.local-course-banner-builder-settings-reset.is-easyedu-motion-off *::after {
   animation-delay: 0s !important;
   animation-duration: 0.001ms !important;
   animation-iteration-count: 1 !important;
@@ -12842,7 +12878,11 @@ span[data-flexitour=container].orphan .modal-dialog {
   .local-course-banner-builder-modal,
   .local-course-banner-builder-layer-modal-content,
   .local-course-banner-builder-slideshow-preview-modal,
-  .local-course-banner-builder-title-settings-modal {
+  .local-course-banner-builder-title-settings-modal,
+  .local-course-banner-builder-settings-hero,
+  #admin-enabled,
+  #admin-enabledcustomfields,
+  .local-course-banner-builder-settings-reset {
     scroll-behavior: auto !important;
   }
   .local-course-banner-builder-admin *,
@@ -12859,7 +12899,19 @@ span[data-flexitour=container].orphan .modal-dialog {
   .local-course-banner-builder-slideshow-preview-modal *::after,
   .local-course-banner-builder-title-settings-modal *,
   .local-course-banner-builder-title-settings-modal *::before,
-  .local-course-banner-builder-title-settings-modal *::after {
+  .local-course-banner-builder-title-settings-modal *::after,
+  .local-course-banner-builder-settings-hero *,
+  .local-course-banner-builder-settings-hero *::before,
+  .local-course-banner-builder-settings-hero *::after,
+  #admin-enabled *,
+  #admin-enabled *::before,
+  #admin-enabled *::after,
+  #admin-enabledcustomfields *,
+  #admin-enabledcustomfields *::before,
+  #admin-enabledcustomfields *::after,
+  .local-course-banner-builder-settings-reset *,
+  .local-course-banner-builder-settings-reset *::before,
+  .local-course-banner-builder-settings-reset *::after {
     animation-delay: 0s !important;
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
@@ -12867,6 +12919,167 @@ span[data-flexitour=container].orphan .modal-dialog {
     transition-delay: 0s !important;
     transition-duration: 0.001ms !important;
   }
+}
+
+.formsettingheading:has(.local-course-banner-builder-settings-hero) {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+.local-course-banner-builder-settings-hero {
+  align-items: center;
+  display: flex;
+  gap: 0.9rem;
+  max-width: 66rem;
+  margin: 0 0 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--easyedu-card-border);
+  border-radius: var(--easyedu-card-radius);
+  background: var(--easyedu-surface);
+  box-shadow: 0 0.14rem 0.38rem rgba(31, 42, 55, 0.04);
+}
+
+.local-course-banner-builder-settings-hero-icon {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 2.5rem;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--easyedu-control-radius);
+  background: var(--easyedu-primary-soft);
+  color: var(--easyedu-primary-strong);
+  font-size: 1.05rem;
+}
+
+.local-course-banner-builder-settings-hero-eyebrow {
+  font-family: var(--easyedu-font-family-ui);
+  font-weight: var(--easyedu-font-weight-regular);
+  letter-spacing: 0;
+  color: var(--easyedu-text-muted);
+  font-size: var(--easyedu-font-size-eyebrow);
+  font-weight: var(--easyedu-font-weight-strong);
+  line-height: 1.3;
+  text-transform: uppercase;
+  color: var(--easyedu-primary-strong);
+}
+
+.local-course-banner-builder-settings-hero-title {
+  font-family: var(--easyedu-font-family-ui);
+  font-weight: var(--easyedu-font-weight-regular);
+  letter-spacing: 0;
+  color: var(--easyedu-text);
+  font-size: var(--easyedu-font-size-section-title);
+  font-weight: var(--easyedu-font-weight-semibold);
+  line-height: var(--easyedu-line-height-title);
+  margin: 0.14rem 0 0;
+}
+
+#admin-enabled,
+#admin-enabledcustomfields {
+  max-width: 66rem;
+  margin: 0 0 0.8rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--easyedu-card-border);
+  border-radius: var(--easyedu-card-radius);
+  background: var(--easyedu-surface);
+  box-shadow: 0 0.1rem 0.3rem rgba(31, 42, 55, 0.035);
+}
+#admin-enabled .form-label,
+#admin-enabledcustomfields .form-label {
+  padding-top: 0;
+  text-align: left !important;
+}
+#admin-enabled .form-label label,
+#admin-enabledcustomfields .form-label label {
+  font-family: var(--easyedu-font-family-ui);
+  font-weight: var(--easyedu-font-weight-regular);
+  letter-spacing: 0;
+  color: var(--easyedu-text);
+  font-size: var(--easyedu-font-size-control);
+  font-weight: var(--easyedu-font-weight-semibold);
+  line-height: 1.35;
+}
+#admin-enabled .form-label .form-shortname,
+#admin-enabledcustomfields .form-label .form-shortname {
+  display: none !important;
+}
+#admin-enabled .form-setting,
+#admin-enabledcustomfields .form-setting {
+  min-width: 0;
+}
+#admin-enabled .form-text,
+#admin-enabledcustomfields .form-text {
+  font-family: var(--easyedu-font-family-ui);
+  font-weight: var(--easyedu-font-weight-regular);
+  letter-spacing: 0;
+  color: var(--easyedu-text);
+  font-size: var(--easyedu-font-size-body);
+  line-height: var(--easyedu-line-height-body);
+  color: var(--easyedu-text-muted);
+}
+
+#admin-enabled .form-checkbox input[type=checkbox] {
+  width: 1.15rem;
+  height: 1.15rem;
+  margin: 0;
+  accent-color: var(--easyedu-primary);
+}
+
+#admin-enabledcustomfields select {
+  background: var(--easyedu-surface);
+  border: 1px solid var(--easyedu-control-border);
+  border-radius: var(--easyedu-control-radius);
+  box-shadow: none;
+  color: var(--easyedu-text);
+  max-width: 100%;
+  transition: border-color var(--easyedu-motion-fast) ease, box-shadow var(--easyedu-motion-fast) ease;
+  font-size: 0.98rem;
+  min-height: 2.85rem;
+  padding: 0.5rem 0.78rem;
+  display: block;
+  overflow: auto;
+  min-height: 13rem;
+  padding: 0.45rem;
+  width: min(100%, 42rem);
+}
+#admin-enabledcustomfields select:focus, #admin-enabledcustomfields select:focus-visible {
+  border-color: var(--easyedu-control-focus-border);
+  box-shadow: 0 0 0 var(--easyedu-focus-ring-width) var(--easyedu-focus-ring);
+  outline: var(--easyedu-focus-outline-width) solid transparent;
+  outline-offset: var(--easyedu-focus-outline-offset);
+}
+#admin-enabledcustomfields select:disabled, #admin-enabledcustomfields select[aria-disabled=true] {
+  background: var(--easyedu-surface-soft);
+  color: var(--easyedu-text-muted);
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+#admin-enabledcustomfields select option {
+  border-radius: 0.42rem;
+  margin: 0.08rem 0;
+  padding: 0.34rem 0.42rem;
+}
+#admin-enabledcustomfields select option:checked {
+  background: linear-gradient(180deg, var(--easyedu-primary-soft), var(--easyedu-primary-soft));
+  color: var(--easyedu-primary-strong);
+  font-weight: 700;
+}
+
+.local-course-banner-builder-settings-reset {
+  max-width: 66rem;
+  margin: 1rem 0 0;
+  padding: 0.95rem 1rem;
+  border-color: color-mix(in srgb, var(--easyedu-danger) 30%, var(--easyedu-card-border) 70%);
+  background: color-mix(in srgb, var(--easyedu-danger) 5%, var(--easyedu-surface) 95%);
+  color: var(--easyedu-text);
+}
+.local-course-banner-builder-settings-reset .btn-danger {
+  min-height: 2.35rem;
+  border-radius: var(--easyedu-control-radius);
+  font-weight: 700;
 }
 
 .local-course-banner-builder-admin--native .easyedu-navigation {
@@ -14576,6 +14789,7 @@ span[data-flexitour=container].orphan .modal-dialog {
   margin-top: 0.45rem;
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-transfer-panel .mform #fitem_id_configarchive .fp-btn-add {
+  margin-bottom: 0.75rem;
   margin-top: 0.35rem;
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-transfer-panel .mform #fitem_id_submitbutton {
