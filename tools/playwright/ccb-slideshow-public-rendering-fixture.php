@@ -154,6 +154,8 @@ function local_course_banner_builder_slideshow_public_fixture_parity_profile(): 
         \local_course_banner_builder\manager::SLIDESHOW_CONTEXT_COURSE
     );
     $profile = $saved;
+    // The manager returns its canonical opacity as a fraction, while its write API accepts a percent.
+    $profile['overlayopacity'] = (float)$saved['overlayopacity'] * 100;
     $forced = [
         'enabled' => 1,
         'forums' => 1,

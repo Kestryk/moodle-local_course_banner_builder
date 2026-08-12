@@ -143,11 +143,14 @@ localhost preview has been run for this parity gate yet.
 
 The initial Moodle 5.1 run at 100 percent selected exactly one scenario and
 completed its course, Forum, enrolment, configuration and external-profile
-cleanup. It also isolated a parity defect for follow-up: the saved Course
-overlay opacity was `0.38`, while the editor preview emitted its overlay CSS
-variable as `0.00`. The public capture therefore remains useful as the saved
-Course configuration evidence, but the administrator preview must not yet be
-accepted as an exact visual representation of that setting.
+cleanup. It isolated a fixture conversion error rather than a product defect:
+the manager returns the saved overlay opacity as a fraction (`0.38`), while
+its write API accepts a percent. Parity setup now converts that one value to
+the manager input convention before it writes the disposable configuration.
+The scenario records and asserts the primary opacity input, its side-panel
+proxy and the preview CSS variable against the saved value. A subsequent
+lease-authorized execution is required before replacing the earlier `0.00`
+evidence.
 
 The runner performs discovery first, requires exactly one selected test and
 acquires `moodle51-active-fixture-write` before it creates the fixture. It

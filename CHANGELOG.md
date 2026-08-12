@@ -19,9 +19,11 @@ many small sections.
 - Prepared a focused Course Slideshow admin/public parity gate. It preserves
   the saved visual Course configuration while forcing only disposable Forum
   fixture prerequisites, records both configuration states and creates settled
-  CDP evidence for the editor preview and real public slide. Its first Moodle
-  5.1 run passed cleanup and isolated an editor-preview overlay-opacity parity
-  defect for a separate product correction.
+  CDP evidence for the editor preview and real public slide. The fixture now
+  converts the canonical saved overlay fraction to the manager write API's
+  percent value, and the scenario asserts both editor controls and the preview
+  CSS value so a fixture-only `0.00` overlay cannot be misdiagnosed as a
+  product rendering defect.
 
 ### 2026-08-10
 

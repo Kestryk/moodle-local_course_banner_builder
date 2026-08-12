@@ -174,6 +174,12 @@ const waitForSettledModal = async(modal) => {
 
 const previewEvidence = async(preview) => preview.evaluate(node => {
     const bounds = node.getBoundingClientRect();
+    const panel = node.closest('[data-slideshow-overlay-settings="1"]');
+    const controlEvidence = selector => Array.from(panel ? panel.querySelectorAll(selector) : []).map(control => ({
+        name: control.name || '',
+        value: control.value || '',
+        visible: !!(control.offsetWidth || control.offsetHeight || control.getClientRects().length),
+    }));
     const sample = (name, selector) => {
         const element = node.querySelector(selector);
         if (!element) {
@@ -198,6 +204,10 @@ const previewEvidence = async(preview) => preview.evaluate(node => {
     return {
         width: bounds.width,
         height: bounds.height,
+        overlayControls: {
+            primary: controlEvidence('[data-slideshow-overlay-opacity="1"]'),
+            sideProxy: controlEvidence('[data-slideshow-side-proxy-for="overlayopacity"]'),
+        },
         styleVariables: Array.from(node.style)
             .filter(name => name.startsWith('--local-course-banner-builder-slideshow-'))
             .reduce((values, name) => ({...values, [name]: node.style.getPropertyValue(name)}), {}),
@@ -339,6 +349,16 @@ test('CCB Slideshow public Course fixture renders a real forum announcement at t
                 forcedRuntimeValues: env.parityConfig.forcedRuntimeValues,
                 adminPreview: await previewEvidence(preview),
             };
+            const expectedOpacityPercent = String(Math.round(
+                Number(env.parityConfig.savedCourseConfig.overlayopacity) * 100
+            ));
+            expect(parityEvidence.adminPreview.overlayControls.primary).toHaveLength(1);
+            expect(parityEvidence.adminPreview.overlayControls.sideProxy).toHaveLength(1);
+            expect(parityEvidence.adminPreview.overlayControls.primary[0].value).toBe(expectedOpacityPercent);
+            expect(parityEvidence.adminPreview.overlayControls.sideProxy[0].value).toBe(expectedOpacityPercent);
+            expect(parityEvidence.adminPreview.styleVariables[
+                '--local-course-banner-builder-slideshow-overlay-opacity'
+            ]).toBe((Number(expectedOpacityPercent) / 100).toFixed(2));
             await captureCdp(page, context,
                 path.join(env.artifactRoot, 'slideshow-admin-course-parity-' + env.zoom + '.png'));
             await modal.locator('[data-bs-dismiss="modal"]').click();
