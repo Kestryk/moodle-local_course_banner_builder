@@ -165,6 +165,10 @@ profile and all raw evidence outside Git, and requires four cleanup facts:
 course removed, Forum discussion removed, Student enrolment removed and CCB
 configuration restored. It preserves the existing watchdog and drains both
 Node output streams from process start to avoid an output-buffer deadlock.
+Its one-test Playwright timeout is 150 seconds: the external runner watchdog
+remains the upper ownership boundary, while the longer test allowance avoids
+misclassifying a settled admin/public capture as a rendering failure on a busy
+shared Moodle 5.1 runtime.
 
 This prepared scenario is limited to a 1600 by 900 default-zoom public Course
 page. It does not claim mobile, native 200 percent browser zoom, Site

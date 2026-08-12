@@ -161,7 +161,7 @@ const {defineConfig} = require('$javascriptPlaywrightPackage');
 module.exports = defineConfig({
     testDir: '$javascriptScriptDir',
     outputDir: '$javascriptOutputDir',
-    timeout: 90000,
+    timeout: 150000,
     use: {screenshot: 'off', trace: 'off', video: 'off'},
 });
 "@

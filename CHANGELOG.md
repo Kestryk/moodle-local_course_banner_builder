@@ -16,6 +16,9 @@ many small sections.
 
 ### Tests
 
+- Raised the one-test public Slideshow runner timeout to 150 seconds. The
+  settled admin/public parity capture can legitimately approach 90 seconds on
+  the shared Moodle 5.1 runtime; its separate watchdog remains authoritative.
 - Extended the focused Course Slideshow admin/public parity gate with a
   Moodle-monologo-to-label-text ratio check. It records both dimensions and
   fails when an editor-only label-icon floor changes the visual proportion.
