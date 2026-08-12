@@ -105,6 +105,12 @@
                                         type="button"
                                         class="btn btn-outline-primary btn-sm easyedu-guide-slide__show"
                                         data-easyedu-guide-show-target="{{#targetselector}}{{targetselector}}{{/targetselector}}{{^targetselector}}{{target}}{{/targetselector}}"
+                                        {{#targetselectorcompact}}data-easyedu-guide-show-target-compact="{{targetselectorcompact}}"{{/targetselectorcompact}}
+                                        {{#targetselectordesktop}}data-easyedu-guide-show-target-desktop="{{targetselectordesktop}}"{{/targetselectordesktop}}
+                                        {{#showopen}}data-easyedu-guide-show-open="{{showopen}}"{{/showopen}}
+                                        {{#showopendelay}}data-easyedu-guide-show-open-delay="{{showopendelay}}"{{/showopendelay}}
+                                        {{#showafteropen}}data-easyedu-guide-show-after-open="{{showafteropen}}"{{/showafteropen}}
+                                        {{#showafteropendelay}}data-easyedu-guide-show-after-open-delay="{{showafteropendelay}}"{{/showafteropendelay}}
                                     >
                                         <span class="fa fa-location-arrow" aria-hidden="true"></span>
                                         <span>{{guideshowinterfacelabel}}</span>
@@ -351,7 +357,7 @@
         </div>
     </div>
 
-    <aside class="easyedu-guide-interface-return" data-easyedu-guide-interface-return hidden>
+    <aside class="easyedu-guide-interface-return" data-easyedu-guide-interface-return hidden role="region" aria-label="{{guidereturnlabel}}">
         <div class="easyedu-guide-interface-return__text">
             <strong>{{guidereturnlabel}}</strong>
             <span>{{guidereturndesc}}</span>
@@ -372,7 +378,7 @@
         </div>
     </aside>
 
-    <aside class="easyedu-guide-checklist easyedu-guided-panel" data-easyedu-guide-checklist hidden>
+    <aside class="easyedu-guide-checklist easyedu-guided-panel" data-easyedu-guide-checklist hidden role="region" aria-label="{{guidechecklisttitle}}">
         <div class="easyedu-guide-checklist__header easyedu-guided-panel__header">
             <div>
                 <strong data-easyedu-guide-checklist-title>{{guidechecklisttitle}}</strong>
@@ -392,9 +398,13 @@
             class="easyedu-guide-checklist__complete easyedu-guided-panel__message"
             data-easyedu-guide-checklist-message
             data-complete-message="{{guidechecklistdonelabel}}"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
         >
             <span class="fa fa-location-arrow" aria-hidden="true"></span>
-            <span>{{guidechecklistdonelabel}}</span>
+            <span data-easyedu-guide-checklist-message-text>{{guidechecklistdonelabel}}</span>
+            <span class="easyedu-guided-panel__message-compact" aria-hidden="true">{{guidechecklistdonecompact}}</span>
         </div>
         <div class="easyedu-guided-panel__footer">
             <button type="button" class="btn btn-outline-primary btn-sm easyedu-guided-panel__return" data-easyedu-guide-checklist-return="1">
