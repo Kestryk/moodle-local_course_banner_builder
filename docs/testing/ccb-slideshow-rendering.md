@@ -83,6 +83,12 @@ preview edge, it applies a temporary pixel offset to the administration
 preview only. The saved `labelx` value and public Slideshow CSS remain the
 authority, so this does not silently rewrite a banner's configured position.
 
+The administration preview uses the same Moodle monologo-to-text proportion
+as the public Slideshow label. It must not impose an editor-only icon size
+floor, because that would make a label icon visually larger than its matching
+public Course banner when the preview canvas is smaller. The colour-reference
+samples remain an administration aid and are not a public rendering contract.
+
 At the 390 px mobile viewport, the matrix requires a preview at least 200 px
 high, label text at least 12 px, title text at least 16 px, and body/action
 text at least 13 px. At the tablet and mobile viewports, the preview action is
