@@ -22,6 +22,10 @@ many small sections.
 - Restyled the general Course Banner Builder settings with the embedded Kit's
   compact identity, setting panels, multi-select treatment and destructive
   action surface without changing Moodle setting behaviour.
+- Restored proportional Moodle activity icons in the large Slideshow editor
+  preview. The Course Forum label now keeps the same icon-to-text scale as the
+  corresponding public Course banner; the label-colour reference samples are
+  intentionally unaffected.
 - Replaced the Slideshow administration's static Font Awesome label samples
   with the same native Moodle Forum, Assignment and Quiz monologos used by
   the public banner. Site announcements intentionally reuse the Forum
