@@ -239,16 +239,9 @@
     pointer-events: auto;
 }
 
-// The label text scales with the selected banner format. Keep its native
-// Moodle monologo visually comparable to the fixed label-colour sample below
-// the preview without changing public-banner dimensions.
-.local-course-banner-builder-slideshow-admin-preview--large
-    .local-course-banner-builder-slideshow-label-icon {
-    width: max(1.16em, 1rem) !important;
-    height: max(1.16em, 1rem) !important;
-    max-width: none;
-    max-height: none;
-}
+// The editor preview shares the public label typography. Do not impose an
+// editor-only icon floor: it would distort the Moodle monologo against its
+// label text when the preview is scaled below the public banner.
 
 .local-course-banner-builder-slideshow-admin-preview-content [data-slideshow-preview-draggable] {
     cursor: move;

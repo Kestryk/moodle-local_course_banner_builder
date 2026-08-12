@@ -6962,13 +6962,6 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
   pointer-events: auto;
 }
 
-.local-course-banner-builder-slideshow-admin-preview--large .local-course-banner-builder-slideshow-label-icon {
-  width: max(1.16em, 1rem) !important;
-  height: max(1.16em, 1rem) !important;
-  max-width: none;
-  max-height: none;
-}
-
 .local-course-banner-builder-slideshow-admin-preview-content [data-slideshow-preview-draggable] {
   cursor: move;
   pointer-events: auto;
