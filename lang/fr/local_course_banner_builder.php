@@ -290,6 +290,7 @@ $string['guidecategorybasics'] = 'Bases';
 $string['guidecategorypractice'] = 'Pratique';
 $string['guidecategorysettings'] = 'Réglages';
 $string['guidechecklistdone'] = 'Tout est prêt. Revenez au guide quand vous voulez revoir un autre sujet.';
+$string['guidechecklistdonecompact'] = 'Tout est prêt';
 $string['guidechecklisttitle'] = 'Parcours guidé';
 $string['guidecompletestepfirst'] = 'Terminer l\'étape : {$a}';
 $string['guidecloselabel'] = 'Fermer';

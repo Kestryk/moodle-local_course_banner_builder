@@ -8,6 +8,16 @@ many small sections.
 
 ## Unreleased
 
+### Guide CCB advanced - 2026-08-12
+
+#### Fixed
+
+- Preserve CCB's conditional Guide contracts while adding responsive target
+  selection and ordered `showopen` / `showafteropen` disclosure actions.
+- Keep the Guide dialog above the compact Navigation panel and retain its
+  safe-area padding without replacing CCB's advanced checklist, highlight or
+  persistence behavior.
+
 ### 2026-08-11
 
 #### Fixed

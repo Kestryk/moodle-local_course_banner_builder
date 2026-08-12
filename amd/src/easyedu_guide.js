@@ -256,6 +256,23 @@ const resolveTarget = (config, keyOrSelector) => {
   }
 };
 
+const getShowTarget = (config, button) => {
+  const compact = window.matchMedia && window.matchMedia('(max-width: 64rem)').matches;
+  const responsiveTarget = button.getAttribute(
+    compact ? 'data-easyedu-guide-show-target-compact' : 'data-easyedu-guide-show-target-desktop'
+  );
+  return resolveTarget(config, responsiveTarget || button.getAttribute('data-easyedu-guide-show-target'));
+};
+
+const triggerGuideOpen = (config, targetKey) => {
+  const control = resolveTarget(config, targetKey);
+  if (!control || control.getAttribute('aria-expanded') === 'true' ||
+      control.getAttribute('aria-pressed') === 'true') {
+    return;
+  }
+  control.click();
+};
+
 const eventMatchesTarget = (config, keyOrSelector, event) => {
   if (!keyOrSelector || !event || !event.target || !event.target.closest) {
     return false;
@@ -900,7 +917,8 @@ const renderChecklist = (root, config, pathName) => {
     const completeMessage = message.getAttribute('data-complete-message') || config.labels.complete;
     const initialText = allComplete ? completeMessage : (activeStep.feedback || config.labels.hint || config.labels.complete);
     const icon = message.querySelector('.fa');
-    const text = message.querySelector('span:last-child');
+    const text = message.querySelector('[data-easyedu-guide-checklist-message-text]') ||
+      message.querySelector('span:last-child');
     checklist.classList.toggle('is-complete', allComplete);
     message.classList.toggle('is-complete', allComplete);
     if (icon) {
@@ -926,7 +944,8 @@ const updateChecklistMessage = (root, config, activeStep) => {
   const items = Array.from(checklist.querySelectorAll('[data-easyedu-guide-step-id]'));
   const complete = isChecklistComplete(checklist);
   const icon = message.querySelector('.fa');
-  const text = message.querySelector('span:last-child');
+  const text = message.querySelector('[data-easyedu-guide-checklist-message-text]') ||
+    message.querySelector('span:last-child');
   const completeMessage = message.getAttribute('data-complete-message') || config.labels.complete;
   const activeMessage = activeStep && activeStep.feedback ? activeStep.feedback : (config.labels.hint || '');
 
@@ -1180,10 +1199,20 @@ const bindGuide = (root, config) => {
     const targetButton = event.target.closest(SELECTORS.showTarget);
     if (targetButton && root.contains(targetButton)) {
       event.preventDefault();
-      const target = resolveTarget(activeConfig, targetButton.getAttribute('data-easyedu-guide-show-target'));
+      const target = getShowTarget(activeConfig, targetButton);
+      const openTarget = targetButton.getAttribute('data-easyedu-guide-show-open');
+      const afterOpenTarget = targetButton.getAttribute('data-easyedu-guide-show-after-open');
+      const openDelay = Number(targetButton.getAttribute('data-easyedu-guide-show-open-delay') || 0);
+      const afterOpenDelay = Number(targetButton.getAttribute('data-easyedu-guide-show-after-open-delay') || 0);
       closeModal(root, true, false);
-      scrollToTarget(root, target);
-      showInterfaceReturn(root);
+      window.setTimeout(() => {
+        triggerGuideOpen(activeConfig, openTarget);
+        window.setTimeout(() => {
+          triggerGuideOpen(activeConfig, afterOpenTarget);
+          scrollToTarget(root, target);
+          showInterfaceReturn(root);
+        }, Math.max(0, afterOpenDelay));
+      }, Math.max(0, openDelay));
       return;
     }
 
