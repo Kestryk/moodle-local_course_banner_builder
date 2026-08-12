@@ -2928,6 +2928,9 @@ $PAGE->requires->js_call_amd('local_course_banner_builder/easyedu_guide', 'init'
         ],
     ],
 ]);
+$PAGE->requires->js_call_amd('local_course_banner_builder/easyedu_guide_adapter', 'init', [
+    '[data-easyedu-guide-root]',
+]);
 
 echo $OUTPUT->header();
 echo html_writer::start_div(implode(' ', $adminclasses));
@@ -2980,6 +2983,7 @@ $guidecontext = [
     'rootclass' => 'local-course-banner-builder-easyedu-guide',
     'guidebadgelabel' => get_string('guidebadgelabel', 'local_course_banner_builder'),
     'guidechecklistdonelabel' => get_string('guidechecklistdone', 'local_course_banner_builder'),
+    'guidechecklistdonecompact' => get_string('guidechecklistdonecompact', 'local_course_banner_builder'),
     'guidechecklisttitle' => get_string('guidechecklisttitle', 'local_course_banner_builder'),
     'guidecloselabel' => get_string('guidecloselabel', 'local_course_banner_builder'),
     'guideeyebrow' => get_string('guideeyebrow', 'local_course_banner_builder'),

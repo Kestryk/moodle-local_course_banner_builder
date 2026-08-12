@@ -125,6 +125,7 @@ Status values:
 | GUIDE-02 | Show target in interface | Highlight stays aligned and return panel appears | Playwright | Blocked |
 | GUIDE-03 | Complete guided path | Checklist, prerequisite, reload, and return state work | Playwright | Blocked |
 | GUIDE-04 | Open Guide from the CCB rail | Desktop label reveal does not shift destinations, clip its shadow or create a second tooltip; compact launcher closes the panel, opens Guide above it and returns focus after close | Playwright/manual | Candidate |
+| GUIDE-05 | Show a Guide target that requires disclosures | The compact or desktop target is selected for the active viewport; `showopen` runs before `showafteropen`, then the target is highlighted and the return panel remains usable | Playwright/manual | Candidate |
 | ERR-01 | Open builder without sources | Actionable empty state, no console error | Behat | Candidate |
 | ERR-02 | Server-side validation fails | Localised message and submitted data remain understandable | Behat | Blocked |
 | A11Y-01 | Scan admin root | No serious or critical plugin-region axe violations | Behat/Playwright | Existing smoke |

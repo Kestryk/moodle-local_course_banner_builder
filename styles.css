@@ -9148,9 +9148,9 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
   display: flex;
   inset: 0;
   justify-content: center;
-  padding: 1rem;
+  padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
   position: fixed;
-  z-index: 1060;
+  z-index: calc(var(--easyedu-navigation-layer-panel, 1066) + 1);
 }
 .local-course-banner-builder-easyedu-guide .easyedu-guide-modal[hidden],
 .path-admin-local-course_banner_builder .easyedu-guide .easyedu-guide-modal[hidden] {
@@ -11626,6 +11626,10 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
   width: 100%;
   word-break: break-word;
 }
+.local-course-banner-builder-easyedu-guide .easyedu-guided-panel__message [data-easyedu-guide-checklist-message-text] + .easyedu-guided-panel__message-compact,
+.path-admin-local-course_banner_builder .easyedu-guide .easyedu-guided-panel__message [data-easyedu-guide-checklist-message-text] + .easyedu-guided-panel__message-compact {
+  display: none;
+}
 .local-course-banner-builder-easyedu-guide .easyedu-guided-panel__message .fa,
 .path-admin-local-course_banner_builder .easyedu-guide .easyedu-guided-panel__message .fa {
   color: #29724d;
@@ -11655,6 +11659,16 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 .local-course-banner-builder-easyedu-guide .easyedu-guided-panel:not(.has-guided-feedback):not(.is-complete) .easyedu-guided-panel__message,
 .path-admin-local-course_banner_builder .easyedu-guide .easyedu-guided-panel:not(.has-guided-feedback):not(.is-complete) .easyedu-guided-panel__message {
   display: none;
+}
+@media (max-width: 30rem) {
+  .local-course-banner-builder-easyedu-guide .easyedu-guided-panel.is-complete [data-easyedu-guide-checklist-message-text],
+  .path-admin-local-course_banner_builder .easyedu-guide .easyedu-guided-panel.is-complete [data-easyedu-guide-checklist-message-text] {
+    display: none;
+  }
+  .local-course-banner-builder-easyedu-guide .easyedu-guided-panel.is-complete .easyedu-guided-panel__message-compact,
+  .path-admin-local-course_banner_builder .easyedu-guide .easyedu-guided-panel.is-complete .easyedu-guided-panel__message-compact {
+    display: block;
+  }
 }
 .local-course-banner-builder-easyedu-guide .easyedu-guided-panel__footer,
 .path-admin-local-course_banner_builder .easyedu-guide .easyedu-guided-panel__footer {
