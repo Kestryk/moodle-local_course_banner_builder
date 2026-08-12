@@ -16,6 +16,9 @@ many small sections.
 
 ### Tests
 
+- Extended the focused Course Slideshow admin/public parity gate with a
+  Moodle-monologo-to-label-text ratio check. It records both dimensions and
+  fails when an editor-only label-icon floor changes the visual proportion.
 - Prepared a focused Course Slideshow admin/public parity gate. It preserves
   the saved visual Course configuration while forcing only disposable Forum
   fixture prerequisites, records both configuration states and creates settled

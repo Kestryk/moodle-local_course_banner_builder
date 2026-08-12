@@ -187,6 +187,8 @@ const previewEvidence = async(preview) => preview.evaluate(node => {
         }
         const rect = element.getBoundingClientRect();
         const style = window.getComputedStyle(element);
+        const icon = element.querySelector('.local-course-banner-builder-slideshow-label-icon');
+        const iconRect = icon ? icon.getBoundingClientRect() : null;
         return {
             name,
             present: true,
@@ -199,6 +201,11 @@ const previewEvidence = async(preview) => preview.evaluate(node => {
             fontWeight: style.fontWeight,
             textAlign: style.textAlign,
             textTransform: style.textTransform,
+            paddingBlock: style.paddingBlock,
+            paddingInline: style.paddingInline,
+            gap: style.gap,
+            minHeight: style.minHeight,
+            icon: iconRect ? {width: iconRect.width, height: iconRect.height} : null,
         };
     };
     return {
@@ -236,6 +243,9 @@ const publicGeometry = async(host) => host.evaluate(hostNode => {
             return {name, present: false};
         }
         const bounds = element.getBoundingClientRect();
+        const style = window.getComputedStyle(element);
+        const icon = element.querySelector('.local-course-banner-builder-slideshow-label-icon');
+        const iconBounds = icon ? icon.getBoundingClientRect() : null;
         return {
             name,
             present: true,
@@ -245,6 +255,12 @@ const publicGeometry = async(host) => host.evaluate(hostNode => {
             bottom: bounds.bottom - hostBounds.top,
             width: bounds.width,
             height: bounds.height,
+            fontSize: style.fontSize,
+            paddingBlock: style.paddingBlock,
+            paddingInline: style.paddingInline,
+            gap: style.gap,
+            minHeight: style.minHeight,
+            icon: iconBounds ? {width: iconBounds.width, height: iconBounds.height} : null,
         };
     });
     return {
@@ -427,6 +443,17 @@ test('CCB Slideshow public Course fixture renders a real forum announcement at t
         const host = root.locator('xpath=..');
         const geometry = await publicGeometry(host);
         expectPublicGeometry(geometry);
+        if (parityEvidence) {
+            const adminLabel = parityEvidence.adminPreview.samples.find(sample => sample.name === 'label');
+            const publicLabel = geometry.samples.find(sample => sample.name === 'label');
+            expect(adminLabel?.icon, 'admin preview Forum label has no Moodle icon').toBeTruthy();
+            expect(publicLabel?.icon, 'public Forum label has no Moodle icon').toBeTruthy();
+            const adminIconToText = adminLabel.icon.height / parseFloat(adminLabel.fontSize);
+            const publicIconToText = publicLabel.icon.height / parseFloat(publicLabel.fontSize);
+            parityEvidence.labelIconToTextRatio = {admin: adminIconToText, public: publicIconToText};
+            expect(Math.abs(adminIconToText - publicIconToText),
+                'admin/public Forum label icon scale differs from the shared label typography').toBeLessThanOrEqual(0.06);
+        }
         await page.evaluate(() => document.fonts.ready);
         const evidenceBase = 'slideshow-public-course-forum-' + env.zoom;
         await captureCdp(page, context, path.join(env.artifactRoot, evidenceBase + '.png'));

@@ -152,6 +152,12 @@ proxy and the preview CSS variable against the saved value. A subsequent
 lease-authorized execution is required before replacing the earlier `0.00`
 evidence.
 
+It also records the Forum label text size, icon bounds, padding and gap in
+both surfaces. The ratio between the native Moodle monologo and its label text
+must match between the settled administration preview and the real Course
+banner; this protects visual parity while permitting the two canvases to have
+different physical widths.
+
 The runner performs discovery first, requires exactly one selected test and
 acquires `moodle51-active-fixture-write` before it creates the fixture. It
 loads credentials only into its own process, keeps its isolated Chromium
