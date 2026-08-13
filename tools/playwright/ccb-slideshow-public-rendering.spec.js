@@ -84,12 +84,19 @@ const environment = () => {
         'EASYEDU_MOODLE_URL',
         'EASYEDU_MOODLE_USERNAME',
         'EASYEDU_MOODLE_PASSWORD',
-        'EASYEDU_CCB_SLIDESHOW_PUBLIC_COURSE_ID',
-        'EASYEDU_CCB_SLIDESHOW_PUBLIC_DISCUSSION_ID',
-        'EASYEDU_CCB_SLIDESHOW_PUBLIC_ANNOUNCEMENT_TITLE',
         'EASYEDU_CCB_SLIDESHOW_PUBLIC_PROFILE',
         'EASYEDU_CCB_SLIDESHOW_PUBLIC_ARTIFACT_ROOT',
     ];
+    const secondaryLabelParity = process.env.EASYEDU_CCB_SLIDESHOW_PUBLIC_SECONDARY_LABEL_PARITY === '1';
+    required.push(...(secondaryLabelParity ? [
+        'EASYEDU_CCB_SLIDESHOW_PUBLIC_ASSIGNMENT_CMID',
+        'EASYEDU_CCB_SLIDESHOW_PUBLIC_ASSIGNMENT_TITLE',
+        'EASYEDU_CCB_SLIDESHOW_PUBLIC_SOURCE_COURSE_SHORTNAME',
+    ] : [
+        'EASYEDU_CCB_SLIDESHOW_PUBLIC_COURSE_ID',
+        'EASYEDU_CCB_SLIDESHOW_PUBLIC_DISCUSSION_ID',
+        'EASYEDU_CCB_SLIDESHOW_PUBLIC_ANNOUNCEMENT_TITLE',
+    ]));
     const zoom = Number(process.env.EASYEDU_CCB_SLIDESHOW_PUBLIC_ZOOM || '100');
     ensure([100, 200].includes(zoom), 'Public Slideshow zoom must be 100 or 200.');
     if (zoom === 200) {
@@ -106,7 +113,9 @@ const environment = () => {
         'Public Slideshow artifact paths must be absolute.');
     ensure(profile.toLowerCase().startsWith((artifactRoot + path.sep).toLowerCase()),
         'Public Slideshow profile must be owned by the external artifact root.');
-    for (const name of [
+    for (const name of secondaryLabelParity ? [
+        'EASYEDU_CCB_SLIDESHOW_PUBLIC_ASSIGNMENT_CMID',
+    ] : [
         'EASYEDU_CCB_SLIDESHOW_PUBLIC_COURSE_ID',
         'EASYEDU_CCB_SLIDESHOW_PUBLIC_DISCUSSION_ID',
     ]) {
@@ -119,13 +128,18 @@ const environment = () => {
         ensure(resolvedParityConfigPath.toLowerCase().startsWith((artifactRoot + path.sep).toLowerCase()),
             'Parity configuration proof must be owned by the external artifact root.');
         parityConfig = JSON.parse(fs.readFileSync(resolvedParityConfigPath, 'utf8').replace(/^\uFEFF/, ''));
-        ensure(parityConfig.savedCourseConfig?.context === 'course',
-            'Parity fixture did not preserve a Course Slideshow configuration.');
-        ensure(parityConfig.forcedRuntimeValues?.forums === 1,
-            'Parity fixture did not enable its real Forum source.');
+        const expectedContext = secondaryLabelParity ? 'site' : 'course';
+        ensure(parityConfig.savedSlideshowConfig?.context === expectedContext,
+            'Parity fixture did not preserve the expected Slideshow configuration.');
+        ensure(secondaryLabelParity
+            ? parityConfig.forcedRuntimeValues?.assignments === 1
+            : parityConfig.forcedRuntimeValues?.forums === 1,
+        'Parity fixture did not enable the required real source.');
     }
     return {
         announcementTitle: process.env.EASYEDU_CCB_SLIDESHOW_PUBLIC_ANNOUNCEMENT_TITLE,
+        assignmentCmid: Number(process.env.EASYEDU_CCB_SLIDESHOW_PUBLIC_ASSIGNMENT_CMID || '0'),
+        assignmentTitle: process.env.EASYEDU_CCB_SLIDESHOW_PUBLIC_ASSIGNMENT_TITLE || '',
         artifactRoot,
         baseUrl: String(process.env.EASYEDU_MOODLE_URL).replace(/\/$/, ''),
         courseId: Number(process.env.EASYEDU_CCB_SLIDESHOW_PUBLIC_COURSE_ID),
@@ -134,6 +148,8 @@ const environment = () => {
         discussionId: Number(process.env.EASYEDU_CCB_SLIDESHOW_PUBLIC_DISCUSSION_ID),
         password: process.env.EASYEDU_MOODLE_PASSWORD,
         profile,
+        secondaryLabelParity,
+        sourceCourseShortname: process.env.EASYEDU_CCB_SLIDESHOW_PUBLIC_SOURCE_COURSE_SHORTNAME || '',
         username: process.env.EASYEDU_MOODLE_USERNAME,
         zoom,
         parityConfig,
@@ -220,6 +236,7 @@ const previewEvidence = async(preview) => preview.evaluate(node => {
             .reduce((values, name) => ({...values, [name]: node.style.getPropertyValue(name)}), {}),
         samples: [
             sample('label', '.local-course-banner-builder-slideshow-label--forums'),
+            sample('secondaryLabel', '.local-course-banner-builder-slideshow-label--course-shortname'),
             sample('title', '.local-course-banner-builder-slideshow-title'),
             sample('body', '.local-course-banner-builder-slideshow-body'),
             sample('action', '.local-course-banner-builder-slideshow-action'),
@@ -227,14 +244,15 @@ const previewEvidence = async(preview) => preview.evaluate(node => {
     };
 });
 
-const publicGeometry = async(host) => host.evaluate(hostNode => {
+const publicGeometry = async(host, labelSelector, sourceLabelSelector = '') => host.evaluate((hostNode, selectors) => {
     const slideNode = hostNode.querySelector('[data-slideshow-slide="1"].is-active');
     if (!slideNode) {
         return {hostHeight: 0, hostWidth: 0, samples: [], viewportScale: 0};
     }
     const hostBounds = hostNode.getBoundingClientRect();
     const samples = [
-        ['label', '.local-course-banner-builder-slideshow-label--forums'],
+        ['label', selectors.label],
+        ...(selectors.secondaryLabel ? [['secondaryLabel', selectors.secondaryLabel]] : []),
         ['title', '.local-course-banner-builder-slideshow-title'],
         ['action', '.local-course-banner-builder-slideshow-action'],
     ].map(([name, selector]) => {
@@ -271,7 +289,7 @@ const publicGeometry = async(host) => host.evaluate(hostNode => {
         samples,
         viewportScale: window.visualViewport ? window.visualViewport.scale : 1,
     };
-});
+}, {label: labelSelector, secondaryLabel: sourceLabelSelector});
 
 const expectPublicGeometry = geometry => {
     expect(geometry.hostWidth, 'public Slideshow host is too narrow').toBeGreaterThan(240);
@@ -280,7 +298,7 @@ const expectPublicGeometry = geometry => {
         geometry.documentClientWidth + 1
     );
     for (const sample of geometry.samples) {
-        expect(sample.present, sample.name + ' is missing from the real forum slide').toBeTruthy();
+        expect(sample.present, sample.name + ' is missing from the real source slide').toBeTruthy();
         expect(sample.width, sample.name + ' has no visible width').toBeGreaterThan(0);
         expect(sample.height, sample.name + ' has no visible height').toBeGreaterThan(0);
         expect(sample.left, sample.name + ' escapes the banner on the left').toBeGreaterThanOrEqual(-1);
@@ -290,7 +308,7 @@ const expectPublicGeometry = geometry => {
     }
 };
 
-test('CCB Slideshow public Course fixture renders a real forum announcement at the requested browser zoom', async() => {
+test('CCB Slideshow public fixture renders the requested real source at the requested browser zoom', async() => {
     const env = environment();
     const consoleErrors = [];
     const requestFailures = [];
@@ -350,8 +368,9 @@ test('CCB Slideshow public Course fixture renders a real forum announcement at t
         await login(page, env);
         if (env.parityConfig) {
             await page.goto(env.baseUrl + '/local/course_banner_builder/admin_slideshow.php', {waitUntil: 'networkidle'});
+            const adminContext = env.secondaryLabelParity ? 'site' : 'course';
             const courseCard = page.locator('form.local-course-banner-builder-slideshow-card').filter({
-                has: page.locator('input[name="context"][value="course"]'),
+                has: page.locator('input[name="context"][value="' + adminContext + '"]'),
             });
             await expect(courseCard).toHaveCount(1);
             await courseCard.locator('.local-course-banner-builder-slideshow-edit-appearance-button').click();
@@ -361,12 +380,12 @@ test('CCB Slideshow public Course fixture renders a real forum announcement at t
             const preview = modal.locator('[data-slideshow-overlay-preview="1"][data-slideshow-preview-editor="1"]');
             await expect(preview).toHaveCount(1);
             parityEvidence = {
-                savedCourseConfig: env.parityConfig.savedCourseConfig,
+                savedSlideshowConfig: env.parityConfig.savedSlideshowConfig,
                 forcedRuntimeValues: env.parityConfig.forcedRuntimeValues,
                 adminPreview: await previewEvidence(preview),
             };
             const expectedOpacityPercent = String(Math.round(
-                Number(env.parityConfig.savedCourseConfig.overlayopacity) * 100
+                Number(env.parityConfig.savedSlideshowConfig.overlayopacity) * 100
             ));
             expect(parityEvidence.adminPreview.overlayControls.primary).toHaveLength(1);
             expect(parityEvidence.adminPreview.overlayControls.sideProxy).toHaveLength(1);
@@ -376,11 +395,14 @@ test('CCB Slideshow public Course fixture renders a real forum announcement at t
                 '--local-course-banner-builder-slideshow-overlay-opacity'
             ]).toBe((Number(expectedOpacityPercent) / 100).toFixed(2));
             await captureCdp(page, context,
-                path.join(env.artifactRoot, 'slideshow-admin-course-parity-' + env.zoom + '.png'));
+                path.join(env.artifactRoot,
+                    'slideshow-admin-' + (env.secondaryLabelParity ? 'site-secondary-parity-' : 'course-parity-') + env.zoom + '.png'));
             await modal.locator('[data-bs-dismiss="modal"]').click();
             await expect(modal).toHaveCount(0);
         }
-        await page.goto(env.baseUrl + '/course/view.php?id=' + env.courseId, {waitUntil: 'networkidle'});
+        await page.goto(env.secondaryLabelParity
+            ? env.baseUrl + '/'
+            : env.baseUrl + '/course/view.php?id=' + env.courseId, {waitUntil: 'networkidle'});
         consoleErrors.length = 0;
         requestFailures.length = 0;
         collectRuntimeFailures = true;
@@ -413,7 +435,9 @@ test('CCB Slideshow public Course fixture renders a real forum announcement at t
                 devicePixelRatioRatio: after.devicePixelRatio / Math.max(before.devicePixelRatio, 1),
                 widthRatio: before.innerWidth / Math.max(after.innerWidth, 1),
             };
-            writeJson(path.join(env.artifactRoot, 'slideshow-public-course-forum-200-zoom-probe.json'), {
+            writeJson(path.join(env.artifactRoot,
+                'slideshow-public-' + (env.secondaryLabelParity ? 'site-assignment-secondary' : 'course-forum') +
+                '-200-zoom-probe.json'), {
                 achieved,
                 zoomEvidence,
             });
@@ -429,43 +453,77 @@ test('CCB Slideshow public Course fixture renders a real forum announcement at t
         const activeSlide = root.locator('[data-slideshow-slide="1"].is-active');
         await expect(activeSlide).toHaveCount(1);
         await expect(activeSlide).toHaveAttribute('aria-hidden', 'false');
-        const forumLabel = activeSlide.locator('.local-course-banner-builder-slideshow-label--forums');
-        await expect(forumLabel).toHaveCount(1);
-        await expect(forumLabel.locator('img.local-course-banner-builder-slideshow-label-icon')).toHaveCount(1);
-        await expect(activeSlide.locator('.local-course-banner-builder-slideshow-title')).toHaveText(env.announcementTitle);
+        const primaryLabel = activeSlide.locator(env.secondaryLabelParity
+            ? '.local-course-banner-builder-slideshow-label--assignments'
+            : '.local-course-banner-builder-slideshow-label--forums');
+        await expect(primaryLabel).toHaveCount(1);
+        await expect(primaryLabel.locator('img.local-course-banner-builder-slideshow-label-icon')).toHaveCount(1);
+        await expect(activeSlide.locator('.local-course-banner-builder-slideshow-title')).toHaveText(
+            env.secondaryLabelParity ? env.assignmentTitle : env.announcementTitle
+        );
+        if (env.secondaryLabelParity) {
+            const sourceLabel = activeSlide.locator('.local-course-banner-builder-slideshow-label--course-shortname');
+            await expect(sourceLabel).toHaveCount(1);
+            await expect(sourceLabel).toHaveText(env.sourceCourseShortname);
+        }
         const action = activeSlide.locator('.local-course-banner-builder-slideshow-action');
         await expect(action).toHaveCount(1);
         await expect(action).toHaveAttribute(
             'href',
-            new RegExp('(?:^|/)mod/forum/discuss\\.php\\?d=' + env.discussionId + '(?:#|$)')
+            env.secondaryLabelParity
+                ? new RegExp('(?:^|/)mod/assign/view\\.php\\?id=' + env.assignmentCmid + '(?:#|$)')
+                : new RegExp('(?:^|/)mod/forum/discuss\\.php\\?d=' + env.discussionId + '(?:#|$)')
         );
 
         const host = root.locator('xpath=..');
-        const geometry = await publicGeometry(host);
+        const geometry = await publicGeometry(
+            host,
+            env.secondaryLabelParity
+                ? '.local-course-banner-builder-slideshow-label--assignments'
+                : '.local-course-banner-builder-slideshow-label--forums',
+            env.secondaryLabelParity ? '.local-course-banner-builder-slideshow-label--course-shortname' : ''
+        );
         expectPublicGeometry(geometry);
         if (parityEvidence) {
-            const adminLabel = parityEvidence.adminPreview.samples.find(sample => sample.name === 'label');
+            const adminLabel = parityEvidence.adminPreview.samples.find(sample => sample.name ===
+                (env.secondaryLabelParity ? 'secondaryLabel' : 'label'));
             const publicLabel = geometry.samples.find(sample => sample.name === 'label');
-            expect(adminLabel?.icon, 'admin preview Forum label has no Moodle icon').toBeTruthy();
-            expect(publicLabel?.icon, 'public Forum label has no Moodle icon').toBeTruthy();
-            const adminIconToText = adminLabel.icon.height / parseFloat(adminLabel.fontSize);
-            const publicIconToText = publicLabel.icon.height / parseFloat(publicLabel.fontSize);
-            parityEvidence.labelIconToTextRatio = {admin: adminIconToText, public: publicIconToText};
-            expect(Math.abs(adminIconToText - publicIconToText),
-                'admin/public Forum label icon scale differs from the shared label typography').toBeLessThanOrEqual(0.06);
+            if (env.secondaryLabelParity) {
+                const publicSourceLabel = geometry.samples.find(sample => sample.name === 'secondaryLabel');
+                expect(adminLabel?.present, 'admin preview source-course label is missing').toBeTruthy();
+                expect(publicSourceLabel?.present, 'public source-course label is missing').toBeTruthy();
+                expect(adminLabel.paddingBlock, 'source-course label block padding differs').toBe(publicSourceLabel.paddingBlock);
+                expect(adminLabel.paddingInline, 'source-course label inline padding differs').toBe(publicSourceLabel.paddingInline);
+                expect(adminLabel.textTransform, 'source-course label casing differs').toBe('uppercase');
+                parityEvidence.secondaryLabel = {admin: adminLabel, public: publicSourceLabel};
+            } else {
+                expect(adminLabel?.icon, 'admin preview Forum label has no Moodle icon').toBeTruthy();
+                expect(publicLabel?.icon, 'public Forum label has no Moodle icon').toBeTruthy();
+                const adminIconToText = adminLabel.icon.height / parseFloat(adminLabel.fontSize);
+                const publicIconToText = publicLabel.icon.height / parseFloat(publicLabel.fontSize);
+                parityEvidence.labelIconToTextRatio = {admin: adminIconToText, public: publicIconToText};
+                expect(Math.abs(adminIconToText - publicIconToText),
+                    'admin/public Forum label icon scale differs from the shared label typography').toBeLessThanOrEqual(0.06);
+            }
         }
         await page.evaluate(() => document.fonts.ready);
-        const evidenceBase = 'slideshow-public-course-forum-' + env.zoom;
+        const evidenceBase = env.secondaryLabelParity
+            ? 'slideshow-public-site-assignment-secondary-' + env.zoom
+            : 'slideshow-public-course-forum-' + env.zoom;
         await captureCdp(page, context, path.join(env.artifactRoot, evidenceBase + '.png'));
         writeJson(path.join(env.artifactRoot, evidenceBase + '.json'), {
             announcementTitle: env.announcementTitle,
+            assignmentTitle: env.assignmentTitle,
+            sourceCourseShortname: env.sourceCourseShortname,
             consoleErrors,
             courseId: env.courseId,
             discussionId: env.discussionId,
             geometry,
             requestFailures,
             scope: {
-                source: 'real-course-forum-announcement',
+                source: env.secondaryLabelParity
+                    ? 'real-site-assignment-from-enrolled-source-course'
+                    : 'real-course-forum-announcement',
                 requestedBrowserZoom: env.zoom,
                 parityMode: !!env.parityConfig,
             },
@@ -499,7 +557,9 @@ test('CCB Slideshow public Course fixture renders a real forum announcement at t
             zoomCleanup.error = zoomCleanup.error || String(error && error.stack || error);
         }
         zoomCleanup.profileRemoved = !fs.existsSync(env.profile);
-        writeJson(path.join(env.artifactRoot, 'slideshow-public-course-forum-' + env.zoom + '-browser-cleanup.json'), zoomCleanup);
+        writeJson(path.join(env.artifactRoot,
+            'slideshow-public-' + (env.secondaryLabelParity ? 'site-assignment-secondary' : 'course-forum') +
+            '-' + env.zoom + '-browser-cleanup.json'), zoomCleanup);
         if (env.zoom === 200) {
             ensure(zoomCleanup.zoomRestored, 'Dedicated Chrome browser zoom was not restored.');
         }

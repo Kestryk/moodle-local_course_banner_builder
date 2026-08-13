@@ -4,6 +4,7 @@ param(
     [ValidateSet(100, 200)]
     [int]$Zoom = 100,
     [switch]$Parity,
+    [switch]$SecondaryLabelParity,
     [ValidateRange(120, 1800)]
     [int]$WatchdogSeconds = 900,
     [ValidateRange(0, 900)]
@@ -27,7 +28,8 @@ $artifactBase = if ($env:EASYEDU_PLAYWRIGHT_ARTIFACTS_ROOT) { $env:EASYEDU_PLAYW
     Join-Path $env:LOCALAPPDATA 'EasyEdu\artifacts'
 }
 $artifactBase = [IO.Path]::GetFullPath($artifactBase)
-$runKind = if ($Parity) { 'parity' } else { 'public' }
+$isParity = $Parity -or $SecondaryLabelParity
+$runKind = if ($SecondaryLabelParity) { 'site-secondary-parity' } elseif ($Parity) { 'parity' } else { 'public' }
 $runId = 'ccb-slideshow-{0}-{1}-{2}-{3}' -f $runKind, $Zoom, [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ'), $PID
 $runRoot = Join-Path $artifactBase ('ccb\slideshow\public\supervised\' + $runId)
 $playwrightConfig = Join-Path $runRoot 'playwright.config.cjs'
@@ -201,38 +203,55 @@ try {
             'CCB_MOODLE_USERNAME',
             'CCB_MOODLE_PASSWORD'
         )
-        $setup = Invoke-Fixture $(if ($Parity) { 'setup-parity' } else { 'setup' })
+        $setup = Invoke-Fixture $(if ($SecondaryLabelParity) { 'setup-site-secondary-parity' } elseif ($Parity) { 'setup-parity' } else { 'setup' })
         $manifest = [ordered]@{
+            fixtureKind = [string]$setup.fixtureKind
             courseid = [int]$setup.courseid
             snapshot = @($setup.snapshot)
             discussionid = [int]$setup.discussionid
+            assignmentid = [int]$setup.assignmentid
             enrolmentid = [int]$setup.enrolmentid
             parityMode = [bool]$setup.parityMode
-            savedCourseConfig = $setup.savedCourseConfig
+            savedSlideshowConfig = $setup.savedSlideshowConfig
             forcedRuntimeValues = $setup.forcedRuntimeValues
         }
         Set-Content -LiteralPath $manifestFile -Value ($manifest | ConvertTo-Json -Depth 20) -Encoding UTF8
-        if ($Parity) {
-            if (-not $setup.parityMode -or -not $setup.savedCourseConfig -or -not $setup.forcedRuntimeValues) {
+        if ($isParity) {
+            if (-not $setup.parityMode -or -not $setup.savedSlideshowConfig -or -not $setup.forcedRuntimeValues) {
                 throw 'The public Slideshow parity fixture did not return its configuration proof.'
             }
             Set-Content -LiteralPath $parityConfigFile -Value (([ordered]@{
-                savedCourseConfig = $setup.savedCourseConfig
+                savedSlideshowConfig = $setup.savedSlideshowConfig
                 forcedRuntimeValues = $setup.forcedRuntimeValues
             } | ConvertTo-Json -Depth 20)) -Encoding UTF8
             $env:EASYEDU_CCB_SLIDESHOW_PUBLIC_PARITY_CONFIG = $parityConfigFile
             $loadedEnvironment += 'EASYEDU_CCB_SLIDESHOW_PUBLIC_PARITY_CONFIG'
         }
-        $env:EASYEDU_CCB_SLIDESHOW_PUBLIC_COURSE_ID = [string]$setup.courseid
-        $env:EASYEDU_CCB_SLIDESHOW_PUBLIC_DISCUSSION_ID = [string]$setup.discussionid
-        $env:EASYEDU_CCB_SLIDESHOW_PUBLIC_ANNOUNCEMENT_TITLE = [string]$setup.announcementTitle
+        if ($SecondaryLabelParity) {
+            $env:EASYEDU_CCB_SLIDESHOW_PUBLIC_SECONDARY_LABEL_PARITY = '1'
+            $env:EASYEDU_CCB_SLIDESHOW_PUBLIC_ASSIGNMENT_CMID = [string]$setup.assignmentcmid
+            $env:EASYEDU_CCB_SLIDESHOW_PUBLIC_ASSIGNMENT_TITLE = [string]$setup.assignmentTitle
+            $env:EASYEDU_CCB_SLIDESHOW_PUBLIC_SOURCE_COURSE_SHORTNAME = [string]$setup.sourceCourseShortname
+            $loadedEnvironment += @(
+                'EASYEDU_CCB_SLIDESHOW_PUBLIC_SECONDARY_LABEL_PARITY',
+                'EASYEDU_CCB_SLIDESHOW_PUBLIC_ASSIGNMENT_CMID',
+                'EASYEDU_CCB_SLIDESHOW_PUBLIC_ASSIGNMENT_TITLE',
+                'EASYEDU_CCB_SLIDESHOW_PUBLIC_SOURCE_COURSE_SHORTNAME'
+            )
+        } else {
+            $env:EASYEDU_CCB_SLIDESHOW_PUBLIC_COURSE_ID = [string]$setup.courseid
+            $env:EASYEDU_CCB_SLIDESHOW_PUBLIC_DISCUSSION_ID = [string]$setup.discussionid
+            $env:EASYEDU_CCB_SLIDESHOW_PUBLIC_ANNOUNCEMENT_TITLE = [string]$setup.announcementTitle
+            $loadedEnvironment += @(
+                'EASYEDU_CCB_SLIDESHOW_PUBLIC_COURSE_ID',
+                'EASYEDU_CCB_SLIDESHOW_PUBLIC_DISCUSSION_ID',
+                'EASYEDU_CCB_SLIDESHOW_PUBLIC_ANNOUNCEMENT_TITLE'
+            )
+        }
         $env:EASYEDU_CCB_SLIDESHOW_PUBLIC_PROFILE = $profile
         $env:EASYEDU_CCB_SLIDESHOW_PUBLIC_ARTIFACT_ROOT = $runRoot
         $env:EASYEDU_CCB_SLIDESHOW_PUBLIC_ZOOM = [string]$Zoom
         $loadedEnvironment += @(
-            'EASYEDU_CCB_SLIDESHOW_PUBLIC_COURSE_ID',
-            'EASYEDU_CCB_SLIDESHOW_PUBLIC_DISCUSSION_ID',
-            'EASYEDU_CCB_SLIDESHOW_PUBLIC_ANNOUNCEMENT_TITLE',
             'EASYEDU_CCB_SLIDESHOW_PUBLIC_PROFILE',
             'EASYEDU_CCB_SLIDESHOW_PUBLIC_ARTIFACT_ROOT',
             'EASYEDU_CCB_SLIDESHOW_PUBLIC_ZOOM'
@@ -271,7 +290,11 @@ try {
         Set-Content -LiteralPath (Join-Path $runRoot 'playwright.stderr.txt') `
             -Value (Safe $child.StandardError.GetAwaiter().GetResult()) -Encoding UTF8
         if ($Zoom -eq 200) {
-            $zoomCleanupFile = Join-Path $runRoot 'slideshow-public-course-forum-200-browser-cleanup.json'
+            $zoomCleanupFile = Join-Path $runRoot $(if ($SecondaryLabelParity) {
+                'slideshow-public-site-assignment-secondary-200-browser-cleanup.json'
+            } else {
+                'slideshow-public-course-forum-200-browser-cleanup.json'
+            })
             if (-not (Test-Path -LiteralPath $zoomCleanupFile)) {
                 $zoomRestored = $false
                 $zoomCleanupError = 'The 200 percent browser-cleanup proof was not written.'
@@ -304,6 +327,7 @@ try {
         complete = ($null -eq $cleanupError -and (($null -eq $manifest) -or (
             $cleanupResult.courseRemoved -and
             $cleanupResult.forumDiscussionRemoved -and
+            $cleanupResult.assignmentRemoved -and
             $cleanupResult.studentEnrolmentRemoved -and
             $cleanupResult.publicSlideshowConfigRestored -and
             $zoomApplied -and
@@ -311,6 +335,7 @@ try {
         )) -and $profilesRemoved)
         courseRemoved = if ($cleanupResult) { $cleanupResult.courseRemoved } else { $null }
         forumDiscussionRemoved = if ($cleanupResult) { $cleanupResult.forumDiscussionRemoved } else { $null }
+        assignmentRemoved = if ($cleanupResult) { $cleanupResult.assignmentRemoved } else { $null }
         studentEnrolmentRemoved = if ($cleanupResult) { $cleanupResult.studentEnrolmentRemoved } else { $null }
         publicSlideshowConfigRestored = if ($cleanupResult) {
             $cleanupResult.publicSlideshowConfigRestored

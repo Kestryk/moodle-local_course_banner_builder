@@ -158,6 +158,31 @@ must match between the settled administration preview and the real Course
 banner; this protects visual parity while permitting the two canvases to have
 different physical widths.
 
+### Prepared Site provenance-label parity gate
+
+`Invoke-CCBSlideshowPublicRenderingValidation.ps1 -SecondaryLabelParity`
+selects the same single public source scenario in a Site-specific mode. The
+fixture snapshots both Course and Site Slideshow records, preserves the saved
+Site appearance, enables only the Assignment source required for the test and
+creates one visible disposable source course. The authorized test account is
+enrolled in that course as a Student and receives one real future Assignment.
+
+The Site Slideshow is the context that aggregates assignments and quizzes from
+the learner's enrolled courses. It therefore renders the Assignment type label
+together with the source course shortname through `secondaryLabel`. A Course
+Slideshow intentionally queries assignments and quizzes only from the current
+course, so the generic `COURSE101` administration example must not be compared
+to a same-course Forum slide.
+
+The scenario opens the Site administration preview after it has settled, then
+the real site banner. It requires the Assignment label, its native Moodle icon,
+the source-course shortname label, the expected Assignment destination URL,
+contained geometry and no console or request errors. Cleanup removes the
+Assignment by deleting its disposable source course, removes the temporary
+Student enrolment and restores all captured CCB configuration. It is prepared
+and discovery-validated only; it has not yet acquired the Moodle lease or run
+a browser.
+
 The runner performs discovery first, requires exactly one selected test and
 acquires `moodle51-active-fixture-write` before it creates the fixture. It
 loads credentials only into its own process, keeps its isolated Chromium

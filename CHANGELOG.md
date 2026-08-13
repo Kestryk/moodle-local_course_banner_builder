@@ -16,6 +16,7 @@ many small sections.
 
 ### Tests
 
+- Prepared the focused Site Slideshow provenance-label parity scenario. It creates one disposable enrolled source course and one real upcoming Assignment, then requires the public Site banner to show both its Assignment label and the source-course shortname before cleanup removes the activity, enrolment and course. This covers the actual `secondaryLabel` contract; a Course banner intentionally does not aggregate activities from other courses.
 - Raised the one-test public Slideshow runner timeout to 150 seconds. The
   settled admin/public parity capture can legitimately approach 90 seconds on
   the shared Moodle 5.1 runtime; its separate watchdog remains authoritative.

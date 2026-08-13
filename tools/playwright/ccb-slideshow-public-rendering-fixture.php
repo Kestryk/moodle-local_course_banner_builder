@@ -21,8 +21,10 @@ if ($moodleroot === false || $moodleroot === '' || !is_file($moodleroot . '/conf
 
 require($moodleroot . '/config.php');
 require_once($moodleroot . '/course/lib.php');
+require_once($moodleroot . '/course/modlib.php');
 require_once($moodleroot . '/lib/enrollib.php');
 require_once($moodleroot . '/mod/forum/lib.php');
+require_once($moodleroot . '/mod/assign/lib.php');
 
 global $DB, $USER;
 $USER = get_admin();
@@ -56,9 +58,10 @@ function local_course_banner_builder_slideshow_public_fixture_snapshot_config():
     [$insql, $params] = $DB->get_in_or_equal($names, SQL_PARAMS_NAMED, 'fixtureconfig');
     $params['plugin'] = 'local_course_banner_builder';
     $params['courseprefix'] = 'slideshow_course_%';
+    $params['siteprefix'] = 'slideshow_site_%';
     $records = $DB->get_records_select(
         'config_plugins',
-        "plugin = :plugin AND (name LIKE :courseprefix OR name {$insql})",
+        "plugin = :plugin AND (name LIKE :courseprefix OR name LIKE :siteprefix OR name {$insql})",
         $params,
         'name ASC',
         'id, name, value'
@@ -149,24 +152,15 @@ function local_course_banner_builder_slideshow_public_fixture_profile(): array {
  *
  * @return array{profile:array<string,mixed>,forced:array<string,mixed>,saved:array<string,mixed>}
  */
-function local_course_banner_builder_slideshow_public_fixture_parity_profile(): array {
-    $saved = \local_course_banner_builder\manager::get_slideshow_config(
-        \local_course_banner_builder\manager::SLIDESHOW_CONTEXT_COURSE
-    );
+function local_course_banner_builder_slideshow_public_fixture_parity_profile(
+    string $context,
+    array $forced
+): array {
+    $saved = \local_course_banner_builder\manager::get_slideshow_config($context);
     $profile = $saved;
     // The manager returns its canonical opacity as a fraction, while its write API accepts a percent.
     $profile['overlayopacity'] = (float)$saved['overlayopacity'] * 100;
-    $forced = [
-        'enabled' => 1,
-        'forums' => 1,
-        'siteannouncements' => 0,
-        'assignments' => 0,
-        'quizzes' => 0,
-        'autoplay' => 0,
-        'arrows' => 1,
-        'dots' => 1,
-        'maxslides' => max(2, (int)$saved['maxslides']),
-    ];
+    $forced['maxslides'] = max(2, (int)$saved['maxslides']);
     foreach ($forced as $name => $value) {
         $profile[$name] = $value;
     }
@@ -176,6 +170,76 @@ function local_course_banner_builder_slideshow_public_fixture_parity_profile(): 
         'forced' => $forced,
         'saved' => $saved,
     ];
+}
+
+/**
+ * Add one real, upcoming assignment to a disposable source course.
+ *
+ * @param stdClass $course Disposable source course.
+ * @return array{assignmentid:int,cmid:int,title:string}
+ */
+function local_course_banner_builder_slideshow_public_fixture_add_assignment(stdClass $course): array {
+    global $DB;
+
+    [, , , , $moduleinfo] = prepare_new_moduleinfo_data($course, 'assign', 0);
+    $title = 'CCB public Slideshow external-source assignment';
+    $moduleinfo->name = $title;
+    $moduleinfo->introeditor = [
+        'text' => 'Disposable assignment used to verify the Slideshow source-course label.',
+        'format' => FORMAT_HTML,
+        'itemid' => 0,
+    ];
+    $moduleinfo->intro = $moduleinfo->introeditor['text'];
+    $moduleinfo->introformat = FORMAT_HTML;
+    $moduleinfo->duedate = time() + DAYSECS;
+    $moduleinfo->cutoffdate = 0;
+    $moduleinfo->allowsubmissionsfromdate = 0;
+    $moduleinfo->grade = 100;
+    $moduleinfo->submissiondrafts = 0;
+    $moduleinfo->requiresubmissionstatement = 0;
+    $moduleinfo->sendnotifications = 0;
+    $moduleinfo->sendlatenotifications = 0;
+    $moduleinfo->sendstudentnotifications = 0;
+    $moduleinfo->teamsubmission = 0;
+    $moduleinfo->requireallteammemberssubmit = 0;
+    $moduleinfo->blindmarking = 0;
+    $moduleinfo->hidegrader = 0;
+    $moduleinfo->markingworkflow = 0;
+    $moduleinfo->markingallocation = 0;
+    $moduleinfo->attemptreopenmethod = 'none';
+    $moduleinfo->maxattempts = -1;
+    $module = add_moduleinfo($moduleinfo, $course);
+    if (!$module || empty($module->instance) || empty($module->coursemodule)) {
+        throw new RuntimeException('The public Slideshow fixture could not create its external assignment.');
+    }
+    $assignment = $DB->get_record('assign', ['id' => (int)$module->instance], 'id, name', MUST_EXIST);
+
+    return [
+        'assignmentid' => (int)$assignment->id,
+        'cmid' => (int)$module->coursemodule,
+        'title' => (string)$assignment->name,
+    ];
+}
+
+/**
+ * Confirm that the Site Slideshow exposes the external assignment and its source course label.
+ *
+ * @param string $title Exact fixture assignment title.
+ * @param string $coursesource Shortname of the disposable source course.
+ * @return int Number of matching public Site slides.
+ */
+function local_course_banner_builder_slideshow_public_fixture_site_secondary_slide_count(
+    string $title,
+    string $coursesource
+): int {
+    $payload = \local_course_banner_builder\manager::get_site_slideshow_payload();
+    $matching = array_filter($payload['slides'] ?? [], static function (array $slide) use ($title, $coursesource): bool {
+        return ($slide['type'] ?? '') === \local_course_banner_builder\manager::SLIDESHOW_TYPE_ASSIGNMENTS &&
+            ($slide['title'] ?? '') === $title &&
+            ($slide['secondaryLabel'] ?? '') === $coursesource;
+    });
+
+    return count($matching);
 }
 
 /**
@@ -268,39 +332,92 @@ function local_course_banner_builder_slideshow_public_fixture_forum_slide_count(
     return count($matching);
 }
 
-if ($command === 'setup' || $command === 'setup-parity') {
+if ($command === 'setup' || $command === 'setup-parity' || $command === 'setup-site-secondary-parity') {
     $snapshot = local_course_banner_builder_slideshow_public_fixture_snapshot_config();
     $courseid = 0;
     try {
-        $parity = $command === 'setup-parity';
+        $secondaryparity = $command === 'setup-site-secondary-parity';
+        $parity = $command === 'setup-parity' || $secondaryparity;
+        $context = $secondaryparity
+            ? \local_course_banner_builder\manager::SLIDESHOW_CONTEXT_SITE
+            : \local_course_banner_builder\manager::SLIDESHOW_CONTEXT_COURSE;
+        $forced = $secondaryparity ? [
+            'enabled' => 1,
+            'forums' => 0,
+            'siteannouncements' => 0,
+            'assignments' => 1,
+            'quizzes' => 0,
+            'autoplay' => 0,
+            'arrows' => 1,
+            'dots' => 1,
+        ] : [
+            'enabled' => 1,
+            'forums' => 1,
+            'siteannouncements' => 0,
+            'assignments' => 0,
+            'quizzes' => 0,
+            'autoplay' => 0,
+            'arrows' => 1,
+            'dots' => 1,
+        ];
         $profile = $parity
-            ? local_course_banner_builder_slideshow_public_fixture_parity_profile()
-            : [
-                'profile' => local_course_banner_builder_slideshow_public_fixture_profile(),
-                'forced' => [],
-                'saved' => [],
-            ];
+            ? local_course_banner_builder_slideshow_public_fixture_parity_profile($context, $forced)
+            : ['profile' => local_course_banner_builder_slideshow_public_fixture_profile(), 'forced' => [], 'saved' => []];
         set_config('enabled', 1, $plugin);
         set_config('coursebannerenabled', 1, $plugin);
         set_config('coursebannerdefaultimageenabled', 1, $plugin);
         \local_course_banner_builder\manager::set_slideshow_config(
-            \local_course_banner_builder\manager::SLIDESHOW_CONTEXT_COURSE,
+            $context,
             $profile['profile']
         );
 
         $suffix = gmdate('YmdHis');
         $course = create_course((object)[
-            'fullname' => 'CCB QA Public Slideshow ' . $suffix,
-            'shortname' => 'CCB-QA-PUBLIC-SLIDESHOW-' . $suffix,
+            'fullname' => $secondaryparity
+                ? 'CCB QA Slideshow source course ' . $suffix
+                : 'CCB QA Public Slideshow ' . $suffix,
+            'shortname' => $secondaryparity
+                ? 'CCB-QA-SOURCE-' . $suffix
+                : 'CCB-QA-PUBLIC-SLIDESHOW-' . $suffix,
             'category' => core_course_category::get_default()->id,
-            'visible' => 0,
+            'visible' => $secondaryparity ? 1 : 0,
             'format' => 'topics',
-            'newsitems' => 1,
-            'summary' => 'Disposable Course Banner Builder public Slideshow validation fixture.',
+            'newsitems' => $secondaryparity ? 0 : 1,
+            'summary' => $secondaryparity
+                ? 'Disposable source course for the CCB Site Slideshow provenance-label validation.'
+                : 'Disposable Course Banner Builder public Slideshow validation fixture.',
             'summaryformat' => FORMAT_PLAIN,
         ]);
         $courseid = (int)$course->id;
         $enrolment = local_course_banner_builder_slideshow_public_fixture_enrol_admin_as_student($course);
+        if ($secondaryparity) {
+            $assignment = local_course_banner_builder_slideshow_public_fixture_add_assignment($course);
+            $secondaryslidecount = local_course_banner_builder_slideshow_public_fixture_site_secondary_slide_count(
+                $assignment['title'],
+                (string)$course->shortname
+            );
+            if ($secondaryslidecount !== 1) {
+                throw new RuntimeException('The Site Slideshow fixture did not expose its external assignment source label.');
+            }
+            local_course_banner_builder_slideshow_public_fixture_emit([
+                'fixtureKind' => 'site-secondary-parity',
+                'courseid' => $courseid,
+                'snapshot' => $snapshot,
+                'adminid' => $enrolment['adminid'],
+                'enrolmentid' => $enrolment['enrolmentid'],
+                'studentroleid' => $enrolment['roleid'],
+                'assignmentid' => $assignment['assignmentid'],
+                'assignmentcmid' => $assignment['cmid'],
+                'assignmentTitle' => $assignment['title'],
+                'sourceCourseShortname' => (string)$course->shortname,
+                'siteSecondarySlideCount' => $secondaryslidecount,
+                'parityMode' => true,
+                'savedSiteConfig' => $profile['saved'],
+                'savedSlideshowConfig' => $profile['saved'],
+                'forcedRuntimeValues' => $profile['forced'],
+            ]);
+            exit(0);
+        }
         $announcement = local_course_banner_builder_slideshow_public_fixture_add_announcement($course);
         $forumslidecount = local_course_banner_builder_slideshow_public_fixture_forum_slide_count(
             $course,
@@ -311,6 +428,7 @@ if ($command === 'setup' || $command === 'setup-parity') {
         }
 
         local_course_banner_builder_slideshow_public_fixture_emit([
+            'fixtureKind' => 'course-forum',
             'courseid' => $courseid,
             'snapshot' => $snapshot,
             'adminid' => $enrolment['adminid'],
@@ -323,6 +441,7 @@ if ($command === 'setup' || $command === 'setup-parity') {
             'forumSlideCount' => $forumslidecount,
             'parityMode' => $parity,
             'savedCourseConfig' => $profile['saved'],
+            'savedSlideshowConfig' => $profile['saved'],
             'forcedRuntimeValues' => $profile['forced'],
         ]);
     } catch (Throwable $exception) {
@@ -341,11 +460,16 @@ if ($command === 'cleanup') {
     }
     $manifestjson = preg_replace('/^\xEF\xBB\xBF/', '', file_get_contents($manifestpath));
     $manifest = json_decode($manifestjson, true, 512, JSON_THROW_ON_ERROR);
+    $fixturekind = (string)($manifest['fixtureKind'] ?? 'course-forum');
     $courseid = (int)($manifest['courseid'] ?? 0);
     $snapshot = $manifest['snapshot'] ?? null;
     $discussionid = (int)($manifest['discussionid'] ?? 0);
+    $assignmentid = (int)($manifest['assignmentid'] ?? 0);
     $enrolmentid = (int)($manifest['enrolmentid'] ?? 0);
-    if ($courseid < 1 || !is_array($snapshot) || $discussionid < 1 || $enrolmentid < 1) {
+    $expectsforum = $fixturekind === 'course-forum';
+    $expectsassignment = $fixturekind === 'site-secondary-parity';
+    if ($courseid < 1 || !is_array($snapshot) || $enrolmentid < 1 ||
+        ($expectsforum && $discussionid < 1) || ($expectsassignment && $assignmentid < 1)) {
         throw new RuntimeException('Invalid public Slideshow fixture manifest.');
     }
 
@@ -355,8 +479,10 @@ if ($command === 'cleanup') {
     }
     local_course_banner_builder_slideshow_public_fixture_emit([
         'courseid' => $courseid,
+        'fixtureKind' => $fixturekind,
         'courseRemoved' => !$DB->record_exists('course', ['id' => $courseid]),
-        'forumDiscussionRemoved' => !$DB->record_exists('forum_discussions', ['id' => $discussionid]),
+        'forumDiscussionRemoved' => !$expectsforum || !$DB->record_exists('forum_discussions', ['id' => $discussionid]),
+        'assignmentRemoved' => !$expectsassignment || !$DB->record_exists('assign', ['id' => $assignmentid]),
         'studentEnrolmentRemoved' => !$DB->record_exists('user_enrolments', ['id' => $enrolmentid]),
         'publicSlideshowConfigRestored' =>
             local_course_banner_builder_slideshow_public_fixture_snapshot_config() === $snapshot,
