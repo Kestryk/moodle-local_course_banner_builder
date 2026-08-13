@@ -18,6 +18,12 @@ many small sections.
   safe-area padding without replacing CCB's advanced checklist, highlight or
   persistence behavior.
 
+#### Validation
+
+- Add the focused GUIDE-05 browser scenario for ordered disclosure opening,
+  target highlighting and a usable return panel on the managed Moodle 5.1
+  preview.
+
 ### 2026-08-10
 
 #### Fixed
