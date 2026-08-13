@@ -122,6 +122,7 @@ test('GUIDE-05 opens disclosures in order, highlights its target, and keeps retu
                 '<button id="guide05-second" type="button" aria-expanded="false">Second accordion</button>' +
                 '<div id="guide05-second-panel" hidden>Second content</div>' +
                 '<div id="guide05-target" tabindex="-1">GUIDE-05 target</div>';
+            document.body.appendChild(surface);
             const toggle = (buttonId, panelId) => {
                 document.getElementById(buttonId).addEventListener('click', () => {
                     const button = document.getElementById(buttonId);
@@ -133,7 +134,6 @@ test('GUIDE-05 opens disclosures in order, highlights its target, and keeps retu
             };
             toggle('guide05-first', 'guide05-first-panel');
             toggle('guide05-second', 'guide05-second-panel');
-            document.body.appendChild(surface);
         });
 
         const show = page.locator('[data-easyedu-guide-slide]:not([hidden]) [data-easyedu-guide-show-target]:visible').first();

@@ -192,16 +192,19 @@ module.exports = defineConfig({
     Set-Content -LiteralPath $cleanupFile -Value ($cleanup | ConvertTo-Json -Depth 12) -Encoding UTF8
     $status = if ($DiscoveryOnly -and $childExitCode -eq 0) { 'discovery-pass' } elseif ($childExitCode -eq 0 -and $cleanup.complete) { 'pass' } else { 'fail' }
     Set-Content -LiteralPath $summaryFile -Value (([ordered]@{ runId = $runId; status = $status; cleanup = $cleanup; error = $runError; artifactDirectory = $runRoot } | ConvertTo-Json -Depth 12)) -Encoding UTF8
+    if ($lease) {
+        try { Release-EasyEduResourceLease -Resource 'moodle51-active-fixture-write' -RunId $runId -Force } catch { Write-Phase 'lease-release' 'error' (Safe $_.Exception.Message) }
+        $lease = $null
+    }
     if (Test-Path -LiteralPath $artifactManifestScript) {
         $manifestStatus = if ($status -eq 'pass') { 'passed' } elseif ($DiscoveryOnly) { 'incomplete' } else { 'failed' }
         try { & $artifactManifestScript -RunRoot $runRoot -ApprovedRoot $artifactBase -ProjectNamespace 'ccb' -RunId $runId -Status $manifestStatus | Out-Null } catch { Write-Phase 'artifact-manifest' 'error' (Safe $_.Exception.Message) }
     }
     if (Test-Path -LiteralPath $retentionScript) {
-        try { & $retentionScript -ArtifactRoot $artifactBase -ApprovedRoot (Split-Path -Parent $artifactBase) -KeepRunId $runId | Set-Content -LiteralPath (Join-Path $runRoot 'retention-dry-run.json') -Encoding UTF8 } catch { Write-Phase 'retention-dry-run' 'error' (Safe $_.Exception.Message) }
+        try { & $retentionScript -ArtifactRoot $runRoot -ApprovedRoot $artifactBase -KeepRunId $runId | Set-Content -LiteralPath (Join-Path $runRoot 'retention-dry-run.json') -Encoding UTF8 } catch { Write-Phase 'retention-dry-run' 'error' (Safe $_.Exception.Message) }
     }
     foreach ($name in ($loadedEnvironment | Select-Object -Unique)) { Remove-Item -LiteralPath ('Env:' + $name) -ErrorAction SilentlyContinue }
     if ($nodePathWasSet) { $env:NODE_PATH = $originalNodePath } else { Remove-Item Env:NODE_PATH -ErrorAction SilentlyContinue }
-    if ($lease) { try { Release-EasyEduResourceLease -Resource 'moodle51-active-fixture-write' -RunId $runId -Force } catch { } }
 }
 
 if ($childExitCode -ne 0 -or -not (Test-Path -LiteralPath $cleanupFile)) { exit 1 }
