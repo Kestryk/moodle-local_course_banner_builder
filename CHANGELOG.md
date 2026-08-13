@@ -8,6 +8,14 @@ many small sections.
 
 ## Unreleased
 
+### 2026-08-13
+
+#### Testing
+
+- Added the single opt-in `ccb-settings-transfer-parity` Playwright scenario
+  for read-only Settings and Transfer layout checks, including a guard against
+  configuration-changing requests.
+
 ### 2026-08-11
 
 #### Fixed
