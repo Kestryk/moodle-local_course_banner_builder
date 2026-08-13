@@ -193,6 +193,8 @@ function local_course_banner_builder_slideshow_public_fixture_add_assignment(std
     $moduleinfo->introformat = FORMAT_HTML;
     $moduleinfo->duedate = time() + DAYSECS;
     $moduleinfo->cutoffdate = 0;
+    // Moodle 5.1 persists this required field even when the optional date is disabled.
+    $moduleinfo->gradingduedate = 0;
     $moduleinfo->allowsubmissionsfromdate = 0;
     $moduleinfo->grade = 100;
     $moduleinfo->submissiondrafts = 0;
