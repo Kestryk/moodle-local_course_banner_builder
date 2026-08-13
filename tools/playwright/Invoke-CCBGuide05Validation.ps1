@@ -197,7 +197,7 @@ module.exports = defineConfig({
         try { & $artifactManifestScript -RunRoot $runRoot -ApprovedRoot $artifactBase -ProjectNamespace 'ccb' -RunId $runId -Status $manifestStatus | Out-Null } catch { Write-Phase 'artifact-manifest' 'error' (Safe $_.Exception.Message) }
     }
     if (Test-Path -LiteralPath $retentionScript) {
-        try { & $retentionScript -ApprovedRoot $artifactBase -KeepRunId $runId | Set-Content -LiteralPath (Join-Path $runRoot 'retention-dry-run.json') -Encoding UTF8 } catch { Write-Phase 'retention-dry-run' 'error' (Safe $_.Exception.Message) }
+        try { & $retentionScript -ArtifactRoot $artifactBase -ApprovedRoot (Split-Path -Parent $artifactBase) -KeepRunId $runId | Set-Content -LiteralPath (Join-Path $runRoot 'retention-dry-run.json') -Encoding UTF8 } catch { Write-Phase 'retention-dry-run' 'error' (Safe $_.Exception.Message) }
     }
     foreach ($name in ($loadedEnvironment | Select-Object -Unique)) { Remove-Item -LiteralPath ('Env:' + $name) -ErrorAction SilentlyContinue }
     if ($nodePathWasSet) { $env:NODE_PATH = $originalNodePath } else { Remove-Item Env:NODE_PATH -ErrorAction SilentlyContinue }

@@ -107,7 +107,7 @@ test('GUIDE-05 opens disclosures in order, highlights its target, and keeps retu
         // The Guide root is deliberately portalled and may have no own box.
         // Interact with the visible launcher/modal controls, not the root.
         const modal = page.locator('[data-easyedu-guide-modal]').first();
-        const launcher = page.locator('[data-easyedu-guide-open="1"]:visible').first();
+        const launcher = page.locator('[data-easyedu-navigation-guide-launcher="desktop"]:visible').first();
         await expect(launcher).toBeVisible();
         await launcher.click();
         await expect(modal).toBeVisible();
