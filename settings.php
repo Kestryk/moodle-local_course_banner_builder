@@ -47,17 +47,10 @@ if ($hassiteconfig || has_capability('local/course_banner_builder:manage', conte
             \html_writer::tag('span', '', [
                 'class' => 'fa fa-sliders local-course-banner-builder-settings-hero-icon',
                 'aria-hidden' => 'true',
-            ]) . \html_writer::div(
-                \html_writer::tag(
-                    'span',
-                    get_string('settings', 'local_course_banner_builder'),
-                    ['class' => 'local-course-banner-builder-settings-hero-eyebrow']
-                ) . \html_writer::tag(
-                    'h2',
-                    get_string('pluginname', 'local_course_banner_builder'),
-                    ['class' => 'local-course-banner-builder-settings-hero-title']
-                ),
-                'local-course-banner-builder-settings-hero-copy'
+            ]) . \html_writer::tag(
+                'h2',
+                get_string('settings', 'local_course_banner_builder'),
+                ['class' => 'local-course-banner-builder-settings-hero-title']
             ),
             'local-course-banner-builder-settings-hero'
         )

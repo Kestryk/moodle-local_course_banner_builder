@@ -22,6 +22,9 @@ many small sections.
 - Restyled the general Course Banner Builder settings with the embedded Kit's
   compact identity, setting panels, multi-select treatment and destructive
   action surface without changing Moodle setting behaviour.
+- Consolidated those settings into one Kit panel, corrected destructive-button
+  contrast and targeted Moodle's actual `fp-btn-choose` filepicker control so
+  its lower spacing is visible.
 - Replaced the Slideshow administration's static Font Awesome label samples
   with the same native Moodle Forum, Assignment and Quiz monologos used by
   the public banner. Site announcements intentionally reuse the Forum
