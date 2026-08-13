@@ -12,6 +12,13 @@ many small sections.
 
 #### Fixed
 
+- Kept the visual editor's selected-layer, selected-layers and all-layers
+  deletion flows on the current page. Confirmed deletions now show the shared
+  `Loading in progress` feedback, replace only the selected-source region,
+  announce a Moodle success/error toast and restore a useful keyboard focus.
+- Restricted the existing JSON deletion paths to POST requests while
+  preserving the system management capability and Moodle sesskey checks.
+
 - Preserve CCB's conditional Guide contracts while adding responsive target
   selection and ordered `showopen` / `showafteropen` disclosure actions.
 - Keep the Guide dialog above the compact Navigation panel and retain its
