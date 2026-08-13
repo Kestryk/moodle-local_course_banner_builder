@@ -10,6 +10,10 @@ many small sections.
 
 ### Fixed
 
+- Kept the Slideshow source-course label's own course-origin colours while
+  making it inherit the adjacent source-type label's shared height,
+  typography, padding, border and radius. This prevents the two labels from
+  drifting vertically in the administration preview or the real Site banner.
 - Aligned Slideshow source-label icons with Moodle's native activity monologos:
   the administration preview and public Forum, Site announcement, Assignment
   and Quiz labels now share the same Moodle-owned icon family and dimensions.

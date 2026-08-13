@@ -213,8 +213,13 @@ const previewEvidence = async(preview) => preview.evaluate(node => {
             width: rect.width,
             height: rect.height,
             color: style.color,
+            borderRadius: style.borderRadius,
+            borderWidth: style.borderWidth,
+            fontFamily: style.fontFamily,
             fontSize: style.fontSize,
+            fontStyle: style.fontStyle,
             fontWeight: style.fontWeight,
+            lineHeight: style.lineHeight,
             textAlign: style.textAlign,
             textTransform: style.textTransform,
             paddingBlock: style.paddingBlock,
@@ -236,6 +241,10 @@ const previewEvidence = async(preview) => preview.evaluate(node => {
             .reduce((values, name) => ({...values, [name]: node.style.getPropertyValue(name)}), {}),
         samples: [
             sample('label', '.local-course-banner-builder-slideshow-label--forums'),
+            sample(
+                'primaryLabel',
+                '.local-course-banner-builder-slideshow-label:not(.local-course-banner-builder-slideshow-label--course-shortname)'
+            ),
             sample('secondaryLabel', '.local-course-banner-builder-slideshow-label--course-shortname'),
             sample('title', '.local-course-banner-builder-slideshow-title'),
             sample('body', '.local-course-banner-builder-slideshow-body'),
@@ -273,7 +282,14 @@ const publicGeometry = async(host, labelSelector, sourceLabelSelector = '') => h
             bottom: bounds.bottom - hostBounds.top,
             width: bounds.width,
             height: bounds.height,
+            borderRadius: style.borderRadius,
+            borderWidth: style.borderWidth,
+            fontFamily: style.fontFamily,
             fontSize: style.fontSize,
+            fontStyle: style.fontStyle,
+            fontWeight: style.fontWeight,
+            lineHeight: style.lineHeight,
+            textTransform: style.textTransform,
             paddingBlock: style.paddingBlock,
             paddingInline: style.paddingInline,
             gap: style.gap,
@@ -306,6 +322,20 @@ const expectPublicGeometry = geometry => {
         expect(sample.right, sample.name + ' escapes the banner on the right').toBeLessThanOrEqual(geometry.hostWidth + 1);
         expect(sample.bottom, sample.name + ' escapes the banner at the bottom').toBeLessThanOrEqual(geometry.hostHeight + 1);
     }
+};
+
+const expectSiblingLabelFormat = (primary, source, surface) => {
+    expect(primary?.present, surface + ' primary source-type label is missing').toBeTruthy();
+    expect(source?.present, surface + ' source-course label is missing').toBeTruthy();
+    for (const property of ['borderRadius', 'borderWidth', 'fontFamily', 'fontSize', 'fontStyle', 'fontWeight',
+        'lineHeight', 'paddingBlock', 'paddingInline', 'textTransform']) {
+        expect(source[property], surface + ' source-course label ' + property + ' differs from its adjacent label')
+            .toBe(primary[property]);
+    }
+    expect(source.minHeight, surface + ' source-course label minimum height differs from its adjacent label')
+        .toBe(primary.minHeight);
+    expect(source.height, surface + ' source-course label rendered height differs from its adjacent label')
+        .toBeCloseTo(primary.height, 3);
 };
 
 test('CCB Slideshow public fixture renders the requested real source at the requested browser zoom', async() => {
@@ -489,13 +519,14 @@ test('CCB Slideshow public fixture renders the requested real source at the requ
                 (env.secondaryLabelParity ? 'secondaryLabel' : 'label'));
             const publicLabel = geometry.samples.find(sample => sample.name === 'label');
             if (env.secondaryLabelParity) {
+                const adminPrimaryLabel = parityEvidence.adminPreview.samples.find(sample => sample.name === 'primaryLabel');
                 const publicSourceLabel = geometry.samples.find(sample => sample.name === 'secondaryLabel');
-                expect(adminLabel?.present, 'admin preview source-course label is missing').toBeTruthy();
-                expect(publicSourceLabel?.present, 'public source-course label is missing').toBeTruthy();
-                expect(adminLabel.paddingBlock, 'source-course label block padding differs').toBe(publicSourceLabel.paddingBlock);
-                expect(adminLabel.paddingInline, 'source-course label inline padding differs').toBe(publicSourceLabel.paddingInline);
-                expect(adminLabel.textTransform, 'source-course label casing differs').toBe('uppercase');
-                parityEvidence.secondaryLabel = {admin: adminLabel, public: publicSourceLabel};
+                expectSiblingLabelFormat(adminPrimaryLabel, adminLabel, 'admin preview');
+                expectSiblingLabelFormat(publicLabel, publicSourceLabel, 'public Site banner');
+                parityEvidence.secondaryLabel = {
+                    admin: {primary: adminPrimaryLabel, source: adminLabel},
+                    public: {primary: publicLabel, source: publicSourceLabel},
+                };
             } else {
                 expect(adminLabel?.icon, 'admin preview Forum label has no Moodle icon').toBeTruthy();
                 expect(publicLabel?.icon, 'public Forum label has no Moodle icon').toBeTruthy();

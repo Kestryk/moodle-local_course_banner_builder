@@ -177,11 +177,15 @@ to a same-course Forum slide.
 The scenario opens the Site administration preview after it has settled, then
 the real site banner. It requires the Assignment label, its native Moodle icon,
 the source-course shortname label, the expected Assignment destination URL,
-contained geometry and no console or request errors. Cleanup removes the
-Assignment by deleting its disposable source course, removes the temporary
-Student enrolment and restores all captured CCB configuration. It is prepared
-and discovery-validated only; it has not yet acquired the Moodle lease or run
-a browser.
+contained geometry and no console or request errors. The source-course label
+keeps its distinct course-origin colours, but must share the adjacent
+source-type label's height, typography, padding, border and radius in both
+surfaces. Cleanup removes the Assignment by deleting its disposable source
+course, removes the temporary Student enrolment and restores all captured CCB
+configuration. The first lease-authorized Moodle 5.1 execution passed on
+2026-08-13 with complete cleanup. It exposed a 27.234 px primary-label height
+against a 25.703 px source-course-label height; the focused parity guard now
+requires those adjacent labels to use the same geometry on both surfaces.
 
 The runner performs discovery first, requires exactly one selected test and
 acquires `moodle51-active-fixture-write` before it creates the fixture. It

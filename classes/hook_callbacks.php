@@ -565,8 +565,7 @@ class hook_callbacks {
                 'var(--local-course-banner-builder-slideshow-label-courseorigin-shadow-rgb, 0, 0, 0); ' .
                 'background: var(--local-course-banner-builder-slideshow-label-courseorigin-bg, rgba(255, 255, 255, 0.88)); ' .
                 'border-color: var(--local-course-banner-builder-slideshow-label-courseorigin-border, #E5E7EB); ' .
-                'color: var(--local-course-banner-builder-slideshow-label-courseorigin-color, #111827); ' .
-                'min-height: calc(1.24em + (var(--local-course-banner-builder-slideshow-label-padding, 12px) * 1.05)); }',
+                'color: var(--local-course-banner-builder-slideshow-label-courseorigin-color, #111827); }',
             '.local-course-banner-builder-slideshow-label--forums { ' .
                 '--local-course-banner-builder-slideshow-label-shadow-rgb: ' .
                 'var(--local-course-banner-builder-slideshow-label-forums-shadow-rgb, 0, 0, 0); ' .
