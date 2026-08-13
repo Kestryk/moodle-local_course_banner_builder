@@ -47,6 +47,7 @@ $phaseFile = Join-Path $runRoot 'phase-progress.jsonl'
 $child = $null
 $lease = $null
 $childExitCode = 70
+$runError = $null
 $cleanupError = $null
 $loadedEnvironment = @()
 $originalNodePath = $env:NODE_PATH

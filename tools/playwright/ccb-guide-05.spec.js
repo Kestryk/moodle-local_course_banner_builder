@@ -104,10 +104,12 @@ test('GUIDE-05 opens disclosures in order, highlights its target, and keeps retu
     try {
         await login(page, env);
         await page.goto(new URL(env.adminPath, env.baseUrl + '/').toString(), {waitUntil: 'domcontentloaded'});
-        const guide = page.locator('[data-easyedu-guide-root]').first();
-        const modal = guide.locator('[data-easyedu-guide-modal]').first();
-        await expect(guide).toBeVisible();
-        await guide.locator('[data-easyedu-guide-open="1"]').click();
+        // The Guide root is deliberately portalled and may have no own box.
+        // Interact with the visible launcher/modal controls, not the root.
+        const modal = page.locator('[data-easyedu-guide-modal]').first();
+        const launcher = page.locator('[data-easyedu-guide-open="1"]:visible').first();
+        await expect(launcher).toBeVisible();
+        await launcher.click();
         await expect(modal).toBeVisible();
 
         await page.evaluate(() => {
@@ -134,7 +136,7 @@ test('GUIDE-05 opens disclosures in order, highlights its target, and keeps retu
             document.body.appendChild(surface);
         });
 
-        const show = guide.locator('[data-easyedu-guide-slide]:not([hidden]) [data-easyedu-guide-show-target]').first();
+        const show = page.locator('[data-easyedu-guide-slide]:not([hidden]) [data-easyedu-guide-show-target]:visible').first();
         await expect(show).toBeVisible();
         await show.evaluate(button => {
             button.setAttribute('data-easyedu-guide-show-target', '#guide05-target');
@@ -165,7 +167,7 @@ test('GUIDE-05 opens disclosures in order, highlights its target, and keeps retu
         await page.locator('#guide05-target').scrollIntoViewIfNeeded();
         await captureCdp(page, context, screenshotFile);
 
-        const returnButton = guide.locator('[data-easyedu-guide-interface-return-button]').first();
+        const returnButton = page.locator('[data-easyedu-guide-interface-return-button]:visible').first();
         await expect(returnButton).toBeVisible();
         await returnButton.click();
         await expect(modal).toBeVisible();
