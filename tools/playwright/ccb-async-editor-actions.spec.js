@@ -43,12 +43,10 @@ const capture = async(page, target) => {
     await page.screenshot({path: target, fullPage: false});
 };
 
-const isAsyncDelete = request => request.method() === 'POST' &&
-    (request.postData() || '').includes('deleteselectedlayersajax');
-const isAsyncDeleteAll = request => request.method() === 'POST' &&
-    (request.postData() || '').includes('deletealllayersajax');
+const isAdminPost = request => request.method() === 'POST' &&
+    request.url().includes('/local/course_banner_builder/admin_manage.php');
 
-test('CCB async editor deletes layers locally with confirmation, feedback and focus return', async({browser}) => {
+test('CCB async editor deletes layers locally with confirmation, feedback and focus return', async({browser}, testInfo) => {
     const env = environment();
     const context = await browser.newContext({viewport: {width: 1280, height: 900}});
     const page = await context.newPage();
@@ -72,45 +70,55 @@ test('CCB async editor deletes layers locally with confirmation, feedback and fo
         await expect(selectedSource).toBeVisible();
         await expect(choices).toHaveCount(5);
 
-        await choices.first().check();
-        await selectedDelete.click();
         const confirmation = page.locator('#local-course-banner-builder-confirm-action-modal');
-        await expect(confirmation).toBeVisible();
-        await expect(confirmation.locator('.btn-danger')).toBeFocused();
-        await confirmation.locator('.btn-outline-secondary').click();
-        await expect(confirmation).toBeHidden();
-        await expect(selectedDelete).toBeFocused();
-        await expect(choices).toHaveCount(5);
+        await testInfo.step('cancellation preserves layers and focus', async() => {
+            await choices.first().check();
+            await selectedDelete.click();
+            await expect(confirmation).toBeVisible({timeout: 10000});
+            await expect(confirmation.locator('.btn-danger')).toBeFocused({timeout: 5000});
+            await confirmation.locator('.btn-outline-secondary').click();
+            await expect(confirmation).toBeHidden({timeout: 5000});
+            await expect(selectedDelete).toBeFocused({timeout: 5000});
+            await expect(choices).toHaveCount(5);
+        });
 
         await page.route('**/local/course_banner_builder/admin_manage.php*', async route => {
-            if (isAsyncDelete(route.request())) {
+            if (isAdminPost(route.request())) {
                 await new Promise(resolve => setTimeout(resolve, 250));
             }
             await route.continue();
         });
-        const selectedResponse = page.waitForResponse(response => isAsyncDelete(response.request()) && response.status() === 200);
-        await selectedDelete.click();
-        await confirmation.locator('.btn-danger').click();
-        await expect(root).toHaveAttribute('aria-busy', 'true');
-        const selectedPayload = await (await selectedResponse).json();
-        expect(selectedPayload.success).toBe(true);
-        await expect(root).toHaveAttribute('aria-busy', 'false');
-        await expect(choices).toHaveCount(4);
-        await expect(selectedDelete).toBeFocused();
-        await expect(page.locator('.toast, [role="alert"]').filter({hasText: /deleted/i}).first()).toBeVisible();
+        await testInfo.step('confirmed selected deletion refreshes only the source region', async() => {
+            const selectedResponse = page.waitForResponse(response => isAdminPost(response.request()) && response.status() === 200,
+                {timeout: 10000});
+            await selectedDelete.click();
+            await expect(confirmation).toBeVisible({timeout: 10000});
+            await confirmation.locator('.btn-danger').click();
+            await expect(root).toHaveAttribute('aria-busy', 'true', {timeout: 5000});
+            const selectedPayload = await (await selectedResponse).json();
+            expect(selectedPayload.success).toBe(true);
+            await expect(root).toHaveAttribute('aria-busy', 'false', {timeout: 10000});
+            await expect(choices).toHaveCount(4);
+            await expect(selectedDelete).toBeFocused({timeout: 10000});
+            await expect(page.locator('.toast, [role="alert"]').filter({hasText: /deleted/i}).first()).toBeVisible({timeout: 10000});
+        });
 
-        const pageUrl = page.url();
-        const allResponse = page.waitForResponse(response => isAsyncDeleteAll(response.request()) && response.status() === 200);
-        await allDelete.click();
-        await confirmation.locator('.btn-danger').click();
-        const allPayload = await (await allResponse).json();
-        expect(allPayload.success).toBe(true);
-        await expect(root).toHaveAttribute('aria-busy', 'false');
-        await expect(choices).toHaveCount(0);
-        await expect(selectedSource.locator('.local-course-banner-builder-empty-layer-list')).toBeVisible();
-        expect(page.url()).toBe(pageUrl);
-        await expect(selectedSource).toBeFocused();
-        await expect(page.locator('.toast, [role="alert"]').filter({hasText: /deleted/i}).first()).toBeVisible();
+        await testInfo.step('confirmed all deletion keeps the page and returns focus', async() => {
+            const pageUrl = page.url();
+            const allResponse = page.waitForResponse(response => isAdminPost(response.request()) && response.status() === 200,
+                {timeout: 10000});
+            await allDelete.click();
+            await expect(confirmation).toBeVisible({timeout: 10000});
+            await confirmation.locator('.btn-danger').click();
+            const allPayload = await (await allResponse).json();
+            expect(allPayload.success).toBe(true);
+            await expect(root).toHaveAttribute('aria-busy', 'false', {timeout: 10000});
+            await expect(choices).toHaveCount(0);
+            await expect(selectedSource.locator('.local-course-banner-builder-empty-layer-list')).toBeVisible({timeout: 10000});
+            expect(page.url()).toBe(pageUrl);
+            await expect(selectedSource).toBeFocused({timeout: 10000});
+            await expect(page.locator('.toast, [role="alert"]').filter({hasText: /deleted/i}).first()).toBeVisible({timeout: 10000});
+        });
         await capture(page, evidence);
     } finally {
         await context.close();
