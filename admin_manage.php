@@ -2023,6 +2023,8 @@ $PAGE->requires->strings_for_js([
     'allowstretchpreviewimage',
     'applycropimage',
     'areyousure',
+    'actioninprogress',
+    'bannerdeleted',
     'bannerslideshow',
     'borderinnerrounded',
     'borderstyle',
@@ -2032,6 +2034,7 @@ $PAGE->requires->strings_for_js([
     'bordersides:all',
     'childborderlayersdisableconfirm',
     'childoverlaylayersdisableconfirm',
+    'categoryimagesdeleted',
     'customsizekeepaspect',
     'cropimage',
     'croppedlayerthumbnail',
@@ -2113,6 +2116,7 @@ $PAGE->requires->strings_for_js([
     'recenterallpreviewimages',
     'redopreviewchange',
     'savebannerlayers',
+    'selectedlayersdeleted',
     'selectlayer',
     'showhideallimages',
     'showimageinpreview',
@@ -2149,7 +2153,12 @@ if ($selectedsource) {
     $PAGE->navbar->add($selectedsource->label, $url);
 }
 
-if ($deletealllayersajax && confirm_sesskey() && $selectedsource) {
+if (
+    $deletealllayersajax &&
+    $_SERVER['REQUEST_METHOD'] === 'POST' &&
+    confirm_sesskey() &&
+    $selectedsource
+) {
     \local_course_banner_builder\manager::delete_source_images($selectedsource);
     $updatedcontext = \local_course_banner_builder\manager::export_selected_source($selectedsource);
     $updatedcontext['sourcevisualeditorhtml'] = local_course_banner_builder_render_source_visual_editor($selectedsource);
@@ -2157,6 +2166,7 @@ if ($deletealllayersajax && confirm_sesskey() && $selectedsource) {
     echo json_encode([
         'success' => true,
         'html' => $OUTPUT->render_from_template('local_course_banner_builder/admin_selected', $updatedcontext),
+        'message' => get_string('categoryimagesdeleted', 'local_course_banner_builder'),
     ]);
     exit;
 }
@@ -2329,7 +2339,12 @@ if ($savebannerformat && confirm_sesskey()) {
     redirect(new moodle_url($adminpagepath, $selectedsourceparams), get_string('changessaved'));
 }
 
-if ($deletepreviewlayerajax && confirm_sesskey() && $selectedsource) {
+if (
+    $deletepreviewlayerajax &&
+    $_SERVER['REQUEST_METHOD'] === 'POST' &&
+    confirm_sesskey() &&
+    $selectedsource
+) {
     \local_course_banner_builder\manager::delete_banner_element($deletepreviewlayerajax);
     $updatedcontext = \local_course_banner_builder\manager::export_selected_source($selectedsource);
     $updatedcontext['sourcevisualeditorhtml'] = local_course_banner_builder_render_source_visual_editor($selectedsource);
@@ -2337,19 +2352,26 @@ if ($deletepreviewlayerajax && confirm_sesskey() && $selectedsource) {
     echo json_encode([
         'success' => true,
         'html' => $OUTPUT->render_from_template('local_course_banner_builder/admin_selected', $updatedcontext),
+        'message' => get_string('bannerdeleted', 'local_course_banner_builder'),
     ]);
     exit;
 }
 
-if ($deleteselectedlayersajax && confirm_sesskey() && $selectedsource) {
+if (
+    $deleteselectedlayersajax &&
+    $_SERVER['REQUEST_METHOD'] === 'POST' &&
+    confirm_sesskey() &&
+    $selectedsource
+) {
     $selectedelementids = optional_param_array('selectedelements', [], PARAM_INT);
-    \local_course_banner_builder\manager::delete_banner_elements($selectedelementids);
+    $deleted = \local_course_banner_builder\manager::delete_banner_elements($selectedelementids);
     $updatedcontext = \local_course_banner_builder\manager::export_selected_source($selectedsource);
     $updatedcontext['sourcevisualeditorhtml'] = local_course_banner_builder_render_source_visual_editor($selectedsource);
     header('Content-Type: application/json');
     echo json_encode([
         'success' => true,
         'html' => $OUTPUT->render_from_template('local_course_banner_builder/admin_selected', $updatedcontext),
+        'message' => get_string('selectedlayersdeleted', 'local_course_banner_builder', $deleted),
     ]);
     exit;
 }
@@ -2927,7 +2949,10 @@ $PAGE->requires->js_call_amd('local_course_banner_builder/easyedu_guide_adapter'
 ]);
 
 echo $OUTPUT->header();
-echo html_writer::start_div(implode(' ', $adminclasses));
+echo html_writer::start_div(implode(' ', $adminclasses), [
+    'aria-busy' => 'false',
+    'data-easyedu-action-busy-label' => get_string('actioninprogress', 'local_course_banner_builder'),
+]);
 
 local_course_banner_builder_render_banner_format_modal(
     (new moodle_url($adminpagepath, $selectedsourceparams))->out(false),

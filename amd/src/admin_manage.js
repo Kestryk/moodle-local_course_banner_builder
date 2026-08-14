@@ -20,7 +20,7 @@
  * @copyright  2026 Kevin Jarniac
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['local_course_banner_builder/motion'], function (Motion) {
+define(['local_course_banner_builder/motion', 'core/notification'], function (Motion, Notification) {
 
 var localCourseBannerBuilderSourcePreviewModes = {};
 var localCourseBannerBuilderSourcePreviewOrientationMediaQuery = null;
@@ -8000,51 +8000,59 @@ function localCourseBannerBuilderDeleteSelectedPreviewLayer(button) {
     }
     var message = button.getAttribute('data-confirm-message') ||
         localCourseBannerBuilderGetJsString('areyousure', 'Are you sure?');
-    if (!window.confirm(message)) {
-        return;
-    }
-    var formData = new FormData();
-    formData.append('sesskey', M.cfg.sesskey || '');
-    formData.append('sourcekey', root.getAttribute('data-sourcekey') || '');
-    formData.append('deletepreviewlayerajax', layerId);
-    fetch(window.location.href, {
-        method: 'POST',
-        body: formData,
-        credentials: 'same-origin',
-        headers: {'X-Requested-With': 'XMLHttpRequest'}
-    }).then(function (response) {
-        if (!response.ok) {
-            throw new Error(localCourseBannerBuilderGetJsString(
-                'unabletodeleteselectedlayer',
-                'Unable to delete selected layer'
-            ));
-        }
-        return response.json();
-    }).then(function (data) {
-        if (!data || !data.success || typeof data.html !== 'string') {
-            throw new Error(localCourseBannerBuilderGetJsString(
-                'invaliddeleteselectedlayerresponse',
-                'Invalid delete-selected-layer response'
-            ));
-        }
-        var host = document.querySelector('[data-selected-source-content="1"]');
-        if (!host) {
+    localCourseBannerBuilderConfirmAction(message).then(function (confirmed) {
+        if (!confirmed) {
+            button.focus({preventScroll: true});
             return;
         }
-        host.innerHTML = data.html;
-        var replacement = host.querySelector('[data-selected-source-content="1"]');
-        if (replacement) {
-            host.replaceWith(replacement);
-            host = replacement;
-        }
-        localCourseBannerBuilderRehydrateSelectedSourceContent(host);
-        localCourseBannerBuilderRemoveLayerFromLayerModals(layerId);
-    }).catch(function (error) {
-        window.console.error(error);
-        window.alert(error.message || localCourseBannerBuilderGetJsString(
-            'unabletodeleteselectedlayer',
-            'Unable to delete selected layer'
-        ));
+        var busyRoot = localCourseBannerBuilderSetAsyncActionBusy(button, true);
+        var formData = new FormData();
+        formData.append('sesskey', M.cfg.sesskey || '');
+        formData.append('sourcekey', root.getAttribute('data-sourcekey') || '');
+        formData.append('deletepreviewlayerajax', layerId);
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin',
+            headers: {'X-Requested-With': 'XMLHttpRequest'}
+        }).then(function (response) {
+            if (!response.ok) {
+                throw new Error(localCourseBannerBuilderGetJsString(
+                    'unabletodeleteselectedlayer',
+                    'Unable to delete selected layer'
+                ));
+            }
+            return response.json();
+        }).then(function (data) {
+            var host = localCourseBannerBuilderReplaceSelectedSourceContentFromDeleteResponse(data);
+            localCourseBannerBuilderRemoveLayerFromLayerModals(layerId);
+            localCourseBannerBuilderNotifyAsyncAction(
+                data.message || localCourseBannerBuilderGetJsString('bannerdeleted', 'Layer deleted.'),
+                'success'
+            );
+            localCourseBannerBuilderFocusAfterAsyncDelete(
+                host,
+                '[data-action="local-course-banner-builder-delete-selected-preview-layer"]'
+            );
+        }).catch(function (error) {
+            window.console.error(error);
+            localCourseBannerBuilderNotifyAsyncAction(
+                error.message || localCourseBannerBuilderGetJsString(
+                    'unabletodeleteselectedlayer',
+                    'Unable to delete selected layer'
+                ),
+                'error'
+            );
+            if (button.isConnected) {
+                button.focus({preventScroll: true});
+            }
+        }).finally(function () {
+            localCourseBannerBuilderSetAsyncActionBusy(button, false);
+            if (busyRoot && !button.isConnected) {
+                busyRoot.classList.remove('is-action-busy');
+                busyRoot.setAttribute('aria-busy', 'false');
+            }
+        });
     });
 }
 
@@ -14277,6 +14285,68 @@ function localCourseBannerBuilderGetJsString(key, fallback) {
     return fallback;
 }
 
+/**
+ * Toggle shared busy feedback for an asynchronous editor action.
+ *
+ * @param {HTMLElement} button Action button.
+ * @param {boolean} busy Whether the request is active.
+ * @return {HTMLElement|null} Administration root.
+ */
+function localCourseBannerBuilderSetAsyncActionBusy(button, busy) {
+    var root = button ? button.closest('.local-course-banner-builder-admin') : null;
+    if (!root) {
+        return null;
+    }
+    root.classList.toggle('is-action-busy', busy);
+    root.setAttribute('aria-busy', busy ? 'true' : 'false');
+    if (button && button.isConnected) {
+        if (busy) {
+            button.dataset.asyncActionWasDisabled = button.disabled ? '1' : '0';
+            button.disabled = true;
+        } else {
+            button.disabled = button.dataset.asyncActionWasDisabled === '1';
+            delete button.dataset.asyncActionWasDisabled;
+        }
+    }
+    return root;
+}
+
+/**
+ * Announce an asynchronous editor result through Moodle notifications.
+ *
+ * @param {string} message Translated notification message.
+ * @param {string} type Moodle notification type.
+ */
+function localCourseBannerBuilderNotifyAsyncAction(message, type) {
+    if (!message) {
+        return;
+    }
+    Notification.addNotification({
+        message: message,
+        type: type,
+        closebutton: true,
+        announce: true
+    });
+}
+
+/**
+ * Restore focus after the selected-source fragment has been replaced.
+ *
+ * @param {HTMLElement|null} host Replacement selected-source region.
+ * @param {string} preferredSelector Preferred focus target in the region.
+ */
+function localCourseBannerBuilderFocusAfterAsyncDelete(host, preferredSelector) {
+    var preferred = host && preferredSelector ? host.querySelector(preferredSelector) : null;
+    if (preferred && !preferred.hidden && !preferred.disabled) {
+        preferred.focus({preventScroll: true});
+        return;
+    }
+    if (host) {
+        host.setAttribute('tabindex', '-1');
+        host.focus({preventScroll: true});
+    }
+}
+
 function localCourseBannerBuilderSyncBinaryOptionButton(input) {
     if (!input || !input.form) {
         return;
@@ -18200,8 +18270,10 @@ function localCourseBannerBuilderDeleteAllLayers(button) {
         localCourseBannerBuilderGetJsString('areyousure', '');
     localCourseBannerBuilderConfirmAction(message).then(function (confirmed) {
         if (!confirmed) {
+            button.focus({preventScroll: true});
             return;
         }
+        var busyRoot = localCourseBannerBuilderSetAsyncActionBusy(button, true);
         var formData = new FormData(form);
         fetch(window.location.href, {
             method: 'POST',
@@ -18235,8 +18307,29 @@ function localCourseBannerBuilderDeleteAllLayers(button) {
             }
             localCourseBannerBuilderRehydrateSelectedSourceContent(host);
             localCourseBannerBuilderRemoveOwnSourceLayersFromLayerModals();
+            localCourseBannerBuilderNotifyAsyncAction(
+                data.message || localCourseBannerBuilderGetJsString('categoryimagesdeleted', 'Source layers deleted.'),
+                'success'
+            );
+            localCourseBannerBuilderFocusAfterAsyncDelete(host, '');
         }).catch(function (error) {
             window.console.error(error);
+            localCourseBannerBuilderNotifyAsyncAction(
+                error.message || localCourseBannerBuilderGetJsString(
+                    'unabletodeletealllayers',
+                    'Unable to delete all layers'
+                ),
+                'error'
+            );
+            if (button.isConnected) {
+                button.focus({preventScroll: true});
+            }
+        }).finally(function () {
+            localCourseBannerBuilderSetAsyncActionBusy(button, false);
+            if (busyRoot && !button.isConnected) {
+                busyRoot.classList.remove('is-action-busy');
+                busyRoot.setAttribute('aria-busy', 'false');
+            }
         });
     });
 }
@@ -18280,8 +18373,10 @@ function localCourseBannerBuilderDeleteSelectedLayers(button) {
         localCourseBannerBuilderGetJsString('areyousure', '');
     localCourseBannerBuilderConfirmAction(message).then(function (confirmed) {
         if (!confirmed) {
+            button.focus({preventScroll: true});
             return;
         }
+        var busyRoot = localCourseBannerBuilderSetAsyncActionBusy(button, true);
         var formData = new FormData(form);
         formData.delete('deleteselectedlayers');
         formData.append('deleteselectedlayersajax', '1');
@@ -18299,13 +18394,33 @@ function localCourseBannerBuilderDeleteSelectedLayers(button) {
             }
             return response.json();
         }).then(function (data) {
-            localCourseBannerBuilderReplaceSelectedSourceContentFromDeleteResponse(data);
+            var host = localCourseBannerBuilderReplaceSelectedSourceContentFromDeleteResponse(data);
+            localCourseBannerBuilderNotifyAsyncAction(
+                data.message || localCourseBannerBuilderGetJsString('bannerdeleted', 'Layer deleted.'),
+                'success'
+            );
+            localCourseBannerBuilderFocusAfterAsyncDelete(
+                host,
+                '[data-action="local-course-banner-builder-delete-selected-layers"]'
+            );
         }).catch(function (error) {
             window.console.error(error);
-            window.alert(error.message || localCourseBannerBuilderGetJsString(
-                'unabletodeleteselectedlayer',
-                'Unable to delete selected layer'
-            ));
+            localCourseBannerBuilderNotifyAsyncAction(
+                error.message || localCourseBannerBuilderGetJsString(
+                    'unabletodeleteselectedlayer',
+                    'Unable to delete selected layer'
+                ),
+                'error'
+            );
+            if (button.isConnected) {
+                button.focus({preventScroll: true});
+            }
+        }).finally(function () {
+            localCourseBannerBuilderSetAsyncActionBusy(button, false);
+            if (busyRoot && !button.isConnected) {
+                busyRoot.classList.remove('is-action-busy');
+                busyRoot.setAttribute('aria-busy', 'false');
+            }
         });
     });
 }

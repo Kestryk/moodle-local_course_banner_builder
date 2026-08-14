@@ -8,6 +8,17 @@ many small sections.
 
 ## Unreleased
 
+### 2026-08-13
+
+#### Fixed
+
+- Kept the visual editor's selected-layer, selected-layers and all-layers
+  deletion flows on the current page. Confirmed deletions now show the shared
+  `Loading in progress` feedback, replace only the selected-source region,
+  announce a Moodle success/error toast and restore a useful keyboard focus.
+- Restricted the existing JSON deletion paths to POST requests while
+  preserving the system management capability and Moodle sesskey checks.
+
 ### Guide CCB advanced - 2026-08-12
 
 #### Fixed
