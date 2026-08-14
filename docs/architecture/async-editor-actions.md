@@ -60,3 +60,12 @@ sesskey/source gates, that translated messages and Moodle notifications are
   generated AMD/CSS outputs preserve the expected dependencies and shared
   busy-state selectors. It does not replace a Moodle 5.1 interaction
 review or future Moodle 4.5 compatibility execution.
+
+## Moodle 5.1 supervised scenario
+
+`tools/playwright/Invoke-CCBAsyncEditorActionsValidation.ps1` discovers and
+runs exactly one `ccb-async-editor-actions` scenario under the shared Moodle
+fixture lease. It creates the existing disposable CCB layer fixture, verifies
+cancelled and confirmed selected/all deletion, then removes the fixture category
+in `finally`. Its browser profile, screenshots, logs, cleanup record and
+artifact manifest remain outside Git.

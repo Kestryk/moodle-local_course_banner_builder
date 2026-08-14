@@ -118,6 +118,7 @@ Status values:
 | LYR-01 | Reorder layers by buttons | Preview z-order changes and persists | Behat/Playwright | Blocked |
 | LYR-02 | Reorder layers by drag/drop | Same persisted order as button flow | Playwright | Blocked |
 | LYR-03 | Push image above overlay/border | Conflicting order controls are disabled | Playwright | Blocked |
+| DEL-01 | Cancel then confirm selected and all layer deletion | Cancellation makes no POST; confirmed actions use the local selected-source refresh, loading feedback, success toast and deterministic focus return | One leased Moodle 5.1 Playwright scenario (`ccb-async-editor-actions.spec.js`) | Candidate |
 | SAVE-01 | Save and reload source | All visual settings persist | Behat/Playwright | Blocked |
 | PREV-01 | Resize admin preview | Layout remains usable at desktop/tablet/mobile | Playwright/manual | Manual |
 | PREV-02 | Render final course banner | Position, crop, title, border, and overlay agree with preview | Visual/manual | Manual |
