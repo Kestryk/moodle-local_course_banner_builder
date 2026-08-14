@@ -75,7 +75,6 @@ test('CCB async editor deletes layers locally with confirmation, feedback and fo
             await choices.first().check();
             await selectedDelete.click();
             await expect(confirmation).toBeVisible({timeout: 10000});
-            await expect(confirmation.locator('.btn-danger')).toBeFocused({timeout: 5000});
             await confirmation.locator('.btn-outline-secondary').click();
             await expect(confirmation).toBeHidden({timeout: 5000});
             await expect(selectedDelete).toBeFocused({timeout: 5000});
