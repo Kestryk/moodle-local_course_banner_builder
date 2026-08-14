@@ -133,6 +133,7 @@ Status values:
 | A11Y-01 | Scan admin root | No serious or critical plugin-region axe violations | Behat/Playwright | Existing smoke |
 | A11Y-02 | Keyboard-only core flow | Focus visible, modal focus restored, non-drag controls work | Manual/Behat | Manual |
 | A11Y-03 | Public banner title replacement | One Moodle-owned primary heading; decorative duplicate hidden; distinct context is secondary; no hidden focusable control | Playwright/manual | Existing opt-in / Manual screen reader |
+| SET-TRF-01 | Open General settings and Transfer without changing data | Compact Settings panel, readable focusable Delete action, two Moodle-style Transfer checkbox columns, aligned destructive option and spaced filepicker button | Playwright | Existing opt-in |
 | TRF-01 | Export settings and files | Package contains selected supported data | PHPUnit/Behat | Blocked |
 | TRF-02 | Import package into clean site | Data maps safely and missing dependencies are reported | PHPUnit/Behat | Blocked |
 
@@ -147,6 +148,9 @@ Status values:
    flows.
 6. Promote a test to the EasyEdu platform matrix only after it is deterministic
    on a clean disposable Moodle site.
+
+The opt-in `SET-TRF-01` implementation and its non-destructive execution
+contract are documented in [CCB Settings and Transfer parity](ccb-settings-transfer-parity.md).
 
 ## Detailed manual scenarios
 
