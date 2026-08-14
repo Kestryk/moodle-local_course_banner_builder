@@ -12,7 +12,8 @@
 .local-course-banner-builder-settings-hero,
 #admin-enabled,
 #admin-enabledcustomfields,
-.local-course-banner-builder-settings-reset {
+.local-course-banner-builder-settings-reset,
+#adminsettings fieldset:has(.local-course-banner-builder-settings-hero) {
     @include easyedu.token-defaults;
 
     --local-course-banner-builder-easyedu-transition-fast: 160ms ease;
@@ -28,56 +29,69 @@
     padding: 0;
 }
 
-.local-course-banner-builder-settings-hero {
-    align-items: center;
-    display: flex;
-    gap: 0.9rem;
+.formsettingheading:has(.local-course-banner-builder-settings-reset) {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+#adminsettings fieldset:has(.local-course-banner-builder-settings-hero) {
     max-width: 66rem;
-    margin: 0 0 1rem;
-    padding: 1rem 1.1rem;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
     border: 1px solid var(--easyedu-card-border);
     border-radius: var(--easyedu-card-radius);
     background: var(--easyedu-surface);
-    box-shadow: 0 0.14rem 0.38rem rgba(31, 42, 55, 0.04);
+    box-shadow: 0 0.18rem 0.48rem rgba(31, 42, 55, 0.05);
+}
+
+.local-course-banner-builder-settings-hero {
+    align-items: center;
+    display: flex;
+    gap: 0.72rem;
+    margin: 0;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--easyedu-primary) 22%, var(--easyedu-card-border) 78%);
+    background: color-mix(in srgb, var(--easyedu-primary-soft) 48%, var(--easyedu-surface) 52%);
 }
 
 .local-course-banner-builder-settings-hero-icon {
     align-items: center;
     display: inline-flex;
-    flex: 0 0 2.5rem;
+    flex: 0 0 2.2rem;
     justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 2.2rem;
+    height: 2.2rem;
     border-radius: var(--easyedu-control-radius);
-    background: var(--easyedu-primary-soft);
+    background: var(--easyedu-surface);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--easyedu-primary) 18%, transparent);
     color: var(--easyedu-primary-strong);
-    font-size: 1.05rem;
-}
-
-.local-course-banner-builder-settings-hero-eyebrow {
-    @include easyedu.type-eyebrow;
-
-    color: var(--easyedu-primary-strong);
+    font-size: 0.95rem;
 }
 
 .local-course-banner-builder-settings-hero-title {
     @include easyedu.type-section-title;
 
-    margin: 0.14rem 0 0;
+    margin: 0;
+    color: var(--easyedu-text);
 }
 
 #admin-enabled,
 #admin-enabledcustomfields {
-    max-width: 66rem;
-    margin: 0 0 0.8rem;
-    padding: 0.9rem 1rem;
-    border: 1px solid var(--easyedu-card-border);
-    border-radius: var(--easyedu-card-radius);
+    max-width: none;
+    margin: 0;
+    padding: 1rem;
+    border: 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--easyedu-card-border) 72%, transparent 28%);
+    border-radius: 0;
     background: var(--easyedu-surface);
-    box-shadow: 0 0.1rem 0.3rem rgba(31, 42, 55, 0.035);
+    box-shadow: none;
 
     .form-label {
-        padding-top: 0;
+        padding-top: 0.1rem;
         text-align: left !important;
 
         label {
@@ -91,6 +105,7 @@
 
     .form-setting {
         min-width: 0;
+        padding-left: 1.15rem;
     }
 
     .form-text {
@@ -110,23 +125,57 @@
 }
 
 #admin-enabledcustomfields select {
-    @include easyedu.multi-select-list(large);
+    @include easyedu.multi-select-list;
 
-    width: min(100%, 42rem);
+    width: min(100%, 36rem);
+    min-height: 7.5rem;
 }
 
 .local-course-banner-builder-settings-reset {
-    max-width: 66rem;
-    margin: 1rem 0 0;
-    padding: 0.95rem 1rem;
-    border-color: color-mix(in srgb, var(--easyedu-danger) 30%, var(--easyedu-card-border) 70%);
-    background: color-mix(in srgb, var(--easyedu-danger) 5%, var(--easyedu-surface) 95%);
+    max-width: none;
+    margin: 0;
+    padding: 1rem;
+    border: 0;
+    border-radius: 0;
+    background: color-mix(in srgb, var(--easyedu-danger-soft) 62%, var(--easyedu-surface) 38%);
     color: var(--easyedu-text);
 
     .btn-danger {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         min-height: 2.35rem;
+        padding: 0.48rem 0.9rem;
+        border: 1px solid var(--easyedu-danger) !important;
         border-radius: var(--easyedu-control-radius);
+        background: var(--easyedu-danger) !important;
+        box-shadow: 0 0.12rem 0.28rem color-mix(in srgb, var(--easyedu-danger) 18%, transparent);
+        color: #fff !important;
         font-weight: 700;
+
+        &:hover,
+        &:focus-visible {
+            border-color: color-mix(in srgb, var(--easyedu-danger) 82%, #000 18%) !important;
+            background: color-mix(in srgb, var(--easyedu-danger) 82%, #000 18%) !important;
+            color: #fff !important;
+        }
+    }
+}
+
+#adminsettings:has(.local-course-banner-builder-settings-hero) .form-buttons {
+    max-width: 66rem;
+    margin: 0.9rem 0 0;
+    padding: 0;
+    justify-content: flex-start;
+}
+
+@media (max-width: 47.99rem) {
+    #admin-enabled,
+    #admin-enabledcustomfields {
+        .form-setting {
+            padding-top: 0.55rem;
+            padding-left: 0;
+        }
     }
 }
 
@@ -533,9 +582,9 @@
                 margin-top: 0.45rem;
             }
 
-            .fp-btn-add {
-                margin-bottom: 0.75rem;
-                margin-top: 0.35rem;
+            .fp-btn-choose {
+                display: inline-flex;
+                margin: 0.35rem 0 0.85rem !important;
             }
         }
 

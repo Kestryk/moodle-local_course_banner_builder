@@ -8,6 +8,20 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0007 - 2026-08-14
+
+#### Fixed
+
+- Consolidated General settings into one compact Kit panel, corrected the
+  destructive-button contrast and targeted Moodle's actual `fp-btn-choose`
+  control so its lower spacing remains visible.
+
+#### Validation
+
+- Added the single opt-in `ccb-settings-transfer-parity` Playwright scenario
+  for read-only Settings and Transfer layout checks, including a guard against
+  configuration-changing requests.
+
 ### 2026-08-13
 
 #### Fixed
