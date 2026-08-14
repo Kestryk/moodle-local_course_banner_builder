@@ -24,7 +24,8 @@ The scenario authenticates as the configured CCB administrator and then:
   `form-check-input` class;
 - checks that `replaceall` stays unchecked and that its checkbox and label are
   vertically aligned, locating the row through Moodle's `.fitem` structure
-  rather than relying on an optional generated wrapper ID;
+  rather than relying on an optional generated wrapper ID, and explicitly
+  ignoring Moodle's hidden fallback input with the same field name;
 - checks the real Moodle `.fp-btn-choose` control has at least 12 px of bottom
   margin.
 
