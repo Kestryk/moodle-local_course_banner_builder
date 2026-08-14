@@ -23,6 +23,8 @@ many small sections.
   configuration-changing requests.
 - Made its destructive-option assertion follow Moodle's rendered `.fitem`
   wrapper when no generated `fitem_id_replaceall` ID is present.
+- Made the alignment measurement target the visible `replaceall` checkbox
+  rather than Moodle's preceding hidden fallback input.
 
 ### 2026-08-13
 

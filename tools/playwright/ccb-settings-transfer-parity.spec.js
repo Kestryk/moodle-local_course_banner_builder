@@ -153,7 +153,7 @@ test('ccb-settings-transfer-parity', async ({page}) => {
     await expect(destructiveCheckbox).not.toBeChecked();
     const destructiveAlignment = await destructiveOption.evaluate((option) => {
         const formCheck = option.querySelector('.form-check');
-        const checkbox = option.querySelector('input[name="replaceall"]');
+        const checkbox = option.querySelector('input[name="replaceall"][type="checkbox"]');
         const checkboxRect = checkbox.getBoundingClientRect();
         const description = option.querySelector(
             `label[for="${checkbox.id}"], #${checkbox.id}_description`
