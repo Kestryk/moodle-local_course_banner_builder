@@ -144,8 +144,11 @@ test('ccb-settings-transfer-parity', async ({page}) => {
         }
     }
 
-    const destructiveOption = page.locator('#fitem_id_replaceall');
-    const destructiveCheckbox = destructiveOption.locator('input[name="replaceall"]');
+    const destructiveCheckbox = page.locator('input[name="replaceall"][type="checkbox"]');
+    const destructiveOption = page.locator(
+        '.local-course-banner-builder-transfer-panel .mform > .fitem' +
+        ':has(input[name="replaceall"][type="checkbox"])'
+    );
     await expect(destructiveOption).toBeVisible();
     await expect(destructiveCheckbox).not.toBeChecked();
     const destructiveAlignment = await destructiveOption.evaluate((option) => {
