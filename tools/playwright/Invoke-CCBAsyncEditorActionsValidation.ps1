@@ -10,12 +10,20 @@ param(
 $ErrorActionPreference = 'Stop'
 $scriptDir = Split-Path -Parent $PSCommandPath
 $pluginRoot = (Resolve-Path -LiteralPath (Join-Path $scriptDir '..\..')).Path
-$moodleRoot = (Resolve-Path -LiteralPath (Join-Path $scriptDir '..\..\..\..')).Path
-$moodlePhp = Join-Path $moodleRoot '..\php\php.exe'
+$orchestrationRoot = Join-Path $env:LOCALAPPDATA 'EasyEdu\orchestration'
+$profilesPath = Join-Path $orchestrationRoot 'profiles\runtime-preview-profiles.json'
+$runtimeProfile = if (Test-Path -LiteralPath $profilesPath) {
+    ((Get-Content -LiteralPath $profilesPath -Raw | ConvertFrom-Json).profiles | Where-Object { $_.name -eq 'ccb-moodle51' } |
+        Select-Object -First 1)
+}
+if (!$runtimeProfile) { throw 'The ccb-moodle51 runtime preview profile is unavailable.' }
+$moodleRoot = (Resolve-Path -LiteralPath $runtimeProfile.moodleRoot).Path
+$moodlePhp = (Resolve-Path -LiteralPath $runtimeProfile.phpExecutable).Path
+$runtimePluginRoot = (Resolve-Path -LiteralPath $runtimeProfile.runtimeRepository).Path
 $playwrightCli = Join-Path $scriptDir 'node_modules\@playwright\test\cli.js'
 $playwrightConfig = Join-Path $scriptDir 'playwright.config.js'
 $playwrightSpec = Join-Path $scriptDir 'ccb-async-editor-actions.spec.js'
-$fixtureHelper = Join-Path $scriptDir 'ccb-layer-object-row-fixture.php'
+$fixtureHelper = Join-Path $runtimePluginRoot 'tools\playwright\ccb-layer-object-row-fixture.php'
 $credentialLoader = Join-Path $scriptDir 'Use-CCBMoodle51Credentials.ps1'
 $orchestrationModule = 'C:\dev\easyedu-platform\tools\orchestration\EasyEduOrchestration.psm1'
 $artifactManifestScript = Join-Path (Split-Path -Parent $orchestrationModule) 'Register-EasyEduArtifactManifest.ps1'
