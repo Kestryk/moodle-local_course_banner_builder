@@ -2155,18 +2155,6 @@ JS;
                 (0.82 * scale).toFixed(3) + 'cqw), ' +
                 (8.4 * scale).toFixed(3) + 'cqh)';
         };
-        const buildEditorLabelSize = function (percent) {
-            const value = Math.max(25, Math.min(100, parseInt(percent || 100, 10)));
-            const scale = value / 100 * getFormatSizeScale(format, 'label');
-            // Keep the desktop editor legible at the same physical scale as its public full-width banner.
-            // The editor canvas is deliberately narrower than the banner, so cqw alone would make its labels smaller.
-            return 'clamp(' + (0.35 * scale).toFixed(3) + 'rem, ' +
-                (0.807 * scale).toFixed(3) + 'vw, ' +
-                (1.68 * scale).toFixed(3) + 'rem)';
-        };
-        const isEditorPreview = target.dataset.slideshowPreviewEditor === '1' ||
-            !!target.closest('[data-slideshow-preview-editor="1"]') ||
-            !!target.querySelector('[data-slideshow-preview-editor="1"]');
         const buildActionSize = function (percent) {
             const value = Math.max(25, Math.min(100, parseInt(percent || 100, 10)));
             const scale = value / 100 * getFormatSizeScale(format, 'action');
@@ -2216,9 +2204,7 @@ JS;
         );
         root.style.setProperty(
             '--local-course-banner-builder-slideshow-label-font-size',
-            isEditorPreview ?
-                buildEditorLabelSize(payload.labelSizePercent) :
-                buildLabelSize(payload.labelSizePercent)
+            buildLabelSize(payload.labelSizePercent)
         );
         root.style.setProperty(
             '--local-course-banner-builder-slideshow-label-text-scale',
