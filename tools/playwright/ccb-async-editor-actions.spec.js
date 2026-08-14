@@ -46,7 +46,7 @@ const capture = async(page, target) => {
 const isAdminPost = request => request.method() === 'POST' &&
     request.url().includes('/local/course_banner_builder/admin_manage.php');
 
-test('CCB async editor deletes layers locally with confirmation, feedback and focus return', async({browser}, testInfo) => {
+test('CCB async editor deletes layers locally with confirmation, feedback and focus return', async({browser}) => {
     const env = environment();
     const context = await browser.newContext({viewport: {width: 1280, height: 900}});
     const page = await context.newPage();
@@ -71,7 +71,7 @@ test('CCB async editor deletes layers locally with confirmation, feedback and fo
         await expect(choices).toHaveCount(5);
 
         const confirmation = page.locator('#local-course-banner-builder-confirm-action-modal');
-        await testInfo.step('cancellation preserves layers and focus', async() => {
+        await test.step('cancellation preserves layers and focus', async() => {
             await choices.first().check();
             await selectedDelete.click();
             await expect(confirmation).toBeVisible({timeout: 10000});
@@ -88,7 +88,7 @@ test('CCB async editor deletes layers locally with confirmation, feedback and fo
             }
             await route.continue();
         });
-        await testInfo.step('confirmed selected deletion refreshes only the source region', async() => {
+        await test.step('confirmed selected deletion refreshes only the source region', async() => {
             const selectedResponse = page.waitForResponse(response => isAdminPost(response.request()) && response.status() === 200,
                 {timeout: 10000});
             await selectedDelete.click();
@@ -103,7 +103,7 @@ test('CCB async editor deletes layers locally with confirmation, feedback and fo
             await expect(page.locator('.toast, [role="alert"]').filter({hasText: /deleted/i}).first()).toBeVisible({timeout: 10000});
         });
 
-        await testInfo.step('confirmed all deletion keeps the page and returns focus', async() => {
+        await test.step('confirmed all deletion keeps the page and returns focus', async() => {
             const pageUrl = page.url();
             const allResponse = page.waitForResponse(response => isAdminPost(response.request()) && response.status() === 200,
                 {timeout: 10000});
