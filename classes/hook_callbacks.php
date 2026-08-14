@@ -535,7 +535,8 @@ class hook_callbacks {
             '    line-height: 1;',
             '    min-width: 0;',
             '    max-width: 100%;',
-            '    min-height: calc(1.2528em + (var(--local-course-banner-builder-slideshow-label-padding, 12px) * 1.05));',
+            '    min-height: calc(1.2528em + var(--local-course-banner-builder-slideshow-label-padding, 12px) + ' .
+                '(var(--local-course-banner-builder-slideshow-label-border-width, 1px) * 2));',
             '    box-shadow: var(--local-course-banner-builder-slideshow-label-shadow-x, 0) ' .
                 'var(--local-course-banner-builder-slideshow-label-shadow-y, 0) ' .
                 'var(--local-course-banner-builder-slideshow-label-shadow-blur, 8px) ' .

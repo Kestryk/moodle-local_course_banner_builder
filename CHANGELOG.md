@@ -14,8 +14,9 @@ many small sections.
   making it inherit the adjacent source-type label's shared height,
   typography, padding, border and radius. This prevents the two labels from
   drifting vertically in the administration preview or the real Site banner.
-  The shared minimum height now also accounts for the rendered native Moodle
-  icon, so icon-free course labels use the exact same outer height.
+  The shared minimum height now mirrors the rendered native Moodle icon,
+  padding and border, so icon-free course labels use the exact same outer
+  height.
 - Aligned Slideshow source-label icons with Moodle's native activity monologos:
   the administration preview and public Forum, Site announcement, Assignment
   and Quiz labels now share the same Moodle-owned icon family and dimensions.

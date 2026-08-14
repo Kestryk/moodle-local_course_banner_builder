@@ -334,8 +334,12 @@ const expectSiblingLabelFormat = (primary, source, surface) => {
     }
     expect(source.minHeight, surface + ' source-course label minimum height differs from its adjacent label')
         .toBe(primary.minHeight);
-    expect(source.height, surface + ' source-course label rendered height differs from its adjacent label')
-        .toBeCloseTo(primary.height, 3);
+    expect(
+        source.height,
+        surface + ' source-course label rendered height differs from its adjacent label ' +
+            '(primary=' + primary.height + ', source=' + source.height +
+            ', primaryIcon=' + JSON.stringify(primary.icon) + ')'
+    ).toBeCloseTo(primary.height, 3);
 };
 
 test('CCB Slideshow public fixture renders the requested real source at the requested browser zoom', async() => {
