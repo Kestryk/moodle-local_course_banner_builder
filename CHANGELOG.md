@@ -24,7 +24,7 @@ many small sections.
 ### Tests
 
 - Calibrated the desktop Site Slideshow editor label typography against the
-  public full-width banner at the same screen width. The focused provenance
+  public five-to-one banner at the same screen width. The focused provenance
   gate now rejects an admin/public physical font-size mismatch for both the
   Moodle-native source-type label and its adjacent source-course label, and
   verifies that the admin preview applies the calibrated typography.

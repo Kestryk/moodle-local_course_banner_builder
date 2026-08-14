@@ -204,7 +204,7 @@ shared Moodle 5.1 runtime.
 
 ### Planned proportional-rendering audit (P2)
 
-The current gate proves the Site full-width label pair at one desktop viewport.
+The current gate proves the Site five-to-one label pair at one desktop viewport.
 A subsequent P2 matrix must exercise every banner format and supported screen
 size, then compare title, body, action and label typography, icons, controls,
 spacing and positions against the public banner. It must prove that each

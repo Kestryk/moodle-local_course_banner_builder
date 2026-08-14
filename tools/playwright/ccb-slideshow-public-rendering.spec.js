@@ -230,6 +230,7 @@ const previewEvidence = async(preview) => preview.evaluate(node => {
         };
     };
     return {
+        bannerFormat: node.getAttribute('data-banner-format') || '',
         width: bounds.width,
         height: bounds.height,
         overlayControls: {
@@ -440,6 +441,9 @@ test('CCB Slideshow public fixture renders the requested real source at the requ
             expect(parityEvidence.adminPreview.styleVariables[
                 '--local-course-banner-builder-slideshow-label-font-size'
             ], 'admin editor label typography must use the viewport-calibrated value').toContain('vw');
+            expect(parityEvidence.adminPreview.bannerFormat,
+                'Site typography parity fixture must use a five-to-one banner format')
+                .toMatch(/^(?:contentwide|fullwidthtop)$/);
             await captureCdp(page, context,
                 path.join(env.artifactRoot,
                     'slideshow-admin-' + (env.secondaryLabelParity ? 'site-secondary-parity-' : 'course-parity-') + env.zoom + '.png'));
