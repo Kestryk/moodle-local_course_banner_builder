@@ -22,7 +22,7 @@ $moodlePhp = (Resolve-Path -LiteralPath $runtimeProfile.phpExecutable).Path
 $runtimePluginRoot = (Resolve-Path -LiteralPath $runtimeProfile.runtimeRepository).Path
 $runtimePlaywrightRoot = Join-Path $runtimePluginRoot 'tools\playwright'
 $playwrightCli = Join-Path $runtimePlaywrightRoot 'node_modules\@playwright\test\cli.js'
-$playwrightConfig = Join-Path $runtimePlaywrightRoot 'playwright.config.js'
+$playwrightConfig = Join-Path $scriptDir 'playwright.async-editor.config.js'
 $playwrightSpec = Join-Path $scriptDir 'ccb-async-editor-actions.spec.js'
 $fixtureHelper = Join-Path $runtimePluginRoot 'tools\playwright\ccb-layer-object-row-fixture.php'
 $credentialLoader = Join-Path $scriptDir 'Use-CCBMoodle51Credentials.ps1'
@@ -63,7 +63,7 @@ function Invoke-Fixture([string]$Command, [string]$Argument = '') {
 
 function Start-Node([string[]]$Arguments) {
     $info = [Diagnostics.ProcessStartInfo]::new()
-    $info.FileName = 'node.exe'; $info.WorkingDirectory = $runtimePlaywrightRoot; $info.UseShellExecute = $false
+    $info.FileName = 'node.exe'; $info.WorkingDirectory = $scriptDir; $info.UseShellExecute = $false
     $info.CreateNoWindow = $true; $info.RedirectStandardOutput = $true; $info.RedirectStandardError = $true
     $info.Arguments = (($Arguments | ForEach-Object { '"' + ($_ -replace '"', '\\"') + '"' }) -join ' ')
     $process = [Diagnostics.Process]::new(); $process.StartInfo = $info
