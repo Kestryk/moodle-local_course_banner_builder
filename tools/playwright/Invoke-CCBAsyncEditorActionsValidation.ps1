@@ -38,7 +38,7 @@ $manifestFile = Join-Path $runRoot 'restoration-manifest.json'
 $cleanupFile = Join-Path $runRoot 'cleanup.json'
 $resultFile = Join-Path $runRoot 'runner-result.json'
 $discoveryFile = Join-Path $runRoot 'playwright.discovery.txt'
-$child = $null; $lease = $null; $manifest = $null; $childExitCode = $null; $cleanupError = $null
+$child = $null; $lease = $null; $manifest = $null; $childExitCode = $null; $cleanupError = $null; $failureReason = ''
 $loadedEnvironment = @()
 
 function Safe([string]$Value) {
@@ -122,7 +122,9 @@ try {
     Set-Content -LiteralPath (Join-Path $runRoot 'playwright.stderr.txt') -Value (Safe $child.StandardError.ReadToEnd()) -Encoding UTF8
 } catch {
     if ($null -eq $childExitCode) { $childExitCode = 70 }
-    $cleanupError = Safe $_.Exception.Message
+    $failureReason = Safe (($_ | Out-String).Trim())
+    if ([string]::IsNullOrWhiteSpace($failureReason)) { $failureReason = 'Async editor supervisor stopped without an error message.' }
+    $cleanupError = $failureReason
 } finally {
     if ($child -and !$child.HasExited) { & taskkill.exe /PID $child.Id /T /F 2>$null | Out-Null }
     $cleanupResult = $null
@@ -132,7 +134,7 @@ try {
     foreach ($name in ($loadedEnvironment | Select-Object -Unique)) { Remove-Item -LiteralPath ('Env:' + $name) -ErrorAction SilentlyContinue }
     if ($lease) { Release-EasyEduResourceLease -Resource 'moodle51-active-fixture-write' -RunId $runId -Force }
     $status = if ($DiscoveryOnly -and $childExitCode -eq 0) { 'discovery-pass' } elseif ($childExitCode -eq 0 -and $cleanup.complete) { 'pass' } else { 'fail' }
-    Set-Content -LiteralPath $resultFile -Value (([ordered]@{ runId = $runId; status = $status; childExitCode = $childExitCode; artifactDirectory = $runRoot; cleanup = $cleanup } | ConvertTo-Json -Depth 8)) -Encoding UTF8
+    Set-Content -LiteralPath $resultFile -Value (([ordered]@{ runId = $runId; status = $status; childExitCode = $childExitCode; error = $failureReason; artifactDirectory = $runRoot; cleanup = $cleanup } | ConvertTo-Json -Depth 8)) -Encoding UTF8
     if (Test-Path -LiteralPath $artifactManifestScript) { & $artifactManifestScript -RunRoot $runRoot -ApprovedRoot $artifactBase -ProjectNamespace ccb -RunId $runId -Status $(if ($status -eq 'pass') {'passed'} else {'failed'}) | Out-Null }
 }
 if ($childExitCode -ne 0 -or -not (Test-Path -LiteralPath $cleanupFile)) { exit 1 }
