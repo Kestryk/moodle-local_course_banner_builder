@@ -342,6 +342,15 @@ const expectSiblingLabelFormat = (primary, source, surface) => {
     ).toBeCloseTo(primary.height, 3);
 };
 
+const expectCrossSurfaceLabelTypography = (admin, publicLabel, labelName) => {
+    const adminSize = Number.parseFloat(admin?.fontSize);
+    const publicSize = Number.parseFloat(publicLabel?.fontSize);
+    expect(Number.isFinite(adminSize), 'admin ' + labelName + ' font size is missing').toBeTruthy();
+    expect(Number.isFinite(publicSize), 'public ' + labelName + ' font size is missing').toBeTruthy();
+    expect(adminSize, 'admin/public ' + labelName + ' font size differs at the same desktop viewport')
+        .toBeCloseTo(publicSize, 1);
+};
+
 test('CCB Slideshow public fixture renders the requested real source at the requested browser zoom', async() => {
     const env = environment();
     const consoleErrors = [];
@@ -527,6 +536,8 @@ test('CCB Slideshow public fixture renders the requested real source at the requ
                 const publicSourceLabel = geometry.samples.find(sample => sample.name === 'secondaryLabel');
                 expectSiblingLabelFormat(adminPrimaryLabel, adminLabel, 'admin preview');
                 expectSiblingLabelFormat(publicLabel, publicSourceLabel, 'public Site banner');
+                expectCrossSurfaceLabelTypography(adminPrimaryLabel, publicLabel, 'source-type label');
+                expectCrossSurfaceLabelTypography(adminLabel, publicSourceLabel, 'source-course label');
                 parityEvidence.secondaryLabel = {
                     admin: {primary: adminPrimaryLabel, source: adminLabel},
                     public: {primary: publicLabel, source: publicSourceLabel},

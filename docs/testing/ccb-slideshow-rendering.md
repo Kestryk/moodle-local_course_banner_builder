@@ -180,7 +180,10 @@ the source-course shortname label, the expected Assignment destination URL,
 contained geometry and no console or request errors. The source-course label
 keeps its distinct course-origin colours, but must share the adjacent
 source-type label's height, typography, padding, border and radius in both
-surfaces. Cleanup removes the Assignment by deleting its disposable source
+surfaces. At the 1600 by 900 default-zoom desktop gate, it also requires the
+two admin label font sizes to match their public counterparts. The editor
+canvas is intentionally narrower than the public banner, so this is a physical
+text-size check rather than a canvas-relative check. Cleanup removes the Assignment by deleting its disposable source
 course, removes the temporary Student enrolment and restores all captured CCB
 configuration. The first lease-authorized Moodle 5.1 execution passed on
 2026-08-13 with complete cleanup. It exposed a 27.234 px primary-label height
@@ -198,6 +201,15 @@ Its one-test Playwright timeout is 150 seconds: the external runner watchdog
 remains the upper ownership boundary, while the longer test allowance avoids
 misclassifying a settled admin/public capture as a rendering failure on a busy
 shared Moodle 5.1 runtime.
+
+### Planned proportional-rendering audit (P2)
+
+The current gate proves the Site full-width label pair at one desktop viewport.
+A subsequent P2 matrix must exercise every banner format and supported screen
+size, then compare title, body, action and label typography, icons, controls,
+spacing and positions against the public banner. It must prove that each
+element stays proportional to the selected banner frame without claiming that
+this focused label correction validates the rest of the matrix.
 
 This prepared scenario is limited to a 1600 by 900 default-zoom public Course
 page. It does not claim mobile, native 200 percent browser zoom, Site

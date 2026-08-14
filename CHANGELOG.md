@@ -23,6 +23,10 @@ many small sections.
 
 ### Tests
 
+- Calibrated the desktop Site Slideshow editor label typography against the
+  public full-width banner at the same screen width. The focused provenance
+  gate now rejects an admin/public physical font-size mismatch for both the
+  Moodle-native source-type label and its adjacent source-course label.
 - Prepared the focused Site Slideshow provenance-label parity scenario. It creates one disposable enrolled source course and one real upcoming Assignment, then requires the public Site banner to show both its Assignment label and the source-course shortname before cleanup removes the activity, enrolment and course. This covers the actual `secondaryLabel` contract; a Course banner intentionally does not aggregate activities from other courses.
 - Set the required disabled `gradingduedate` field explicitly when that fixture creates its Moodle Assignment, matching Moodle 5.1's assignment record contract.
 - Raised the one-test public Slideshow runner timeout to 150 seconds. The
