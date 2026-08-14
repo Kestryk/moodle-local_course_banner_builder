@@ -8,6 +8,14 @@ many small sections.
 
 ## Unreleased
 
+### 2026-08-14
+
+#### Testing
+
+- Added the single opt-in `ccb-settings-transfer-parity` Playwright scenario
+  for read-only Settings and Transfer layout checks, including a guard against
+  configuration-changing requests.
+
 ### Guide CCB advanced - 2026-08-12
 
 #### Fixed
@@ -38,6 +46,9 @@ many small sections.
 - Restyled the general Course Banner Builder settings with the embedded Kit's
   compact identity, setting panels, multi-select treatment and destructive
   action surface without changing Moodle setting behaviour.
+- Consolidated those settings into one Kit panel, corrected destructive-button
+  contrast and targeted Moodle's actual `fp-btn-choose` filepicker control so
+  its lower spacing is visible.
 - Restored proportional Moodle activity icons in the large Slideshow editor
   preview. The Course Forum label now keeps the same icon-to-text scale as the
   corresponding public Course banner; the label-colour reference samples are
