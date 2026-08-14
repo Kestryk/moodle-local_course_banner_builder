@@ -437,6 +437,9 @@ test('CCB Slideshow public fixture renders the requested real source at the requ
             expect(parityEvidence.adminPreview.styleVariables[
                 '--local-course-banner-builder-slideshow-overlay-opacity'
             ]).toBe((Number(expectedOpacityPercent) / 100).toFixed(2));
+            expect(parityEvidence.adminPreview.styleVariables[
+                '--local-course-banner-builder-slideshow-label-font-size'
+            ], 'admin editor label typography must use the viewport-calibrated value').toContain('vw');
             await captureCdp(page, context,
                 path.join(env.artifactRoot,
                     'slideshow-admin-' + (env.secondaryLabelParity ? 'site-secondary-parity-' : 'course-parity-') + env.zoom + '.png'));

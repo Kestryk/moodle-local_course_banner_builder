@@ -2164,6 +2164,9 @@ JS;
                 (0.807 * scale).toFixed(3) + 'vw, ' +
                 (1.68 * scale).toFixed(3) + 'rem)';
         };
+        const isEditorPreview = target.dataset.slideshowPreviewEditor === '1' ||
+            !!target.closest('[data-slideshow-preview-editor="1"]') ||
+            !!target.querySelector('[data-slideshow-preview-editor="1"]');
         const buildActionSize = function (percent) {
             const value = Math.max(25, Math.min(100, parseInt(percent || 100, 10)));
             const scale = value / 100 * getFormatSizeScale(format, 'action');
@@ -2213,7 +2216,7 @@ JS;
         );
         root.style.setProperty(
             '--local-course-banner-builder-slideshow-label-font-size',
-            target.dataset.slideshowPreviewEditor === '1' ?
+            isEditorPreview ?
                 buildEditorLabelSize(payload.labelSizePercent) :
                 buildLabelSize(payload.labelSizePercent)
         );
