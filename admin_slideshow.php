@@ -662,6 +662,27 @@ function local_course_banner_builder_slideshow_font_clamp(string $kind, int $per
 }
 
 /**
+ * Return the physical desktop editor font size for full-width Slideshow labels.
+ *
+ * The editor canvas is intentionally narrower than the public full-width banner.
+ * Its label typography therefore follows the viewport while preserving the saved
+ * label-size percentage and the existing small/large screen bounds.
+ *
+ * @param int $percent Saved label-size percentage.
+ * @param string $format Banner format.
+ * @return string CSS clamp expression.
+ */
+function local_course_banner_builder_slideshow_editor_label_font_clamp(int $percent, string $format): string {
+    $scale = max(25, min(100, $percent)) / 100;
+    $format = manager::normalise_banner_format($format);
+    if ($format === manager::BANNER_FORMAT_STANDARD) {
+        $scale *= 1.24;
+    }
+    return 'clamp(' . round(0.35 * $scale, 3) . 'rem, ' . round(0.807 * $scale, 3) . 'vw, ' .
+        round(1.68 * $scale, 3) . 'rem)';
+}
+
+/**
  * Render a simple font family select.
  *
  * @param string $name
@@ -826,8 +847,10 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
         local_course_banner_builder_slideshow_font_clamp('actionwidth', $actionwidth, $bannerformat) . ';';
     $previewstyle .= ' --local-course-banner-builder-slideshow-action-height: ' .
         local_course_banner_builder_slideshow_font_clamp('actionheight', $actionheight, $bannerformat) . ';';
-    $previewstyle .= ' --local-course-banner-builder-slideshow-label-font-size: ' .
-        local_course_banner_builder_slideshow_font_clamp('label', $labelsize, $bannerformat) . ';';
+    $labelfontsize = $bannerformat === manager::BANNER_FORMAT_FULLWIDTH_TOP
+        ? local_course_banner_builder_slideshow_editor_label_font_clamp($labelsize, $bannerformat)
+        : local_course_banner_builder_slideshow_font_clamp('label', $labelsize, $bannerformat);
+    $previewstyle .= ' --local-course-banner-builder-slideshow-label-font-size: ' . $labelfontsize . ';';
     $previewstyle .= ' --local-course-banner-builder-slideshow-label-text-scale: ' .
         number_format($labeltextsize / 100, 2, '.', '') . ';';
     $previewstyle .= ' --local-course-banner-builder-slideshow-label-orientation: ' . s($labelorientation) . ';';
