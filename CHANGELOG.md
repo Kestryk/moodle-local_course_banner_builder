@@ -21,6 +21,8 @@ many small sections.
 - Added the single opt-in `ccb-settings-transfer-parity` Playwright scenario
   for read-only Settings and Transfer layout checks, including a guard against
   configuration-changing requests.
+- Made its destructive-option assertion follow Moodle's rendered `.fitem`
+  wrapper when no generated `fitem_id_replaceall` ID is present.
 
 ### 2026-08-13
 
