@@ -20,8 +20,9 @@ if (!$runtimeProfile) { throw 'The ccb-moodle51 runtime preview profile is unava
 $moodleRoot = (Resolve-Path -LiteralPath $runtimeProfile.moodleRoot).Path
 $moodlePhp = (Resolve-Path -LiteralPath $runtimeProfile.phpExecutable).Path
 $runtimePluginRoot = (Resolve-Path -LiteralPath $runtimeProfile.runtimeRepository).Path
-$playwrightCli = Join-Path $scriptDir 'node_modules\@playwright\test\cli.js'
-$playwrightConfig = Join-Path $scriptDir 'playwright.config.js'
+$runtimePlaywrightRoot = Join-Path $runtimePluginRoot 'tools\playwright'
+$playwrightCli = Join-Path $runtimePlaywrightRoot 'node_modules\@playwright\test\cli.js'
+$playwrightConfig = Join-Path $runtimePlaywrightRoot 'playwright.config.js'
 $playwrightSpec = Join-Path $scriptDir 'ccb-async-editor-actions.spec.js'
 $fixtureHelper = Join-Path $runtimePluginRoot 'tools\playwright\ccb-layer-object-row-fixture.php'
 $credentialLoader = Join-Path $scriptDir 'Use-CCBMoodle51Credentials.ps1'
@@ -62,7 +63,7 @@ function Invoke-Fixture([string]$Command, [string]$Argument = '') {
 
 function Start-Node([string[]]$Arguments) {
     $info = [Diagnostics.ProcessStartInfo]::new()
-    $info.FileName = 'node.exe'; $info.WorkingDirectory = $scriptDir; $info.UseShellExecute = $false
+    $info.FileName = 'node.exe'; $info.WorkingDirectory = $runtimePlaywrightRoot; $info.UseShellExecute = $false
     $info.CreateNoWindow = $true; $info.RedirectStandardOutput = $true; $info.RedirectStandardError = $true
     $info.Arguments = (($Arguments | ForEach-Object { '"' + ($_ -replace '"', '\\"') + '"' }) -join ' ')
     $process = [Diagnostics.Process]::new(); $process.StartInfo = $info
@@ -83,6 +84,7 @@ try {
     $loadedEnvironment += @('EASYEDU_MOODLE_URL', 'EASYEDU_MOODLE_USERNAME', 'EASYEDU_MOODLE_PASSWORD', 'CCB_MOODLE_URL', 'CCB_MOODLE_USERNAME', 'CCB_MOODLE_PASSWORD')
     $env:EASYEDU_CCB_ASYNC_EDITOR_ARTIFACT_ROOT = $runRoot; $loadedEnvironment += 'EASYEDU_CCB_ASYNC_EDITOR_ARTIFACT_ROOT'
     $env:EASYEDU_CCB_ASYNC_EDITOR_CATEGORY_ID = '0'; $loadedEnvironment += 'EASYEDU_CCB_ASYNC_EDITOR_CATEGORY_ID'
+    $env:NODE_PATH = (Join-Path $runtimePlaywrightRoot 'node_modules'); $loadedEnvironment += 'NODE_PATH'
 
     $listArgs = @($playwrightCli, 'test', $playwrightSpec.Replace('\', '/'), ('--config=' + $playwrightConfig.Replace('\', '/')), '--list')
     $discovery = Safe ((@(& node.exe @listArgs 2>&1)) -join "`n")
