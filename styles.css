@@ -16534,6 +16534,10 @@ span[data-flexitour=container].orphan .modal-dialog {
   padding: 0.7rem 0.85rem;
   margin: 0;
 }
+.local-course-banner-builder-admin--native .local-course-banner-builder-empty-layer-list {
+  min-height: 4.25rem;
+  padding-block: 1rem;
+}
 @media (max-width: 768px) {
   .local-course-banner-builder-admin--native .local-course-banner-builder-action-list .btn,
   .local-course-banner-builder-admin--native .local-course-banner-builder-inherited-layer-action,

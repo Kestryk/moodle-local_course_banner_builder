@@ -32,6 +32,8 @@ $checks = [ordered]@{
     'Generated CSS includes the shared busy indicator' =
         $css -match '\.local-course-banner-builder-admin\.is-action-busy::before' -and
         $css -match 'data-easyedu-action-busy-label';
+    'Generated CSS preserves the centred layer empty state' =
+        $css -match '(?s)\.local-course-banner-builder-admin--native \.local-course-banner-builder-empty-layer-list,.*?justify-content: center;.*?min-height: 4\.25rem;.*?padding-block: 1rem;';
 }
 $failed = @($checks.GetEnumerator() | Where-Object { -not $_.Value })
 $checks.GetEnumerator() | ForEach-Object {
