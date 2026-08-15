@@ -1166,6 +1166,15 @@
         margin: 0;
     }
 
+    // A local replacement after an Async deletion must read as a completed
+    // list state, not as a collapsed table gap. Keep the Kit empty-state
+    // surface and centring, while giving this primary layer-list state enough
+    // vertical room for its concise explanatory message.
+    .local-course-banner-builder-empty-layer-list {
+        min-height: 4.25rem;
+        padding-block: 1rem;
+    }
+
     // The desktop table keeps compact controls. On a narrow touchscreen the
     // same actions remain in the scrollable table, so their actual targets
     // need the platform's practical 44px minimum without changing row hooks.

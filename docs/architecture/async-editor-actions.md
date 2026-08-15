@@ -38,6 +38,9 @@ affected interface safely.
   markup plus a translated result message.
 - Success replaces only the selected-source region, rehydrates its existing
   CCB behavior, updates open layer modals and announces a Moodle success toast.
+- When that replacement leaves no layers, the layer-list empty state retains
+  the shared Kit surface and centred message with enough vertical space to read
+  as a completed local update rather than a collapsed table gap.
 - Failure preserves the existing DOM and dirty state, announces an error toast
   and restores focus to the initiating action.
 - The three JSON mutations accept POST only and retain the existing capability,

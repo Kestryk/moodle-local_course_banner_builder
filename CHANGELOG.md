@@ -8,6 +8,13 @@ many small sections.
 
 ## Unreleased
 
+### 2026-08-15
+
+#### Fixed
+
+- Centred the selected-source empty layer-list state and added vertical space
+  after an Async deletion, while retaining the shared EasyEdu Kit surface.
+
 ### EED-CCB-2026-0007 - 2026-08-14
 
 #### Fixed
