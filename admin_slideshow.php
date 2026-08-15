@@ -847,7 +847,10 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
         local_course_banner_builder_slideshow_font_clamp('actionwidth', $actionwidth, $bannerformat) . ';';
     $previewstyle .= ' --local-course-banner-builder-slideshow-action-height: ' .
         local_course_banner_builder_slideshow_font_clamp('actionheight', $actionheight, $bannerformat) . ';';
-    $labelfontsize = $bannerformat === manager::BANNER_FORMAT_FULLWIDTH_TOP
+    $labelfontsize = in_array($bannerformat, [
+        manager::BANNER_FORMAT_CONTENT_WIDE,
+        manager::BANNER_FORMAT_FULLWIDTH_TOP,
+    ], true)
         ? local_course_banner_builder_slideshow_editor_label_font_clamp($labelsize, $bannerformat)
         : local_course_banner_builder_slideshow_font_clamp('label', $labelsize, $bannerformat);
     $previewstyle .= ' --local-course-banner-builder-slideshow-label-font-size: ' . $labelfontsize . ';';
