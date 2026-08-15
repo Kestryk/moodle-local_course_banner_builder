@@ -25,6 +25,8 @@ many small sections.
   wrapper when no generated `fitem_id_replaceall` ID is present.
 - Made the alignment measurement target the visible `replaceall` checkbox
   rather than Moodle's preceding hidden fallback input.
+- Reconciled the seven-file Settings and Transfer payload on cumulative base
+  `6745ca9` while preserving later scenario, protocol and generated CSS changes.
 
 ### 2026-08-13
 

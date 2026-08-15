@@ -3,9 +3,9 @@
 ## Scenario
 
 `ccb-settings-transfer-parity` is a single, read-only Playwright scenario for
-the Moodle 5.1 CCB preview. The containing reconciliation commit ports the
-functional diff from `9860f11` onto the cumulative preview base `dfc2ea39`,
-including the unchanged scenario originally introduced by `7d9b50d`.
+the Moodle 5.1 CCB preview. The current reconciliation preserves the seven-file
+functional payload from `37d3335` on cumulative preview base `6745ca9`, along
+with the later Moodle selector corrections already present on that base.
 
 The scenario lives at:
 
