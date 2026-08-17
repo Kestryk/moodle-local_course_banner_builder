@@ -28,7 +28,7 @@ The scenario authenticates as the configured CCB administrator and then:
   rather than relying on an optional generated wrapper ID, and explicitly
   ignoring Moodle's hidden fallback input with the same field name;
 - checks the real Moodle `.fp-btn-choose` control has at least 12 px of bottom
-  margin.
+  margin after Moodle's asynchronous filepicker initialization completes.
 
 The scenario never clicks Delete settings, opens the filepicker, changes a
 checkbox, submits an import/export form or saves settings. After login it also
