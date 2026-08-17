@@ -24,6 +24,8 @@ many small sections.
   control so its lower spacing remains visible.
 - Applied the same Settings panel stylesheet and single-panel framing on
   Moodle's CCB category route used from Site administration.
+- Aligned the Settings save action with the panel's right edge on both the
+  category and direct Settings routes.
 
 #### Validation
 

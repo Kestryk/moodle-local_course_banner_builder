@@ -112,6 +112,17 @@ test('ccb-settings-transfer-parity', async ({page}) => {
     expect(settingsGeometry.rowsInsidePanel).toBe(true);
     expect(settingsGeometry.rowsAreFlat).toBe(true);
 
+    const saveButton = page.locator('#adminsettings .form-buttons .form-submit');
+    await expect(saveButton).toBeVisible();
+    const settingsPanelBox = await settingsPanel.boundingBox();
+    const saveButtonBox = await saveButton.boundingBox();
+    expect(settingsPanelBox).not.toBeNull();
+    expect(saveButtonBox).not.toBeNull();
+    expect(Math.abs(
+        (settingsPanelBox.x + settingsPanelBox.width) -
+        (saveButtonBox.x + saveButtonBox.width)
+    )).toBeLessThanOrEqual(2);
+
     const deleteButton = settingsPanel.locator('.local-course-banner-builder-settings-reset .btn-danger');
     await expect(deleteButton).toBeVisible();
     await expect(deleteButton).toBeEnabled();
