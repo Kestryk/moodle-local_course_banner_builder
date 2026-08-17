@@ -363,6 +363,9 @@ if ($command === 'setup' || $command === 'setup-parity' || $command === 'setup-s
             'arrows' => 1,
             'dots' => 1,
         ];
+        if ($secondaryparity) {
+            $forced['sitebannerformat'] = \local_course_banner_builder\manager::BANNER_FORMAT_CONTENT_WIDE;
+        }
         $profile = $parity
             ? local_course_banner_builder_slideshow_public_fixture_parity_profile($context, $forced)
             : ['profile' => local_course_banner_builder_slideshow_public_fixture_profile(), 'forced' => [], 'saved' => []];
@@ -377,7 +380,6 @@ if ($command === 'setup' || $command === 'setup-parity' || $command === 'setup-s
                     \local_course_banner_builder\manager::BANNER_FORMAT_CONTENT_WIDE) {
                 throw new RuntimeException('The Site Slideshow fixture could not activate the content-wide banner format.');
             }
-            $forced['sitebannerformat'] = \local_course_banner_builder\manager::BANNER_FORMAT_CONTENT_WIDE;
         }
         \local_course_banner_builder\manager::set_slideshow_config(
             $context,
