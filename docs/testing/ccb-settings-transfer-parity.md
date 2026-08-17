@@ -18,6 +18,8 @@ The scenario authenticates as the configured CCB administrator and then:
 - opens Moodle's human-facing CCB category route and checks that General
   settings use one compact, bounded panel with a compact identity header and
   flat setting rows;
+- checks that Save changes is aligned with the panel's right edge without
+  submitting the form;
 - checks that Delete settings has readable contrast, can receive keyboard
   focus and does not navigate;
 - checks that Transfer renders two aligned, equal-width desktop panels and

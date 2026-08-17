@@ -164,11 +164,21 @@
     }
 }
 
-#adminsettings:has(.local-course-banner-builder-settings-hero) .form-buttons {
+#adminsettings:has(.local-course-banner-builder-settings-hero) .form-buttons,
+#adminsettings:has(.local-course-banner-builder-settings-hero) > .settingsform > .row:last-child {
+    display: flex;
     max-width: 66rem;
     margin: 0.9rem 0 0;
     padding: 0;
-    justify-content: flex-start;
+    justify-content: flex-end;
+}
+
+#adminsettings:has(.local-course-banner-builder-settings-hero) > .settingsform > .row:last-child > [class*="col-"] {
+    flex: 0 0 auto;
+    width: auto;
+    max-width: none;
+    margin-left: 0;
+    padding: 0;
 }
 
 @media (max-width: 47.99rem) {
