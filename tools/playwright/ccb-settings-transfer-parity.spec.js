@@ -56,6 +56,7 @@ test('ccb-settings-transfer-parity', async ({page}) => {
 
     const writeRequests = [];
     const protectedPaths = new Set([
+        '/admin/category.php',
         '/admin/settings.php',
         '/local/course_banner_builder/admin_reset.php',
         '/local/course_banner_builder/admin_transfer.php',
@@ -68,8 +69,11 @@ test('ccb-settings-transfer-parity', async ({page}) => {
         }
     });
 
-    await page.goto(moodlePath('/admin/settings.php?section=local_course_banner_builder_settings'));
-    const settingsPanel = page.locator('#adminsettings fieldset:has(.local-course-banner-builder-settings-hero)');
+    await page.goto(moodlePath('/admin/category.php?category=local_course_banner_builder'));
+    const settingsPanel = page.locator(
+        '#adminsettings > fieldset > fieldset.adminsettings' +
+        ':has(.local-course-banner-builder-settings-hero)'
+    );
     const settingsHero = settingsPanel.locator('.local-course-banner-builder-settings-hero');
     const settingsRows = settingsPanel.locator('#admin-enabled, #admin-enabledcustomfields');
 

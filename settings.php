@@ -24,7 +24,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-if (optional_param('section', '', PARAM_ALPHANUMEXT) === 'local_course_banner_builder_settings') {
+$settingssection = optional_param('section', '', PARAM_ALPHANUMEXT);
+$settingscategory = optional_param('category', '', PARAM_SAFEDIR);
+if ($settingssection === 'local_course_banner_builder_settings' ||
+        $settingscategory === 'local_course_banner_builder') {
     $PAGE->requires->css('/local/course_banner_builder/styles.css');
 }
 

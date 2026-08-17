@@ -22,6 +22,8 @@ many small sections.
 - Consolidated General settings into one compact Kit panel, corrected the
   destructive-button contrast and targeted Moodle's actual `fp-btn-choose`
   control so its lower spacing remains visible.
+- Applied the same Settings panel stylesheet and single-panel framing on
+  Moodle's CCB category route used from Site administration.
 
 #### Validation
 
