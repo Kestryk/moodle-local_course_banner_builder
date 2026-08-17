@@ -92,5 +92,47 @@
         <INDEX NAME="sourcekey" UNIQUE="true" FIELDS="sourcekey"/>
       </INDEXES>
     </TABLE>
+    <TABLE NAME="local_course_banner_builder_thumbnail" COMMENT="Transferable thumbnail candidates owned by banner sources">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="sourcekey" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="candidatekey" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="elementid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
+        <FIELD NAME="isenabled" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="1"/>
+        <FIELD NAME="revision" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" DEFAULT="1"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="source-candidate" UNIQUE="true" FIELDS="sourcekey, candidatekey"/>
+        <INDEX NAME="source-enabled-sort" UNIQUE="false" FIELDS="sourcekey, isenabled, sortorder"/>
+        <INDEX NAME="elementid" UNIQUE="false" FIELDS="elementid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_course_banner_builder_course_thumb" COMMENT="Persisted thumbnail assignment for each course">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="mode" TYPE="char" LENGTH="12" NOTNULL="true" SEQUENCE="false" DEFAULT="inherit"/>
+        <FIELD NAME="assignedsourcekey" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="assignedcandidatekey" TYPE="char" LENGTH="64" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="assignedrevision" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="timeassigned" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="course" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="courseid" UNIQUE="true" FIELDS="courseid"/>
+        <INDEX NAME="mode-source" UNIQUE="false" FIELDS="mode, assignedsourcekey"/>
+        <INDEX NAME="assignment" UNIQUE="false" FIELDS="assignedsourcekey, assignedcandidatekey"/>
+      </INDEXES>
+    </TABLE>
   </TABLES>
 </XMLDB>
