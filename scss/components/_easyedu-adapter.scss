@@ -13,7 +13,8 @@
 #admin-enabled,
 #admin-enabledcustomfields,
 .local-course-banner-builder-settings-reset,
-#adminsettings fieldset:has(.local-course-banner-builder-settings-hero) {
+#adminsettings > .settingsform > fieldset:has(.local-course-banner-builder-settings-hero),
+#adminsettings > fieldset > fieldset.adminsettings:has(.local-course-banner-builder-settings-hero) {
     @include easyedu.token-defaults;
 
     --local-course-banner-builder-easyedu-transition-fast: 160ms ease;
@@ -37,7 +38,8 @@
     box-shadow: none;
 }
 
-#adminsettings fieldset:has(.local-course-banner-builder-settings-hero) {
+#adminsettings > .settingsform > fieldset:has(.local-course-banner-builder-settings-hero),
+#adminsettings > fieldset > fieldset.adminsettings:has(.local-course-banner-builder-settings-hero) {
     max-width: 66rem;
     margin: 0;
     padding: 0;
