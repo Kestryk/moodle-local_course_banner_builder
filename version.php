@@ -26,6 +26,6 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_course_banner_builder';
 $plugin->release = '0.6.23';
-$plugin->version = 2026061100;
+$plugin->version = 2026081500;
 $plugin->requires = 2024100700;
 $plugin->maturity = MATURITY_BETA;

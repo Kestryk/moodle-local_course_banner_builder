@@ -829,5 +829,47 @@ function xmldb_local_course_banner_builder_upgrade(int $oldversion): bool {
         upgrade_plugin_savepoint(true, 2026061100, 'local', 'course_banner_builder');
     }
 
+    if ($oldversion < 2026081500) {
+        $table = new xmldb_table('local_course_banner_builder_thumbnail');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('sourcekey', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('candidatekey', XMLDB_TYPE_CHAR, '64', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('elementid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('sortorder', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('isenabled', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1');
+        $table->add_field('revision', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '1');
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_index('source-candidate', XMLDB_INDEX_UNIQUE, ['sourcekey', 'candidatekey']);
+        $table->add_index('source-enabled-sort', XMLDB_INDEX_NOTUNIQUE, ['sourcekey', 'isenabled', 'sortorder']);
+        $table->add_index('elementid', XMLDB_INDEX_NOTUNIQUE, ['elementid']);
+
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        $table = new xmldb_table('local_course_banner_builder_course_thumb');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('courseid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('mode', XMLDB_TYPE_CHAR, '12', null, XMLDB_NOTNULL, null, 'inherit');
+        $table->add_field('assignedsourcekey', XMLDB_TYPE_CHAR, '255', null, null, null, null);
+        $table->add_field('assignedcandidatekey', XMLDB_TYPE_CHAR, '64', null, null, null, null);
+        $table->add_field('assignedrevision', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('timeassigned', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('course', XMLDB_KEY_FOREIGN, ['courseid'], 'course', ['id']);
+        $table->add_index('courseid', XMLDB_INDEX_UNIQUE, ['courseid']);
+        $table->add_index('mode-source', XMLDB_INDEX_NOTUNIQUE, ['mode', 'assignedsourcekey']);
+        $table->add_index('assignment', XMLDB_INDEX_NOTUNIQUE, ['assignedsourcekey', 'assignedcandidatekey']);
+
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        upgrade_plugin_savepoint(true, 2026081500, 'local', 'course_banner_builder');
+    }
+
     return true;
 }

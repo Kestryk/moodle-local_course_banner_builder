@@ -15,6 +15,22 @@ many small sections.
 - Centred the selected-source empty layer-list state and added vertical space
   after an Async deletion, while retaining the shared EasyEdu Kit surface.
 
+### Source thumbnail assignment foundation - 2026-08-15
+
+#### Added
+
+- Added normalized source-candidate and per-course assignment schemas for the
+  future wide and square native Moodle thumbnail integration.
+- Added a side-effect-free assignment resolver for the approved `inherit`,
+  `explicit`, and `disabled` contract, including deterministic persisted
+  selection and safe fallback when an explicit candidate disappears.
+
+#### Validation boundary
+
+- This foundation does not publish course-card images, call GD, alter Moodle
+  caches, expose settings, or run a database migration. Runtime and visual
+  validation remain deferred to later bounded sub-lots.
+
 ### EED-CCB-2026-0007 - 2026-08-14
 
 #### Fixed
