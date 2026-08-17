@@ -55,7 +55,7 @@ test('CCB async editor deletes layers locally with confirmation, feedback and fo
         await login(page, env);
         await page.goto(
             env.baseUrl + '/local/course_banner_builder/admin_manage.php?categoryid=' + encodeURIComponent(env.categoryId),
-            {waitUntil: 'networkidle', timeout: 60000}
+            {waitUntil: 'domcontentloaded', timeout: 60000}
         );
         const root = page.locator('.local-course-banner-builder-admin').first();
         const selectedSource = page.locator('[data-selected-source-content="1"]').first();
@@ -66,8 +66,11 @@ test('CCB async editor deletes layers locally with confirmation, feedback and fo
         const choices = page.locator(
             'input[name="selectedelements[]"][form="local-course-banner-builder-bulk-delete"]'
         );
+        await expect(root).toBeVisible({timeout: 60000});
         await expect(root).toHaveAttribute('aria-busy', 'false');
         await expect(selectedSource).toBeVisible();
+        await expect(selectedDelete).toBeVisible();
+        await expect(allDelete).toBeVisible();
         await expect(choices).toHaveCount(5);
 
         const confirmation = page.locator('#local-course-banner-builder-confirm-action-modal');
