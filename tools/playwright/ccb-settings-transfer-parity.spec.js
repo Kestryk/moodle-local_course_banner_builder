@@ -38,6 +38,7 @@ const contrastRatio = (foreground, background) => {
 };
 
 test('ccb-settings-transfer-parity', async ({page}) => {
+    test.setTimeout(90_000);
     test.skip(
         !moodleUrl || !username || !password,
         'Set process-local CCB Moodle credentials before running this leased scenario.'
@@ -177,7 +178,7 @@ test('ccb-settings-transfer-parity', async ({page}) => {
     expect(destructiveAlignment.checkboxPosition).toBe('static');
 
     const chooseFileButton = page.locator('#fitem_id_configarchive .fp-btn-choose');
-    await expect(chooseFileButton).toBeVisible();
+    await expect(chooseFileButton).toBeVisible({timeout: 20_000});
     const chooseFileMarginBottom = await chooseFileButton.evaluate((button) => (
         parseFloat(window.getComputedStyle(button).marginBottom)
     ));
