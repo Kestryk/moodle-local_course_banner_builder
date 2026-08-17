@@ -54,6 +54,7 @@ function local_course_banner_builder_slideshow_public_fixture_snapshot_config():
         'enabled',
         'coursebannerenabled',
         'coursebannerdefaultimageenabled',
+        'sitebannerformat',
     ];
     [$insql, $params] = $DB->get_in_or_equal($names, SQL_PARAMS_NAMED, 'fixtureconfig');
     $params['plugin'] = 'local_course_banner_builder';
@@ -368,6 +369,16 @@ if ($command === 'setup' || $command === 'setup-parity' || $command === 'setup-s
         set_config('enabled', 1, $plugin);
         set_config('coursebannerenabled', 1, $plugin);
         set_config('coursebannerdefaultimageenabled', 1, $plugin);
+        if ($secondaryparity) {
+            \local_course_banner_builder\manager::set_site_banner_format(
+                \local_course_banner_builder\manager::BANNER_FORMAT_CONTENT_WIDE
+            );
+            if (\local_course_banner_builder\manager::get_site_banner_format() !==
+                    \local_course_banner_builder\manager::BANNER_FORMAT_CONTENT_WIDE) {
+                throw new RuntimeException('The Site Slideshow fixture could not activate the content-wide banner format.');
+            }
+            $forced['sitebannerformat'] = \local_course_banner_builder\manager::BANNER_FORMAT_CONTENT_WIDE;
+        }
         \local_course_banner_builder\manager::set_slideshow_config(
             $context,
             $profile['profile']

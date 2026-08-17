@@ -132,9 +132,10 @@ const environment = () => {
         ensure(parityConfig.savedSlideshowConfig?.context === expectedContext,
             'Parity fixture did not preserve the expected Slideshow configuration.');
         ensure(secondaryLabelParity
-            ? parityConfig.forcedRuntimeValues?.assignments === 1
+            ? parityConfig.forcedRuntimeValues?.assignments === 1 &&
+                parityConfig.forcedRuntimeValues?.sitebannerformat === 'contentwide'
             : parityConfig.forcedRuntimeValues?.forums === 1,
-        'Parity fixture did not enable the required real source.');
+        'Parity fixture did not enable the required real source and banner format.');
     }
     return {
         announcementTitle: process.env.EASYEDU_CCB_SLIDESHOW_PUBLIC_ANNOUNCEMENT_TITLE,
@@ -438,12 +439,12 @@ test('CCB Slideshow public fixture renders the requested real source at the requ
             expect(parityEvidence.adminPreview.styleVariables[
                 '--local-course-banner-builder-slideshow-overlay-opacity'
             ]).toBe((Number(expectedOpacityPercent) / 100).toFixed(2));
+            expect(parityEvidence.adminPreview.bannerFormat,
+                'Site typography parity fixture must use the requested content-wide banner format')
+                .toBe(env.parityConfig.forcedRuntimeValues.sitebannerformat);
             expect(parityEvidence.adminPreview.styleVariables[
                 '--local-course-banner-builder-slideshow-label-font-size'
             ], 'admin editor label typography must use the viewport-calibrated value').toContain('vw');
-            expect(parityEvidence.adminPreview.bannerFormat,
-                'Site typography parity fixture must use a five-to-one banner format')
-                .toMatch(/^(?:contentwide|fullwidthtop)$/);
             await captureCdp(page, context,
                 path.join(env.artifactRoot,
                     'slideshow-admin-' + (env.secondaryLabelParity ? 'site-secondary-parity-' : 'course-parity-') + env.zoom + '.png'));
