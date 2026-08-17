@@ -82,23 +82,39 @@ class hook_callbacks {
         $bannerurl = $usedefaultimage ?
             manager::get_generated_course_image_url($courseid) :
             ($customcourseimageurl ?: ($hasbackground ? manager::get_course_banner_image_url($courseid) : null));
-        $titlecontext = self::is_course_view_page($page) ? 'course' : 'activity';
+        $iscourseviewpage = self::is_course_view_page($page);
+        $iscoursemodulepage = !empty($page->cm);
+        $titlecontext = $iscourseviewpage ? 'course' : 'activity';
         $coursetitle = (string)($page->course->fullname ?? '');
-        $activitytitle = (string)($page->cm->name ?? $page->heading ?? '');
+        $activitytitle = self::get_course_page_secondary_title($page);
         $titletext = $coursetitle;
         if ($titlecontext === 'activity') {
-            $activitytitlemode = (string)get_config('local_course_banner_builder', 'bannertitle_activity_activitytitlemode');
-            $activitytitlemode = in_array($activitytitlemode, ['course', 'both', 'none'], true)
-                ? $activitytitlemode
-                : 'activity';
-            if ($activitytitlemode === 'course') {
+            $courseenabled = (bool)get_config('local_course_banner_builder', 'bannertitle_course_enabled');
+            $activityenabled = (bool)get_config('local_course_banner_builder', 'bannertitle_activity_enabled');
+            if (!$iscoursemodulepage) {
+                $titletext = $activityenabled ? $activitytitle : '';
+            } else if (!$activityenabled && $courseenabled) {
+                $titlecontext = 'course';
                 $titletext = $coursetitle;
-            } else if ($activitytitlemode === 'both') {
+            } else if ($activityenabled && $courseenabled && $activitytitle !== '') {
                 $titletext = trim($coursetitle . "\n" . $activitytitle);
-            } else if ($activitytitlemode === 'none') {
-                $titletext = '';
             } else {
-                $titletext = $activitytitle;
+                $activitytitlemode = (string)get_config(
+                    'local_course_banner_builder',
+                    'bannertitle_activity_activitytitlemode'
+                );
+                $activitytitlemode = in_array($activitytitlemode, ['course', 'both', 'none'], true)
+                    ? $activitytitlemode
+                    : 'activity';
+                if ($activitytitlemode === 'course') {
+                    $titletext = $coursetitle;
+                } else if ($activitytitlemode === 'both') {
+                    $titletext = trim($coursetitle . "\n" . $activitytitle);
+                } else if ($activitytitlemode === 'none') {
+                    $titletext = '';
+                } else {
+                    $titletext = $activitytitle;
+                }
             }
         }
 
@@ -116,6 +132,7 @@ class hook_callbacks {
             'hascourselayers' => $hascourselayers,
             'usesdefaultimage' => $usedefaultimage,
             'bannerformat' => manager::get_course_banner_format(),
+            'replacecoursetitle' => !$iscourseviewpage && !$iscoursemodulepage && $titletext !== '',
         ];
     }
 
@@ -143,15 +160,14 @@ class hook_callbacks {
 
         $path = $page->url ? $page->url->get_path() : '';
         $courseid = (int)($page->course->id ?? 0);
-        if (!manager::course_banners_on_activity_pages_enabled() || $courseid <= SITEID) {
+        if ($courseid <= SITEID) {
             return false;
         }
-        if (in_array($page->pagelayout, ['admin', 'maintenance', 'popup', 'embedded', 'print', 'redirect'], true)) {
+        if (self::is_technical_output_page($page)) {
             return false;
         }
-        if ($path === '' || $path === '/course/view.php' || str_starts_with($path, '/admin/') ||
-            str_starts_with($path, '/login/') || $path === '/pluginfile.php' ||
-            str_starts_with($path, '/local/course_banner_builder/')) {
+        if ($path === '' || $path === '/course/view.php' || str_starts_with($path, '/login/') ||
+            $path === '/pluginfile.php') {
             return false;
         }
 
@@ -173,20 +189,94 @@ class hook_callbacks {
         if ($courseid > SITEID) {
             return false;
         }
-        if (in_array($page->pagelayout, ['admin', 'maintenance', 'popup', 'embedded', 'print', 'redirect'], true)) {
+        if (self::is_technical_output_page($page)) {
             return false;
         }
-        if ($path === '' || str_starts_with($path, '/admin/')) {
+        if ($path === '') {
             return false;
         }
         if (str_starts_with($path, '/login/') || $path === '/pluginfile.php') {
             return false;
         }
-        if (str_starts_with($path, '/local/course_banner_builder/')) {
-            return false;
-        }
 
         return true;
+    }
+
+    /**
+     * Whether the page layout is unsuitable for an injected visual banner.
+     *
+     * @param \moodle_page $page
+     * @return bool
+     */
+    protected static function is_technical_output_page(\moodle_page $page): bool {
+        return in_array($page->pagelayout, ['maintenance', 'popup', 'embedded', 'print', 'redirect'], true);
+    }
+
+    /**
+     * Return the secondary title used on course-related non-main pages.
+     *
+     * @param \moodle_page $page
+     * @return string
+     */
+    protected static function get_course_page_secondary_title(\moodle_page $page): string {
+        global $SITE;
+
+        $coursetitle = trim((string)($page->course->fullname ?? ''));
+        $sitetitle = trim((string)($SITE->fullname ?? ''));
+        $candidates = [
+            (string)($page->cm->name ?? ''),
+            (string)($page->heading ?? ''),
+            (string)($page->title ?? ''),
+        ];
+
+        foreach ($candidates as $candidate) {
+            $candidate = self::normalise_page_title($candidate, $coursetitle);
+            $candidate = self::normalise_page_title($candidate, $sitetitle);
+            if ($candidate !== '') {
+                return $candidate;
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * Return the title used in the site banner for the current non-course page.
+     *
+     * @param \moodle_page $page
+     * @return string
+     */
+    protected static function get_site_page_banner_title(\moodle_page $page): string {
+        global $SITE;
+
+        $path = $page->url ? $page->url->get_path() : '';
+        if (str_starts_with($path, '/admin/')) {
+            return get_string('administrationsite');
+        }
+
+        return trim((string)($SITE->fullname ?? ''));
+    }
+
+    /**
+     * Normalise a Moodle page title and avoid duplicating the primary context title.
+     *
+     * @param string $title
+     * @param string $primarytitle
+     * @return string
+     */
+    protected static function normalise_page_title(string $title, string $primarytitle): string {
+        $title = trim(strip_tags($title));
+        $primarytitle = trim($primarytitle);
+        if ($title === '' || \core_text::strtolower($title) === \core_text::strtolower($primarytitle)) {
+            return '';
+        }
+
+        if ($primarytitle !== '') {
+            $title = preg_replace('/\s*[:|-]\s*' . preg_quote($primarytitle, '/') . '\s*$/iu', '', $title) ?? $title;
+            $title = preg_replace('/^\s*' . preg_quote($primarytitle, '/') . '\s*[:|-]\s*/iu', '', $title) ?? $title;
+        }
+
+        return trim($title);
     }
 
     /**
@@ -312,6 +402,9 @@ class hook_callbacks {
             '    word-break: normal;',
             '    text-shadow: 0 0.15rem 0.7rem rgba(0, 0, 0, 0.45);',
             '    pointer-events: none;',
+            '}',
+            '.local-course-banner-builder-title-settings-modal .local-course-banner-builder-title-preview-text {',
+            '    pointer-events: auto !important;',
             '}',
             '.local-course-banner-builder-banner-title-overlay--highlight-frame {',
             '    background: transparent !important;',
@@ -1090,7 +1183,7 @@ class hook_callbacks {
     }
 
     /**
-     * Wrap title text in a scaled visual span without changing frame layout size.
+     * Wrap title text in a scaled visual span that still contributes to frame layout.
      *
      * @param string $text
      * @param float $scale
@@ -1100,8 +1193,8 @@ class hook_callbacks {
     protected static function render_scaled_banner_title_text(string $text, float $scale, string $align): string {
         return \html_writer::span($text === '' ? '&nbsp;' : s($text), '', [
             'data-title-render-node' => '1',
-            'style' => 'display: inline-block; line-height: 1; transform: scale(' . round($scale, 4) .
-                '); transform-origin: ' . self::banner_title_text_transform_origin($align) . ';',
+            'style' => 'display: inline-block; line-height: 1; font-size: ' . round($scale, 4) .
+                'em; transform-origin: ' . self::banner_title_text_transform_origin($align) . ';',
         ]);
     }
 
@@ -1416,7 +1509,9 @@ class hook_callbacks {
             'local-course-banner-builder-native-shell--format-' . $format, [
             'id' => 'local-course-banner-builder-native-shell',
             'data-banner-format' => $format,
-            'data-replace-moodle-title' => !empty($payload['replacemoodletitle']) ? '1' : '0',
+            'data-replace-moodle-title' => (
+                !empty($payload['replacemoodletitle']) || !empty($payload['replacecoursetitle'])
+            ) ? '1' : '0',
         ]);
     }
 
@@ -1440,10 +1535,8 @@ class hook_callbacks {
             return null;
         }
 
-        global $SITE;
-
         $definition['bannerformat'] = manager::get_site_banner_format();
-        $definition['title'] = self::get_banner_title_overlay('site', (string)($SITE->fullname ?? ''));
+        $definition['title'] = self::get_banner_title_overlay('site', self::get_site_page_banner_title($page));
         return $definition;
     }
 

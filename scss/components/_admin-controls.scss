@@ -246,18 +246,17 @@
     justify-content: flex-start;
     align-items: center;
     margin: 0.75rem 0;
-    margin-left: 18px;
     padding-left: 0;
     gap: 0.5rem;
 }
 
-.local-course-banner-builder-configured-source-tools + .table-responsive {
+.local-course-banner-builder-table-shell--sources {
     box-sizing: border-box;
     padding-left: 0;
     overflow: visible;
 }
 
-.local-course-banner-builder-configured-source-tools + .table-responsive .local-course-banner-builder-configured-sources-table {
+.local-course-banner-builder-table-shell--sources .local-course-banner-builder-configured-sources-table {
     width: 100%;
     min-width: 0;
 }

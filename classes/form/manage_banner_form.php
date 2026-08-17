@@ -1170,19 +1170,34 @@ class manage_banner_form extends \moodleform {
         $text = (string)($layer['text'] ?? '');
         $framestyle = trim((string)($layer['framestyle'] ?? ''));
         $ishighlight = (string)($layer['frametype'] ?? 'box') === 'highlight';
+        $textscale = max(0.25, min(4.8, (float)($layer['textscale'] ?? 1)));
+        $align = in_array((string)($layer['align'] ?? 'center'), ['left', 'center', 'right'], true)
+            ? (string)$layer['align']
+            : 'center';
+        $scaledtext = static function (string $value) use ($textscale, $align): string {
+            $origin = $align === 'left' ? 'left center' : ($align === 'right' ? 'right center' : 'center center');
+            return \html_writer::span($value === '' ? '&nbsp;' : s($value), '', [
+                'data-title-render-node' => '1',
+                'style' => 'display: inline-block; line-height: 1; font-size: ' . round($textscale, 4) .
+                    'em; transform-origin: ' . $origin . ';',
+            ]);
+        };
         $content = '';
 
         if ($ishighlight && $framestyle !== '') {
             $lines = preg_split('/\R/u', $text);
             $lines = $lines === false ? [$text] : $lines;
             foreach ($lines as $index => $line) {
-                $content .= \html_writer::span($line === '' ? '&nbsp;' : s($line), '', ['style' => $framestyle]);
+                $content .= \html_writer::span($scaledtext((string)$line), '', [
+                    'style' => $framestyle,
+                    'data-title-highlight-line' => '1',
+                ]);
                 if ($index < count($lines) - 1) {
                     $content .= \html_writer::empty_tag('br');
                 }
             }
         } else {
-            $content = s($text);
+            $content = $scaledtext($text);
         }
 
         $classes = 'local-course-banner-builder-banner-title-overlay ' .

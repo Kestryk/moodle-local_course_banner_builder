@@ -8,6 +8,7 @@
     Example context (json):
     {
         "hasitems": true,
+        "haschains": false,
         "items": [
             {
                 "rowclass": "local-course-banner-builder-source-row",
@@ -30,17 +31,19 @@
     }
 }}
 {{#hasitems}}
-    <div class="local-course-banner-builder-configured-source-tools">
-        <button type="button"
-            class="btn btn-outline-secondary btn-sm local-course-banner-builder-chain-collapse-toggle"
-            data-action="local-course-banner-builder-toggle-all-source-chains"
-            data-collapse-label="{{#str}}collapseallsourcechains, local_course_banner_builder{{/str}}"
-            data-expand-label="{{#str}}expandallsourcechains, local_course_banner_builder{{/str}}">
-            <i class="icon fa fa-compress fa-fw" aria-hidden="true"></i>
-            <span>{{#str}}collapseallsourcechains, local_course_banner_builder{{/str}}</span>
-        </button>
-    </div>
-    <div class="table-responsive">
+    {{#haschains}}
+        <div class="local-course-banner-builder-configured-source-tools">
+            <button type="button"
+                class="btn btn-outline-secondary btn-sm local-course-banner-builder-chain-collapse-toggle"
+                data-action="local-course-banner-builder-toggle-all-source-chains"
+                data-collapse-label="{{#str}}collapseallsourcechains, local_course_banner_builder{{/str}}"
+                data-expand-label="{{#str}}expandallsourcechains, local_course_banner_builder{{/str}}">
+                <i class="icon fa fa-compress fa-fw" aria-hidden="true"></i>
+                <span>{{#str}}collapseallsourcechains, local_course_banner_builder{{/str}}</span>
+            </button>
+        </div>
+    {{/haschains}}
+    <div class="table-responsive local-course-banner-builder-table-shell local-course-banner-builder-table-shell--sources">
         <table class="generaltable local-course-banner-builder-configured-sources-table">
             <colgroup>
                 <col class="local-course-banner-builder-configured-col-hierarchy">
@@ -339,7 +342,10 @@
                                     <i class="icon fa fa-eye fa-fw" aria-hidden="true"></i>
                                     {{#str}}preview{{/str}}
                                 </button>
-                                <a class="btn btn-secondary btn-sm" href="{{editurl}}">{{#str}}edit{{/str}}</a>
+                                <a class="btn btn-secondary btn-sm" href="{{editurl}}">
+                                    <i class="icon fa fa-pen fa-fw" aria-hidden="true"></i>
+                                    {{#str}}edit{{/str}}
+                                </a>
                                 <form method="post" class="d-inline">
                                     <input type="hidden" name="sesskey" value="{{sesskey}}">
                                     {{#sourcekey}}<input type="hidden" name="deletesourceimages" value="{{sourcekey}}">{{/sourcekey}}
@@ -349,6 +355,7 @@
                                         data-modal-title="{{#str}}confirm{{/str}}"
                                         data-modal-content="{{#str}}deletecategoryimagesconfirm, local_course_banner_builder{{/str}}"
                                         data-modal-yes-button="{{#str}}delete{{/str}}">
+                                        <i class="icon fa fa-layer-group fa-fw" aria-hidden="true"></i>
                                         {{#str}}deletecategoryimages, local_course_banner_builder{{/str}}
                                     </button>
                                 </form>
@@ -361,6 +368,7 @@
                                         data-modal-title="{{#str}}confirm{{/str}}"
                                         data-modal-content="{{#str}}deletecategorycontentconfirm, local_course_banner_builder{{/str}}"
                                         data-modal-yes-button="{{#str}}delete{{/str}}">
+                                        <i class="icon fa fa-trash-can fa-fw" aria-hidden="true"></i>
                                         {{#str}}deletecategorycontent, local_course_banner_builder{{/str}}
                                     </button>
                                 </form>
@@ -373,5 +381,7 @@
     </div>
 {{/hasitems}}
 {{^hasitems}}
-    <p>{{#str}}noconfiguredcategories, local_course_banner_builder{{/str}}</p>
+    <p class="local-course-banner-builder-empty-source-list">
+        {{#str}}noconfiguredcategories, local_course_banner_builder{{/str}}
+    </p>
 {{/hasitems}}

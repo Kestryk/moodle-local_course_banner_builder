@@ -6360,6 +6360,9 @@ class manager {
 
         return [
             'hasitems' => !empty($items),
+            'haschains' => array_reduce($items, static function (bool $carry, array $item): bool {
+                return $carry || !empty($item['haschildren']);
+            }, false),
             'items' => $items,
         ];
     }
@@ -7802,6 +7805,11 @@ class manager {
                     'sourcekey' => $source->sourcekey,
                     'elementid' => $record->id,
                 ]))->out(false),
+                'editmodaltarget' => $isborderlayer
+                    ? 'local-course-banner-builder-edit-border-layer-modal'
+                    : ($isoverlaylayer
+                        ? 'local-course-banner-builder-edit-overlay-layer-modal'
+                        : 'local-course-banner-builder-edit-image-layer-modal'),
                 'deleteurl' => (new \moodle_url($adminpath, [
                     'sourcekey' => $source->sourcekey,
                     'deleteelementid' => $record->id,

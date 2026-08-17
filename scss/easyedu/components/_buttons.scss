@@ -1,0 +1,557 @@
+// EasyEdu buttons and compact action controls.
+//
+// These mixins complement Moodle/Bootstrap button classes without replacing
+// them. Include them on plugin-specific selectors such as create buttons,
+// toolbar actions or square icon buttons.
+//
+// Theme override tokens:
+// --easyedu-control-radius, --easyedu-control-height.
+
+@mixin button-size($size: regular) {
+  @if $size == small {
+    font-size: 0.78rem;
+    min-height: 1.9rem;
+    min-width: 1.9rem;
+    padding: 0.22rem 0.5rem;
+  } @else if $size == large {
+    font-size: 0.98rem;
+    min-height: 2.85rem;
+    min-width: 2.85rem;
+    padding: 0.48rem 0.95rem;
+  } @else {
+    font-size: 0.88rem;
+    min-height: var(--easyedu-control-height);
+    min-width: var(--easyedu-control-height);
+    padding: 0.36rem 0.75rem;
+  }
+}
+
+@mixin button-interaction-states(
+  $hover-bg: var(--easyedu-primary-soft),
+  $hover-border: var(--easyedu-control-focus-border),
+  $hover-color: var(--easyedu-primary-strong)
+) {
+  &:hover,
+  &:focus-visible,
+  &[aria-expanded="true"],
+  &[aria-pressed="true"],
+  &.active,
+  &.is-active {
+    background: $hover-bg;
+    border-color: $hover-border;
+    color: $hover-color;
+    outline: 0;
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring);
+  }
+
+  &:disabled,
+  &[aria-disabled="true"],
+  &.disabled {
+    background: var(--easyedu-surface-soft);
+    border-color: var(--easyedu-card-border);
+    color: var(--easyedu-text-muted);
+    cursor: not-allowed;
+    opacity: 0.62;
+    pointer-events: none;
+    transform: none;
+  }
+}
+
+@mixin icon-button($size: regular) {
+  align-items: center;
+  border-radius: var(--easyedu-control-radius);
+  display: inline-flex;
+  justify-content: center;
+  line-height: 1;
+  @include button-size($size);
+  transition:
+    background-color var(--easyedu-motion-fast) ease,
+    border-color var(--easyedu-motion-fast) ease,
+    box-shadow var(--easyedu-motion-fast) ease,
+    color var(--easyedu-motion-fast) ease,
+    transform var(--easyedu-motion-fast) ease;
+
+  &:focus-visible {
+    box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring);
+    outline: 0;
+  }
+}
+
+@mixin action-button($size: regular) {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.4rem;
+  justify-content: center;
+  line-height: 1.2;
+  @include button-size($size);
+  @include button-interaction-states;
+
+  .fa {
+    align-items: center;
+    display: inline-flex;
+    flex: 0 0 auto;
+    justify-content: center;
+    line-height: 1;
+  }
+}
+
+@mixin close-button($size: regular) {
+  @include icon-button($size);
+
+  background: var(--easyedu-surface);
+  border: 1px solid var(--easyedu-card-border);
+  color: var(--easyedu-text-muted);
+  height: 2.3rem;
+  min-height: 2.3rem;
+  min-width: 2.3rem;
+  padding: 0;
+  width: 2.3rem;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--easyedu-danger-soft);
+    border-color: color-mix(in srgb, var(--easyedu-danger) 22%, #fff 78%);
+    color: var(--easyedu-danger);
+  }
+}
+
+@mixin overflow-button($size: regular) {
+  @include icon-button($size);
+
+  background: var(--easyedu-surface-soft);
+  border: 1px solid var(--easyedu-card-border);
+  color: var(--easyedu-text-muted);
+  font-size: 1.1rem;
+  font-weight: 800;
+  min-height: 2rem;
+  min-width: 2.15rem;
+  padding: 0 0.42rem;
+}
+
+@mixin action-menu-trigger($size: small) {
+  @include icon-button($size);
+
+  background: color-mix(in srgb, var(--easyedu-primary-soft) 62%, #fff 38%);
+  border: 1px solid color-mix(in srgb, var(--easyedu-primary) 18%, #fff 82%);
+  border-radius: 999px;
+  color: color-mix(in srgb, var(--easyedu-primary-strong) 76%, var(--easyedu-text-muted) 24%);
+  min-height: 1.64rem;
+  min-width: 2.08rem;
+  padding: 0.14rem 0.48rem;
+  transform: translateY(0);
+
+  &:hover,
+  &:focus-visible,
+  &[aria-expanded="true"] {
+    background: color-mix(in srgb, var(--easyedu-primary-soft) 82%, #fff 18%);
+    border-color: color-mix(in srgb, var(--easyedu-primary) 32%, #fff 68%);
+    box-shadow:
+      0 0.16rem 0.38rem rgba(31, 68, 104, 0.08),
+      0 0 0 0.14rem color-mix(in srgb, var(--easyedu-primary) 14%, transparent);
+    color: var(--easyedu-primary-strong);
+    outline: 0;
+    transform: translateY(-0.02rem);
+  }
+}
+
+@mixin action-menu-trigger-icon {
+  background: linear-gradient(currentColor, currentColor) center / 0.76rem 0.095rem no-repeat;
+  display: inline-block;
+  height: 0.58rem;
+  line-height: 1;
+  position: relative;
+  width: 0.82rem;
+
+  &::before,
+  &::after {
+    background: currentColor;
+    border-radius: 999px;
+    content: "";
+    height: 0.095rem;
+    left: 0.03rem;
+    position: absolute;
+    width: 0.76rem;
+  }
+
+  &::before {
+    top: 0.1rem;
+  }
+
+  &::after {
+    bottom: 0.1rem;
+  }
+}
+
+// Standard action row for Moodle admin forms. The right alignment follows
+// Moodle's completion flow; compact screens receive a full-width action.
+@mixin admin-form-actions {
+  align-items: center;
+  display: flex;
+  gap: 0.55rem;
+  justify-content: flex-end;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+
+  @media (max-width: 36rem) {
+    align-items: stretch;
+
+    .btn,
+    button,
+    input[type="submit"] {
+      width: 100%;
+    }
+  }
+}
+
+@mixin admin-primary-nav {
+  align-items: stretch;
+  background: linear-gradient(
+    105deg,
+    color-mix(in srgb, var(--easyedu-primary-soft) 34%, #fff 66%) 0%,
+    color-mix(in srgb, var(--easyedu-surface) 96%, #fff 4%) 48%,
+    color-mix(in srgb, var(--easyedu-accent-soft) 26%, #fff 74%) 100%
+  );
+  border: 1px solid color-mix(in srgb, var(--easyedu-card-border) 72%, #fff 28%);
+  border-radius: calc(var(--easyedu-control-radius) + 0.12rem);
+  box-shadow: none;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0;
+  justify-content: center;
+  margin: 0 0 1.05rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 0.42rem;
+  scrollbar-width: none;
+  white-space: nowrap;
+
+  // Keep the help launcher separate from the view tabs while preserving a
+  // balanced centre axis for the navigation actions.
+  > .easyedu-guide,
+  > .easyedu-admin-primary-nav__guide,
+  > [class*="easyedu-guide"] {
+    display: inline-flex;
+    flex: 0 0 auto;
+    justify-content: flex-start;
+    margin-right: auto;
+    min-width: 2.55rem;
+    order: -1;
+  }
+
+  &.easyedu-admin-primary-nav--balanced {
+    display: grid;
+    grid-template-columns: 2.55rem minmax(0, 1fr) 2.55rem;
+
+    > .easyedu-guide,
+    > .easyedu-admin-primary-nav__guide,
+    > [class*="easyedu-guide"] {
+      grid-column: 1;
+      margin-right: 0;
+      min-width: 2.55rem;
+    }
+
+    > .easyedu-admin-primary-nav__actions {
+      align-items: stretch;
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 0;
+      grid-column: 2;
+      justify-content: center;
+      min-width: 0;
+      white-space: nowrap;
+    }
+  }
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  @media (max-width: 48rem) {
+    // Centred flex content becomes unreachable on its start edge as soon as
+    // the navigation is wider than its scrollport. Keep the desktop balance,
+    // but anchor compact navigation to the start so every action remains
+    // reachable through horizontal scrolling.
+    justify-content: flex-start;
+
+    &.easyedu-admin-primary-nav--balanced {
+      display: flex;
+
+      > .easyedu-guide,
+      > .easyedu-admin-primary-nav__guide,
+      > [class*="easyedu-guide"] {
+        margin-right: 0.35rem;
+      }
+
+      > .easyedu-admin-primary-nav__actions {
+        justify-content: flex-start;
+      }
+    }
+  }
+}
+
+@mixin admin-primary-nav-action($variant: default) {
+  @include action-button(regular);
+
+  & {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    color: color-mix(in srgb, var(--easyedu-text-muted) 82%, var(--easyedu-text) 18%);
+    flex: 0 0 auto;
+    font-family: inherit;
+    font-size: 0.89rem;
+    font-weight: 500;
+    line-height: 1.2;
+    min-height: 3rem;
+    min-width: 0;
+    padding: 0.58rem 0.82rem;
+    text-decoration: none;
+    transform: none;
+    transition:
+      background-color 180ms ease,
+      color 180ms ease,
+      box-shadow 180ms ease,
+      transform 160ms ease;
+    white-space: nowrap;
+  }
+
+  .fa {
+    color: color-mix(in srgb, currentColor 82%, var(--easyedu-primary) 18%);
+    font-size: 0.88rem;
+    line-height: 1;
+    width: 1rem;
+  }
+
+  &:hover,
+  &:focus-visible {
+    background: color-mix(in srgb, var(--easyedu-surface) 72%, transparent 28%);
+    box-shadow: inset 0 -0.16rem 0 color-mix(in srgb, var(--easyedu-primary) 42%, transparent 58%);
+    color: var(--easyedu-primary-strong);
+    text-decoration: none;
+  }
+
+  &:active {
+    transform: scale(0.985);
+  }
+
+  &.active,
+  &.is-active,
+    &[aria-current="page"],
+    &[aria-pressed="true"] {
+    background: color-mix(in srgb, var(--easyedu-surface) 84%, var(--easyedu-primary-soft) 16%);
+    box-shadow: inset 0 -0.2rem 0 var(--easyedu-primary);
+    color: var(--easyedu-primary-strong);
+
+    .fa {
+      color: var(--easyedu-primary);
+    }
+  }
+
+  @if $variant == destructive {
+    & {
+      color: var(--easyedu-danger);
+    }
+
+    .fa {
+      color: var(--easyedu-danger);
+    }
+
+    &:hover,
+    &:focus-visible {
+      background: color-mix(in srgb, var(--easyedu-danger-soft) 74%, #fff 26%);
+      border-color: color-mix(in srgb, var(--easyedu-danger) 24%, #fff 76%);
+      box-shadow: 0 0.14rem 0.34rem rgba(161, 43, 43, 0.07);
+      color: var(--easyedu-danger);
+    }
+  } @else if $variant == format {
+    & {
+      color: color-mix(in srgb, var(--easyedu-accent) 62%, var(--easyedu-text-muted) 38%);
+    }
+
+    .fa {
+      color: color-mix(in srgb, var(--easyedu-accent) 72%, var(--easyedu-text-muted) 28%);
+    }
+
+    &:hover,
+    &:focus-visible {
+      background: color-mix(in srgb, var(--easyedu-accent-soft) 76%, #fff 24%);
+      border-color: color-mix(in srgb, var(--easyedu-accent) 24%, #fff 76%);
+      color: color-mix(in srgb, var(--easyedu-accent) 72%, var(--easyedu-text) 28%);
+    }
+  }
+}
+
+@mixin guide-adjacent-action($variant: default, $size: regular) {
+  @include action-button($size);
+
+  & {
+    align-items: center;
+    background: var(--easyedu-surface);
+    border: 1px solid color-mix(in srgb, var(--easyedu-card-border) 88%, #fff 12%);
+    border-radius: 0.9rem;
+    box-shadow: 0 0.14rem 0.34rem rgba(31, 68, 104, 0.055);
+    color: color-mix(in srgb, var(--easyedu-text-muted) 78%, var(--easyedu-text) 22%);
+    flex: 0 0 auto;
+    font-size: 0.84rem;
+    font-weight: 700;
+    height: 2.55rem;
+    justify-content: center;
+    min-height: 2.55rem;
+    min-width: 2.55rem;
+    padding: 0;
+    text-decoration: none;
+    white-space: nowrap;
+    width: 2.55rem;
+  }
+
+  .fa {
+    color: color-mix(in srgb, currentColor 80%, var(--easyedu-primary) 20%);
+    font-size: 1rem;
+    line-height: 1;
+    margin: 0;
+    width: 1.2rem;
+  }
+
+  &:hover,
+  &:focus-visible {
+    background: var(--easyedu-primary-soft);
+    border-color: color-mix(in srgb, var(--easyedu-primary) 26%, #fff 74%);
+    box-shadow:
+      0 0.16rem 0.38rem rgba(31, 68, 104, 0.075),
+      0 0 0 0.14rem color-mix(in srgb, var(--easyedu-primary) 12%, transparent);
+    color: var(--easyedu-primary-strong);
+    outline: 0;
+    text-decoration: none;
+  }
+
+  @if $variant == warning {
+    & {
+      background: color-mix(in srgb, var(--easyedu-warning-soft) 72%, #fff 28%);
+      border-color: color-mix(in srgb, var(--easyedu-warning) 24%, #fff 76%);
+      color: color-mix(in srgb, var(--easyedu-warning) 82%, var(--easyedu-text) 18%);
+    }
+
+    .fa {
+      color: var(--easyedu-warning);
+    }
+
+    &:hover,
+    &:focus-visible {
+      background: var(--easyedu-warning-soft);
+      border-color: color-mix(in srgb, var(--easyedu-warning) 38%, #fff 62%);
+      box-shadow:
+        0 0.16rem 0.38rem rgba(154, 101, 15, 0.075),
+        0 0 0 0.14rem color-mix(in srgb, var(--easyedu-warning) 14%, transparent);
+      color: color-mix(in srgb, var(--easyedu-warning) 88%, var(--easyedu-text) 12%);
+    }
+  } @else if $variant == destructive {
+    & {
+      background: transparent;
+      border-color: color-mix(in srgb, var(--easyedu-danger) 24%, #fff 76%);
+      color: var(--easyedu-danger);
+    }
+
+    .fa {
+      color: var(--easyedu-danger);
+    }
+
+    &:hover,
+    &:focus-visible {
+      background: color-mix(in srgb, var(--easyedu-danger-soft) 72%, #fff 28%);
+      border-color: color-mix(in srgb, var(--easyedu-danger) 38%, #fff 62%);
+      color: var(--easyedu-danger);
+    }
+  }
+}
+
+@mixin admin-secondary-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.46rem;
+}
+
+@mixin admin-secondary-action($variant: default) {
+  @include action-button(small);
+
+  & {
+    background: color-mix(in srgb, var(--easyedu-surface) 90%, var(--easyedu-surface-soft) 10%);
+    border: 1px solid color-mix(in srgb, var(--easyedu-control-border) 72%, transparent 28%);
+    border-radius: 0.52rem;
+    box-shadow: none;
+    color: var(--easyedu-text-muted);
+    font-family: inherit;
+    font-size: 0.84rem;
+    font-weight: 600;
+    min-height: 2.15rem;
+    padding: 0.32rem 0.66rem;
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+      background-color 180ms ease,
+      border-color 180ms ease,
+      color 180ms ease,
+      transform 160ms ease;
+  }
+
+  .fa {
+    color: color-mix(in srgb, var(--easyedu-text-muted) 80%, var(--easyedu-primary) 20%);
+    font-size: 0.82rem;
+    width: 0.95rem;
+  }
+
+  &:hover,
+  &:focus-visible {
+    background: var(--easyedu-primary-soft);
+    border-color: color-mix(in srgb, var(--easyedu-primary) 26%, #fff 74%);
+    box-shadow: none;
+    color: var(--easyedu-primary-strong);
+    text-decoration: none;
+  }
+
+  &:active {
+    transform: scale(0.985);
+  }
+
+  &.active,
+  &.is-active,
+  &[aria-pressed="true"] {
+    background: color-mix(in srgb, var(--easyedu-primary-soft) 82%, #fff 18%);
+    border-color: color-mix(in srgb, var(--easyedu-primary) 34%, #fff 66%);
+    color: var(--easyedu-primary-strong);
+  }
+
+  &.btn-primary {
+    background: color-mix(in srgb, var(--easyedu-primary-soft) 76%, #fff 24%);
+    border-color: color-mix(in srgb, var(--easyedu-primary) 34%, #fff 66%);
+    color: var(--easyedu-primary-strong);
+
+    .fa {
+      color: var(--easyedu-primary);
+    }
+  }
+
+  &:disabled,
+  &.disabled {
+    background: var(--easyedu-surface-soft);
+    border-color: color-mix(in srgb, var(--easyedu-control-border) 48%, transparent 52%);
+    color: color-mix(in srgb, var(--easyedu-text-muted) 54%, #fff 46%);
+    opacity: 0.72;
+  }
+
+  @if $variant == destructive {
+    & {
+      background: var(--easyedu-danger-soft);
+      border-color: color-mix(in srgb, var(--easyedu-danger) 24%, #fff 76%);
+      color: var(--easyedu-danger);
+    }
+
+    .fa {
+      color: var(--easyedu-danger);
+    }
+  }
+}

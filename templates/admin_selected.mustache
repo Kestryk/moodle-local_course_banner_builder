@@ -176,7 +176,7 @@
                 <input type="hidden" name="updatelayersbulk" value="1">
             </form>
         {{/haselements}}
-        <div class="table-responsive">
+        <div class="table-responsive local-course-banner-builder-table-shell local-course-banner-builder-table-shell--layers">
             <table class="generaltable local-course-banner-builder-layer-table">
                 <colgroup>
                     <col style="width: 8%;">
@@ -434,10 +434,15 @@
                                 <div class="local-course-banner-builder-action-list">
                                     <button type="button"
                                         class="btn btn-secondary btn-sm"
-                                        data-edit-layer-url="{{editurl}}">
+                                        data-edit-layer-url="{{editurl}}"
+                                        data-edit-layer-modal="{{editmodaltarget}}">
+                                        <i class="icon fa fa-pen fa-fw" aria-hidden="true"></i>
                                         {{editlabel}}
                                     </button>
-                                    <a class="btn btn-danger btn-sm" href="{{deleteurl}}">{{#str}}delete{{/str}}</a>
+                                    <a class="btn btn-danger btn-sm" href="{{deleteurl}}">
+                                        <i class="icon fa fa-trash-can fa-fw" aria-hidden="true"></i>
+                                        {{#str}}delete{{/str}}
+                                    </a>
                                 </div>
                             </td>
                         </tr>
@@ -446,7 +451,7 @@
             </table>
         </div>
         {{#haschainborderlayer}}
-            <div class="table-responsive local-course-banner-builder-chain-table">
+            <div class="table-responsive local-course-banner-builder-chain-table local-course-banner-builder-table-shell local-course-banner-builder-table-shell--chain">
                 <table class="generaltable">
                     <colgroup>
                         <col style="width: 8%;">
@@ -487,7 +492,8 @@
                                 </td>
                                 <td class="local-course-banner-builder-layer-render-cell">{{#chainborderlayer.haslayerpreviewhtml}}{{{chainborderlayer.layerpreviewhtml}}}{{/chainborderlayer.haslayerpreviewhtml}}</td>
                                 <td>
-                                    <a class="btn btn-secondary btn-sm" href="{{sourceediturl}}">
+                                    <a class="btn btn-secondary btn-sm local-course-banner-builder-inherited-layer-action" href="{{sourceediturl}}">
+                                        <i class="icon fa fa-arrow-up-right-from-square fa-fw" aria-hidden="true"></i>
                                         {{#str}}editsourceoflayer, local_course_banner_builder{{/str}}
                                     </a>
                                 </td>
@@ -498,7 +504,7 @@
             </div>
         {{/haschainborderlayer}}
         {{#haschainoverlaylayer}}
-            <div class="table-responsive local-course-banner-builder-chain-table">
+            <div class="table-responsive local-course-banner-builder-chain-table local-course-banner-builder-table-shell local-course-banner-builder-table-shell--chain">
                 <table class="generaltable">
                     <colgroup>
                         <col style="width: 8%;">
@@ -547,7 +553,13 @@
                                 {{/chainoverlaylayer.hasoverlaysummary}}
                             </td>
                             <td class="local-course-banner-builder-layer-render-cell">{{#chainoverlaylayer.haslayerpreviewhtml}}{{{chainoverlaylayer.layerpreviewhtml}}}{{/chainoverlaylayer.haslayerpreviewhtml}}</td>
-                            <td><a class="btn btn-secondary btn-sm" href="{{chainoverlaylayer.sourceediturl}}">{{#str}}editsourceoflayer, local_course_banner_builder{{/str}}</a></td>
+                            <td>
+                                <a class="btn btn-secondary btn-sm local-course-banner-builder-inherited-layer-action"
+                                    href="{{chainoverlaylayer.sourceediturl}}">
+                                    <i class="icon fa fa-arrow-up-right-from-square fa-fw" aria-hidden="true"></i>
+                                    {{#str}}editsourceoflayer, local_course_banner_builder{{/str}}
+                                </a>
+                            </td>
                         </tr>
                     </tbody>
                 </table>

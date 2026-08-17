@@ -53,6 +53,7 @@ $PAGE->set_context(context_system::instance());
 $PAGE->set_title(get_string('exportimport', 'local_course_banner_builder'));
 $PAGE->set_heading(get_string('exportimport', 'local_course_banner_builder'));
 $PAGE->requires->css('/local/course_banner_builder/styles.css');
+$PAGE->requires->js_call_amd('local_course_banner_builder/admin_navigation', 'init');
 
 $importform = new \local_course_banner_builder\form\import_configuration_form($url);
 
@@ -124,13 +125,25 @@ echo html_writer::div(
         ['class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action']
     ) .
     html_writer::link(
+        new moodle_url('/local/course_banner_builder/admin_transfer.php'),
+        html_writer::tag('i', '', ['class' => 'fa fa-right-left me-2', 'aria-hidden' => 'true']) .
+            html_writer::span(get_string('transferconfig', 'local_course_banner_builder')),
+        [
+            'class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action active',
+            'aria-current' => 'page',
+        ]
+    ) .
+    html_writer::link(
         new moodle_url('/local/course_banner_builder/admin_manage.php', [
             'openformatmodal' => 1,
             'bannerformatcontext' => 'course',
         ]),
         html_writer::tag('i', '', ['class' => 'fa fa-columns me-2', 'aria-hidden' => 'true']) .
             html_writer::span(get_string('coursebannerformatbutton', 'local_course_banner_builder')),
-        ['class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action']
+        [
+            'class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action ' .
+                'local-course-banner-builder-admin-format-button',
+        ]
     ) .
     html_writer::link(
         new moodle_url('/local/course_banner_builder/admin_site.php', [
@@ -139,7 +152,10 @@ echo html_writer::div(
         ]),
         html_writer::tag('i', '', ['class' => 'fa fa-columns me-2', 'aria-hidden' => 'true']) .
             html_writer::span(get_string('sitebannerformatbutton', 'local_course_banner_builder')),
-        ['class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action']
+        [
+            'class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action ' .
+                'local-course-banner-builder-admin-format-button',
+        ]
     ) .
     html_writer::tag(
         'form',
@@ -147,15 +163,20 @@ echo html_writer::div(
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'deleteallpluginsettings', 'value' => 1]) .
         html_writer::tag(
             'button',
-            html_writer::tag('i', '', ['class' => 'fa fa-trash-can me-2', 'aria-hidden' => 'true']) .
-                html_writer::span(get_string('deleteallpluginsettings', 'local_course_banner_builder')),
+            html_writer::tag('i', '', ['class' => 'fa fa-trash-can', 'aria-hidden' => 'true']),
             [
                 'type' => 'submit',
+                'aria-label' => get_string('deleteallpluginsettings', 'local_course_banner_builder'),
                 'class' => 'btn btn-outline-danger local-course-banner-builder-dashed-action local-course-banner-builder-admin-reset-button',
                 'data-modal' => 'confirmation',
                 'data-modal-title' => get_string('confirm', 'moodle'),
                 'data-modal-content' => get_string('deleteallpluginsettingsconfirm', 'local_course_banner_builder'),
                 'data-modal-yes-button' => get_string('delete', 'moodle'),
+                'data-easyedu-warning-popover' => get_string(
+                    'deleteallpluginsettingsconfirm',
+                    'local_course_banner_builder'
+                ),
+                'data-easyedu-warning-popover-placement' => 'bottom',
             ]
         ),
         [
@@ -166,14 +187,28 @@ echo html_writer::div(
     ),
     'local-course-banner-builder-admin-switcher mb-3'
 );
-echo $OUTPUT->heading(get_string('exportimport', 'local_course_banner_builder'));
-
-echo html_writer::tag('p', get_string('exportconfigdesc', 'local_course_banner_builder'));
-echo $OUTPUT->heading(get_string('exportoptions', 'local_course_banner_builder'), 3);
-echo html_writer::start_tag('form', ['method' => 'post', 'action' => $url->out(false), 'class' => 'mb-4']);
+echo html_writer::tag(
+    'p',
+    get_string('exportconfigdesc', 'local_course_banner_builder'),
+    ['class' => 'local-course-banner-builder-transfer-intro']
+);
+echo html_writer::start_div('local-course-banner-builder-transfer-grid');
+echo html_writer::start_tag('section', ['class' => 'local-course-banner-builder-transfer-panel']);
+echo html_writer::div(
+    html_writer::tag('i', '', ['class' => 'fa fa-download', 'aria-hidden' => 'true']) .
+        html_writer::tag('h3', get_string('exportoptions', 'local_course_banner_builder')),
+    'local-course-banner-builder-transfer-panel-header'
+);
+echo html_writer::start_div('local-course-banner-builder-transfer-panel-body');
+echo html_writer::start_tag('form', [
+    'method' => 'post',
+    'action' => $url->out(false),
+    'class' => 'local-course-banner-builder-transfer-form',
+]);
 echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]);
 echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'action', 'value' => 'export']);
 echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'exportsections[]', 'value' => '__submitted']);
+echo html_writer::start_div('local-course-banner-builder-transfer-option-list');
 foreach (\local_course_banner_builder\manager::get_export_section_options() as $section => $label) {
     echo html_writer::div(
         html_writer::checkbox('exportsections[]', $section, true, $label),
@@ -198,16 +233,34 @@ echo html_writer::div(
     ),
     'form-check mb-2'
 );
+echo html_writer::end_div();
 echo html_writer::empty_tag('input', [
     'type' => 'submit',
     'value' => get_string('exportconfig', 'local_course_banner_builder'),
     'class' => 'btn btn-primary mt-2',
 ]);
 echo html_writer::end_tag('form');
+echo html_writer::end_div();
+echo html_writer::end_tag('section');
 
-echo $OUTPUT->heading(get_string('importconfig', 'local_course_banner_builder'), 3);
-echo html_writer::tag('p', get_string('importconfigdesc', 'local_course_banner_builder'));
+echo html_writer::start_tag('section', [
+    'class' => 'local-course-banner-builder-transfer-panel local-course-banner-builder-transfer-panel--import',
+]);
+echo html_writer::div(
+    html_writer::tag('i', '', ['class' => 'fa fa-upload', 'aria-hidden' => 'true']) .
+        html_writer::tag('h3', get_string('importconfig', 'local_course_banner_builder')),
+    'local-course-banner-builder-transfer-panel-header local-course-banner-builder-transfer-panel-header--import'
+);
+echo html_writer::start_div('local-course-banner-builder-transfer-panel-body');
+echo html_writer::tag(
+    'p',
+    get_string('importconfigdesc', 'local_course_banner_builder'),
+    ['class' => 'local-course-banner-builder-transfer-panel-description']
+);
 $importform->display();
+echo html_writer::end_div();
+echo html_writer::end_tag('section');
+echo html_writer::end_div();
 
 echo html_writer::end_div();
 echo $OUTPUT->footer();

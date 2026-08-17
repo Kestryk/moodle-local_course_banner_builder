@@ -20,7 +20,7 @@
  * @copyright  2026 Kevin Jarniac
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define('local_course_banner_builder/slideshow_admin', [], function () {
+define('local_course_banner_builder/slideshow_admin', ['local_course_banner_builder/motion'], function (Motion) {
 
 var localCourseBannerBuilderSlideshowOnReady = function (callback) {
     if (document.readyState === 'loading') {
@@ -291,29 +291,29 @@ localCourseBannerBuilderSlideshowOnReady(function () {
         });
         slideshowSyncDesignInput(input);
     });
-    var slideshowSetSidePanelVisible = function (panel, visible) {
+    var slideshowSetSidePanelVisible = function (panel, visible, animate) {
         if (!panel) {
             return;
         }
-        if (panel.dataset.slideshowPanelTimer) {
-            window.clearTimeout(parseInt(panel.dataset.slideshowPanelTimer, 10));
-            delete panel.dataset.slideshowPanelTimer;
-        }
         panel.dataset.slideshowPanelVisible = visible ? '1' : '0';
-        if (visible) {
-            panel.hidden = false;
-            window.requestAnimationFrame(function () {
-                panel.classList.remove('is-collapsed');
-            });
-            return;
+        panel.setAttribute('data-easyedu-motion-owner', 'runtime');
+        panel.classList.remove('is-collapsed');
+
+        if (animate === false) {
+            Motion.cancel(panel);
+            panel.hidden = !visible;
+            return Promise.resolve(true);
         }
-        panel.classList.add('is-collapsed');
-        panel.dataset.slideshowPanelTimer = String(window.setTimeout(function () {
-            if (panel.classList.contains('is-collapsed')) {
-                panel.hidden = true;
+
+        var transition = visible ? Motion.expand(panel) : Motion.collapse(panel);
+        transition.then(function(completed) {
+            if (!completed || panel.dataset.slideshowPanelVisible !== (visible ? '1' : '0')) {
+                return;
             }
-            delete panel.dataset.slideshowPanelTimer;
-        }, 300));
+            panel.hidden = !visible;
+            panel.classList.remove('is-collapsed');
+        });
+        return transition;
     };
     var slideshowGetSidePanelRoot = function (node) {
         if (!node || !node.closest) {
@@ -323,17 +323,44 @@ localCourseBannerBuilderSlideshowOnReady(function () {
             node.closest('.local-course-banner-builder-slideshow-preview-modal') ||
             node.closest('.modal');
     };
+    var slideshowApplyPreviewSideAccordionContract = function (root) {
+        if (!root) {
+            return;
+        }
+        var owner = root.closest('[id]');
+        var ownerKey = owner && owner.id ? owner.id.replace(/[^a-zA-Z0-9_-]/g, '-') : 'slideshow';
+        root.querySelectorAll('[data-slideshow-side-panel-target]').forEach(function (button) {
+            var key = button.getAttribute('data-slideshow-side-panel-target');
+            var panel = key ? root.querySelector('[data-slideshow-side-panel="' + key + '"]') : null;
+            if (!panel) {
+                return;
+            }
+            if (!panel.id) {
+                panel.id = 'local-course-banner-builder-slideshow-' + key + '-' + ownerKey;
+            }
+            panel.classList.add('local-course-banner-builder-preview-side-accordion-panel');
+            panel.setAttribute('data-easyedu-preview-side-accordion-panel', '1');
+            button.classList.add('local-course-banner-builder-preview-side-accordion-trigger');
+            button.setAttribute('data-easyedu-preview-side-accordion-trigger', '1');
+            button.setAttribute('aria-controls', panel.id);
+            var host = button.parentNode;
+            if (host && button.nextElementSibling !== panel) {
+                host.insertBefore(panel, button.nextSibling);
+            }
+        });
+    };
     var slideshowSyncSidePanelButtons = function (root) {
         if (!root) {
             return;
         }
+        slideshowApplyPreviewSideAccordionContract(root);
         root.querySelectorAll('[data-action="local-course-banner-builder-toggle-slideshow-side-panel"]').forEach(function (button) {
             var target = button.getAttribute('data-slideshow-side-panel-target');
             var panel = target ? root.querySelector('[data-slideshow-side-panel="' + target + '"]') : null;
-            var active = !!(panel && (
-                panel.dataset.slideshowPanelVisible === '1' ||
-                (!panel.hidden && !panel.classList.contains('is-collapsed'))
-            ));
+            var storedState = panel ? panel.dataset.slideshowPanelVisible : undefined;
+            var active = !!(panel && (storedState !== undefined ?
+                storedState === '1' :
+                !panel.hidden && !panel.classList.contains('is-collapsed')));
             button.classList.toggle('btn-primary', active);
             button.classList.toggle('btn-outline-secondary', !active);
             button.classList.toggle('active', active);
@@ -355,10 +382,15 @@ localCourseBannerBuilderSlideshowOnReady(function () {
         }
         root.querySelectorAll('[data-slideshow-side-panel]').forEach(function (panel) {
             var isTarget = panel.getAttribute('data-slideshow-side-panel') === target;
-            var isOpen = panel.dataset.slideshowPanelVisible === '1' ||
-                (!panel.hidden && !panel.classList.contains('is-collapsed'));
-            slideshowSetSidePanelVisible(panel, isTarget && !isOpen);
+            var storedState = panel.dataset.slideshowPanelVisible;
+            var isOpen = storedState !== undefined ?
+                storedState === '1' :
+                !panel.hidden && !panel.classList.contains('is-collapsed');
+            slideshowSetSidePanelVisible(panel, isTarget && !isOpen, isTarget);
         });
+        slideshowSyncSidePanelButtons(root);
+    });
+    document.querySelectorAll('[data-slideshow-overlay-settings="1"]').forEach(function (root) {
         slideshowSyncSidePanelButtons(root);
     });
     document.querySelectorAll('[data-slideshow-overlay-settings="1"]').forEach(function (panel) {
@@ -1202,7 +1234,7 @@ localCourseBannerBuilderSlideshowOnReady(function () {
         }
         root.querySelectorAll('[data-slideshow-side-panel]').forEach(function (panel) {
             var active = panel.getAttribute('data-slideshow-side-panel') === target;
-            slideshowSetSidePanelVisible(panel, active);
+            slideshowSetSidePanelVisible(panel, active, active);
         });
         slideshowSyncSidePanelButtons(root);
     };

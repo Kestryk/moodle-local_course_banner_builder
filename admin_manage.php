@@ -1223,8 +1223,9 @@ function local_course_banner_builder_render_source_visual_editor_title_layer(arr
     $scaledtext = static function (string $value) use ($textscale, $align): string {
         $origin = $align === 'left' ? 'left center' : ($align === 'right' ? 'right center' : 'center center');
         return html_writer::span($value === '' ? '&nbsp;' : s($value), '', [
-            'style' => 'display: inline-block; line-height: 1; transform: scale(' . round($textscale, 4) .
-                '); transform-origin: ' . $origin . ';',
+            'data-title-render-node' => '1',
+            'style' => 'display: inline-block; line-height: 1; font-size: ' . round($textscale, 4) .
+                'em; transform-origin: ' . $origin . ';',
         ]);
     };
     $content = '';
@@ -1535,6 +1536,7 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
                 'type' => 'button',
                 'class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action local-course-banner-builder-source-preview-button',
                 'data-edit-layer-url' => $previewborderediturl->out(false),
+                'data-edit-layer-modal' => 'local-course-banner-builder-edit-border-layer-modal',
             ] + $disabledattributes
         ) : '') .
         ($previewoverlayediturl ? html_writer::tag('button', $buttoncontent('fa-adjust', get_string('editoverlaylayer', 'local_course_banner_builder')),
@@ -1542,6 +1544,7 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
                 'type' => 'button',
                 'class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action local-course-banner-builder-source-preview-button',
                 'data-edit-layer-url' => $previewoverlayediturl->out(false),
+                'data-edit-layer-modal' => 'local-course-banner-builder-edit-overlay-layer-modal',
             ] + $disabledattributes
         ) : '') .
         (($hasbordercontrol || $hasoverlaycontrol || $hastitlecontrol) ? html_writer::tag('button', $buttoncontent('fa-eye-slash', $previewtogglehidestring), [
@@ -2424,10 +2427,11 @@ if ($elementid) {
     $currentisoverlaylayer = $currentelement && !empty($currentelement->overlayenabled);
 }
 $formmode = $elementid ? ($currentisborderlayer ? 'editborder' : ($currentisoverlaylayer ? 'editoverlay' : 'editimage')) : 'create';
+$isxmlhttprequest = strtolower((string)($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '')) === 'xmlhttprequest';
 $previewdefinition = $selectedsource
     ? \local_course_banner_builder\manager::export_modal_preview_definition($selectedsource, $elementid)
     : [];
-$titlepreviewdefinition = $selectedsource
+$titlepreviewdefinition = !$isxmlhttprequest && $selectedsource
     ? \local_course_banner_builder\manager::export_modal_preview_definition($selectedsource, 0, true)
     : [];
 $borderconflictstate = $selectedsource
@@ -2553,7 +2557,7 @@ $form = new \local_course_banner_builder\form\manage_banner_form(null, [
     ),
     'formmode' => $formmode,
     'filemanageroptions' => \local_course_banner_builder\manager::get_filemanager_options(empty($elementid)),
-    'uploadguidance' => \local_course_banner_builder\manager::get_upload_guidance(),
+    'uploadguidance' => $isxmlhttprequest ? [] : \local_course_banner_builder\manager::get_upload_guidance(),
     'showmoodlepreview' => ($PAGE->theme->name ?? '') !== 'easyedu',
     'previewdefinition' => $previewdefinition,
 ]);
@@ -2658,7 +2662,6 @@ if ($selectedsource) {
     $form->set_data(\local_course_banner_builder\manager::get_source_form_data($selectedsource, $elementid, empty($elementid)));
 }
 
-$isxmlhttprequest = strtolower((string)($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '')) === 'xmlhttprequest';
 if ($isxmlhttprequest && $selectedsource && $elementid) {
     $ajaxmodalid = match ($formmode) {
         'editborder' => 'local-course-banner-builder-edit-border-layer-modal',
@@ -2666,7 +2669,7 @@ if ($isxmlhttprequest && $selectedsource && $elementid) {
         default => 'local-course-banner-builder-edit-image-layer-modal',
     };
     $ajaxmodaltitle = match ($formmode) {
-        'editborder' => get_string('layerborder', 'local_course_banner_builder'),
+        'editborder' => get_string('editborder', 'local_course_banner_builder'),
         'editoverlay' => get_string('editoverlaylayer', 'local_course_banner_builder'),
         default => get_string('editimage', 'local_course_banner_builder'),
     };
@@ -2676,7 +2679,168 @@ if ($isxmlhttprequest && $selectedsource && $elementid) {
     exit;
 }
 
+$guidestringprefix = $issitebanneradmin ? 'tour:sitebanner:' : 'tour:coursebanners:';
+$guidesourcerequiredlabel = get_string('guiderequiressource', 'local_course_banner_builder');
+$guidesourceunlockpaths = [
+    'unlock-source-settings',
+    'unlock-source-preview',
+    'unlock-source-layers',
+    'unlock-source-toolbar',
+];
+$guidesourceunlocksteps = [
+    [
+        'id' => 'choose-source',
+        'title' => get_string('guideunlockchoosesource', 'local_course_banner_builder'),
+        'description' => get_string('guideunlockchoosesourcedesc', 'local_course_banner_builder'),
+        'target' => 'sourceOption',
+        'highlightTarget' => 'sourcePicker',
+        'feedback' => get_string('tour:coursebanners:sources:content', 'local_course_banner_builder'),
+        'completeOnClick' => true,
+    ],
+    [
+        'id' => 'select-source',
+        'title' => get_string('guideunlockselectsource', 'local_course_banner_builder'),
+        'description' => get_string('guideunlockselectsourcedesc', 'local_course_banner_builder'),
+        'target' => 'selectedSourceButton',
+        'highlightTarget' => 'selectedSourceButton',
+        'requiresStep' => 'choose-source',
+        'requiresStepLabel' => get_string('guideunlockrequireschoose', 'local_course_banner_builder'),
+        'completeOnClick' => true,
+    ],
+];
+$guideconfiguredsourcessteps = [
+    [
+        'id' => 'source-list',
+        'title' => get_string('tour:coursebanners:sources:title', 'local_course_banner_builder'),
+        'description' => get_string('tour:coursebanners:sources:content', 'local_course_banner_builder'),
+        'target' => 'sourceOption',
+        'highlightTarget' => 'sourcePicker',
+        'completeOnClick' => true,
+    ],
+    [
+        'id' => 'select-source',
+        'title' => get_string('guideunlockselectsource', 'local_course_banner_builder'),
+        'description' => get_string('guideunlockselectsourcedesc', 'local_course_banner_builder'),
+        'target' => 'selectedSourceButton',
+        'highlightTarget' => 'selectedSourceButton',
+        'requiresStep' => 'source-list',
+        'requiresStepLabel' => get_string('guideunlockrequireschoose', 'local_course_banner_builder'),
+        'completeOnClick' => true,
+    ],
+];
+$guideunlockpathlabels = [
+    'unlock-source-settings' => get_string(
+        'guideunlockpathlabel',
+        'local_course_banner_builder',
+        get_string(
+            $issitebanneradmin ? 'tour:sitebanner:current:settings:title' : 'tour:coursebanners:current:sourcesettings:title',
+            'local_course_banner_builder'
+        )
+    ),
+    'unlock-source-preview' => get_string(
+        'guideunlockpathlabel',
+        'local_course_banner_builder',
+        get_string(
+            $issitebanneradmin ? 'tour:sitebanner:current:preview:title' : 'tour:coursebanners:current:preview:title',
+            'local_course_banner_builder'
+        )
+    ),
+    'unlock-source-layers' => get_string(
+        'guideunlockpathlabel',
+        'local_course_banner_builder',
+        get_string(
+            $issitebanneradmin ? 'tour:sitebanner:current:layers:title' : 'tour:coursebanners:current:layertable:title',
+            'local_course_banner_builder'
+        )
+    ),
+    'unlock-source-toolbar' => get_string(
+        'guideunlockpathlabel',
+        'local_course_banner_builder',
+        get_string($guidestringprefix . 'toolbar:title', 'local_course_banner_builder')
+    ),
+];
+
 $PAGE->requires->js_call_amd('local_course_banner_builder/admin_manage', 'init');
+$PAGE->requires->js_call_amd('local_course_banner_builder/admin_navigation', 'init');
+$PAGE->requires->js_call_amd('local_course_banner_builder/easyedu_guide', 'init', [
+    '[data-easyedu-guide-root]',
+    [
+        'storageKey' => 'local_course_banner_builder.easyedu_guide.' . ($issitebanneradmin ? 'site' : 'course'),
+        'firstVisit' => false,
+        'highlightStyle' => 'pulse-blue',
+        'labels' => [
+            'guidedPath' => get_string('guidechecklisttitle', 'local_course_banner_builder'),
+            'visited' => get_string('guidevisitedlabel', 'local_course_banner_builder'),
+            'completeStepFirst' => get_string('guidecompletestepfirst', 'local_course_banner_builder'),
+        ],
+        'unlockPaths' => $guidesourceunlockpaths,
+        'pathLabels' => $guideunlockpathlabels,
+        'targets' => [
+            'adminNav' => '.local-course-banner-builder-admin-switcher',
+            'sourceList' => '[data-easyedu-guide-target="source-pickers"]',
+            'sourcePicker' => '[data-easyedu-guide-target="source-pickers"]',
+            'sourceOption' => '.local-course-banner-builder-source-option',
+            'selectSourceButton' => '[data-action="local-course-banner-builder-submit-source"]',
+            'selectedSourceButton' => '[data-easyedu-guide-target="selected-source-submit"]',
+            'selectedSource' => '#local-course-banner-builder-selected-source-content',
+            'visualEditor' => '[data-source-visual-editor="1"], .local-course-banner-builder-banner-preview-panel',
+            'layerTable' => '.local-course-banner-builder-layer-table-wrapper, .local-course-banner-builder-layer-table',
+            'sourceSettings' => '#local-course-banner-builder-selected-source-content .local-course-banner-builder-source-settings-fieldset, ' .
+                '#local-course-banner-builder-selected-source-content .local-course-banner-builder-summary',
+        ],
+        'paths' => [
+            'configured-sources' => $guideconfiguredsourcessteps,
+            'unlock-source-settings' => $guidesourceunlocksteps,
+            'unlock-source-preview' => $guidesourceunlocksteps,
+            'unlock-source-layers' => $guidesourceunlocksteps,
+            'unlock-source-toolbar' => $guidesourceunlocksteps,
+            'banner-basics' => [
+                [
+                    'id' => 'admin-nav',
+                    'title' => get_string(
+                        $issitebanneradmin ? 'tour:sitebanner:current:nav:title' : 'tour:coursebanners:current:adminnav:title',
+                        'local_course_banner_builder'
+                    ),
+                    'description' => get_string('guidestepadminnavdescription', 'local_course_banner_builder'),
+                    'target' => 'adminNav',
+                ],
+                [
+                    'id' => 'visual-editor',
+                    'title' => get_string(
+                        $issitebanneradmin ? 'tour:sitebanner:current:preview:title' : 'tour:coursebanners:current:preview:title',
+                        'local_course_banner_builder'
+                    ),
+                    'description' => get_string('guidesteppreviewdescription', 'local_course_banner_builder'),
+                    'requires' => $issitebanneradmin ? '' : 'visualEditor',
+                    'requiresLabel' => $guidesourcerequiredlabel,
+                    'target' => 'visualEditor',
+                ],
+                [
+                    'id' => 'source-settings',
+                    'title' => get_string(
+                        $issitebanneradmin ? 'tour:sitebanner:current:settings:title' : 'tour:coursebanners:current:sourcesettings:title',
+                        'local_course_banner_builder'
+                    ),
+                    'description' => get_string('guidestepsettingsdescription', 'local_course_banner_builder'),
+                    'requires' => $issitebanneradmin ? '' : 'sourceSettings',
+                    'requiresLabel' => $guidesourcerequiredlabel,
+                    'target' => 'sourceSettings',
+                ],
+                [
+                    'id' => 'layer-table',
+                    'title' => get_string(
+                        $issitebanneradmin ? 'tour:sitebanner:current:layers:title' : 'tour:coursebanners:current:layertable:title',
+                        'local_course_banner_builder'
+                    ),
+                    'description' => get_string('guidesteplayersdescription', 'local_course_banner_builder'),
+                    'requires' => $issitebanneradmin ? '' : 'layerTable',
+                    'requiresLabel' => $guidesourcerequiredlabel,
+                    'target' => 'layerTable',
+                ],
+            ],
+        ],
+    ],
+]);
 
 echo $OUTPUT->header();
 echo html_writer::start_div(implode(' ', $adminclasses));
@@ -2718,15 +2882,20 @@ $deletepluginsettingsform = static function (string $action): string {
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'deleteallpluginsettings', 'value' => 1]) .
         html_writer::tag(
             'button',
-            html_writer::tag('i', '', ['class' => 'fa fa-trash-can me-2', 'aria-hidden' => 'true']) .
-                html_writer::span(get_string('deleteallpluginsettings', 'local_course_banner_builder')),
+            html_writer::tag('i', '', ['class' => 'fa fa-trash-can', 'aria-hidden' => 'true']),
             [
                 'type' => 'submit',
+                'aria-label' => get_string('deleteallpluginsettings', 'local_course_banner_builder'),
                 'class' => 'btn btn-outline-danger local-course-banner-builder-dashed-action local-course-banner-builder-admin-reset-button',
                 'data-modal' => 'confirmation',
                 'data-modal-title' => get_string('confirm', 'moodle'),
                 'data-modal-content' => get_string('deleteallpluginsettingsconfirm', 'local_course_banner_builder'),
                 'data-modal-yes-button' => get_string('delete', 'moodle'),
+                'data-easyedu-warning-popover' => get_string(
+                    'deleteallpluginsettingsconfirm',
+                    'local_course_banner_builder'
+                ),
+                'data-easyedu-warning-popover-placement' => 'bottom',
             ]
         ),
         [
@@ -2736,20 +2905,459 @@ $deletepluginsettingsform = static function (string $action): string {
         ]
     );
 };
+$guidecategoryactions = get_string('guidecategoryactions', 'local_course_banner_builder');
+$guidecategorybasics = get_string('guidecategorybasics', 'local_course_banner_builder');
+$guidecategorypractice = get_string('guidecategorypractice', 'local_course_banner_builder');
+$guidecategorysettings = get_string('guidecategorysettings', 'local_course_banner_builder');
+$guidecontext = [
+    'rootclass' => 'local-course-banner-builder-easyedu-guide',
+    'guidebadgelabel' => get_string('guidebadgelabel', 'local_course_banner_builder'),
+    'guidechecklistdonelabel' => get_string('guidechecklistdone', 'local_course_banner_builder'),
+    'guidechecklisttitle' => get_string('guidechecklisttitle', 'local_course_banner_builder'),
+    'guidecloselabel' => get_string('guidecloselabel', 'local_course_banner_builder'),
+    'guideeyebrow' => get_string('guideeyebrow', 'local_course_banner_builder'),
+    'guideguidedpathlabel' => get_string('guideguidedpathlabel', 'local_course_banner_builder'),
+    'guidemapbanner' => get_string('guidemapbanner', 'local_course_banner_builder'),
+    'guidemaplayers' => get_string('guidemaplayers', 'local_course_banner_builder'),
+    'guidemapsource' => get_string('guidemapsource', 'local_course_banner_builder'),
+    'guideminimizelabel' => get_string('guideminimizelabel', 'local_course_banner_builder'),
+    'guidenavigationlabel' => get_string('guidenavigationlabel', 'local_course_banner_builder'),
+    'guidenextlabel' => get_string('guidenextlabel', 'local_course_banner_builder'),
+    'guideopenlabel' => get_string('guideopenlabel', 'local_course_banner_builder'),
+    'guidepreviouslabel' => get_string('guidepreviouslabel', 'local_course_banner_builder'),
+    'guideprogresslabel' => get_string('guideprogresslabel', 'local_course_banner_builder'),
+    'guidereturnbutton' => get_string('guidereturnbutton', 'local_course_banner_builder'),
+    'guidereturndesc' => get_string('guidereturndesc', 'local_course_banner_builder'),
+    'guidereturndismiss' => get_string('guidereturndismiss', 'local_course_banner_builder'),
+    'guidereturnlabel' => get_string('guidereturnlabel', 'local_course_banner_builder'),
+    'guideshowinterfacelabel' => get_string('guideshowinterfacelabel', 'local_course_banner_builder'),
+    'guidestartpathlabel' => get_string('guidestartpathlabel', 'local_course_banner_builder'),
+    'guidesteplabel' => get_string('guidesteplabel', 'local_course_banner_builder'),
+    'guidesubtitle' => get_string('guidesubtitle', 'local_course_banner_builder'),
+    'guidetitle' => get_string($issitebanneradmin ? 'tour:sitebanner:name' : 'tour:coursebanners:name', 'local_course_banner_builder'),
+    'slides' => $issitebanneradmin ? [
+        [
+            'category' => $guidecategorybasics,
+            'content' => get_string($guidestringprefix . 'intro:content', 'local_course_banner_builder'),
+            'icon' => 'fa-desktop',
+            'index' => 0,
+            'target' => 'adminNav',
+            'title' => get_string($guidestringprefix . 'intro:title', 'local_course_banner_builder'),
+            'visualcards' => [
+                'items' => [
+                    [
+                        'icon' => 'fa-desktop',
+                        'meta' => get_string('guidemapbanner', 'local_course_banner_builder'),
+                        'title' => get_string($guidestringprefix . 'intro:title', 'local_course_banner_builder'),
+                        'type' => 'banner',
+                    ],
+                    [
+                        'icon' => 'fa-layer-group',
+                        'meta' => get_string('guidemaplayers', 'local_course_banner_builder'),
+                        'title' => get_string($guidestringprefix . 'layers:title', 'local_course_banner_builder'),
+                        'type' => 'layer',
+                    ],
+                ],
+            ],
+        ],
+        [
+            'category' => $guidecategorysettings,
+            'content' => get_string($guidestringprefix . 'format:content', 'local_course_banner_builder'),
+            'icon' => 'fa-columns',
+            'index' => 1,
+            'target' => 'adminNav',
+            'title' => get_string($guidestringprefix . 'format:title', 'local_course_banner_builder'),
+            'visualsteps' => [
+                'layout' => 'workflow',
+                'items' => [
+                    [
+                        'icon' => 'fa-columns',
+                        'label' => get_string('sitebannerformatbutton', 'local_course_banner_builder'),
+                    ],
+                    [
+                        'icon' => 'fa-eye',
+                        'label' => get_string($guidestringprefix . 'preview:title', 'local_course_banner_builder'),
+                    ],
+                    [
+                        'icon' => 'fa-sliders',
+                        'label' => get_string($guidestringprefix . 'settings:title', 'local_course_banner_builder'),
+                    ],
+                ],
+            ],
+        ],
+        [
+            'category' => $guidecategorypractice,
+            'content' => get_string($guidestringprefix . 'preview:content', 'local_course_banner_builder'),
+            'icon' => 'fa-image',
+            'index' => 2,
+            'target' => 'visualEditor',
+            'title' => get_string($guidestringprefix . 'preview:title', 'local_course_banner_builder'),
+            'visualdragdrop' => [
+                'lanes' => [[
+                    'sourceicon' => 'fa-image',
+                    'sourcelabel' => get_string('imagelayeroptions', 'local_course_banner_builder'),
+                    'sourcetype' => 'layer',
+                    'targeticon' => 'fa-desktop',
+                    'targetlabel' => get_string('guidemapbanner', 'local_course_banner_builder'),
+                ]],
+                'selection' => [
+                    get_string('layerborder', 'local_course_banner_builder'),
+                    get_string('layeroverlay', 'local_course_banner_builder'),
+                ],
+                'menuitems' => [
+                    [
+                        'icon' => 'fa-magic',
+                        'label' => get_string($guidestringprefix . 'preview:title', 'local_course_banner_builder'),
+                    ],
+                    [
+                        'icon' => 'fa-layer-group',
+                        'label' => get_string($guidestringprefix . 'layers:title', 'local_course_banner_builder'),
+                    ],
+                ],
+            ],
+        ],
+        [
+            'category' => $guidecategorysettings,
+            'content' => get_string($guidestringprefix . 'settings:content', 'local_course_banner_builder'),
+            'icon' => 'fa-sliders',
+            'index' => 3,
+            'target' => 'sourceSettings',
+            'title' => get_string($guidestringprefix . 'settings:title', 'local_course_banner_builder'),
+            'visualsteps' => [
+                'layout' => 'status',
+                'items' => [
+                    [
+                        'icon' => 'fa-columns',
+                        'label' => get_string($guidestringprefix . 'format:title', 'local_course_banner_builder'),
+                    ],
+                    [
+                        'icon' => 'fa-sliders',
+                        'label' => get_string($guidestringprefix . 'settings:title', 'local_course_banner_builder'),
+                    ],
+                    [
+                        'icon' => 'fa-layer-group',
+                        'label' => get_string($guidestringprefix . 'layers:title', 'local_course_banner_builder'),
+                    ],
+                ],
+            ],
+        ],
+        [
+            'category' => $guidecategorypractice,
+            'content' => get_string($guidestringprefix . 'layers:content', 'local_course_banner_builder'),
+            'guidedpath' => 'banner-basics',
+            'guidedpathcontent' => get_string('guidesteplayersdescription', 'local_course_banner_builder'),
+            'guidedpathsteps' => [
+                'items' => [
+                    get_string('tour:sitebanner:current:preview:title', 'local_course_banner_builder'),
+                    get_string('tour:sitebanner:current:settings:title', 'local_course_banner_builder'),
+                    get_string('tour:sitebanner:current:layers:title', 'local_course_banner_builder'),
+                ],
+            ],
+            'guidedpathtitle' => get_string($guidestringprefix . 'layers:title', 'local_course_banner_builder'),
+            'hasguidedpath' => true,
+            'icon' => 'fa-layer-group',
+            'index' => 4,
+            'target' => 'layerTable',
+            'title' => get_string($guidestringprefix . 'layers:title', 'local_course_banner_builder'),
+            'visualactionflow' => [
+                'actionicon' => 'fa-layer-group',
+                'actionlabel' => get_string($guidestringprefix . 'layers:title', 'local_course_banner_builder'),
+                'destinationtitle' => get_string($guidestringprefix . 'preview:title', 'local_course_banner_builder'),
+                'destinations' => [
+                    get_string($guidestringprefix . 'settings:title', 'local_course_banner_builder'),
+                    get_string($guidestringprefix . 'layers:title', 'local_course_banner_builder'),
+                ],
+                'selection' => [
+                    get_string('imagelayeroptions', 'local_course_banner_builder'),
+                    get_string('layeroverlay', 'local_course_banner_builder'),
+                ],
+            ],
+        ],
+    ] : [
+        [
+            'category' => $guidecategorybasics,
+            'content' => get_string($guidestringprefix . 'intro:content', 'local_course_banner_builder'),
+            'icon' => 'fa-sitemap',
+            'index' => 0,
+            'target' => 'adminNav',
+            'title' => get_string($guidestringprefix . 'intro:title', 'local_course_banner_builder'),
+            'visualassignment' => [
+                'rows' => [[
+                    'items' => [
+                        [
+                            'arrowafter' => true,
+                            'icon' => 'fa-sitemap',
+                            'title' => get_string('guidemapsource', 'local_course_banner_builder'),
+                            'type' => 'source',
+                        ],
+                        [
+                            'arrowafter' => true,
+                            'icon' => 'fa-layer-group',
+                            'title' => get_string('guidemaplayers', 'local_course_banner_builder'),
+                            'type' => 'layer',
+                        ],
+                        [
+                            'icon' => 'fa-image',
+                            'title' => get_string('guidemapbanner', 'local_course_banner_builder'),
+                            'type' => 'banner',
+                        ],
+                    ],
+                ]],
+            ],
+        ],
+        [
+            'category' => $guidecategorybasics,
+            'content' => get_string($guidestringprefix . 'glossary:content', 'local_course_banner_builder'),
+            'icon' => 'fa-book-open',
+            'index' => 1,
+            'target' => 'sourcePicker',
+            'title' => get_string($guidestringprefix . 'glossary:title', 'local_course_banner_builder'),
+            'visualcards' => [
+                'items' => [
+                    [
+                        'icon' => 'fa-sitemap',
+                        'meta' => get_string('guidemapsource', 'local_course_banner_builder'),
+                        'title' => get_string('source', 'local_course_banner_builder'),
+                        'type' => 'source',
+                    ],
+                    [
+                        'icon' => 'fa-layer-group',
+                        'meta' => get_string('guidemaplayers', 'local_course_banner_builder'),
+                        'title' => get_string('layers', 'local_course_banner_builder'),
+                        'type' => 'layer',
+                    ],
+                    [
+                        'icon' => 'fa-code-branch',
+                        'meta' => get_string('inheritance', 'local_course_banner_builder'),
+                        'title' => get_string('tour:coursebanners:current:inheritance:title', 'local_course_banner_builder'),
+                        'type' => 'source',
+                    ],
+                ],
+            ],
+        ],
+        [
+            'category' => $guidecategorybasics,
+            'content' => get_string('tour:coursebanners:current:inheritance:content', 'local_course_banner_builder'),
+            'icon' => 'fa-code-branch',
+            'index' => 2,
+            'target' => 'sourcePicker',
+            'title' => get_string('tour:coursebanners:current:inheritance:title', 'local_course_banner_builder'),
+            'visualformula' => [
+                'expression' => get_string('source', 'local_course_banner_builder') . ' + ' .
+                    get_string('inheritance', 'local_course_banner_builder'),
+                'results' => [
+                    get_string('layers', 'local_course_banner_builder'),
+                    get_string('guidemapbanner', 'local_course_banner_builder'),
+                ],
+            ],
+        ],
+        [
+            'category' => $guidecategorybasics,
+            'content' => get_string($guidestringprefix . 'sources:content', 'local_course_banner_builder'),
+            'guidedpath' => 'configured-sources',
+            'guidedpathcontent' => get_string('guideunlockselectsourcedesc', 'local_course_banner_builder'),
+            'guidedpathsteps' => [
+                'items' => [
+                    get_string($guidestringprefix . 'sources:title', 'local_course_banner_builder'),
+                    get_string('guideunlockselectsource', 'local_course_banner_builder'),
+                ],
+            ],
+            'guidedpathtitle' => get_string($guidestringprefix . 'sources:title', 'local_course_banner_builder'),
+            'hasguidedpath' => true,
+            'icon' => 'fa-sitemap',
+            'index' => 3,
+            'target' => 'sourceList',
+            'title' => get_string($guidestringprefix . 'sources:title', 'local_course_banner_builder'),
+            'visualfiltersdemo' => [
+                'actions' => [
+                    ['label' => get_string('guideunlockchoosesource', 'local_course_banner_builder')],
+                    ['label' => get_string('guideunlockselectsource', 'local_course_banner_builder')],
+                ],
+                'badges' => [
+                    [
+                        'label' => get_string('guiderequiressource', 'local_course_banner_builder'),
+                        'type' => 'source',
+                    ],
+                ],
+                'searchlabel' => get_string($guidestringprefix . 'sources:title', 'local_course_banner_builder'),
+            ],
+        ],
+        [
+            'category' => $guidecategorysettings,
+            'content' => get_string($guidestringprefix . 'settings:content', 'local_course_banner_builder'),
+            'icon' => 'fa-sliders',
+            'index' => 4,
+            'target' => 'sourceSettings',
+            'title' => get_string($guidestringprefix . 'settings:title', 'local_course_banner_builder'),
+            'visualsteps' => [
+                'layout' => 'status',
+                'items' => [
+                    [
+                        'icon' => 'fa-sitemap',
+                        'label' => get_string('guideunlockchoosesource', 'local_course_banner_builder'),
+                    ],
+                    [
+                        'icon' => 'fa-sliders',
+                        'label' => get_string($guidestringprefix . 'settings:title', 'local_course_banner_builder'),
+                    ],
+                    [
+                        'icon' => 'fa-eye',
+                        'label' => get_string($guidestringprefix . 'preview:title', 'local_course_banner_builder'),
+                    ],
+                ],
+            ],
+        ],
+        [
+            'category' => $guidecategorypractice,
+            'content' => get_string($guidestringprefix . 'preview:content', 'local_course_banner_builder'),
+            'icon' => 'fa-image',
+            'index' => 5,
+            'target' => 'visualEditor',
+            'title' => get_string($guidestringprefix . 'preview:title', 'local_course_banner_builder'),
+            'visualdragdrop' => [
+                'lanes' => [[
+                    'sourceicon' => 'fa-image',
+                    'sourcelabel' => get_string('imagelayeroptions', 'local_course_banner_builder'),
+                    'sourcetype' => 'layer',
+                    'targeticon' => 'fa-image',
+                    'targetlabel' => get_string('guidemapbanner', 'local_course_banner_builder'),
+                ]],
+                'selection' => [
+                    get_string('layerborder', 'local_course_banner_builder'),
+                    get_string('layeroverlay', 'local_course_banner_builder'),
+                ],
+                'menuitems' => [
+                    [
+                        'icon' => 'fa-magnet',
+                        'label' => get_string($guidestringprefix . 'toolbar:title', 'local_course_banner_builder'),
+                    ],
+                    [
+                        'icon' => 'fa-layer-group',
+                        'label' => get_string($guidestringprefix . 'layers:title', 'local_course_banner_builder'),
+                    ],
+                ],
+            ],
+        ],
+        [
+            'category' => $guidecategorypractice,
+            'content' => get_string($guidestringprefix . 'layers:content', 'local_course_banner_builder'),
+            'guidedpath' => 'banner-basics',
+            'guidedpathcontent' => get_string('guidesteplayersdescription', 'local_course_banner_builder'),
+            'guidedpathsteps' => [
+                'items' => [
+                    get_string($issitebanneradmin ? 'tour:sitebanner:current:preview:title' : 'tour:coursebanners:current:preview:title',
+                        'local_course_banner_builder'),
+                    get_string($issitebanneradmin ? 'tour:sitebanner:current:settings:title' : 'tour:coursebanners:current:sourcesettings:title',
+                        'local_course_banner_builder'),
+                    get_string($issitebanneradmin ? 'tour:sitebanner:current:layers:title' : 'tour:coursebanners:current:layertable:title',
+                        'local_course_banner_builder'),
+                ],
+            ],
+            'guidedpathtitle' => get_string($guidestringprefix . 'layers:title', 'local_course_banner_builder'),
+            'hasguidedpath' => true,
+            'icon' => 'fa-layer-group',
+            'index' => 6,
+            'target' => 'layerTable',
+            'title' => get_string($guidestringprefix . 'layers:title', 'local_course_banner_builder'),
+            'visualactionflow' => [
+                'actionicon' => 'fa-layer-group',
+                'actionlabel' => get_string($guidestringprefix . 'layers:title', 'local_course_banner_builder'),
+                'destinationtitle' => get_string($guidestringprefix . 'preview:title', 'local_course_banner_builder'),
+                'destinations' => [
+                    get_string('guidemaplayers', 'local_course_banner_builder'),
+                    get_string('guidemapbanner', 'local_course_banner_builder'),
+                ],
+                'selection' => [
+                    get_string('imagelayeroptions', 'local_course_banner_builder'),
+                    get_string('layerborder', 'local_course_banner_builder'),
+                ],
+            ],
+        ],
+        [
+            'category' => $guidecategoryactions,
+            'content' => get_string($guidestringprefix . 'toolbar:content', 'local_course_banner_builder'),
+            'icon' => 'fa-magic',
+            'index' => 7,
+            'target' => 'visualEditor',
+            'title' => get_string($guidestringprefix . 'toolbar:title', 'local_course_banner_builder'),
+            'visualactionflow' => [
+                'actionicon' => 'fa-magic',
+                'actionlabel' => get_string($guidestringprefix . 'toolbar:title', 'local_course_banner_builder'),
+                'destinationtitle' => get_string($guidestringprefix . 'preview:title', 'local_course_banner_builder'),
+                'destinations' => [
+                    get_string('guidemaplayers', 'local_course_banner_builder'),
+                    get_string('guidemapbanner', 'local_course_banner_builder'),
+                ],
+                'selection' => [
+                    get_string('imagelayeroptions', 'local_course_banner_builder'),
+                    get_string('layerborder', 'local_course_banner_builder'),
+                ],
+            ],
+        ],
+    ],
+];
+$guidetargetselectors = [
+    'adminNav' => '[data-easyedu-guide-target="adminNav"]',
+    'layerTable' => '.local-course-banner-builder-layer-table-wrapper, .local-course-banner-builder-layer-table',
+    'sourceList' => '[data-easyedu-guide-target="source-pickers"]',
+    'sourcePicker' => '[data-easyedu-guide-target="source-pickers"]',
+    'sourceSettings' => '#local-course-banner-builder-selected-source-content .local-course-banner-builder-source-settings-fieldset, ' .
+        '#local-course-banner-builder-selected-source-content .local-course-banner-builder-summary',
+    'visualEditor' => '[data-source-visual-editor="1"], .local-course-banner-builder-banner-preview-panel',
+];
+foreach ($guidecontext['slides'] as &$guideslide) {
+    $guideslide['navicon'] = $guideslide['icon'] ?? 'fa-info-circle';
+    $guideslide['hasvisualflow'] = !empty($guideslide['hasvisualflow']);
+    if (!empty($guideslide['target']) && isset($guidetargetselectors[$guideslide['target']])) {
+        $guideslide['targetselector'] = $guidetargetselectors[$guideslide['target']];
+    }
+    if (!$issitebanneradmin && in_array($guideslide['target'] ?? '', ['sourceSettings', 'visualEditor', 'layerTable'], true)) {
+        $guideunlockpath = match ($guideslide['target']) {
+            'sourceSettings' => 'unlock-source-settings',
+            'layerTable' => 'unlock-source-layers',
+            'visualEditor' => (($guideslide['icon'] ?? '') === 'fa-magic') ?
+                'unlock-source-toolbar' : 'unlock-source-preview',
+            default => 'unlock-source-preview',
+        };
+        $guideslide['requires'] = $guideslide['target'];
+        $guideslide['requireslabel'] = $guidesourcerequiredlabel;
+        $guideslide['requiresbadge'] = get_string('guidelockedbadge', 'local_course_banner_builder');
+        $guideslide['requirestitle'] = get_string('guidelockedtitle', 'local_course_banner_builder');
+        $guideslide['requirescontent'] = get_string('guidelockedsourcecontent', 'local_course_banner_builder');
+        $guideslide['unlockpath'] = $guideunlockpath;
+        $guideslide['unlocklabel'] = get_string('guideunlockstepslabel', 'local_course_banner_builder');
+    }
+}
+unset($guideslide);
+$guidecontext['slidecount'] = count($guidecontext['slides']);
+$guidecontext['initialprogress'] = $guidecontext['slidecount'] > 0 ? round(100 / $guidecontext['slidecount'], 2) : 0;
+$guidehtml = $OUTPUT->render_from_template('local_course_banner_builder/easyedu_guide', $guidecontext);
 $coursebannersurl = new moodle_url('/local/course_banner_builder/admin_manage.php');
 $sitebannerurl = new moodle_url('/local/course_banner_builder/admin_site.php');
+$coursebuttonclasses = 'btn btn-outline-secondary local-course-banner-builder-dashed-action ' .
+    'local-course-banner-builder-admin-switch-button' . (!$issitebanneradmin ? ' active' : '');
+$sitebuttonclasses = 'btn btn-outline-secondary local-course-banner-builder-dashed-action ' .
+    'local-course-banner-builder-admin-switch-button' . ($issitebanneradmin ? ' active' : '');
+$coursebuttonattributes = ['class' => $coursebuttonclasses];
+$sitebuttonattributes = ['class' => $sitebuttonclasses];
+if (!$issitebanneradmin) {
+    $coursebuttonattributes['aria-current'] = 'page';
+} else {
+    $sitebuttonattributes['aria-current'] = 'page';
+}
 echo html_writer::div(
+    $guidehtml .
     html_writer::link(
         $coursebannersurl,
         html_writer::tag('i', '', ['class' => 'fa fa-image me-2', 'aria-hidden' => 'true']) .
             html_writer::span(get_string('managecoursebannersquick', 'local_course_banner_builder')),
-        ['class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action local-course-banner-builder-admin-switch-button']
+        $coursebuttonattributes
     ) .
     html_writer::link(
         $sitebannerurl,
         html_writer::tag('i', '', ['class' => 'fa fa-desktop me-2', 'aria-hidden' => 'true']) .
             html_writer::span(get_string('managesitebannerquick', 'local_course_banner_builder')),
-        ['class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action local-course-banner-builder-admin-switch-button']
+        $sitebuttonattributes
     ) .
     html_writer::link(
         new moodle_url('/local/course_banner_builder/admin_slideshow.php'),
@@ -2766,13 +3374,46 @@ echo html_writer::div(
     $formatbutton(\local_course_banner_builder\manager::SLIDESHOW_CONTEXT_COURSE) .
     $formatbutton(\local_course_banner_builder\manager::SLIDESHOW_CONTEXT_SITE) .
     $deletepluginsettingsform((new moodle_url($adminpagepath))->out(false)),
-    'local-course-banner-builder-admin-switcher mb-3'
+    'local-course-banner-builder-admin-switcher mb-3',
+    [
+        'data-easyedu-guide-target' => 'adminNav',
+    ]
 );
+$statuspopoverattributes = static function (string $label): array {
+    return [
+        'data-action' => 'local-course-banner-builder-submit-setting',
+        'data-local-course-banner-builder-hover-popover' => '1',
+        'data-placement' => 'top',
+        'data-html' => 'true',
+        'data-content' => '<div class="no-overflow"><p>' . s($label) . '</p></div>',
+        'data-local-course-banner-builder-popover-label' => $label,
+    ];
+};
 if ($issitebanneradmin) {
     $siteenabled = (bool)get_config('local_course_banner_builder', 'sitebannerenabled');
     echo html_writer::start_div('local-course-banner-builder-site-banner-status mb-4');
-    echo html_writer::tag('h3', get_string('sitebannerstatus', 'local_course_banner_builder'), ['class' => 'h5']);
+    echo html_writer::start_tag('details', ['class' => 'local-course-banner-builder-options-panel']);
+    echo html_writer::tag(
+        'summary',
+        html_writer::span(
+            get_string('sitebannerstatus', 'local_course_banner_builder'),
+            'local-course-banner-builder-options-panel-title'
+        ) . html_writer::tag('i', '', [
+            'class' => 'fa fa-chevron-down local-course-banner-builder-options-panel-chevron',
+            'aria-hidden' => 'true',
+        ]),
+        ['class' => 'local-course-banner-builder-options-panel-summary']
+    );
+    echo html_writer::start_div('local-course-banner-builder-options-panel-content');
     echo html_writer::start_div('local-course-banner-builder-course-banner-status-actions');
+    echo html_writer::start_div(
+        'local-course-banner-builder-secondary-group local-course-banner-builder-secondary-group--general'
+    );
+    echo html_writer::div(
+        get_string('statusgroupgeneral', 'local_course_banner_builder'),
+        'local-course-banner-builder-secondary-group-label'
+    );
+    echo html_writer::start_div('local-course-banner-builder-secondary-group-controls');
     echo html_writer::tag('form',
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]) .
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'updatesitebannerenabled', 'value' => 1]) .
@@ -2793,28 +3434,49 @@ if ($issitebanneradmin) {
                     ' local-course-banner-builder-dashed-action local-course-banner-builder-site-enable-button',
             ]
         ),
-        [
+        array_merge([
             'method' => 'post',
             'action' => (new moodle_url($adminpagepath))->out(false),
-        ]
+        ], $statuspopoverattributes(get_string(
+            $siteenabled ? 'sitebannerenabledon' : 'sitebannerenabledoff',
+            'local_course_banner_builder'
+        )))
     );
-    echo html_writer::tag('button',
-        html_writer::tag('i', '', ['class' => 'fa fa-font me-2', 'aria-hidden' => 'true']) .
-            html_writer::span(get_string('editsitebannertitle', 'local_course_banner_builder')),
-        [
-            'type' => 'button',
-            'class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action',
-            'data-toggle' => 'modal',
-            'data-target' => '#local-course-banner-builder-title-settings-site-modal',
-            'data-bs-toggle' => 'modal',
-            'data-bs-target' => '#local-course-banner-builder-title-settings-site-modal',
-        ]
+    echo html_writer::end_div();
+    echo html_writer::end_div();
+    echo html_writer::start_div(
+        'local-course-banner-builder-secondary-group local-course-banner-builder-secondary-group--titles'
     );
+    echo html_writer::div(
+        get_string('statusgrouptitles', 'local_course_banner_builder'),
+        'local-course-banner-builder-secondary-group-label'
+    );
+    echo html_writer::start_div('local-course-banner-builder-secondary-group-controls');
+    echo html_writer::div(
+        html_writer::tag('button',
+            html_writer::tag('i', '', ['class' => 'fa fa-font me-2', 'aria-hidden' => 'true']) .
+                html_writer::span(get_string('editsitebannertitle', 'local_course_banner_builder')),
+            [
+                'type' => 'button',
+                'class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action ' .
+                    'local-course-banner-builder-title-edit-action',
+                'data-toggle' => 'modal',
+                'data-target' => '#local-course-banner-builder-title-settings-site-modal',
+                'data-bs-toggle' => 'modal',
+                'data-bs-target' => '#local-course-banner-builder-title-settings-site-modal',
+            ]
+        ),
+        'local-course-banner-builder-title-edit-actions'
+    );
+    echo html_writer::end_div();
+    echo html_writer::end_div();
     echo html_writer::end_div();
     echo html_writer::div(
         get_string($siteenabled ? 'sitebannerenabledon' : 'sitebannerenabledoff', 'local_course_banner_builder'),
         'form-text text-muted mt-2'
     );
+    echo html_writer::end_div();
+    echo html_writer::end_tag('details');
     $sitepreviewsource = \local_course_banner_builder\manager::resolve_source(
         \local_course_banner_builder\manager::SITE_SOURCE_KEY
     );
@@ -2830,22 +3492,29 @@ if ($issitebanneradmin) {
     $activitybannersenabled = \local_course_banner_builder\manager::course_banners_on_activity_pages_enabled();
     $defaultimagebannersenabled = \local_course_banner_builder\manager::course_default_image_banners_enabled();
     $customoverviewimagesenabled = \local_course_banner_builder\manager::course_custom_overview_images_enabled();
-    $courseoptionhelpbutton = static function (string $label): string {
-        return html_writer::tag('button', '?', [
-            'type' => 'button',
-            'class' => 'btn btn-link p-0 icon-no-margin local-course-banner-builder-help-dot',
-            'data-toggle' => 'popover',
-            'data-trigger' => 'hover',
-            'data-placement' => 'top',
-            'data-html' => 'true',
-            'data-content' => '<div class="no-overflow"><p>' . s($label) . '</p></div>',
-            'data-local-course-banner-builder-popover-label' => $label,
-            'aria-label' => get_string('help'),
-        ]);
-    };
     echo html_writer::start_div('local-course-banner-builder-site-banner-status mb-4');
-    echo html_writer::tag('h3', get_string('coursebannerstatus', 'local_course_banner_builder'), ['class' => 'h5']);
+    echo html_writer::start_tag('details', ['class' => 'local-course-banner-builder-options-panel']);
+    echo html_writer::tag(
+        'summary',
+        html_writer::span(
+            get_string('coursebannerstatus', 'local_course_banner_builder'),
+            'local-course-banner-builder-options-panel-title'
+        ) . html_writer::tag('i', '', [
+            'class' => 'fa fa-chevron-down local-course-banner-builder-options-panel-chevron',
+            'aria-hidden' => 'true',
+        ]),
+        ['class' => 'local-course-banner-builder-options-panel-summary']
+    );
+    echo html_writer::start_div('local-course-banner-builder-options-panel-content');
     echo html_writer::start_div('local-course-banner-builder-course-banner-status-actions');
+    echo html_writer::start_div(
+        'local-course-banner-builder-secondary-group local-course-banner-builder-secondary-group--general'
+    );
+    echo html_writer::div(
+        get_string('statusgroupgeneral', 'local_course_banner_builder'),
+        'local-course-banner-builder-secondary-group-label'
+    );
+    echo html_writer::start_div('local-course-banner-builder-secondary-group-controls');
     echo html_writer::tag('form',
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]) .
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'updatecoursebannerenabled', 'value' => 1]) .
@@ -2866,8 +3535,11 @@ if ($issitebanneradmin) {
                     ' local-course-banner-builder-dashed-action',
             ]
         ),
-        ['method' => 'post', 'action' => (new moodle_url($adminpagepath, $selectedsourceparams))->out(false)]
-    ) . $courseoptionhelpbutton(get_string('coursebannersenabled_help', 'local_course_banner_builder'));
+        array_merge([
+            'method' => 'post',
+            'action' => (new moodle_url($adminpagepath, $selectedsourceparams))->out(false),
+        ], $statuspopoverattributes(get_string('coursebannersenabled_help', 'local_course_banner_builder')))
+    );
     echo html_writer::tag('form',
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]) .
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'updatecourseactivitybanners', 'value' => 1]) .
@@ -2889,8 +3561,21 @@ if ($issitebanneradmin) {
                     ' local-course-banner-builder-dashed-action',
             ]
         ),
-        ['method' => 'post', 'action' => (new moodle_url($adminpagepath, $selectedsourceparams))->out(false)]
-    ) . $courseoptionhelpbutton(get_string('courseactivitybannersenabled_help', 'local_course_banner_builder'));
+        array_merge([
+            'method' => 'post',
+            'action' => (new moodle_url($adminpagepath, $selectedsourceparams))->out(false),
+        ], $statuspopoverattributes(get_string('courseactivitybannersenabled_help', 'local_course_banner_builder')))
+    );
+    echo html_writer::end_div();
+    echo html_writer::end_div();
+    echo html_writer::start_div(
+        'local-course-banner-builder-secondary-group local-course-banner-builder-secondary-group--images'
+    );
+    echo html_writer::div(
+        get_string('statusgroupimages', 'local_course_banner_builder'),
+        'local-course-banner-builder-secondary-group-label'
+    );
+    echo html_writer::start_div('local-course-banner-builder-secondary-group-controls');
     echo html_writer::tag('form',
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]) .
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'updatecoursedefaultimagebanners', 'value' => 1]) .
@@ -2916,8 +3601,11 @@ if ($issitebanneradmin) {
                     ' local-course-banner-builder-dashed-action',
             ]
         ),
-        ['method' => 'post', 'action' => (new moodle_url($adminpagepath, $selectedsourceparams))->out(false)]
-    ) . $courseoptionhelpbutton(get_string('coursebannerdefaultimageenabled_help', 'local_course_banner_builder'));
+        array_merge([
+            'method' => 'post',
+            'action' => (new moodle_url($adminpagepath, $selectedsourceparams))->out(false),
+        ], $statuspopoverattributes(get_string('coursebannerdefaultimageenabled_help', 'local_course_banner_builder')))
+    );
     echo html_writer::tag('form',
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]) .
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'updatecoursecustomoverviewimages', 'value' => 1]) .
@@ -2941,14 +3629,26 @@ if ($issitebanneradmin) {
                 'class' => 'btn ' . ($customoverviewimagesenabled ? 'btn-primary' : 'btn-outline-secondary') .
                     ' local-course-banner-builder-dashed-action',
             ]
-        ) .
-        $courseoptionhelpbutton(get_string('coursecustomoverviewimageenabled_help', 'local_course_banner_builder')),
-        [
+        ),
+        array_merge([
             'method' => 'post',
             'action' => (new moodle_url($adminpagepath, $selectedsourceparams))->out(false),
             'class' => 'local-course-banner-builder-toggle-button-row',
-        ]
+        ], $statuspopoverattributes(get_string(
+            'coursecustomoverviewimageenabled_help',
+            'local_course_banner_builder'
+        )))
     );
+    echo html_writer::end_div();
+    echo html_writer::end_div();
+    echo html_writer::start_div(
+        'local-course-banner-builder-secondary-group local-course-banner-builder-secondary-group--generation'
+    );
+    echo html_writer::div(
+        get_string('statusgroupgeneration', 'local_course_banner_builder'),
+        'local-course-banner-builder-secondary-group-label'
+    );
+    echo html_writer::start_div('local-course-banner-builder-secondary-group-controls');
     echo html_writer::tag('form',
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]) .
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'forcecourseoverviewreplacement', 'value' => 1]) .
@@ -2960,24 +3660,38 @@ if ($issitebanneradmin) {
                 'type' => 'submit',
                 'class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action',
             ]
-        ) .
-        $courseoptionhelpbutton(get_string('forcecourseoverviewreplacementhelp', 'local_course_banner_builder')),
-        [
+        ),
+        array_merge([
             'method' => 'post',
             'action' => (new moodle_url($adminpagepath, $selectedsourceparams))->out(false),
             'class' => 'local-course-banner-builder-toggle-button-row',
-        ]
+        ], $statuspopoverattributes(get_string(
+            'forcecourseoverviewreplacementhelp',
+            'local_course_banner_builder'
+        )))
     );
+    echo html_writer::end_div();
+    echo html_writer::end_div();
+    echo html_writer::start_div(
+        'local-course-banner-builder-secondary-group local-course-banner-builder-secondary-group--titles'
+    );
+    echo html_writer::div(
+        get_string('statusgrouptitles', 'local_course_banner_builder'),
+        'local-course-banner-builder-secondary-group-label'
+    );
+    echo html_writer::start_div('local-course-banner-builder-secondary-group-controls');
+    $titleeditactions = '';
     foreach ([
         'course' => 'editcoursebannertitle',
         'activity' => 'editactivitybannertitle',
     ] as $titlecontext => $stringkey) {
-        echo html_writer::tag('button',
+        $titleeditactions .= html_writer::tag('button',
             html_writer::tag('i', '', ['class' => 'fa fa-font me-2', 'aria-hidden' => 'true']) .
                 html_writer::span(get_string($stringkey, 'local_course_banner_builder')),
             [
                 'type' => 'button',
-                'class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action',
+                'class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action ' .
+                    'local-course-banner-builder-title-edit-action',
                 'data-toggle' => 'modal',
                 'data-target' => '#local-course-banner-builder-title-settings-' . $titlecontext . '-modal',
                 'data-bs-toggle' => 'modal',
@@ -2985,7 +3699,15 @@ if ($issitebanneradmin) {
             ]
         );
     }
+    echo html_writer::div(
+        $titleeditactions,
+        'local-course-banner-builder-title-edit-actions'
+    );
     echo html_writer::end_div();
+    echo html_writer::end_div();
+    echo html_writer::end_div();
+    echo html_writer::end_div();
+    echo html_writer::end_tag('details');
     foreach ([
         'course' => 'editcoursebannertitle',
         'activity' => 'editactivitybannertitle',
@@ -3059,7 +3781,9 @@ if (!$issitebanneradmin) {
     if (empty($categoryoptions)) {
         echo $OUTPUT->notification(get_string('nocategoryselected', 'local_course_banner_builder'), 'info');
     } else {
-        echo html_writer::start_div('local-course-banner-builder-source-picker mb-4');
+        echo html_writer::start_div('local-course-banner-builder-source-picker mb-4', [
+            'data-easyedu-guide-target' => 'source-pickers',
+        ]);
 
         echo html_writer::start_tag('form', [
         'method' => 'get',
@@ -3633,7 +4357,10 @@ if ($selectedsource) {
 }
 
 if (!$issitebanneradmin) {
-    echo html_writer::start_tag('details', ['class' => 'local-course-banner-builder-section mb-4', 'open' => 'open']);
+    echo html_writer::start_tag('details', [
+        'class' => 'local-course-banner-builder-section mb-4',
+        'open' => 'open',
+    ]);
     echo html_writer::tag(
         'summary',
         html_writer::span(

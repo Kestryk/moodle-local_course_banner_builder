@@ -1,0 +1,81 @@
+{
+  "name": "easyedu-ui-kit",
+  "version": "0.4.38",
+  "source": "git@github.com:Kestryk/easyedu-ui-kit.git",
+  "status": "stable",
+  "packages": {
+    "ai": {
+      "path": "ai",
+      "description": "AI implementation rules, component contracts, audit baseline and passation templates."
+    },
+    "scss": {
+      "path": "scss/easyedu",
+      "description": "Reusable SCSS tokens, mixins and component primitives."
+    },
+    "guide": {
+      "path": "guide",
+      "description": "Reusable EasyEdu guide/tutorial foundation."
+    },
+    "motion": {
+      "path": "motion",
+      "description": "Cancellable AMD motion controller with reduced-motion and server-policy support.",
+      "documentation": "motion/README.md"
+    },
+    "docs": {
+      "path": "docs",
+      "description": "Architecture, component API and Moodle integration documentation."
+    }
+  },
+  "componentFamilies": [
+    "tokens",
+    "typography",
+    "animations",
+    "panels",
+    "cards",
+    "buttons",
+    "forms",
+    "dropdowns",
+    "tooltips",
+    "modals",
+    "tables",
+    "badges",
+    "empty-states",
+    "drag-drop",
+    "guide",
+    "responsive",
+    "orchestration"
+  ],
+  "quality": {
+    "audit": {
+      "script": "scripts/audit-kit.ps1",
+      "baseline": "ai/audit-baseline.json",
+      "strictNewFindingsCommand": "powershell -ExecutionPolicy Bypass -File ./scripts/audit-kit.ps1 -FailOnNewWarning"
+    },
+    "moodleRulesAudit": {
+      "script": "scripts/audit-moodle-rules.ps1",
+      "exampleCommand": "powershell -ExecutionPolicy Bypass -File ./scripts/audit-moodle-rules.ps1 -PluginRoot C:/path/to/moodle/local/plugin"
+    },
+    "sync": {
+      "script": "sync-easyedu-kit.ps1",
+      "aiContractsOption": "-IncludeAiContracts",
+      "aiContractsTarget": "easyedu-kit-docs/ai"
+    }
+  },
+  "aiContracts": {
+    "generalRules": "ai/AI_RULES.md",
+    "implementationChecklist": "ai/IMPLEMENTATION_CHECKLIST.md",
+    "componentContract": "ai/COMPONENT_CONTRACT.md",
+    "guideParityChecklist": "ai/GUIDE_PARITY_CHECKLIST.md",
+    "moodlePluginRules": "ai/MOODLE_PLUGIN_RULES.md",
+    "moodlePluginReviewChecklist": "ai/MOODLE_PLUGIN_REVIEW_CHECKLIST.md",
+    "moodleCodingRules": "ai/MOODLE_CODING_RULES.md",
+    "passationTemplate": "ai/PASSATION_TEMPLATE.md"
+  },
+  "developmentOnly": [
+    "ai",
+    "docs",
+    "examples",
+    "scripts",
+    "tests"
+  ]
+}

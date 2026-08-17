@@ -1,0 +1,726 @@
+// EasyEdu form-related primitives.
+//
+// `dropdown-menu` styles custom menus opened by plugin controls. Keep native
+// Moodle form controls in place where possible, then use tokens to make their
+// focus states and menu surfaces consistent.
+//
+// Theme override tokens:
+// --easyedu-surface, --easyedu-dropdown-border, --easyedu-dropdown-radius,
+// --easyedu-dropdown-shadow.
+@use "feedback";
+
+@mixin dropdown-menu {
+  background: var(--easyedu-surface);
+  border: 1px solid var(--easyedu-dropdown-border);
+  border-radius: var(--easyedu-dropdown-radius);
+  box-shadow: var(--easyedu-dropdown-shadow);
+  display: grid;
+  gap: 0.18rem;
+  padding: 0.35rem;
+}
+
+@mixin search-field {
+  align-items: center;
+  background: var(--easyedu-surface);
+  border: 1px solid var(--easyedu-control-border);
+  border-radius: var(--easyedu-control-radius);
+  display: grid;
+  gap: 0.45rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  min-height: var(--easyedu-control-height);
+  padding: 0 0.68rem;
+  transition:
+    border-color var(--easyedu-motion-fast) ease,
+    box-shadow var(--easyedu-motion-fast) ease;
+
+  .fa {
+    color: var(--easyedu-text-muted);
+  }
+
+  input {
+    border: 0;
+    box-shadow: none;
+    min-width: 0;
+    padding: 0;
+
+    &:focus {
+      box-shadow: none;
+      outline: 0;
+    }
+  }
+
+  &:focus-within {
+    border-color: var(--easyedu-control-focus-border);
+    box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring);
+  }
+}
+
+@mixin segmented-toggle {
+  background: var(--easyedu-surface-strong);
+  border: 1px solid var(--easyedu-card-border);
+  border-radius: 999px;
+  display: inline-flex;
+  gap: 0.18rem;
+  padding: 0.22rem;
+
+  .btn,
+  button {
+    border: 0;
+    border-radius: 999px;
+    color: var(--easyedu-text-muted);
+    font-weight: 700;
+    min-height: 2.1rem;
+
+    &.active,
+    &[aria-pressed="true"] {
+      background: var(--easyedu-surface);
+      box-shadow: 0 0.2rem 0.48rem rgba(31, 42, 55, 0.1);
+      color: var(--easyedu-primary-strong);
+    }
+  }
+}
+
+// Accessible single-choice control with the visual weight of the segmented
+// controls used across EasyEdu. Keep the native radio in the accessibility
+// tree and place the visible surface immediately after it.
+@mixin segmented-choice($size: regular) {
+  background: var(--easyedu-surface-strong);
+  border: 1px solid var(--easyedu-card-border);
+  border-radius: calc(var(--easyedu-control-radius) + 0.16rem);
+  box-sizing: border-box;
+  display: grid;
+  gap: 0.45rem;
+  min-inline-size: 0;
+  overflow: visible;
+  padding: 0.45rem;
+
+  .easyedu-segmented-choice__label {
+    background: var(--easyedu-surface-strong);
+    box-sizing: border-box;
+    color: var(--easyedu-text);
+    display: block;
+    float: none;
+    font-size: 0.82rem;
+    font-weight: 750;
+    inline-size: fit-content;
+    line-height: 1.25;
+    margin: 0;
+    max-inline-size: calc(100% - 0.5rem);
+    overflow-wrap: anywhere;
+    padding: 0.15rem 0.35rem 0.2rem;
+    white-space: normal;
+  }
+
+  // Canonical contained structure. The native legend remains available to
+  // assistive technology while the visible heading sits inside the surface,
+  // avoiding browser-specific fieldset border notches and overlays.
+  .easyedu-segmented-choice__legend {
+    border: 0;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+  }
+
+  .easyedu-segmented-choice__options {
+    display: grid;
+    gap: 0.35rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .easyedu-segmented-choice__option {
+    cursor: pointer;
+    margin: 0;
+    min-width: 0;
+    position: relative;
+  }
+
+  .easyedu-segmented-choice__input {
+    height: 1px;
+    opacity: 0;
+    position: absolute;
+    width: 1px;
+  }
+
+  .easyedu-segmented-choice__surface {
+    align-items: center;
+    background: var(--easyedu-surface);
+    border: 1px solid transparent;
+    border-radius: var(--easyedu-control-radius);
+    color: var(--easyedu-text-muted);
+    display: grid;
+    gap: 0.6rem;
+    grid-template-columns: auto minmax(0, 1fr);
+    min-height: 3.5rem;
+    padding: 0.58rem 0.68rem;
+    transition:
+      background-color var(--easyedu-motion-fast) ease,
+      border-color var(--easyedu-motion-fast) ease,
+      box-shadow var(--easyedu-motion-fast) ease;
+
+    > .fa {
+      align-items: center;
+      background: var(--easyedu-primary-soft);
+      border-radius: 0.58rem;
+      color: var(--easyedu-primary);
+      display: inline-flex;
+      height: 2rem;
+      justify-content: center;
+      line-height: 1;
+      width: 2rem;
+    }
+
+    strong,
+    small {
+      display: block;
+    }
+
+    strong {
+      color: var(--easyedu-text);
+      font-size: 0.82rem;
+      line-height: 1.2;
+    }
+
+    small {
+      font-size: 0.72rem;
+      line-height: 1.3;
+      margin-top: 0.12rem;
+    }
+  }
+
+  .easyedu-segmented-choice__option:hover .easyedu-segmented-choice__surface {
+    border-color: color-mix(in srgb, var(--easyedu-primary) 22%, #fff 78%);
+  }
+
+  .easyedu-segmented-choice__input:focus-visible + .easyedu-segmented-choice__surface {
+    border-color: var(--easyedu-control-focus-border);
+    box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring);
+  }
+
+  .easyedu-segmented-choice__input:checked + .easyedu-segmented-choice__surface {
+    background: color-mix(in srgb, var(--easyedu-primary-soft) 55%, #fff 45%);
+    border-color: color-mix(in srgb, var(--easyedu-primary) 42%, #fff 58%);
+    color: var(--easyedu-primary-strong);
+  }
+
+  @if $size == compact {
+    gap: 0.32rem;
+    padding: 0.35rem;
+
+    .easyedu-segmented-choice__label {
+      font-size: 0.76rem;
+      padding: 0.1rem 0.28rem 0.16rem;
+    }
+
+    .easyedu-segmented-choice__options {
+      gap: 0.28rem;
+    }
+
+    .easyedu-segmented-choice__surface {
+      gap: 0.48rem;
+      min-height: 2.85rem;
+      padding: 0.42rem 0.52rem;
+
+      > .fa {
+        border-radius: 0.48rem;
+        font-size: 0.82rem;
+        height: 1.7rem;
+        width: 1.7rem;
+      }
+
+      strong {
+        font-size: 0.78rem;
+      }
+
+      small {
+        font-size: 0.68rem;
+      }
+    }
+  }
+
+  &.easyedu-segmented-choice--contained {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    display: block;
+    padding: 0;
+
+    > .easyedu-segmented-choice__body {
+      background: var(--easyedu-surface-strong);
+      border: 1px solid var(--easyedu-card-border);
+      border-radius: calc(var(--easyedu-control-radius) + 0.16rem);
+      box-sizing: border-box;
+      display: grid;
+      gap: 0.45rem;
+      min-inline-size: 0;
+      padding: 0.55rem;
+    }
+
+    .easyedu-segmented-choice__label {
+      background: transparent;
+      inline-size: 100%;
+      max-inline-size: 100%;
+      padding: 0 0.25rem 0.1rem;
+    }
+
+    @if $size == compact {
+      > .easyedu-segmented-choice__body {
+        gap: 0.32rem;
+        padding: 0.42rem;
+      }
+    }
+  }
+
+  @media (max-width: 42rem) {
+    .easyedu-segmented-choice__options {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+}
+
+@mixin toggle-check {
+  align-items: center;
+  background: var(--easyedu-surface-soft);
+  border: 1px solid var(--easyedu-control-border);
+  border-radius: var(--easyedu-control-radius);
+  color: var(--easyedu-text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.82rem;
+  font-weight: 700;
+  gap: 0.55rem;
+  min-height: var(--easyedu-control-height);
+  padding: 0.35rem 0.65rem;
+
+  input {
+    height: 1px;
+    opacity: 0;
+    position: absolute;
+    width: 1px;
+  }
+
+  span {
+    align-items: center;
+    display: inline-flex;
+    gap: 0.5rem;
+  }
+
+  span::before {
+    background: #e8eef5;
+    border: 1px solid var(--easyedu-control-border);
+    border-radius: 999px;
+    content: "";
+    height: 0.95rem;
+    width: 1.72rem;
+  }
+
+  input:checked + span::before {
+    background: var(--easyedu-accent);
+    border-color: var(--easyedu-accent);
+    box-shadow: inset 0.76rem 0 0 #fff;
+  }
+}
+
+@mixin advanced-filter-box {
+  @include search-field;
+
+  align-items: stretch;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 0.7rem;
+}
+
+@mixin native-select-control($size: regular) {
+  background: var(--easyedu-surface);
+  border: 1px solid var(--easyedu-control-border);
+  border-radius: var(--easyedu-control-radius);
+  box-shadow: none;
+  color: var(--easyedu-text);
+  max-width: 100%;
+  transition:
+    border-color var(--easyedu-motion-fast) ease,
+    box-shadow var(--easyedu-motion-fast) ease;
+
+  @if $size == small {
+    font-size: 0.82rem;
+    min-height: 2.15rem;
+    padding: 0.32rem 0.55rem;
+  } @else if $size == large {
+    font-size: 0.98rem;
+    min-height: 2.85rem;
+    padding: 0.5rem 0.78rem;
+  } @else {
+    font-size: 0.9rem;
+    min-height: var(--easyedu-control-height);
+    padding: 0.45rem 0.65rem;
+  }
+
+  &:focus,
+  &:focus-visible {
+    border-color: var(--easyedu-control-focus-border);
+    box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring);
+    outline: 0;
+  }
+
+  &:disabled,
+  &[aria-disabled="true"] {
+    background: var(--easyedu-surface-soft);
+    color: var(--easyedu-text-muted);
+    cursor: not-allowed;
+    opacity: 0.72;
+  }
+}
+
+@mixin multi-select-list($size: regular) {
+  @include native-select-control($size);
+
+  display: block;
+  overflow: auto;
+
+  @if $size == small {
+    border-radius: 0.72rem;
+    min-height: 5.6rem;
+    padding: 0.22rem;
+  } @else if $size == large {
+    min-height: 13rem;
+    padding: 0.45rem;
+  } @else {
+    min-height: 10.5rem;
+    padding: 0.35rem;
+  }
+
+  option {
+    border-radius: 0.42rem;
+    margin: 0.08rem 0;
+
+    @if $size == small {
+      font-size: 0.78rem;
+      padding: 0.22rem 0.34rem;
+    } @else {
+      padding: 0.34rem 0.42rem;
+    }
+
+    &:checked {
+      background: linear-gradient(180deg, var(--easyedu-primary-soft), var(--easyedu-primary-soft));
+      color: var(--easyedu-primary-strong);
+      font-weight: 700;
+    }
+  }
+}
+
+@mixin more-filters-toggle {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--easyedu-text-muted);
+  display: inline-flex;
+  font-size: 0.74rem;
+  font-weight: 760;
+  gap: 0.35rem;
+  justify-content: center;
+  line-height: 1;
+  padding: 0.2rem 0.35rem;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--easyedu-primary-strong);
+    outline: 0;
+  }
+}
+
+// Visual checkbox used for multi-selection in card/list interfaces. Keep the
+// real input in the DOM for accessibility and plugin business logic; this mixin
+// only owns the compact EasyEdu square and its checked/disabled states.
+@mixin selection-checkbox($checked-color: var(--easyedu-primary), $size: regular) {
+  align-items: center;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  justify-content: center;
+  margin: 0;
+  position: relative;
+
+  input {
+    cursor: pointer;
+    height: 100%;
+    inset: 0;
+    opacity: 0;
+    position: absolute;
+    width: 100%;
+    z-index: 1;
+  }
+
+  .easyedu-selection-checkbox__ui,
+  > span {
+    background: var(--easyedu-surface);
+    border: 1.5px solid var(--easyedu-control-border);
+    border-radius: 0.4rem;
+    box-shadow: 0 0.1rem 0.35rem rgba(31, 42, 55, 0.06);
+    display: inline-flex;
+    position: relative;
+    transition:
+      background-color var(--easyedu-motion-fast) ease,
+      border-color var(--easyedu-motion-fast) ease,
+      box-shadow var(--easyedu-motion-fast) ease,
+      transform var(--easyedu-motion-fast) ease;
+
+    @if $size == large {
+      height: 1.42rem;
+      width: 1.42rem;
+    } @else if $size == small {
+      height: 1rem;
+      width: 1rem;
+    } @else {
+      height: 1.15rem;
+      width: 1.15rem;
+    }
+
+    &::after {
+      border-bottom: 2px solid #fff;
+      border-right: 2px solid #fff;
+      content: "";
+      height: 0.52rem;
+      left: 50%;
+      opacity: 0;
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -58%) rotate(45deg) scale(0.8);
+      transition:
+        opacity var(--easyedu-motion-fast) ease,
+        transform var(--easyedu-motion-fast) ease;
+      width: 0.28rem;
+    }
+  }
+
+  input:checked + .easyedu-selection-checkbox__ui,
+  input:checked + span {
+    background: $checked-color;
+    border-color: $checked-color;
+    box-shadow: 0 0 0 0.18rem color-mix(in srgb, #{$checked-color} 14%, transparent);
+
+    &::after {
+      opacity: 1;
+      transform: translate(-50%, -58%) rotate(45deg) scale(1);
+    }
+  }
+
+  input:focus-visible + .easyedu-selection-checkbox__ui,
+  input:focus-visible + span {
+    box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring);
+  }
+
+  input:disabled + .easyedu-selection-checkbox__ui,
+  input:disabled + span,
+  &[aria-disabled="true"] .easyedu-selection-checkbox__ui,
+  &[aria-disabled="true"] > span {
+    background: var(--easyedu-surface-soft);
+    border-color: var(--easyedu-card-border);
+    cursor: not-allowed;
+    opacity: 0.62;
+  }
+}
+
+// Inline panel revealed under a card, grouping, filter box or compact action.
+// Useful for search fields, paste/add-by-identifier inputs and similar transient
+// controls that should expand smoothly without becoming a full modal.
+@mixin inline-reveal-panel($max-height: 24rem) {
+  background: color-mix(in srgb, var(--easyedu-surface) 78%, transparent);
+  border: 1px dashed var(--easyedu-card-border);
+  border-radius: var(--easyedu-radius-sm);
+  margin-top: 0;
+  opacity: 0;
+  overflow: hidden;
+  padding: 0.65rem;
+  transform: translateY(-0.06rem);
+  transition:
+    opacity var(--easyedu-motion-fast) ease,
+    transform var(--easyedu-motion-fast) var(--easyedu-motion-ease);
+
+  &.is-open,
+  &[aria-expanded="true"] {
+    margin-top: 0.6rem;
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@mixin filepicker {
+  align-items: center;
+  background: var(--easyedu-surface-soft);
+  border: 2px dashed var(--easyedu-control-border);
+  border-radius: var(--easyedu-radius-lg);
+  display: grid;
+  gap: 0.65rem;
+  justify-items: center;
+  min-height: 8rem;
+  padding: 1rem;
+  position: relative;
+  text-align: center;
+  transition:
+    background-color var(--easyedu-motion-fast) ease,
+    border-color var(--easyedu-motion-fast) ease,
+    box-shadow var(--easyedu-motion-fast) ease;
+
+  input[type="file"] {
+    inset: 0;
+    opacity: 0;
+    position: absolute;
+    width: 100%;
+  }
+
+  &:hover,
+  &:focus-within,
+  &.is-drag-over {
+    background: #fff;
+    border-color: var(--easyedu-accent);
+    box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring-accent);
+  }
+}
+
+@mixin filepicker-icon {
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--easyedu-card-border);
+  border-radius: 0.85rem;
+  color: var(--easyedu-primary);
+  display: inline-flex;
+  font-size: 1.25rem;
+  height: 2.8rem;
+  justify-content: center;
+  line-height: 1;
+  width: 2.8rem;
+}
+
+@mixin color-picker-control {
+  align-items: center;
+  background: var(--easyedu-surface);
+  border: 1px solid var(--easyedu-control-border);
+  border-radius: var(--easyedu-control-radius);
+  display: inline-flex;
+  gap: 0.65rem;
+  max-width: 100%;
+  padding: 0.42rem 0.55rem;
+  transition:
+    border-color var(--easyedu-motion-fast) ease,
+    box-shadow var(--easyedu-motion-fast) ease;
+
+  &:focus-within {
+    border-color: var(--easyedu-control-focus-border);
+    box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring);
+  }
+}
+
+@mixin color-picker-input {
+  background: transparent;
+  border: 0;
+  border-radius: 0.65rem;
+  cursor: pointer;
+  height: 2rem;
+  padding: 0;
+  width: 3.1rem;
+
+  &::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+
+  &::-webkit-color-swatch {
+    border: 1px solid rgba(37, 55, 70, 0.14);
+    border-radius: 0.55rem;
+  }
+
+  &::-moz-color-swatch {
+    border: 1px solid rgba(37, 55, 70, 0.14);
+    border-radius: 0.55rem;
+  }
+
+  &:focus {
+    box-shadow: none;
+    outline: 0;
+  }
+}
+
+@mixin color-picker-value {
+  color: var(--easyedu-text-muted);
+  font-size: 0.78rem;
+  font-weight: 760;
+  letter-spacing: 0.04em;
+}
+
+// Align a Moodle QuickForm colour group without changing its submission
+// structure. Apply this to the group's `.felement` after `color-picker-control`.
+@mixin moodle-color-picker-group {
+  > fieldset > .d-flex {
+    align-items: center !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 0.55rem;
+    min-width: 0;
+    width: 100%;
+  }
+
+  > fieldset > .d-flex > .fitem {
+    flex: 1 1 auto;
+    margin: 0 !important;
+    min-width: 0;
+    order: 2;
+  }
+
+  > fieldset > .d-flex > input[type="color"] {
+    flex: 0 0 3.1rem;
+    order: 1;
+  }
+
+  > fieldset > .d-flex input[type="text"] {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+@mixin detected-token-input {
+  background: var(--easyedu-surface);
+  border: 1px solid var(--easyedu-control-border);
+  border-radius: var(--easyedu-control-radius);
+  display: grid;
+  gap: 0.45rem;
+  min-height: var(--easyedu-control-height);
+  padding: 0.45rem;
+
+  input,
+  textarea {
+    border: 0;
+    box-shadow: none;
+    min-height: 2rem;
+    resize: vertical;
+
+    &:focus {
+      box-shadow: none;
+      outline: 0;
+    }
+  }
+
+  &:focus-within {
+    border-color: var(--easyedu-control-focus-border);
+    box-shadow: 0 0 0 0.18rem var(--easyedu-focus-ring);
+  }
+}
+
+@mixin detected-token-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  min-height: 1.7rem;
+}
+
+@mixin detected-token($variant: success) {
+  @if $variant == warning {
+    @include feedback.token-pill(var(--easyedu-warning-soft), #ead7bf, var(--easyedu-warning));
+  } @else if $variant == error {
+    @include feedback.token-pill(var(--easyedu-danger-soft), #efc5c5, var(--easyedu-danger));
+  } @else {
+    @include feedback.token-pill(var(--easyedu-success-soft), #c7e3d1, var(--easyedu-success));
+  }
+}

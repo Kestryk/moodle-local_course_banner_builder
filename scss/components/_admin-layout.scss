@@ -1,5 +1,6 @@
 ﻿/* stylelint-disable -- Complex Moodle admin/preview styles intentionally use modern CSS and targeted overrides. */
 // Main admin layout, source picker, dropdowns, preview editor, and modal form layout.
+@use "../easyedu" as easyedu;
 
 .local-course-banner-builder-overlay-host {
     position: relative;
@@ -382,6 +383,25 @@
 .local-course-banner-builder-source-dropdown-menu {
     width: 100%;
     max-width: 100%;
+}
+
+.local-course-banner-builder-admin .local-course-banner-builder-source-dropdown-menu,
+.local-course-banner-builder-modal .local-course-banner-builder-source-dropdown-menu {
+    @include easyedu.dropdown-menu;
+
+    display: none;
+}
+
+.local-course-banner-builder-admin .local-course-banner-builder-source-dropdown-menu.show,
+.local-course-banner-builder-modal .local-course-banner-builder-source-dropdown-menu.show {
+    display: grid;
+}
+
+.local-course-banner-builder-admin .local-course-banner-builder-source-dropdown-menu .dropdown-item,
+.local-course-banner-builder-admin .local-course-banner-builder-source-dropdown-menu .local-course-banner-builder-source-option,
+.local-course-banner-builder-modal .local-course-banner-builder-source-dropdown-menu .dropdown-item,
+.local-course-banner-builder-modal .local-course-banner-builder-source-dropdown-menu .local-course-banner-builder-source-option {
+    @include easyedu.menu-item;
 }
 
 #local-course-banner-builder-source-settings-modal .local-course-banner-builder-source-settings-field [data-source-dropdown="sourceparent"] {
@@ -1751,4 +1771,15 @@ button[data-toggler="drawers"][data-target="theme_boost-drawers-blocks"] {
     text-overflow: ellipsis;
     white-space: nowrap;
     pointer-events: none;
+}
+.local-course-banner-builder-layer-modal-loading {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    min-height: min(62vh, 34rem);
+}
+
+.local-course-banner-builder-layer-modal-loading .spinner-border {
+    height: 2.5rem;
+    width: 2.5rem;
 }

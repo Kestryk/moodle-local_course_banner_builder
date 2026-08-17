@@ -98,7 +98,7 @@
 }
 
 .local-course-banner-builder-crop-actions {
-    position: absolute;
+    position: fixed;
     top: var(--local-course-banner-builder-crop-actions-top, 50%);
     left: var(--local-course-banner-builder-crop-actions-left, calc(100% - 2.5rem));
     z-index: 3;
@@ -144,6 +144,7 @@
     background: var(--bs-primary, #0f6cbf);
     border: 2px solid #fff;
     box-shadow: 0 0 0 1px rgba(15, 108, 191, 0.35);
+    z-index: 2;
 }
 
 .local-course-banner-builder-crop-box [data-preview-crop-handle="n"],
@@ -157,11 +158,11 @@
 }
 
 .local-course-banner-builder-crop-box [data-preview-crop-handle="n"] {
-    top: 0.2rem;
+    top: -0.42rem;
 }
 
 .local-course-banner-builder-crop-box [data-preview-crop-handle="s"] {
-    bottom: 0.2rem;
+    bottom: -0.42rem;
 }
 
 .local-course-banner-builder-crop-box [data-preview-crop-handle="e"],
@@ -175,34 +176,34 @@
 }
 
 .local-course-banner-builder-crop-box [data-preview-crop-handle="e"] {
-    right: 0.2rem;
+    right: -0.42rem;
 }
 
 .local-course-banner-builder-crop-box [data-preview-crop-handle="w"] {
-    left: 0.2rem;
+    left: -0.42rem;
 }
 
 .local-course-banner-builder-crop-box [data-preview-crop-handle="nw"] {
-    left: 0.25rem;
-    top: 0.25rem;
+    left: -0.42rem;
+    top: -0.42rem;
     cursor: nwse-resize;
 }
 
 .local-course-banner-builder-crop-box [data-preview-crop-handle="ne"] {
-    right: 0.25rem;
-    top: 0.25rem;
+    right: -0.42rem;
+    top: -0.42rem;
     cursor: nesw-resize;
 }
 
 .local-course-banner-builder-crop-box [data-preview-crop-handle="sw"] {
-    left: 0.25rem;
-    bottom: 0.25rem;
+    left: -0.42rem;
+    bottom: -0.42rem;
     cursor: nesw-resize;
 }
 
 .local-course-banner-builder-crop-box [data-preview-crop-handle="se"] {
-    right: 0.25rem;
-    bottom: 0.25rem;
+    right: -0.42rem;
+    bottom: -0.42rem;
     cursor: nwse-resize;
 }
 

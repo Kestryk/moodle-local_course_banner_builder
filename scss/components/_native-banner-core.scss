@@ -299,7 +299,7 @@
     min-width: 0;
     z-index: 80;
     white-space: pre;
-    pointer-events: auto;
+    pointer-events: auto !important;
     cursor: move;
 }
 

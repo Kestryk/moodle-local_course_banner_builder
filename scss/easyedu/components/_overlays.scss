@@ -1,0 +1,273 @@
+// EasyEdu overlays, drag targets and file-drop surfaces.
+//
+// Drag/drop and tooltip styles are intentionally token-driven because these are
+// often the first pieces Moodle themes need to tune for accessibility contrast.
+//
+// Theme override tokens:
+// --easyedu-accent, --easyedu-overlay-bg, --easyedu-overlay-plus-bg,
+// --easyedu-overlay-plus-color.
+
+@mixin drop-target-overlay($color: var(--easyedu-accent)) {
+  border-color: $color;
+  box-shadow: 0 0 0 0.22rem color-mix(in srgb, #{$color} 18%, transparent);
+  position: relative;
+
+  &::after {
+    align-items: center;
+    background: var(--easyedu-overlay-bg);
+    border-radius: inherit;
+    content: "";
+    display: flex;
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+    z-index: 2;
+  }
+
+  &::before {
+    align-items: center;
+    background: var(--easyedu-overlay-plus-bg);
+    border-radius: 999px;
+    color: var(--easyedu-overlay-plus-color);
+    content: "+";
+    display: flex;
+    font-size: 1.1rem;
+    font-weight: 800;
+    height: 2rem;
+    justify-content: center;
+    left: 50%;
+    line-height: 1;
+    pointer-events: none;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 2rem;
+    z-index: 3;
+  }
+}
+
+@mixin insert-drop-target(
+  $color: var(--easyedu-accent),
+  $background-start: var(--easyedu-surface),
+  $background-end: var(--easyedu-accent-soft)
+) {
+  background: linear-gradient(180deg, $background-start 0%, $background-end 100%);
+  border-color: color-mix(in srgb, #{$color} 72%, transparent);
+  border-left-color: $color;
+  border-left-style: solid;
+  border-style: solid;
+  box-shadow:
+    0 0.58rem 1.05rem color-mix(in srgb, #{$color} 18%, transparent),
+    inset 0 0 0 0.16rem color-mix(in srgb, #{$color} 12%, transparent);
+  position: relative;
+  transform: translateY(-1px);
+
+  &::after {
+    align-items: center;
+    background: color-mix(in srgb, #{$color} 12%, transparent);
+    border: 1px solid color-mix(in srgb, #{$color} 20%, transparent);
+    border-radius: 999px;
+    color: $color;
+    content: "+";
+    display: inline-flex;
+    font-size: 1.45rem;
+    font-weight: 600;
+    height: 2.7rem;
+    justify-content: center;
+    left: 50%;
+    line-height: 1;
+    mask-image: none;
+    opacity: 1;
+    padding-bottom: 0.12rem;
+    pointer-events: none;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 2.7rem;
+    z-index: 4;
+    -webkit-mask-image: none;
+  }
+}
+
+@mixin file-drop-overlay {
+  align-items: center;
+  background: color-mix(in srgb, var(--easyedu-surface) 88%, transparent);
+  border: 2px dashed var(--easyedu-accent);
+  border-radius: var(--easyedu-radius-lg);
+  color: var(--easyedu-accent);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  pointer-events: none;
+  position: absolute;
+  z-index: 4;
+}
+
+// Apply this to a modal/dialog root that receives a drag-over state class.
+// It draws a calm overlay and a centred plus icon without requiring extra DOM.
+@mixin modal-file-drop-state($state-class: ".is-file-drag-over", $color: var(--easyedu-primary)) {
+  position: relative;
+
+  &#{$state-class}::before {
+    background: color-mix(in srgb, var(--easyedu-primary-soft) 78%, rgba(255, 255, 255, 0.82) 22%);
+    border: 1px dashed color-mix(in srgb, #{$color} 42%, #fff 58%);
+    border-radius: var(--easyedu-radius-lg);
+    content: "";
+    inset: 0.72rem;
+    pointer-events: none;
+    position: absolute;
+    z-index: 8;
+  }
+
+  &#{$state-class}::after {
+    background:
+      linear-gradient(currentColor, currentColor) center / 1.25rem 0.16rem no-repeat,
+      linear-gradient(currentColor, currentColor) center / 0.16rem 1.25rem no-repeat,
+      var(--easyedu-surface);
+    border: 1px solid color-mix(in srgb, #{$color} 24%, #fff 76%);
+    border-radius: 50%;
+    box-shadow: 0 0.5rem 1.35rem rgba(31, 68, 104, 0.18);
+    color: $color;
+    content: "";
+    height: 3rem;
+    left: 50%;
+    pointer-events: none;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 3rem;
+    z-index: 9;
+  }
+}
+
+@mixin drag-stack-preview {
+  opacity: 1;
+  position: relative;
+
+  &::after,
+  &::before {
+    background: inherit;
+    border: inherit;
+    border-radius: inherit;
+    box-shadow: var(--easyedu-card-shadow);
+    content: "";
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+    z-index: -1;
+  }
+
+  &::before {
+    transform: translate(0.28rem, 0.28rem);
+  }
+
+  &::after {
+    transform: translate(0.52rem, 0.52rem);
+  }
+}
+
+// Fixed custom preview that follows the pointer during drag/drop. Use this
+// instead of styling the browser-native ghost when the plugin needs a clear,
+// opaque Moodle-friendly preview.
+@mixin drag-preview-container($rotation: -1deg) {
+  filter: drop-shadow(0 0.8rem 1.1rem rgba(31, 42, 55, 0.18));
+  left: 0;
+  opacity: 1;
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  transform: rotate($rotation);
+  z-index: 9999;
+}
+
+// Apply to the card cloned inside the fixed preview. It removes interactive
+// behaviour and keeps the preview fully opaque.
+@mixin drag-preview-card {
+  box-shadow: 0 0.65rem 1.25rem rgba(31, 42, 55, 0.16);
+  margin: 0;
+  opacity: 1 !important;
+  pointer-events: none;
+  transform: none !important;
+  width: 100%;
+
+  * {
+    opacity: 1 !important;
+  }
+}
+
+@mixin drag-preview-captured($rotation: -1deg) {
+  transform: translate(-140vw, -140vh) rotate($rotation);
+}
+
+@mixin drag-preview-stack-layers {
+  &::before,
+  &::after {
+    background: var(--easyedu-surface);
+    border: 1px solid rgba(31, 42, 55, 0.1);
+    border-radius: calc(var(--easyedu-card-radius) * 0.95);
+    bottom: -0.34rem;
+    box-shadow: 0 0.35rem 0.8rem rgba(31, 42, 55, 0.1);
+    content: "";
+    left: 0.42rem;
+    pointer-events: none;
+    position: absolute;
+    right: 0.42rem;
+    top: 0.34rem;
+    z-index: -1;
+  }
+
+  &::after {
+    bottom: -0.64rem;
+    left: 0.82rem;
+    right: 0.82rem;
+    top: 0.64rem;
+    z-index: -2;
+  }
+}
+
+// Placeholder applied to original cards while the custom preview is moving.
+// It keeps list geometry stable and makes the object feel physically moved.
+@mixin drag-source-placeholder {
+  cursor: grabbing;
+  opacity: 0 !important;
+  visibility: hidden;
+}
+
+@mixin drag-disabled-zone($opacity: 0.46, $grayscale: 0.25, $saturate: 0.72, $disable-pointer-events: true) {
+  filter: grayscale($grayscale) saturate($saturate);
+  opacity: $opacity;
+  pointer-events: none;
+
+  @if $disable-pointer-events == false {
+    pointer-events: auto;
+  }
+}
+
+@mixin drag-preview-surface($accent: var(--easyedu-primary)) {
+  background: var(--easyedu-surface);
+  border: 1px solid color-mix(in srgb, #{$accent} 24%, #fff 76%);
+  border-left: 0.42rem solid $accent;
+  border-radius: var(--easyedu-card-radius);
+  box-shadow: 0 0.8rem 1.1rem rgba(31, 42, 55, 0.18);
+  color: var(--easyedu-text);
+  opacity: 1;
+  padding: 0.62rem 0.75rem;
+}
+
+@mixin drag-preview-count-badge {
+  align-items: center;
+  background: var(--easyedu-primary);
+  border: 2px solid #fff;
+  border-radius: 999px;
+  box-shadow: 0 0.34rem 0.72rem rgba(31, 42, 55, 0.18);
+  color: #fff;
+  display: inline-flex;
+  font-size: 0.74rem;
+  font-weight: 820;
+  height: 1.55rem;
+  justify-content: center;
+  min-width: 1.55rem;
+  opacity: 1;
+  padding: 0 0.34rem;
+  text-shadow: 0 1px 1px rgba(15, 23, 42, 0.28);
+}
