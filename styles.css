@@ -12615,7 +12615,8 @@ span[data-flexitour=container].orphan .modal-dialog {
 #admin-enabled,
 #admin-enabledcustomfields,
 .local-course-banner-builder-settings-reset,
-#adminsettings fieldset:has(.local-course-banner-builder-settings-hero) {
+#adminsettings > .settingsform > fieldset:has(.local-course-banner-builder-settings-hero),
+#adminsettings > fieldset > fieldset.adminsettings:has(.local-course-banner-builder-settings-hero) {
   --easyedu-gap: 1rem;
   --easyedu-navigation-following-gap: 2.5rem;
   --easyedu-navigation-panel-width: 88vw;
@@ -12818,8 +12819,10 @@ span[data-flexitour=container].orphan .modal-dialog {
 #admin-enabledcustomfields.is-easyedu-motion-off,
 .local-course-banner-builder-settings-reset[data-easyedu-motion-policy=disabled],
 .local-course-banner-builder-settings-reset.is-easyedu-motion-off,
-#adminsettings fieldset:has(.local-course-banner-builder-settings-hero)[data-easyedu-motion-policy=disabled],
-#adminsettings fieldset:has(.local-course-banner-builder-settings-hero).is-easyedu-motion-off {
+#adminsettings > .settingsform > fieldset:has(.local-course-banner-builder-settings-hero)[data-easyedu-motion-policy=disabled],
+#adminsettings > .settingsform > fieldset:has(.local-course-banner-builder-settings-hero).is-easyedu-motion-off,
+#adminsettings > fieldset > fieldset.adminsettings:has(.local-course-banner-builder-settings-hero)[data-easyedu-motion-policy=disabled],
+#adminsettings > fieldset > fieldset.adminsettings:has(.local-course-banner-builder-settings-hero).is-easyedu-motion-off {
   scroll-behavior: auto !important;
 }
 .local-course-banner-builder-admin[data-easyedu-motion-policy=disabled] *,
@@ -12875,12 +12878,18 @@ span[data-flexitour=container].orphan .modal-dialog {
 .local-course-banner-builder-settings-reset.is-easyedu-motion-off *,
 .local-course-banner-builder-settings-reset.is-easyedu-motion-off *::before,
 .local-course-banner-builder-settings-reset.is-easyedu-motion-off *::after,
-#adminsettings fieldset:has(.local-course-banner-builder-settings-hero)[data-easyedu-motion-policy=disabled] *,
-#adminsettings fieldset:has(.local-course-banner-builder-settings-hero)[data-easyedu-motion-policy=disabled] *::before,
-#adminsettings fieldset:has(.local-course-banner-builder-settings-hero)[data-easyedu-motion-policy=disabled] *::after,
-#adminsettings fieldset:has(.local-course-banner-builder-settings-hero).is-easyedu-motion-off *,
-#adminsettings fieldset:has(.local-course-banner-builder-settings-hero).is-easyedu-motion-off *::before,
-#adminsettings fieldset:has(.local-course-banner-builder-settings-hero).is-easyedu-motion-off *::after {
+#adminsettings > .settingsform > fieldset:has(.local-course-banner-builder-settings-hero)[data-easyedu-motion-policy=disabled] *,
+#adminsettings > .settingsform > fieldset:has(.local-course-banner-builder-settings-hero)[data-easyedu-motion-policy=disabled] *::before,
+#adminsettings > .settingsform > fieldset:has(.local-course-banner-builder-settings-hero)[data-easyedu-motion-policy=disabled] *::after,
+#adminsettings > .settingsform > fieldset:has(.local-course-banner-builder-settings-hero).is-easyedu-motion-off *,
+#adminsettings > .settingsform > fieldset:has(.local-course-banner-builder-settings-hero).is-easyedu-motion-off *::before,
+#adminsettings > .settingsform > fieldset:has(.local-course-banner-builder-settings-hero).is-easyedu-motion-off *::after,
+#adminsettings > fieldset > fieldset.adminsettings:has(.local-course-banner-builder-settings-hero)[data-easyedu-motion-policy=disabled] *,
+#adminsettings > fieldset > fieldset.adminsettings:has(.local-course-banner-builder-settings-hero)[data-easyedu-motion-policy=disabled] *::before,
+#adminsettings > fieldset > fieldset.adminsettings:has(.local-course-banner-builder-settings-hero)[data-easyedu-motion-policy=disabled] *::after,
+#adminsettings > fieldset > fieldset.adminsettings:has(.local-course-banner-builder-settings-hero).is-easyedu-motion-off *,
+#adminsettings > fieldset > fieldset.adminsettings:has(.local-course-banner-builder-settings-hero).is-easyedu-motion-off *::before,
+#adminsettings > fieldset > fieldset.adminsettings:has(.local-course-banner-builder-settings-hero).is-easyedu-motion-off *::after {
   animation-delay: 0s !important;
   animation-duration: 0.001ms !important;
   animation-iteration-count: 1 !important;
@@ -12898,7 +12907,8 @@ span[data-flexitour=container].orphan .modal-dialog {
   #admin-enabled,
   #admin-enabledcustomfields,
   .local-course-banner-builder-settings-reset,
-  #adminsettings fieldset:has(.local-course-banner-builder-settings-hero) {
+  #adminsettings > .settingsform > fieldset:has(.local-course-banner-builder-settings-hero),
+  #adminsettings > fieldset > fieldset.adminsettings:has(.local-course-banner-builder-settings-hero) {
     scroll-behavior: auto !important;
   }
   .local-course-banner-builder-admin *,
@@ -12928,9 +12938,12 @@ span[data-flexitour=container].orphan .modal-dialog {
   .local-course-banner-builder-settings-reset *,
   .local-course-banner-builder-settings-reset *::before,
   .local-course-banner-builder-settings-reset *::after,
-  #adminsettings fieldset:has(.local-course-banner-builder-settings-hero) *,
-  #adminsettings fieldset:has(.local-course-banner-builder-settings-hero) *::before,
-  #adminsettings fieldset:has(.local-course-banner-builder-settings-hero) *::after {
+  #adminsettings > .settingsform > fieldset:has(.local-course-banner-builder-settings-hero) *,
+  #adminsettings > .settingsform > fieldset:has(.local-course-banner-builder-settings-hero) *::before,
+  #adminsettings > .settingsform > fieldset:has(.local-course-banner-builder-settings-hero) *::after,
+  #adminsettings > fieldset > fieldset.adminsettings:has(.local-course-banner-builder-settings-hero) *,
+  #adminsettings > fieldset > fieldset.adminsettings:has(.local-course-banner-builder-settings-hero) *::before,
+  #adminsettings > fieldset > fieldset.adminsettings:has(.local-course-banner-builder-settings-hero) *::after {
     animation-delay: 0s !important;
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
@@ -12955,7 +12968,8 @@ span[data-flexitour=container].orphan .modal-dialog {
   box-shadow: none;
 }
 
-#adminsettings fieldset:has(.local-course-banner-builder-settings-hero) {
+#adminsettings > .settingsform > fieldset:has(.local-course-banner-builder-settings-hero),
+#adminsettings > fieldset > fieldset.adminsettings:has(.local-course-banner-builder-settings-hero) {
   max-width: 66rem;
   margin: 0;
   padding: 0;

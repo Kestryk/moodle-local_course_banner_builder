@@ -15,8 +15,9 @@ The scenario lives at:
 
 The scenario authenticates as the configured CCB administrator and then:
 
-- checks that General settings use one compact, bounded panel with a compact
-  identity header and flat setting rows;
+- opens Moodle's human-facing CCB category route and checks that General
+  settings use one compact, bounded panel with a compact identity header and
+  flat setting rows;
 - checks that Delete settings has readable contrast, can receive keyboard
   focus and does not navigate;
 - checks that Transfer renders two aligned, equal-width desktop panels and
@@ -31,8 +32,8 @@ The scenario authenticates as the configured CCB administrator and then:
 
 The scenario never clicks Delete settings, opens the filepicker, changes a
 checkbox, submits an import/export form or saves settings. After login it also
-records state-changing HTTP methods directed at Settings, Reset and Transfer,
-and fails if any are observed.
+records state-changing HTTP methods directed at the Settings category, direct
+Settings, Reset and Transfer routes, and fails if any are observed.
 
 ## Execution gate
 
