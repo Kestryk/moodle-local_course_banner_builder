@@ -97,6 +97,27 @@ test('CCB async editor deletes layers locally with confirmation, feedback and fo
             await expect(confirmation).toBeVisible({timeout: 10000});
             await confirmation.locator('.btn-danger').click();
             await expect(root).toHaveAttribute('aria-busy', 'true', {timeout: 5000});
+            const busyFeedback = await root.evaluate(node => {
+                const spinner = getComputedStyle(node, '::after');
+                const label = getComputedStyle(node, '::before');
+                return {
+                    labelBottom: label.bottom,
+                    labelContent: label.content,
+                    labelPosition: label.position,
+                    labelRight: label.right,
+                    spinnerBottom: spinner.bottom,
+                    spinnerPosition: spinner.position,
+                    spinnerRight: spinner.right,
+                };
+            });
+            expect(busyFeedback.spinnerPosition).toBe('fixed');
+            expect(busyFeedback.spinnerBottom).not.toBe('auto');
+            expect(busyFeedback.spinnerRight).not.toBe('auto');
+            expect(busyFeedback.labelPosition).toBe('fixed');
+            expect(busyFeedback.labelBottom).not.toBe('auto');
+            expect(busyFeedback.labelRight).not.toBe('auto');
+            expect(busyFeedback.labelContent).toContain('Loading in progress');
+            await capture(page, path.join(env.artifactRoot, 'async-editor-actions-busy.png'));
             const selectedPayload = await (await selectedResponse).json();
             expect(selectedPayload.success).toBe(true);
             await expect(root).toHaveAttribute('aria-busy', 'false', {timeout: 10000});

@@ -3,5 +3,5 @@
 @use "../easyedu" as easyedu;
 
 .local-course-banner-builder-admin {
-    @include easyedu.action-busy-indicator("data-easyedu-action-busy-label");
+    @include easyedu.action-busy-indicator-bottom-end("data-easyedu-action-busy-label");
 }

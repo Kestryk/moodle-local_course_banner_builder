@@ -8,6 +8,13 @@ many small sections.
 
 ## Unreleased
 
+### 2026-08-18
+
+#### Fixed
+
+- Positioned the Async editor `Loading in progress` feedback at the same fixed
+  bottom-right location as EasyStud.
+
 ### 2026-08-15
 
 #### Fixed
