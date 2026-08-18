@@ -8,6 +8,24 @@ many small sections.
 
 ## Unreleased
 
+### Source thumbnail lifecycle kernel - 2026-08-18
+
+#### Added
+
+- Added a per-course lifecycle service that serializes assignment transitions
+  with the Moodle Lock API and delegated transactions.
+- Added explicit, inherited, disabled, reconciliation and idempotent
+  course-deletion transitions over the normalized 0009-A storage contract.
+- Added injectable storage and lock boundaries plus in-memory unit coverage for
+  deterministic no-op writes, revision changes and invalid explicit choices.
+
+#### Validation boundary
+
+- This backend-only sub-lot receives an already ordered eligible source chain.
+  It adds no hooks, source discovery, administration UI, card rendering, GD,
+  files, cache invalidation, Transfer, backup/restore or runtime migration.
+- Runtime database concurrency and Moodle 4.5/5.1 execution remain deferred.
+
 ### 2026-08-15
 
 #### Fixed

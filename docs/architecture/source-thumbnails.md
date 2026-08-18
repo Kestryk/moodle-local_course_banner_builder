@@ -60,11 +60,47 @@ Rules:
 Teacher-image priority, GD availability and output retraction belong to the
 future publication service. They must not be folded into this pure resolver.
 
+## Per-course lifecycle kernel
+
+EED-CCB-2026-0009-B adds the bounded write boundary around the resolver. The
+kernel accepts a source chain that a future caller has already discovered,
+ordered and filtered. It does not inspect CCB sources itself.
+
+Every transition for a course follows the same sequence:
+
+1. acquire a Moodle Lock API lock scoped to the course;
+2. start a delegated database transaction;
+3. verify the course when it must still exist and re-read the assignment;
+4. resolve or validate the requested state;
+5. write only when the canonical persisted state changed;
+6. commit the transaction and release the lock in a `finally` block.
+
+The supported transitions are reconciliation, explicit selection, return to
+inheritance, disablement, and idempotent cleanup after course deletion. An
+invalid explicit candidate is rejected before acquiring the lock and before
+any database write. Lock acquisition failure is retryable and produces no
+partial state; database exceptions roll back the delegated transaction.
+
+An unresolved inherited assignment is represented by an absent row. Disabled
+is a persisted state with empty assignment keys. Course-deletion cleanup does
+not require the Moodle course row to remain present.
+
+The lifecycle result exposes the previous state, current state, reason and a
+boolean persistence-change flag. It does not imply image publication or cache
+invalidation.
+
+### Caller boundary
+
+A future caller remains responsible for capabilities, sesskeys, source-chain
+discovery, candidate eligibility, and event wiring. The lifecycle service must
+not be called with untrusted UI values before those checks. Rendering, teacher
+image priority, files, GD, cache invalidation, Transfer, duplication and
+backup/restore remain separate sub-lots.
+
 ## Deferred sub-lots
 
-- candidate and course-selection write services with capability checks and
-  delegated transactions;
-- lifecycle jobs for source deletion, invalidation and recomputation;
+- capability-checked administration endpoints and source-chain discovery;
+- source/course event wiring for invalidation and reconciliation;
 - administrator interfaces for candidates and per-course choice;
 - wide Dashboard/My courses and square coursebox composition and publication;
 - Transfer plus Moodle duplicate/backup/restore integration;
