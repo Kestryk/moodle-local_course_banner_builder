@@ -4416,7 +4416,7 @@ function localCourseBannerBuilderSyncCustomSizeFields(scope) {
         return;
     }
 
-    var isCustom = fitOverride.value === 'custom';
+    var hasEditableImage = !!localCourseBannerBuilderGetEditableCurrentPreviewImage(layerForm);
     var widthWrapper = widthInput.closest('.fitem, .form-group, .mb-3');
     var heightWrapper = heightInput.closest('.fitem, .form-group, .mb-3');
     var keepAspectWrapper = keepAspect.closest('.fitem, .form-group, .mb-3');
@@ -4425,22 +4425,22 @@ function localCourseBannerBuilderSyncCustomSizeFields(scope) {
     var widthSlider = layerForm.querySelector('[data-percent-slider-for="id_customwidthpercent"]');
     var heightSlider = layerForm.querySelector('[data-percent-slider-for="id_customheightpercent"]');
 
-    widthInput.disabled = !isCustom;
-    keepAspect.disabled = !isCustom;
-    heightInput.disabled = !isCustom || keepAspect.checked;
+    widthInput.disabled = !hasEditableImage;
+    keepAspect.disabled = !hasEditableImage;
+    heightInput.disabled = !hasEditableImage || keepAspect.checked;
     [widthWrapper, heightWrapper, keepAspectWrapper].forEach(function (wrapper) {
         if (wrapper) {
-            wrapper.hidden = !isCustom;
+            wrapper.hidden = !hasEditableImage;
         }
     });
     if (widthSliderWrapper) {
-        widthSliderWrapper.hidden = !isCustom;
+        widthSliderWrapper.hidden = !hasEditableImage;
     }
     if (heightSliderWrapper) {
-        heightSliderWrapper.hidden = !isCustom;
+        heightSliderWrapper.hidden = !hasEditableImage;
     }
     if (widthSlider) {
-        widthSlider.disabled = widthInput.disabled;
+        widthSlider.disabled = !hasEditableImage;
     }
     if (heightSlider) {
         heightSlider.disabled = heightInput.disabled;
@@ -4484,6 +4484,9 @@ function localCourseBannerBuilderBindPercentSliders(scope) {
         }
 
         var syncFromSlider = function (commit) {
+            if (targetInput.id === 'id_customwidthpercent' || targetInput.id === 'id_customheightpercent') {
+                localCourseBannerBuilderPrepareModalCustomSizeInput(layerForm);
+            }
             targetInput.value = slider.value;
             if (targetInput.id === 'id_customwidthpercent' || targetInput.id === 'id_customheightpercent') {
                 localCourseBannerBuilderSyncLinkedCustomSizeInputs(layerForm, targetInput);
@@ -8781,7 +8784,10 @@ function localCourseBannerBuilderSetDraftPreviewSettings(form, settings) {
 
 function localCourseBannerBuilderGetDefaultDraftPreviewState(file) {
     return {
-        fitmodeoverride: 'cover',
+        // A new draft starts at its original image geometry.  The explicit
+        // Fit action can then apply the proportional preview geometry instead
+        // of rewriting the draft's initial state as a visual no-op.
+        fitmodeoverride: 'original',
         positionanchor: 'center',
         customwidthpercent: 100,
         customheightpercent: 100,
@@ -9712,6 +9718,23 @@ function localCourseBannerBuilderEnsurePreviewCustomMode(form, layer, frame) {
     localCourseBannerBuilderBindPercentSliders(form);
     localCourseBannerBuilderSyncLayerBannerPreview(form);
     return true;
+}
+
+function localCourseBannerBuilderPrepareModalCustomSizeInput(scope) {
+    var form = localCourseBannerBuilderGetLayerScope(scope);
+    if (!form) {
+        return false;
+    }
+    var fitOverride = form.querySelector('#id_fitmodeoverride');
+    if (!fitOverride || fitOverride.value === 'custom') {
+        return true;
+    }
+    var layer = localCourseBannerBuilderGetEditableCurrentPreviewImage(form);
+    var frame = layer ? layer.closest('[data-banner-preview-frame="1"]') : null;
+    if (!layer || !frame || layer.hidden) {
+        return false;
+    }
+    return localCourseBannerBuilderEnsurePreviewCustomMode(form, layer, frame);
 }
 
 function localCourseBannerBuilderClampPreviewSize(state, widthPercent, heightPercent) {
@@ -14084,6 +14107,11 @@ function localCourseBannerBuilderBindLayerFormEvents(scope) {
 
     var customWidth = layerForm.querySelector('#id_customwidthpercent');
     if (customWidth && !customWidth.dataset.layerEventsBound) {
+        ['focus', 'pointerdown'].forEach(function (eventName) {
+            customWidth.addEventListener(eventName, function () {
+                localCourseBannerBuilderPrepareModalCustomSizeInput(layerForm);
+            });
+        });
         customWidth.addEventListener('input', function () {
             localCourseBannerBuilderSyncLinkedCustomSizeInputs(layerForm, customWidth);
         });
@@ -14093,6 +14121,11 @@ function localCourseBannerBuilderBindLayerFormEvents(scope) {
 
     var customHeight = layerForm.querySelector('#id_customheightpercent');
     if (customHeight && !customHeight.dataset.layerEventsBound) {
+        ['focus', 'pointerdown'].forEach(function (eventName) {
+            customHeight.addEventListener(eventName, function () {
+                localCourseBannerBuilderPrepareModalCustomSizeInput(layerForm);
+            });
+        });
         customHeight.addEventListener('input', function () {
             localCourseBannerBuilderSyncLinkedCustomSizeInputs(layerForm, customHeight);
         });
@@ -15318,6 +15351,9 @@ function localCourseBannerBuilderEnhanceModalSidePanelLinkedRanges(panel) {
         var applyNumberValue = function (commit) {
             if (number.disabled) {
                 return;
+            }
+            if (targetid === 'id_customwidthpercent' || targetid === 'id_customheightpercent') {
+                localCourseBannerBuilderPrepareModalCustomSizeInput(panel.closest('form'));
             }
             var value = number.value;
             if (commit && value !== '') {
