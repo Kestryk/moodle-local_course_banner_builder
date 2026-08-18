@@ -32,6 +32,9 @@ $checks = [ordered]@{
     'Generated CSS includes the shared busy indicator' =
         $css -match '\.local-course-banner-builder-admin\.is-action-busy::before' -and
         $css -match 'data-easyedu-action-busy-label';
+    'Generated CSS anchors the busy feedback at the EasyStud bottom end' =
+        $css -match '(?s)\.local-course-banner-builder-admin\.is-action-busy::after\s*\{.*?bottom: 1\.25rem;.*?position: fixed;.*?right: 1\.25rem;' -and
+        $css -match '(?s)\.local-course-banner-builder-admin\.is-action-busy::before\s*\{.*?bottom: 1\.45rem;.*?position: fixed;.*?right: 1\.45rem;';
     'Generated CSS preserves the centred layer empty state' =
         $css -match '(?s)\.local-course-banner-builder-admin--native \.local-course-banner-builder-empty-layer-list,.*?justify-content: center;.*?min-height: 4\.25rem;.*?padding-block: 1rem;';
 }

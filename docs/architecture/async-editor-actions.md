@@ -33,7 +33,8 @@ affected interface safely.
 - Cancellation performs no request and restores focus to the initiating button.
 - During a confirmed request, the administration root exposes `aria-busy=true`
   and the shared EasyEdu `Loading in progress` indicator; the initiating action
-  is disabled against double submission.
+  is disabled against double submission. The indicator uses the established
+  EasyStud fixed bottom-end placement rather than a page-top modal cue.
 - The server remains authoritative and returns rendered `admin_selected`
   markup plus a translated result message.
 - Success replaces only the selected-source region, rehydrates its existing
