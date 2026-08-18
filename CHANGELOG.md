@@ -15,6 +15,25 @@ many small sections.
 - Positioned the Async editor `Loading in progress` feedback at the same fixed
   bottom-right location as EasyStud.
 
+### EED-CCB-2026-0012 - 2026-08-18
+
+#### Fixed
+
+- Restored the add-image modal's original-size draft starting geometry. `Fit to
+  preview` now has a distinct proportional geometry to apply, rather than
+  silently rewriting the new draft's already-fitted state. Width, height and
+  aspect controls are available for the selected image and convert its visible
+  geometry into the existing custom placement state on first interaction.
+  Existing pointer resize, crop, drag, undo/redo and persisted-coordinate
+  paths remain unchanged.
+
+#### Validation
+
+- Registered `IMG-06` for the single leased Moodle 5.1 add-image flow:
+  pointer resize, side controls, Fit, save/reopen and cancel, with crop/drag/
+  undo/redo non-regression observations. Static source and generated-AMD
+  validation is required before supervised visual review.
+
 ### 2026-08-15
 
 #### Fixed
