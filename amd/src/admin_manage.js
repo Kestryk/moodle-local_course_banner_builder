@@ -6994,7 +6994,7 @@ function localCourseBannerBuilderApplyFitToLayerFormPreview(form) {
         }
     }
     var currentLayer = localCourseBannerBuilderGetEditableCurrentPreviewImage(form);
-    var fitOverride = form.querySelector('#id_fitmodeoverride');
+    var fitOverride = form.querySelector('#id_fitmodeoverride, [name="fitmodeoverride"]');
     var anchorInput = form.querySelector('[data-layer-position-anchor="1"]');
     var widthInput = form.querySelector('#id_customwidthpercent');
     var heightInput = form.querySelector('#id_customheightpercent');
@@ -8117,7 +8117,7 @@ function localCourseBannerBuilderReadLayerFormPreviewState(form) {
     if (!form) {
         return null;
     }
-    var fitOverride = form.querySelector('#id_fitmodeoverride');
+    var fitOverride = form.querySelector('#id_fitmodeoverride, [name="fitmodeoverride"]');
     var anchorInput = form.querySelector('[data-layer-position-anchor="1"]');
     var widthInput = form.querySelector('#id_customwidthpercent');
     var heightInput = form.querySelector('#id_customheightpercent');
@@ -8309,7 +8309,7 @@ function localCourseBannerBuilderApplyLayerFormPreviewState(form, state) {
     if (!form || !state) {
         return;
     }
-    var fitOverride = form.querySelector('#id_fitmodeoverride');
+    var fitOverride = form.querySelector('#id_fitmodeoverride, [name="fitmodeoverride"]');
     var anchorInput = form.querySelector('[data-layer-position-anchor="1"]');
     var widthInput = form.querySelector('#id_customwidthpercent');
     var heightInput = form.querySelector('#id_customheightpercent');
@@ -9964,7 +9964,7 @@ function localCourseBannerBuilderStartModalResizeInteraction(event, handle) {
     var visualLayer = localCourseBannerBuilderGetDraftSelectionVisualLayer(form, layer);
     var frameRect = frame ? frame.getBoundingClientRect() : null;
     var layerRect = (visualLayer || layer).getBoundingClientRect();
-    var fitOverride = form.querySelector('#id_fitmodeoverride');
+    var fitOverride = form.querySelector('#id_fitmodeoverride, [name="fitmodeoverride"]');
     var anchorInput = form.querySelector('[data-layer-position-anchor="1"]');
     var widthInput = form.querySelector('#id_customwidthpercent');
     var heightInput = form.querySelector('#id_customheightpercent');

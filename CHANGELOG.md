@@ -27,8 +27,11 @@ many small sections.
   defer popover/handle measurement until the gesture ends and cap peer snapping
   on complex previews. The add-image form now writes Fit directly to the active
   draft state, and its selection-shell handles start the dedicated draft resize
-  path instead of being intercepted by the generic layer interaction. Existing
-  edit-image, crop and undo/redo paths remain unchanged.
+  path instead of being intercepted by the generic layer interaction. Those two
+  create-only paths now also resolve Moodle's id-less `fitmodeoverride` hidden
+  input by its form-scoped name, so Fit no longer gets overwritten and resize no
+  longer exits before the first pointer move. Existing edit-image, crop and
+  undo/redo paths remain unchanged.
 
 #### Validation
 
@@ -36,6 +39,11 @@ many small sections.
   pointer resize, side controls, Fit, save/reopen and cancel, with crop/drag/
   undo/redo non-regression observations. Static source and generated-AMD
   validation is required before supervised visual review.
+- Added the local-supervised exact-one `IMG-06` Playwright runner and disposable
+  fixture. It uploads Moodle's deterministic PNG, records before/Fit/resize
+  geometry, click and pointer delivery, long tasks, screenshots and a trace,
+  then removes the draft/category and releases the shared fixture lease in its
+  cleanup boundary.
 
 ### 2026-08-15
 
