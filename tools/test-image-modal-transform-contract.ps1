@@ -25,6 +25,10 @@ $checks = [ordered]@{
         ($source -match "(?s)function localCourseBannerBuilderConstrainPreviewResizeAspect\(state, widthPercent, heightPercent, deltaX, deltaY\).*?verticalEdge.*?cornerFollowsHeight.*?useHeight.*?localCourseBannerBuilderClampPreviewSize");
     'Fit commits and renders the active draft once' =
         ($source -match '(?s)function localCourseBannerBuilderApplyFitToLayerFormPreview\(form\).*?localCourseBannerBuilderSaveActiveDraftPreviewState\(form\).*?activeDraftIndex.*?localCourseBannerBuilderRenderDraftUploadPreview\(form\)');
+    'Create Fit writes the active draft state directly' =
+        ($source -match '(?s)function localCourseBannerBuilderApplyFitToLayerFormPreview\(form\).*?isCreateDraft.*?draftSettings\[activeDraftIndex\]\s*=\s*Object\.assign\(.*?fitmodeoverride:\s*''cover''.*?positionanchor:\s*''center''.*?imagecropenabled:\s*false.*?localCourseBannerBuilderSetDraftPreviewSettings\(form, draftSettings\).*?localCourseBannerBuilderApplyLayerFormPreviewState\(form, draftSettings\[activeDraftIndex\]\).*?localCourseBannerBuilderRenderDraftUploadPreview\(form\).*?return;');
+    'Create draft handles use the dedicated resize state' =
+        ($source -match '(?s)function localCourseBannerBuilderHandleLayerModalPreviewPointerDown\(form, event\).*?if \(resizeHandle\).*?data-preview-draft-selection-overlay.*?localCourseBannerBuilderStartModalResizeInteraction\(event, resizeHandle\).*?return true;.*?localCourseBannerBuilderStartPreviewInteraction');
     'Generic preview sync avoids redundant pre-render draft serialization' =
         -not ($source -match '(?s)function localCourseBannerBuilderSyncLayerBannerPreview\(scope\).*?previewUserChanged === ''1''.*?localCourseBannerBuilderSaveActiveDraftPreviewState\(layerScope\).*?localCourseBannerBuilderSyncDraftUploadPreview\(layerScope\)');
     'Live pointer frames synchronize sliders once and defer chrome measurement' =
