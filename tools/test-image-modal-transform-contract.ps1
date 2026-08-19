@@ -26,6 +26,8 @@ $checks = [ordered]@{
         (($source -match '(?s)function localCourseBannerBuilderPrepareModalCustomSizeInput\(scope\).*?localCourseBannerBuilderEnsurePreviewCustomMode\(form, layer, frame\)') -and
         ($source -match '(?s)function localCourseBannerBuilderSyncCustomSizeFields\(scope\).*?hasEditableImage.*?widthInput\.disabled\s*=\s*!hasEditableImage') -and
         ($source -match '(?s)function localCourseBannerBuilderBindPercentSliders\(scope\).*?localCourseBannerBuilderPrepareModalCustomSizeInput\(layerForm\)'));
+    'Draft geometry is committed before the visual draft layer rerenders' =
+        ($source -match "(?s)function localCourseBannerBuilderSyncLayerBannerPreview\(scope\).*?previewUserChanged === '1'.*?localCourseBannerBuilderSaveActiveDraftPreviewState\(layerScope\).*?localCourseBannerBuilderSyncDraftUploadPreview\(layerScope\)");
     'Generated AMD contains the original-size draft default' =
         ($build -match 'fitmodeoverride:"original"');
 }

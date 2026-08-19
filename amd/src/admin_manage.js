@@ -6736,6 +6736,14 @@ function localCourseBannerBuilderSyncLayerBannerPreview(scope) {
     localCourseBannerBuilderSyncCurrentImagePreview(layerScope);
     if (layerScope.dataset.previewApplyingInteraction !== '1' &&
             layerScope.dataset.previewInteractionStarting !== '1') {
+        // Draft uploads render through a visual layer as well as the selected
+        // layer shell. Commit the shell's latest form state before rebuilding
+        // that visual layer, otherwise Fit, side controls and resize handles
+        // are immediately replaced by the previous draft geometry.
+        if (layerScope.dataset.previewUserChanged === '1' &&
+                layerScope.querySelector('[data-preview-draft-layer-host="1"]')) {
+            localCourseBannerBuilderSaveActiveDraftPreviewState(layerScope);
+        }
         localCourseBannerBuilderSyncDraftUploadPreview(layerScope);
     }
     localCourseBannerBuilderSyncModalPreviewActionButtons(layerScope);
