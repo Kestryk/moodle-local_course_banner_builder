@@ -175,6 +175,12 @@ test('IMG-06 add-image modal Fit and resize handles transform the active draft w
             '[data-target="#local-course-banner-builder-add-layer-modal"], ' +
             '[data-bs-target="#local-course-banner-builder-add-layer-modal"]'
         ).first();
+        await expect.poll(() => page.evaluate(() =>
+            typeof window.localCourseBannerBuilderStartModalResizeInteraction
+        ), {
+            message: 'CCB modal interactions must be initialised before opening the create modal',
+            timeout: 30000,
+        }).toBe('function');
         await expect(trigger, 'Add-image trigger must be available').toBeVisible();
         await trigger.click();
         const modal = page.locator('#local-course-banner-builder-add-layer-modal').first();
@@ -215,6 +221,13 @@ test('IMG-06 add-image modal Fit and resize handles transform the active draft w
             message: 'Uploaded image must populate the active draft',
             timeout: 45000,
         }).toMatch(/\/draftfile\.php\//);
+        const currentImage = currentLayer.locator('[data-preview-image-tag="1"]').first();
+        await expect.poll(() => currentImage.evaluate(image =>
+            image.complete ? image.naturalWidth : 0
+        ), {
+            message: 'Uploaded draft image must finish loading before geometry is measured',
+            timeout: 45000,
+        }).toBeGreaterThan(0);
         const fitButton = form.locator(
             '[data-action="local-course-banner-builder-fit-layer-preview-image"]'
         ).first();
