@@ -13,11 +13,12 @@ $checks = [ordered]@{
         ($source -match "(?s)function localCourseBannerBuilderGetDefaultDraftPreviewState\(file\).*?fitmodeoverride:\s*'original'");
     'Fit applies proportional preview geometry and saves the draft' =
         ($source -match "(?s)function localCourseBannerBuilderApplyFitToLayerFormPreview\(form\).*?fitOverride\.value\s*=\s*'cover'.*?anchorInput\.value\s*=\s*'center'.*?widthInput\.value\s*=\s*'100'.*?heightInput\.value\s*=\s*'100'.*?keepAspectInput\.checked\s*=\s*true.*?localCourseBannerBuilderSaveActiveDraftPreviewState\(form\)");
-    'Fit action remains routed through modal history' =
-        ($source -match '(?s)data-action="local-course-banner-builder-fit-layer-preview-image".*?localCourseBannerBuilderPushModalPreviewHistoryFromControl\(fitLayerPreviewButton\).*?localCourseBannerBuilderFitSelectedLayerPreviewImageToFrame\(fitLayerPreviewButton\)');
-    'Preview exposes corner and edge resize handles' =
+    'Fit action has a local modal event route through history' =
+        ($source -match '(?s)var fitLayerPreviewButton = localCourseBannerBuilderCreatePreviewIconButton\(.*?local-course-banner-builder-fit-layer-preview-image.*?fitLayerPreviewButton\.addEventListener\(''click''.*?event\.stopPropagation\(\).*?localCourseBannerBuilderPushModalPreviewHistoryFromControl\(fitLayerPreviewButton\).*?localCourseBannerBuilderFitSelectedLayerPreviewImageToFrame\(fitLayerPreviewButton\).*?modalPreviewFitBound');
+    'Preview exposes directly bound corner and edge resize handles' =
         (($form -match "data-preview-resize-mode'\s*=>\s*'corner'") -and
-        ($form -match "data-preview-resize-mode'\s*=>\s*'edge'"));
+        ($form -match "data-preview-resize-mode'\s*=>\s*'edge'") -and
+        (([regex]::Matches($form, "onpointerdown'\s*=>\s*'return window\.localCourseBannerBuilderHandleModalResizeHandlePointerDown\(event, this\);'")).Count -ge 2));
     'Side controls retain width height and aspect inputs' =
         (($form -match "'customwidthpercent'") -and
         ($form -match "'customheightpercent'") -and

@@ -1624,6 +1624,7 @@ class manage_banner_form extends \moodleform {
                 'data-preview-resize-handle' => '1',
                 'data-preview-resize-mode' => 'corner',
                 'data-preview-resize-edge' => 'bottom-right',
+                'onpointerdown' => 'return window.localCourseBannerBuilderHandleModalResizeHandlePointerDown(event, this);',
                 'aria-hidden' => 'true',
             ]);
             foreach ([
@@ -1636,6 +1637,7 @@ class manage_banner_form extends \moodleform {
                     'data-preview-resize-handle' => '1',
                     'data-preview-resize-mode' => 'edge',
                     'data-preview-resize-edge' => $edge,
+                    'onpointerdown' => 'return window.localCourseBannerBuilderHandleModalResizeHandlePointerDown(event, this);',
                     'aria-hidden' => 'true',
                 ]);
             }
