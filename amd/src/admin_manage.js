@@ -16868,12 +16868,23 @@ function localCourseBannerBuilderEnhanceModalPreviewActions(form) {
     }
     iconHost.appendChild(recenterButton);
 
-    iconHost.appendChild(localCourseBannerBuilderCreatePreviewIconButton(
+    var fitLayerPreviewButton = localCourseBannerBuilderCreatePreviewIconButton(
         'local-course-banner-builder-fit-layer-preview-image',
         'fa-compress',
         localCourseBannerBuilderGetJsString('fittopreview', 'Fit to preview'),
         'image'
-    ));
+    );
+    fitLayerPreviewButton.addEventListener('click', function (event) {
+        if (fitLayerPreviewButton.disabled) {
+            return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        localCourseBannerBuilderPushModalPreviewHistoryFromControl(fitLayerPreviewButton);
+        localCourseBannerBuilderFitSelectedLayerPreviewImageToFrame(fitLayerPreviewButton);
+    });
+    fitLayerPreviewButton.dataset.modalPreviewFitBound = '1';
+    iconHost.appendChild(fitLayerPreviewButton);
 
     iconHost.appendChild(localCourseBannerBuilderCreatePreviewIconButton(
         'local-course-banner-builder-fill-layer-preview-image',
