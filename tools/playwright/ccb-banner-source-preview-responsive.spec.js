@@ -464,6 +464,77 @@ const assertSelectedSourceSticky = sticky => {
     }
 };
 
+const readSelectedSourceStickyVisualState = async page => page.evaluate(() => {
+    const holder = document.querySelector('.local-course-banner-builder-selected-source-sticky-holder');
+    const surface = holder ? holder.querySelector('.local-course-banner-builder-selected-source-sticky') : null;
+    const kicker = holder ? holder.querySelector('.local-course-banner-builder-sticky-kicker') : null;
+    const deselect = holder ? holder.querySelector('.local-course-banner-builder-sticky-deselect') : null;
+    if (!holder || !surface || !kicker || !deselect) {
+        return null;
+    }
+    const surfaceStyle = getComputedStyle(surface);
+    const kickerStyle = getComputedStyle(kicker);
+    const deselectStyle = getComputedStyle(deselect);
+    return {
+        state: holder.dataset.stickyState || null,
+        portal: holder.dataset.stickyPortal === '1',
+        href: window.location.href,
+        surface: {
+            backgroundColor: surfaceStyle.backgroundColor,
+            backgroundImage: surfaceStyle.backgroundImage,
+            borderColor: surfaceStyle.borderTopColor,
+            borderRadius: surfaceStyle.borderTopLeftRadius,
+            boxShadow: surfaceStyle.boxShadow,
+            color: surfaceStyle.color,
+        },
+        kicker: {
+            color: kickerStyle.color,
+            fontFamily: kickerStyle.fontFamily,
+            fontSize: kickerStyle.fontSize,
+            fontWeight: kickerStyle.fontWeight,
+            letterSpacing: kickerStyle.letterSpacing,
+            lineHeight: kickerStyle.lineHeight,
+            textTransform: kickerStyle.textTransform,
+        },
+        deselect: {
+            active: document.activeElement === deselect,
+            focusVisible: deselect.matches(':focus-visible'),
+            backgroundColor: deselectStyle.backgroundColor,
+            borderColor: deselectStyle.borderTopColor,
+            boxShadow: deselectStyle.boxShadow,
+            color: deselectStyle.color,
+            outlineOffset: deselectStyle.outlineOffset,
+            outlineStyle: deselectStyle.outlineStyle,
+            outlineWidth: deselectStyle.outlineWidth,
+        },
+    };
+});
+
+const assertSelectedSourceStickyVisualParity = (inline, portal) => {
+    expect(inline).not.toBeNull();
+    expect(portal).not.toBeNull();
+    expect(inline.state).toBe('inline');
+    expect(inline.portal).toBe(false);
+    expect(portal.state).toBe('stuck');
+    expect(portal.portal).toBe(true);
+    expect(portal.href).toBe(inline.href);
+    ['backgroundColor', 'backgroundImage', 'borderColor', 'borderRadius', 'color'].forEach(property => {
+        expect(portal.surface[property]).toBe(inline.surface[property]);
+    });
+    expect(inline.surface.boxShadow).not.toBe('none');
+    expect(portal.surface.boxShadow).not.toBe('none');
+    expect(portal.surface.boxShadow).not.toBe(inline.surface.boxShadow);
+    expect(portal.kicker).toEqual(inline.kicker);
+    expect(inline.deselect.active).toBe(true);
+    expect(inline.deselect.focusVisible).toBe(true);
+    expect(portal.deselect.active).toBe(true);
+    expect(portal.deselect.focusVisible).toBe(true);
+    ['backgroundColor', 'borderColor', 'boxShadow', 'color', 'outlineOffset', 'outlineStyle', 'outlineWidth']
+        .forEach(property => expect(portal.deselect[property]).toBe(inline.deselect[property]));
+    expect(portal.deselect.boxShadow).not.toBe('none');
+    expect(Number.parseFloat(portal.deselect.outlineWidth)).toBeGreaterThan(0);
+};
+
 const assertSelectedSourceStickyHysteresis = async page => {
     const positioned = await setSelectedSourceStickyThreshold(page, 6);
     if (positioned.positioned) {
@@ -591,15 +662,31 @@ const assertSelectedSourceStickyRestores = async page => {
         window.dispatchEvent(new Event('scroll'));
         return {nested: false, scrollTop: window.scrollY};
     }, toEnd);
+    await setScrollPosition(false);
+    await page.waitForFunction(() => {
+        const holder = document.querySelector('.local-course-banner-builder-selected-source-sticky-holder');
+        return Boolean(holder && holder.dataset.stickyState === 'inline');
+    }, null, {timeout: 2000});
+    const deselect = page.locator('.local-course-banner-builder-sticky-deselect');
+    await deselect.focus();
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Tab');
+    await expect(deselect).toBeFocused();
+    const inlineVisual = await readSelectedSourceStickyVisualState(page);
+
     await setScrollPosition(true);
     await page.waitForFunction(() => {
         const holder = document.querySelector('.local-course-banner-builder-selected-source-sticky-holder');
         return Boolean(holder && holder.dataset.stickyState === 'stuck');
     }, null, {timeout: 2000});
+    await expect(deselect).toBeFocused();
     const floating = await readSelectedSourceSticky(page);
+    const portalVisual = await readSelectedSourceStickyVisualState(page);
     assertSelectedSourceSticky(floating);
+    assertSelectedSourceStickyVisualParity(inlineVisual, portalVisual);
     await assertSelectedSourceStickyHysteresis(page);
     const oscillation = await assertSelectedSourceStickyOscillation(page);
+    await expect(deselect).toBeFocused();
 
     await setScrollPosition(false);
     await page.waitForFunction(() => {
@@ -621,7 +708,8 @@ const assertSelectedSourceStickyRestores = async page => {
     expect(restored.portal).toBe(false);
     expect(restored.placeholderPresent).toBe(false);
     expect(restored.position).not.toBe('fixed');
-    return {oscillation, restored};
+    await expect(deselect).toBeFocused();
+    return {inlineVisual, portalVisual, oscillation, restored};
 };
 
 const inspectModalActionRail = async(page, context, file) => {
