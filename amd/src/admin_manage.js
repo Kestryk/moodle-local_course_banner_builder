@@ -6261,8 +6261,13 @@ function localCourseBannerBuilderUpdatePreviewAspectLockButton(layer) {
     button.removeAttribute('data-original-title');
     button.removeAttribute('data-bs-original-title');
     button.classList.toggle('local-course-banner-builder-preview-aspect-lock--locked', enabled);
-    if (typeof localCourseBannerBuilderInitPopovers === 'function') {
+    var form = layer.closest ? layer.closest('form.mform') : null;
+    var liveInteraction = !!(form && form.dataset.previewApplyingInteraction === '1');
+    if (!liveInteraction && typeof localCourseBannerBuilderInitPopovers === 'function') {
         localCourseBannerBuilderInitPopovers(button);
+    }
+    if (liveInteraction) {
+        return;
     }
     Array.prototype.slice.call(layer.querySelectorAll('[data-preview-resize-handle="1"]')).forEach(function (handle) {
         handle.setAttribute(
@@ -6736,14 +6741,6 @@ function localCourseBannerBuilderSyncLayerBannerPreview(scope) {
     localCourseBannerBuilderSyncCurrentImagePreview(layerScope);
     if (layerScope.dataset.previewApplyingInteraction !== '1' &&
             layerScope.dataset.previewInteractionStarting !== '1') {
-        // Draft uploads render through a visual layer as well as the selected
-        // layer shell. Commit the shell's latest form state before rebuilding
-        // that visual layer, otherwise Fit, side controls and resize handles
-        // are immediately replaced by the previous draft geometry.
-        if (layerScope.dataset.previewUserChanged === '1' &&
-                layerScope.querySelector('[data-preview-draft-layer-host="1"]')) {
-            localCourseBannerBuilderSaveActiveDraftPreviewState(layerScope);
-        }
         localCourseBannerBuilderSyncDraftUploadPreview(layerScope);
     }
     localCourseBannerBuilderSyncModalPreviewActionButtons(layerScope);
@@ -6809,7 +6806,6 @@ function localCourseBannerBuilderSetPreviewFieldValue(field, value) {
     var isPreviewInteraction = !!(form && form.dataset.previewApplyingInteraction === '1');
     field.value = String(localCourseBannerBuilderRoundPreviewPercent(value));
     if (isPreviewInteraction) {
-        localCourseBannerBuilderSyncPercentSliderValues(form);
         return;
     }
     field.dispatchEvent(new Event('input', {bubbles: true}));
@@ -6989,8 +6985,12 @@ function localCourseBannerBuilderApplyFitToLayerFormPreview(form) {
     localCourseBannerBuilderSyncCustomSizeFields(form);
     localCourseBannerBuilderSyncOffsetFields(form);
     localCourseBannerBuilderBindPercentSliders(form);
-    localCourseBannerBuilderSyncLayerBannerPreview(form);
     localCourseBannerBuilderSaveActiveDraftPreviewState(form);
+    if (form.dataset.activeDraftIndex && form.querySelector('[data-preview-draft-layer-host="1"]')) {
+        localCourseBannerBuilderRenderDraftUploadPreview(form);
+    } else {
+        localCourseBannerBuilderSyncLayerBannerPreview(form);
+    }
 }
 
 function localCourseBannerBuilderApplyFillBannerToLayerFormPreview(form) {
@@ -9754,6 +9754,35 @@ function localCourseBannerBuilderClampPreviewSize(state, widthPercent, heightPer
     };
 }
 
+function localCourseBannerBuilderConstrainPreviewResizeAspect(state, widthPercent, heightPercent, deltaX, deltaY) {
+    if (!state.keepAspect) {
+        return localCourseBannerBuilderClampPreviewSize(state, widthPercent, heightPercent);
+    }
+    var aspectRatio = state.startWidthPx > 0 && state.startHeightPx > 0 ?
+        (state.startWidthPx / state.startHeightPx) : 1;
+    var verticalEdge = state.mode === 'resize-edge' && (state.edge === 'top' || state.edge === 'bottom');
+    var cornerFollowsHeight = state.mode === 'resize' &&
+        Math.abs(deltaY / Math.max(1, state.startHeightPx)) >
+        Math.abs(deltaX / Math.max(1, state.startWidthPx));
+    var useHeight = verticalEdge || cornerFollowsHeight;
+    if (useHeight) {
+        heightPercent = Math.max(1, heightPercent);
+        widthPercent = (heightPercent * aspectRatio * state.frameHeight) / state.frameWidth;
+    } else {
+        widthPercent = Math.max(1, widthPercent);
+        heightPercent = (widthPercent * state.frameWidth) / (Math.max(1, aspectRatio) * state.frameHeight);
+    }
+    var clamped = localCourseBannerBuilderClampPreviewSize(state, widthPercent, heightPercent);
+    if (clamped.width !== widthPercent) {
+        widthPercent = clamped.width;
+        heightPercent = (widthPercent * state.frameWidth) / (Math.max(1, aspectRatio) * state.frameHeight);
+    } else if (clamped.height !== heightPercent) {
+        heightPercent = clamped.height;
+        widthPercent = (heightPercent * aspectRatio * state.frameHeight) / state.frameWidth;
+    }
+    return localCourseBannerBuilderClampPreviewSize(state, widthPercent, heightPercent);
+}
+
 function localCourseBannerBuilderSetModalResizeField(field, value) {
     if (field) {
         field.value = typeof value === 'number' ?
@@ -9793,13 +9822,13 @@ function localCourseBannerBuilderApplyModalResizeState(state, event) {
         }
     }
 
-    if (state.keepAspect) {
-        var aspectRatio = state.startWidthPx > 0 && state.startHeightPx > 0 ? (state.startWidthPx / state.startHeightPx) : 1;
-        widthPercent = Math.max(1, widthPercent);
-        heightPercent = (widthPercent * state.frameWidth) / (Math.max(1, aspectRatio) * state.frameHeight);
-    }
-
-    var clamped = localCourseBannerBuilderClampPreviewSize(state, widthPercent, heightPercent);
+    var clamped = localCourseBannerBuilderConstrainPreviewResizeAspect(
+        state,
+        widthPercent,
+        heightPercent,
+        deltaX,
+        deltaY
+    );
     widthPercent = clamped.width;
     heightPercent = clamped.height;
 
@@ -11526,6 +11555,7 @@ function localCourseBannerBuilderGetPreviewGuideTargets(frame, activeLayer, targ
         })
         .filter(function (node, index, list) {
             return node && node !== activeLayer && !node.hidden && list.indexOf(node) === index &&
+                !localCourseBannerBuilderIsDraftSelectionVisualTwin(activeLayer, node) &&
                 !(node.classList && node.classList.contains('local-course-banner-builder-source-preview-layer--hidden-in-preview')) &&
                 !(node.classList && node.classList.contains('local-course-banner-builder-source-preview-layer--disabled'));
         });
@@ -11545,6 +11575,19 @@ function localCourseBannerBuilderGetPreviewGuideTargets(frame, activeLayer, targ
         });
     }
     return targets;
+}
+
+function localCourseBannerBuilderIsDraftSelectionVisualTwin(activeLayer, targetLayer) {
+    if (!activeLayer || !targetLayer) {
+        return false;
+    }
+    var activeIndex = activeLayer.getAttribute('data-draft-index');
+    var targetIndex = targetLayer.getAttribute('data-draft-index');
+    if (activeIndex === null || activeIndex === '' || activeIndex !== targetIndex) {
+        return false;
+    }
+    return activeLayer.hasAttribute('data-preview-draft-selection-overlay') &&
+        targetLayer.hasAttribute('data-preview-draft-visual-layer');
 }
 
 function localCourseBannerBuilderFindPreviewSnap(frame, activeLayer, rawRect, targetSelector, options) {
@@ -11694,7 +11737,7 @@ function localCourseBannerBuilderApplyPreviewDrag(state, event) {
                 centerY: nextTopPx + (state.startHeightPx / 2)
             },
             '[data-preview-image-tag="1"]',
-            {limitPeers: false}
+            {limitPeers: true}
         );
         nextLeftPx += snap.dx;
         nextTopPx += snap.dy;
@@ -11741,23 +11784,15 @@ function localCourseBannerBuilderApplyPreviewResize(state, event) {
         }
     }
 
-    if (state.keepAspect) {
-        var aspectRatio = state.startWidthPx > 0 && state.startHeightPx > 0 ? (state.startWidthPx / state.startHeightPx) : 1;
-        widthPercent = Math.max(1, widthPercent);
-        heightPercent = (widthPercent * state.frameWidth) / (Math.max(1, aspectRatio) * state.frameHeight);
-        var clampedAspect = localCourseBannerBuilderClampPreviewSize(state, widthPercent, heightPercent);
-        if (clampedAspect.height !== heightPercent) {
-            heightPercent = clampedAspect.height;
-            widthPercent = (heightPercent * aspectRatio * state.frameHeight) / state.frameWidth;
-        } else {
-            widthPercent = clampedAspect.width;
-            heightPercent = (widthPercent * state.frameWidth) / (Math.max(1, aspectRatio) * state.frameHeight);
-        }
-    } else {
-        var clamped = localCourseBannerBuilderClampPreviewSize(state, widthPercent, heightPercent);
-        widthPercent = clamped.width;
-        heightPercent = clamped.height;
-    }
+    var constrained = localCourseBannerBuilderConstrainPreviewResizeAspect(
+        state,
+        widthPercent,
+        heightPercent,
+        deltaX,
+        deltaY
+    );
+    widthPercent = constrained.width;
+    heightPercent = constrained.height;
 
     localCourseBannerBuilderRunPreviewInteractionFieldBatch(state, function () {
         if (nextLeft !== null) {
