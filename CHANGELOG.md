@@ -19,10 +19,13 @@ many small sections.
   geometry into the existing custom placement state on first interaction.
   The changed geometry is now committed before the draft visual layer rerenders,
   so Fit, side controls and pointer resize do not revert to the preceding
-  draft state. The dynamically rendered Fit control and the form-rendered edge
-  and corner handles now also retain direct event bindings inside the add-image
-  modal, instead of depending only on event propagation outside their rendered
-  controls. Existing crop, drag and undo/redo paths remain unchanged.
+  draft state. The active draft's visual twin is excluded from alignment peers,
+  preventing it from repeatedly snapping a dragged image back onto itself.
+  Aspect-locked vertical and corner handles now follow the axis actually moved,
+  while Fit commits and rerenders the active draft once without the redundant
+  generic serialization pass. Pointer frames synchronize linked sliders once,
+  defer popover/handle measurement until the gesture ends and cap peer snapping
+  on complex previews. Existing crop and undo/redo paths remain unchanged.
 
 #### Validation
 
