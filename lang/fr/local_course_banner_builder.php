@@ -985,6 +985,7 @@ $string['tour:transfer:strategy:title'] = 'Methode conseillee';
 $string['transferconfig'] = 'Transfert';
 $string['unabletodeletealllayers'] = 'Impossible de supprimer tous les calques';
 $string['unabletodeleteselectedlayer'] = 'Impossible de supprimer le calque sélectionné';
+$string['unabletosavepreviewchanges'] = 'Impossible d’enregistrer les modifications de l’aperçu';
 $string['unabletoloadlayerform'] = 'Impossible de charger le formulaire du calque';
 $string['unabletoloadsourcepreview'] = 'Impossible de charger l’aperçu de la source';
 $string['undopreviewchange'] = 'Annuler';
