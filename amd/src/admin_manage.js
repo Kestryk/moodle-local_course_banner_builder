@@ -972,6 +972,15 @@ document.addEventListener('submit', function (e) {
     if (!form || !form.closest('[class*="local-course-banner-builder"]')) {
         return;
     }
+    if (form.id === 'local-course-banner-builder-source-preview-save-form') {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof e.stopImmediatePropagation === 'function') {
+            e.stopImmediatePropagation();
+        }
+        localCourseBannerBuilderSaveSourcePreviewChanges(form);
+        return;
+    }
     if (form.dataset.formSubmitting === '1') {
         e.preventDefault();
         e.stopPropagation();
@@ -8005,6 +8014,9 @@ function localCourseBannerBuilderDeleteSelectedPreviewLayer(button) {
             button.focus({preventScroll: true});
             return;
         }
+        if (localCourseBannerBuilderIsAsyncActionBusy(button)) {
+            return;
+        }
         var busyRoot = localCourseBannerBuilderSetAsyncActionBusy(button, true);
         var formData = new FormData();
         formData.append('sesskey', M.cfg.sesskey || '');
@@ -14299,6 +14311,22 @@ function localCourseBannerBuilderSetAsyncActionBusy(button, busy) {
     }
     root.classList.toggle('is-action-busy', busy);
     root.setAttribute('aria-busy', busy ? 'true' : 'false');
+    var sourceContent = button ? button.closest('[data-selected-source-content="1"]') : null;
+    if (sourceContent) {
+        Array.prototype.slice.call(sourceContent.querySelectorAll('[data-source-preview-async-control="1"]')).forEach(
+            function (control) {
+                if (busy) {
+                    control.dataset.asyncActionWasDisabled = control.disabled ? '1' : '0';
+                    control.disabled = true;
+                    control.setAttribute('aria-disabled', 'true');
+                } else {
+                    control.disabled = control.dataset.asyncActionWasDisabled === '1';
+                    control.setAttribute('aria-disabled', control.disabled ? 'true' : 'false');
+                    delete control.dataset.asyncActionWasDisabled;
+                }
+            }
+        );
+    }
     if (button && button.isConnected) {
         if (busy) {
             button.dataset.asyncActionWasDisabled = button.disabled ? '1' : '0';
@@ -14345,6 +14373,77 @@ function localCourseBannerBuilderFocusAfterAsyncDelete(host, preferredSelector) 
         host.setAttribute('tabindex', '-1');
         host.focus({preventScroll: true});
     }
+}
+
+/**
+ * Return whether a selected-source action is already saving or deleting.
+ *
+ * @param {HTMLElement|null} control Action control.
+ * @return {boolean} Whether the shared administration root is busy.
+ */
+function localCourseBannerBuilderIsAsyncActionBusy(control) {
+    var root = control ? control.closest('.local-course-banner-builder-admin') : null;
+    return !!(root && root.classList.contains('is-action-busy'));
+}
+
+/**
+ * Save the selected source visual-preview payload without a full-page reload.
+ *
+ * @param {HTMLFormElement} form Source preview save form.
+ */
+function localCourseBannerBuilderSaveSourcePreviewChanges(form) {
+    if (!form || localCourseBannerBuilderIsAsyncActionBusy(form)) {
+        return;
+    }
+    var root = form.closest('[data-source-visual-editor="1"]');
+    var button = document.querySelector('[data-source-preview-save-control="1"][form="' + form.id + '"]');
+    if (!root || !button) {
+        return;
+    }
+    localCourseBannerBuilderSyncSourcePreviewPayload(root);
+    var busyRoot = localCourseBannerBuilderSetAsyncActionBusy(button, true);
+    var formData = new FormData(form);
+    formData.delete('updatepreviewlayers');
+    formData.append('updatepreviewlayersajax', '1');
+    fetch(window.location.href, {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin',
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    }).then(function (response) {
+        if (!response.ok) {
+            throw new Error(localCourseBannerBuilderGetJsString(
+                'unabletosavepreviewchanges',
+                'Unable to save preview changes'
+            ));
+        }
+        return response.json();
+    }).then(function (data) {
+        var host = localCourseBannerBuilderReplaceSelectedSourceContentFromDeleteResponse(data);
+        localCourseBannerBuilderNotifyAsyncAction(
+            data.message || localCourseBannerBuilderGetJsString('changessaved', 'Changes saved'),
+            'success'
+        );
+        localCourseBannerBuilderFocusAfterAsyncDelete(host, '[data-source-preview-save-control="1"]');
+    }).catch(function (error) {
+        window.console.error(error);
+        localCourseBannerBuilderNotifyAsyncAction(
+            error.message || localCourseBannerBuilderGetJsString(
+                'unabletosavepreviewchanges',
+                'Unable to save preview changes'
+            ),
+            'error'
+        );
+        if (button.isConnected) {
+            button.focus({preventScroll: true});
+        }
+    }).finally(function () {
+        localCourseBannerBuilderSetAsyncActionBusy(button, false);
+        if (busyRoot && !button.isConnected) {
+            busyRoot.classList.remove('is-action-busy');
+            busyRoot.setAttribute('aria-busy', 'false');
+        }
+    });
 }
 
 function localCourseBannerBuilderSyncBinaryOptionButton(input) {
@@ -18273,6 +18372,9 @@ function localCourseBannerBuilderDeleteAllLayers(button) {
             button.focus({preventScroll: true});
             return;
         }
+        if (localCourseBannerBuilderIsAsyncActionBusy(button)) {
+            return;
+        }
         var busyRoot = localCourseBannerBuilderSetAsyncActionBusy(button, true);
         var formData = new FormData(form);
         fetch(window.location.href, {
@@ -18374,6 +18476,9 @@ function localCourseBannerBuilderDeleteSelectedLayers(button) {
     localCourseBannerBuilderConfirmAction(message).then(function (confirmed) {
         if (!confirmed) {
             button.focus({preventScroll: true});
+            return;
+        }
+        if (localCourseBannerBuilderIsAsyncActionBusy(button)) {
             return;
         }
         var busyRoot = localCourseBannerBuilderSetAsyncActionBusy(button, true);

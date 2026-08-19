@@ -864,6 +864,7 @@ $string['tour:transfer:strategy:title'] = 'Flusso di lavoro consigliato';
 $string['transferconfig'] = 'Trasferimento';
 $string['unabletodeletealllayers'] = 'Impossibile eliminare tutti i livelli';
 $string['unabletodeleteselectedlayer'] = 'Impossibile eliminare il livello selezionato';
+$string['unabletosavepreviewchanges'] = 'Impossibile salvare le modifiche dell\'anteprima';
 $string['unabletoloadlayerform'] = 'Impossibile caricare il modulo del livello';
 $string['unabletoloadsourcepreview'] = 'Impossibile caricare l\'anteprima dell\'origine';
 $string['undopreviewchange'] = 'Annulla';
