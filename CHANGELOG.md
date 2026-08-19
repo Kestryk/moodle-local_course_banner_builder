@@ -17,8 +17,9 @@ many small sections.
   silently rewriting the new draft's already-fitted state. Width, height and
   aspect controls are available for the selected image and convert its visible
   geometry into the existing custom placement state on first interaction.
-  Existing pointer resize, crop, drag, undo/redo and persisted-coordinate
-  paths remain unchanged.
+  The changed geometry is now committed before the draft visual layer rerenders,
+  so Fit, side controls and pointer resize do not revert to the preceding
+  draft state. Existing crop, drag and undo/redo paths remain unchanged.
 
 #### Validation
 
