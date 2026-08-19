@@ -497,6 +497,10 @@ localCourseBannerBuilderSlideshowOnReady(function () {
         var buildLabelSize = function (percent, format) {
             var scale = Math.max(25, Math.min(100, parseInt(percent || '100', 10))) / 100;
             scale = scale * getFormatSizeScale(format || '', 'label');
+            if (format === 'contentwide' || format === 'fullwidthtop') {
+                return 'clamp(' + (0.35 * scale).toFixed(3) + 'rem, ' + (0.807 * scale).toFixed(3) +
+                    'vw, ' + (1.68 * scale).toFixed(3) + 'rem)';
+            }
             return 'clamp(' + (3.5 * scale).toFixed(3) + 'cqh, min(' + (6.4 * scale).toFixed(3) +
                 'cqh, ' + (0.82 * scale).toFixed(3) + 'cqw), ' + (8.4 * scale).toFixed(3) + 'cqh)';
         };
