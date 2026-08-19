@@ -32,7 +32,10 @@ many small sections.
   while Fit commits and rerenders the active draft once without the redundant
   generic serialization pass. Pointer frames synchronize linked sliders once,
   defer popover/handle measurement until the gesture ends and cap peer snapping
-  on complex previews. Existing crop and undo/redo paths remain unchanged.
+  on complex previews. The add-image form now writes Fit directly to the active
+  draft state, and its selection-shell handles start the dedicated draft resize
+  path instead of being intercepted by the generic layer interaction. Existing
+  edit-image, crop and undo/redo paths remain unchanged.
 
 #### Validation
 

@@ -6947,6 +6947,52 @@ function localCourseBannerBuilderApplyFitToLayerFormPreview(form) {
     if (!form) {
         return;
     }
+    var elementIdInput = form.querySelector('#id_elementid');
+    var activeDraftIndex = typeof form.dataset.activeDraftIndex !== 'undefined' ?
+        String(form.dataset.activeDraftIndex) :
+        '';
+    var isCreateDraft = !!(
+        (!elementIdInput || parseInt(elementIdInput.value || '0', 10) === 0) &&
+        activeDraftIndex !== '' &&
+        form.querySelector('[data-preview-draft-layer-host="1"]')
+    );
+    if (isCreateDraft) {
+        var draftSettings = localCourseBannerBuilderGetDraftPreviewSettings(form);
+        var currentDraftLayer = form.querySelector(
+            '[data-preview-current-image="1"][data-preview-draft-layer="1"]' +
+            '[data-draft-index="' + activeDraftIndex + '"]'
+        );
+        var visualDraftLayer = form.querySelector(
+            '[data-preview-draft-visual-layer="1"][data-draft-index="' + activeDraftIndex + '"]'
+        );
+        if (currentDraftLayer) {
+            localCourseBannerBuilderClearLayerPreviewCropState(form, currentDraftLayer);
+        }
+        var draftState = draftSettings[activeDraftIndex] ||
+            localCourseBannerBuilderReadLayerPreviewStateFromLayer(currentDraftLayer || visualDraftLayer);
+        if (draftState) {
+            draftSettings[activeDraftIndex] = Object.assign({}, draftState, {
+                fitmodeoverride: 'cover',
+                positionanchor: 'center',
+                customwidthpercent: 100,
+                customheightpercent: 100,
+                customsizekeepaspect: true,
+                imagecropenabled: false,
+                imagecropleftpercent: 0,
+                imagecroptoppercent: 0,
+                imagecropwidthpercent: 100,
+                imagecropheightpercent: 100,
+                offsettoppercent: 0,
+                offsetrightpercent: 0,
+                offsetbottompercent: 0,
+                offsetleftpercent: 0
+            });
+            localCourseBannerBuilderSetDraftPreviewSettings(form, draftSettings);
+            localCourseBannerBuilderApplyLayerFormPreviewState(form, draftSettings[activeDraftIndex]);
+            localCourseBannerBuilderRenderDraftUploadPreview(form);
+            return;
+        }
+    }
     var currentLayer = localCourseBannerBuilderGetEditableCurrentPreviewImage(form);
     var fitOverride = form.querySelector('#id_fitmodeoverride');
     var anchorInput = form.querySelector('[data-layer-position-anchor="1"]');
@@ -12139,6 +12185,10 @@ function localCourseBannerBuilderHandleLayerModalPreviewPointerDown(form, event)
         localCourseBannerBuilderSelectLayerModalPreviewLayer(form, currentLayer);
         currentLayer.setAttribute('data-preview-active-edge', resizeHandle.getAttribute('data-preview-resize-edge') || '');
         localCourseBannerBuilderPendingPreviewInteraction = null;
+        if (currentLayer.hasAttribute('data-preview-draft-selection-overlay') &&
+                localCourseBannerBuilderStartModalResizeInteraction(event, resizeHandle)) {
+            return true;
+        }
         localCourseBannerBuilderStartPreviewInteraction(
             event,
             resizeHandle.getAttribute('data-preview-resize-mode') === 'edge' ? 'resize-edge' : 'resize',
