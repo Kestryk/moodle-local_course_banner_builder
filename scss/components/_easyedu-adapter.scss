@@ -1115,7 +1115,23 @@
     }
 
     .local-course-banner-builder-configured-sources-table,
-    .local-course-banner-builder-layer-table,
+    .local-course-banner-builder-layer-table {
+        --local-course-banner-builder-table-header-gradient: linear-gradient(
+            110deg,
+            color-mix(in srgb, var(--easyedu-primary-soft) 42%, #fff 58%),
+            color-mix(in srgb, var(--easyedu-accent-soft) 20%, #fff 80%)
+        );
+
+        thead {
+            background: var(--local-course-banner-builder-table-header-gradient);
+        }
+
+        thead th {
+            background: transparent;
+            padding: 0.62rem 0.7rem;
+        }
+    }
+
     .local-course-banner-builder-chain-table > .generaltable {
         thead th {
             padding: 0.62rem 0.7rem;
