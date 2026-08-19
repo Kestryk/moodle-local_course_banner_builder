@@ -16218,8 +16218,23 @@ span[data-flexitour=container].orphan .modal-dialog {
   white-space: nowrap;
   word-break: normal;
 }
+.local-course-banner-builder-admin--native .local-course-banner-builder-configured-sources-table,
+.local-course-banner-builder-admin--native .local-course-banner-builder-layer-table {
+  --local-course-banner-builder-table-header-gradient: linear-gradient(
+      110deg,
+      color-mix(in srgb, var(--easyedu-primary-soft) 42%, #fff 58%),
+      color-mix(in srgb, var(--easyedu-accent-soft) 20%, #fff 80%)
+  );
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-configured-sources-table thead,
+.local-course-banner-builder-admin--native .local-course-banner-builder-layer-table thead {
+  background: var(--local-course-banner-builder-table-header-gradient);
+}
 .local-course-banner-builder-admin--native .local-course-banner-builder-configured-sources-table thead th,
-.local-course-banner-builder-admin--native .local-course-banner-builder-layer-table thead th,
+.local-course-banner-builder-admin--native .local-course-banner-builder-layer-table thead th {
+  background: transparent;
+  padding: 0.62rem 0.7rem;
+}
 .local-course-banner-builder-admin--native .local-course-banner-builder-chain-table > .generaltable thead th {
   padding: 0.62rem 0.7rem;
 }
