@@ -200,8 +200,11 @@ test('IMG-06 add-image modal Fit and resize handles transform the active draft w
         ).first();
         await expect(addFile, 'Moodle file-manager add action must be available').toBeVisible({timeout: 60000});
         await addFile.click();
-        const picker = page.locator('.file-picker:visible').last();
-        await expect(picker, 'Moodle file picker must open').toBeVisible({timeout: 30000});
+        const visiblePicker = page.locator('.file-picker:visible').last();
+        await expect(visiblePicker, 'Moodle file picker must open').toBeVisible({timeout: 30000});
+        const pickerId = await visiblePicker.getAttribute('id');
+        ensure(pickerId, 'Moodle file picker must expose a stable id.');
+        const picker = page.locator('#' + pickerId);
         let upload = picker.locator('input[name="repo_upload_file"]').first();
         if (await upload.count() === 0) {
             const uploadRepository = picker.locator('.fp-repo-name', {hasText: /upload/i}).first();
