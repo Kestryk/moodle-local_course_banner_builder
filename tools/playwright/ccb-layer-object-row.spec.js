@@ -124,6 +124,16 @@ const rowEvidence = async page => page.evaluate(() => {
         const typeIcon = row.querySelector('.local-course-banner-builder-layer-type-icon .fa');
         const imageTypeIcon = row.querySelector('.local-course-banner-builder-layer-type-icon--image');
         const lockHelp = row.querySelector('.local-course-banner-builder-lock-help');
+        const selectionCell = cells[0] || null;
+        const sortOrderCell = cells[1] || null;
+        const bannerLayerCell = cells[5] || null;
+        const semanticIndicatorSelector = [
+            '.local-course-banner-builder-layer-type-icon',
+            '.local-course-banner-builder-lock-help',
+            '.local-course-banner-builder-layer-sort-indicator',
+            '.local-course-banner-builder-thumb-status-badge',
+        ].join(', ');
+        const semanticIndicators = Array.from(row.querySelectorAll(semanticIndicatorSelector));
         const overlayVisual = row.querySelector('.local-course-banner-builder-admin-layer-visual--overlay');
         const selectionCheckbox = row.querySelector('.local-course-banner-builder-layer-select')?.closest(
             '.local-course-banner-builder-selection-checkbox'
@@ -155,7 +165,15 @@ const rowEvidence = async page => page.evaluate(() => {
                 opacity: getComputedStyle(imageTypeIcon).opacity,
                 rect: rect(imageTypeIcon),
             } : null,
-            lockHelpInOrderCell: !!lockHelp && lockHelp.closest('.local-course-banner-builder-layer-preview-cell') !== null,
+            typeIconInSortOrderCell: !!typeIcon && typeIcon.closest('td') === sortOrderCell,
+            lockHelpInSortOrderCell: !!lockHelp && lockHelp.closest('td') === sortOrderCell,
+            semanticIndicatorCount: semanticIndicators.length,
+            semanticIndicatorsInSortOrderCell: semanticIndicators.every(indicator => indicator.closest('td') === sortOrderCell),
+            selectionCellIndicatorCount: selectionCell ? selectionCell.querySelectorAll(semanticIndicatorSelector).length : 0,
+            bannerLayerCellIndicatorCount: bannerLayerCell ? bannerLayerCell.querySelectorAll(semanticIndicatorSelector).length : 0,
+            keyboardPopoverIndicatorCount: sortOrderCell ? sortOrderCell.querySelectorAll(
+                '[role="button"][tabindex="0"][data-toggle="popover"]'
+            ).length : 0,
             overlayVisual: overlayVisual ? {
                 backgroundImage: getComputedStyle(overlayVisual).backgroundImage,
                 backgroundColor: getComputedStyle(overlayVisual).backgroundColor,
@@ -503,15 +521,11 @@ const runCell = async(env, zoom, root) => {
             expect(row.cellBoxShadows.slice(1)).toEqual(row.cellBoxShadows.slice(1).map(() => 'none'));
             expect(row.grip?.className).toContain('local-course-banner-builder-drag-corner');
             expect(row.typeIcon).toContain('fa-image');
+            expect(row.typeIconInSortOrderCell).toBe(true);
             expect(Number(row.imageTypeIcon?.opacity)).toBeGreaterThan(0);
-            expect(Math.abs(
-                (row.grip.rect.left + (row.grip.rect.width / 2)) -
-                (row.imageTypeIcon.rect.left + (row.imageTypeIcon.rect.width / 2))
-            )).toBeLessThanOrEqual(0.1);
-            expect(Math.abs(
-                (row.grip.rect.top + (row.grip.rect.height / 2)) -
-                (row.imageTypeIcon.rect.top + (row.imageTypeIcon.rect.height / 2))
-            )).toBeLessThanOrEqual(0.1);
+            expect(row.semanticIndicatorsInSortOrderCell).toBe(true);
+            expect(row.selectionCellIndicatorCount).toBe(0);
+            expect(row.bannerLayerCellIndicatorCount).toBe(0);
             expect(row.selectionCheckbox).toBe('inline-flex');
             expect(row.enabledCheckbox).toBe('inline-flex');
         });
@@ -522,7 +536,12 @@ const runCell = async(env, zoom, root) => {
         expect(lockedRow.cellBackgroundImage).toBe('none');
         expect(lockedRow.firstCellBeforeContent).toMatch(/^(none|""|'')$/);
         expect(lockedRow.typeIcon).toContain('fa-');
-        expect(lockedRow.lockHelpInOrderCell).toBe(true);
+        expect(lockedRow.typeIconInSortOrderCell).toBe(true);
+        expect(lockedRow.lockHelpInSortOrderCell).toBe(true);
+        expect(lockedRow.semanticIndicatorsInSortOrderCell).toBe(true);
+        expect(lockedRow.selectionCellIndicatorCount).toBe(0);
+        expect(lockedRow.bannerLayerCellIndicatorCount).toBe(0);
+        expect(lockedRow.keyboardPopoverIndicatorCount).toBeGreaterThan(0);
         evidence.initial.rows.filter(row => row.locked).forEach(row => {
             expect(row.cellBoxShadows.slice(1)).toEqual(row.cellBoxShadows.slice(1).map(() => 'none'));
             expect(row.cellBackgroundImage).toBe('none');
@@ -533,6 +552,19 @@ const runCell = async(env, zoom, root) => {
         expect(overlayRow).toBeTruthy();
         expect(overlayRow.overlayVisual.backgroundImage).toBe('none');
         expect(overlayRow.overlayVisual.backgroundColor).toBe('rgb(255, 255, 255)');
+
+        const sortOrderPopoverIndicators = tbody.locator(
+            '.local-course-banner-builder-layer-preview-cell [role="button"][tabindex="0"][data-toggle="popover"]'
+        );
+        expect(await sortOrderPopoverIndicators.count()).toBeGreaterThan(0);
+        for (let index = 0; index < await sortOrderPopoverIndicators.count(); index++) {
+            const indicator = sortOrderPopoverIndicators.nth(index);
+            await indicator.focus();
+            await expect(indicator).toBeFocused();
+            await expect.poll(async() => indicator.getAttribute('aria-describedby')).not.toBeNull();
+            const popoverId = await indicator.getAttribute('aria-describedby');
+            await expect(page.locator('[id="' + popoverId + '"]')).toBeVisible();
+        }
 
         const first = tbody.locator(':scope > .local-course-banner-builder-layer-row[draggable="true"]').nth(0);
         const second = tbody.locator(':scope > .local-course-banner-builder-layer-row[draggable="true"]').nth(1);
@@ -545,7 +577,7 @@ const runCell = async(env, zoom, root) => {
         ))).toBeGreaterThan(0.95);
         await expect.poll(async() => Number(await firstImageIcon.evaluate(
             element => getComputedStyle(element).opacity
-        ))).toBeLessThan(0.05);
+        ))).toBeGreaterThan(0.95);
         evidence.hover = await rowEvidence(page);
         const hoveredRow = evidence.hover.rows.find(row => row.id === normalRows[0].id);
         expect(hoveredRow.cellBackground).not.toBe(idleBackground);
@@ -554,9 +586,7 @@ const runCell = async(env, zoom, root) => {
         );
         expect(hoveredRow.grip.rect.width).toBeGreaterThanOrEqual(15.9);
         expect(hoveredRow.grip.rect.height).toBeGreaterThanOrEqual(15.9);
-        expect(Number(hoveredRow.imageTypeIcon?.opacity || 1)).toBeLessThan(
-            Number(normalRows[0].imageTypeIcon?.opacity || 0)
-        );
+        expect(Number(hoveredRow.imageTypeIcon?.opacity || 0)).toBeGreaterThan(0.95);
 
         const focusControl = first.locator('input[name^="layername_inline["]').first();
         await focusControl.focus();
@@ -646,7 +676,7 @@ const runCell = async(env, zoom, root) => {
     }
 };
 
-test('CCB layer table object-row cells preserve native drag and keyboard ordering', async() => {
+test('CCB layer table keeps semantic indicators in Sort order and preserves native ordering', async() => {
     test.setTimeout(300000);
     const env = requireEnvironment();
     const root = path.join(env.artifactRoot, 'layer-object-row');
