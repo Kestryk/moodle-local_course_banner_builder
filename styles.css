@@ -17249,6 +17249,15 @@ span[data-flexitour=container].orphan .modal-dialog {
   text-decoration: none !important;
 }
 
+.local-course-banner-builder-admin :is([data-toggle=popover],
+[data-bs-toggle=popover],
+[data-local-course-banner-builder-hover-popover="1"]):not([disabled]):not([aria-disabled=true]),
+[data-source-visual-editor="1"] :is([data-toggle=popover],
+[data-bs-toggle=popover],
+[data-local-course-banner-builder-hover-popover="1"]):not([disabled]):not([aria-disabled=true]) {
+  cursor: pointer;
+}
+
 .local-course-banner-builder-help-bubble > div {
   --easyedu-tooltip-bg: linear-gradient(135deg, #183a59 0%, #1f6b57 100%);
   --easyedu-tooltip-border: rgba(255, 255, 255, 0.28);
@@ -17865,6 +17874,18 @@ span[data-flexitour=container].orphan .modal-dialog {
 [data-source-visual-editor="1"] .local-course-banner-builder-layer-row:focus-within > :is(th, td) {
   background-color: color-mix(in srgb, var(--local-course-banner-builder-layer-row-rail) 9%, #fff);
 }
+.local-course-banner-builder-admin .local-course-banner-builder-layer-row:not(.local-course-banner-builder-layer-row--order-locked) > .local-course-banner-builder-fit-override-cell,
+[data-source-visual-editor="1"] .local-course-banner-builder-layer-row:not(.local-course-banner-builder-layer-row--order-locked) > .local-course-banner-builder-fit-override-cell {
+  background-color: var(--bs-body-bg, #fff) !important;
+}
+.local-course-banner-builder-admin .local-course-banner-builder-layer-row:not(.local-course-banner-builder-layer-row--order-locked):hover > .local-course-banner-builder-fit-override-cell,
+[data-source-visual-editor="1"] .local-course-banner-builder-layer-row:not(.local-course-banner-builder-layer-row--order-locked):hover > .local-course-banner-builder-fit-override-cell {
+  background-color: color-mix(in srgb, var(--local-course-banner-builder-layer-row-rail) 5%, #fff) !important;
+}
+.local-course-banner-builder-admin .local-course-banner-builder-layer-row:not(.local-course-banner-builder-layer-row--order-locked):focus-within > .local-course-banner-builder-fit-override-cell,
+[data-source-visual-editor="1"] .local-course-banner-builder-layer-row:not(.local-course-banner-builder-layer-row--order-locked):focus-within > .local-course-banner-builder-fit-override-cell {
+  background-color: color-mix(in srgb, var(--local-course-banner-builder-layer-row-rail) 9%, #fff) !important;
+}
 .local-course-banner-builder-admin .local-course-banner-builder-layer-row:focus-within > :first-child,
 [data-source-visual-editor="1"] .local-course-banner-builder-layer-row:focus-within > :first-child {
   box-shadow: inset var(--local-course-banner-builder-layer-row-rail-width) 0 0 var(--local-course-banner-builder-layer-row-rail);
@@ -18047,7 +18068,7 @@ span[data-flexitour=container].orphan .modal-dialog {
   border-radius: 999px;
   background: rgba(248, 250, 252, 0.62);
   box-shadow: 0 0.08rem 0.22rem rgba(15, 23, 42, 0.08);
-  cursor: help;
+  cursor: pointer;
   opacity: 0.72;
   pointer-events: auto;
   top: auto;
