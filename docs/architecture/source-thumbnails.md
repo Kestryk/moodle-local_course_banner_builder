@@ -89,6 +89,27 @@ The lifecycle result exposes the previous state, current state, reason and a
 boolean persistence-change flag. It does not imply image publication or cache
 invalidation.
 
+## Runtime-validation source tests
+
+EED-CCB-2026-0022 adds `tests/thumbnail_lifecycle_moodle_test.php`. It is a
+Moodle PHPUnit test source for a future isolated pre-production matrix. It
+uses the real Moodle store, delegated transaction and Lock API adapters rather
+than an in-memory substitute.
+
+The test source covers one-row CRUD, rollback after a callback exception,
+no-op timestamp preservation, revision timestamp handling, idempotent deletion
+and distinct per-course lock resources followed by lock release. It assumes an
+initialised test database whose plugin schema includes the 0009-A tables.
+
+The source test deliberately does not simulate two competing processes. A
+separate pre-production execution must prove real contention for the same
+course, lock timeout behaviour, final-row uniqueness and deterministic final
+state. That evidence must identify the database engine and the Moodle lock
+factory selected by the tested environment.
+
+No PHPUnit environment was created or executed for this source-only sub-lot.
+Moodle 4.5, 5.1, 5.2 and future 5.3 execution claims remain deferred.
+
 ### Caller boundary
 
 A future caller remains responsible for capabilities, sesskeys, source-chain
@@ -101,6 +122,8 @@ backup/restore remain separate sub-lots.
 
 - capability-checked administration endpoints and source-chain discovery;
 - source/course event wiring for invalidation and reconciliation;
+- isolated Moodle 4.5, 5.1 and 5.2 lifecycle execution, including
+  multi-process lock-contention evidence;
 - administrator interfaces for candidates and per-course choice;
 - wide Dashboard/My courses and square coursebox composition and publication;
 - Transfer plus Moodle duplicate/backup/restore integration;

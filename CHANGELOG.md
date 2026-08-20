@@ -8,6 +8,21 @@ many small sections.
 
 ## Unreleased
 
+### Source thumbnail lifecycle runtime-test source - 2026-08-20
+
+#### Added
+
+- Added Moodle PHPUnit source tests for the real thumbnail assignment store,
+  delegated transactions, lifecycle timestamps, idempotent deletion and
+  per-course Lock API resources.
+
+#### Validation boundary
+
+- This source-only sub-lot did not create or execute a Moodle PHPUnit
+  environment. Database-engine, lock-factory and multi-process contention
+  evidence remains deferred to the isolated Moodle 4.5/5.1/5.2
+  pre-production matrix.
+
 ### Source thumbnail lifecycle kernel - 2026-08-18
 
 #### Added
