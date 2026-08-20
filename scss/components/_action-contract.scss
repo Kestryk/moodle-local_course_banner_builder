@@ -46,6 +46,21 @@
     }
 }
 
+// Every CCB control that launches an explanatory popover is actionable. The
+// pointer cursor makes that affordance consistent for status badges, lock
+// badges and contextual question-mark controls without changing keyboard or
+// popover behaviour.
+.local-course-banner-builder-admin,
+[data-source-visual-editor="1"] {
+    :is(
+        [data-toggle="popover"],
+        [data-bs-toggle="popover"],
+        [data-local-course-banner-builder-hover-popover="1"]
+    ):not([disabled]):not([aria-disabled="true"]) {
+        cursor: pointer;
+    }
+}
+
 .local-course-banner-builder-help-bubble > div {
     @include easyedu.popover-surface;
 

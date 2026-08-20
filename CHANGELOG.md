@@ -16,11 +16,17 @@ many small sections.
   the layer list. `Sort order` now shows its localised `Locked` label, one copy
   of each status badge and the lock badge below the order label, without
   duplicating status indicators in `Banner layer`.
+- Prevent duplicate same-glyph placement badges when Above overlay and Above
+  inherited coexist. Chain layer rows now use the localised `Locked` label
+  instead of an em dash, all CCB explanatory popover triggers use a pointer
+  cursor, and unlocked Image `Layer infos & overrides` cells share their row's
+  surface instead of retaining the legacy beige tint.
 
 #### Validation
 
 - Updated the isolated `ccb-layer-object-row` scenario for type-rail placement,
-  unique status/lock badges, keyboard popovers and unchanged drag/selection.
+  unique status/lock badges, localised locked text, pointer cursors, matching
+  disclosure-cell surface, keyboard popovers and unchanged drag/selection.
 
 ### EED-CCB-2026-0026 - 2026-08-20
 
