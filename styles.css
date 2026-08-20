@@ -16218,8 +16218,23 @@ span[data-flexitour=container].orphan .modal-dialog {
   white-space: nowrap;
   word-break: normal;
 }
+.local-course-banner-builder-admin--native .local-course-banner-builder-configured-sources-table,
+.local-course-banner-builder-admin--native .local-course-banner-builder-layer-table {
+  --local-course-banner-builder-table-header-gradient: linear-gradient(
+      110deg,
+      color-mix(in srgb, var(--easyedu-primary-soft) 42%, #fff 58%),
+      color-mix(in srgb, var(--easyedu-accent-soft) 20%, #fff 80%)
+  );
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-configured-sources-table thead,
+.local-course-banner-builder-admin--native .local-course-banner-builder-layer-table thead {
+  background: var(--local-course-banner-builder-table-header-gradient);
+}
 .local-course-banner-builder-admin--native .local-course-banner-builder-configured-sources-table thead th,
-.local-course-banner-builder-admin--native .local-course-banner-builder-layer-table thead th,
+.local-course-banner-builder-admin--native .local-course-banner-builder-layer-table thead th {
+  background: transparent;
+  padding: 0.62rem 0.7rem;
+}
 .local-course-banner-builder-admin--native .local-course-banner-builder-chain-table > .generaltable thead th {
   padding: 0.62rem 0.7rem;
 }
@@ -17986,6 +18001,65 @@ span[data-flexitour=container].orphan .modal-dialog {
   display: inline-flex;
   gap: 0.28rem;
   justify-content: center;
+}
+.local-course-banner-builder-admin .local-course-banner-builder-layer-sort-indicator-zone,
+.local-course-banner-builder-admin .local-course-banner-builder-layer-sort-indicators,
+[data-source-visual-editor="1"] .local-course-banner-builder-layer-sort-indicator-zone,
+[data-source-visual-editor="1"] .local-course-banner-builder-layer-sort-indicators {
+  align-items: center;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.28rem;
+  justify-content: center;
+  max-width: 100%;
+}
+.local-course-banner-builder-admin .local-course-banner-builder-layer-sort-indicator-zone,
+[data-source-visual-editor="1"] .local-course-banner-builder-layer-sort-indicator-zone {
+  flex-direction: column;
+}
+.local-course-banner-builder-admin .local-course-banner-builder-layer-sort-indicators,
+[data-source-visual-editor="1"] .local-course-banner-builder-layer-sort-indicators {
+  min-height: 1.35rem;
+}
+.local-course-banner-builder-admin .local-course-banner-builder-layer-sort-indicators .local-course-banner-builder-layer-type-icon,
+.local-course-banner-builder-admin .local-course-banner-builder-layer-sort-indicators .local-course-banner-builder-layer-sort-indicator,
+.local-course-banner-builder-admin .local-course-banner-builder-layer-sort-indicators .local-course-banner-builder-thumb-status-badge,
+[data-source-visual-editor="1"] .local-course-banner-builder-layer-sort-indicators .local-course-banner-builder-layer-type-icon,
+[data-source-visual-editor="1"] .local-course-banner-builder-layer-sort-indicators .local-course-banner-builder-layer-sort-indicator,
+[data-source-visual-editor="1"] .local-course-banner-builder-layer-sort-indicators .local-course-banner-builder-thumb-status-badge {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 1.35rem;
+  height: 1.35rem;
+  justify-content: center;
+  margin: 0;
+  position: static;
+  transform: none;
+  width: 1.35rem;
+}
+.local-course-banner-builder-admin .local-course-banner-builder-layer-sort-indicators .local-course-banner-builder-layer-type-icon,
+[data-source-visual-editor="1"] .local-course-banner-builder-layer-sort-indicators .local-course-banner-builder-layer-type-icon {
+  color: var(--local-course-banner-builder-layer-row-rail);
+}
+.local-course-banner-builder-admin .local-course-banner-builder-layer-sort-indicators .local-course-banner-builder-layer-sort-indicator,
+.local-course-banner-builder-admin .local-course-banner-builder-layer-sort-indicators .local-course-banner-builder-thumb-status-badge,
+[data-source-visual-editor="1"] .local-course-banner-builder-layer-sort-indicators .local-course-banner-builder-layer-sort-indicator,
+[data-source-visual-editor="1"] .local-course-banner-builder-layer-sort-indicators .local-course-banner-builder-thumb-status-badge {
+  border: 1px solid rgba(203, 213, 225, 0.58);
+  border-radius: 999px;
+  background: rgba(248, 250, 252, 0.62);
+  box-shadow: 0 0.08rem 0.22rem rgba(15, 23, 42, 0.08);
+  cursor: help;
+  opacity: 0.72;
+  pointer-events: auto;
+  top: auto;
+  right: auto;
+  z-index: auto;
+}
+.local-course-banner-builder-admin .local-course-banner-builder-layer-row[draggable=true] .local-course-banner-builder-layer-sort-indicators .local-course-banner-builder-layer-type-icon--image,
+[data-source-visual-editor="1"] .local-course-banner-builder-layer-row[draggable=true] .local-course-banner-builder-layer-sort-indicators .local-course-banner-builder-layer-type-icon--image {
+  opacity: 1;
+  transform: none;
 }
 .local-course-banner-builder-admin .local-course-banner-builder-lock-help,
 [data-source-visual-editor="1"] .local-course-banner-builder-lock-help {
