@@ -339,6 +339,14 @@
     white-space: normal;
 }
 
+// A draggable layer row keeps its drag affordance, while its genuine Edit and
+// Delete controls retain the expected action cursor.
+.local-course-banner-builder-layer-actions-cell
+    .local-course-banner-builder-action-list
+    :is(button:not(:disabled), a[href]) {
+    cursor: pointer;
+}
+
 .local-course-banner-builder-source-actions-cell .local-course-banner-builder-action-list > * .fa,
 .local-course-banner-builder-source-actions-cell .local-course-banner-builder-action-list > * .icon,
 .local-course-banner-builder-layer-actions-cell .local-course-banner-builder-action-list > * .fa,

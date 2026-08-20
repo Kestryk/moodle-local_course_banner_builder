@@ -17537,6 +17537,10 @@ span[data-flexitour=container].orphan .modal-dialog {
   white-space: normal;
 }
 
+.local-course-banner-builder-layer-actions-cell .local-course-banner-builder-action-list :is(button:not(:disabled), a[href]) {
+  cursor: pointer;
+}
+
 .local-course-banner-builder-source-actions-cell .local-course-banner-builder-action-list > * .fa,
 .local-course-banner-builder-source-actions-cell .local-course-banner-builder-action-list > * .icon,
 .local-course-banner-builder-layer-actions-cell .local-course-banner-builder-action-list > * .fa,
