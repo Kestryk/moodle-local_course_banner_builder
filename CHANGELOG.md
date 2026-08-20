@@ -8,6 +8,16 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0026 - 2026-08-20
+
+#### Changed
+
+- Updated the `ccb-layer-object-row` regression contract for the EED-CCB-2026-0021 Sort order indicator zone. It now verifies type, lock and rendered state indicators in `Sort order`, no semantic-indicator duplicates in Selection or Banner layer, keyboard-accessible popovers, and unchanged native drag and selection.
+
+#### Validation
+
+- The QA change requires JavaScript syntax validation and exact-one-test Playwright discovery before a separately authorised leased browser run.
+
 ### 2026-08-18
 
 #### Fixed
