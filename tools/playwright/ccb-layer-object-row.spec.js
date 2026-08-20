@@ -126,6 +126,7 @@ const rowEvidence = async page => page.evaluate(() => {
         const lockHelp = row.querySelector('.local-course-banner-builder-lock-help');
         const selectionCell = cells[0] || null;
         const sortOrderCell = cells[1] || null;
+        const fitOverrideCell = cells[4] || null;
         const bannerLayerCell = cells[5] || null;
         const statusIndicatorSelector = [
             '.local-course-banner-builder-lock-help',
@@ -176,6 +177,7 @@ const rowEvidence = async page => page.evaluate(() => {
             lockHelpBesideSortPosition: !!lockHelp && lockHelp.closest('.local-course-banner-builder-layer-order-state') !== null,
             sortPositionText: sortOrderCell?.querySelector('[data-sort-display]')?.textContent.trim() || '',
             statusIndicatorCount: statusIndicators.length,
+            statusIndicatorCursors: statusIndicators.map(indicator => getComputedStyle(indicator).cursor),
             statusIndicatorsInSortOrderCell: statusIndicators.every(indicator => indicator.closest('td') === sortOrderCell),
             duplicateStatusIndicators: statusIndicatorKinds.some((kind, index) => kind && statusIndicatorKinds.indexOf(kind) !== index),
             aboveOverlayStatusBadgeCount: row.querySelectorAll('.local-course-banner-builder-thumb-above-overlay-badge').length,
@@ -190,6 +192,7 @@ const rowEvidence = async page => page.evaluate(() => {
             } : null,
             selectionCheckbox: selectionCheckbox ? getComputedStyle(selectionCheckbox).display : null,
             enabledCheckbox: enabledCheckbox ? getComputedStyle(enabledCheckbox).display : null,
+            fitOverrideCellBackground: fitOverrideCell ? getComputedStyle(fitOverrideCell).backgroundColor : null,
             rect: rect(row),
         };
     }) : [];
@@ -301,6 +304,7 @@ const helpPopoverEvidence = async (page, selector = '.local-course-banner-builde
             background: style.backgroundImage || style.backgroundColor,
             borderRadius: style.borderRadius,
             color: style.color,
+            cursor: style.cursor,
             height: box.height,
             width: box.width,
             padding: style.padding,
@@ -328,6 +332,7 @@ const assertHelpPopover = evidence => {
     expect(evidence.trigger.borderRadius).not.toBe('0px');
     expect(evidence.popover.role).toBe('tooltip');
     expect(evidence.trigger.ariaLabel).not.toBe('');
+    expect(evidence.trigger.cursor).toBe('pointer');
     expect(evidence.arrow).not.toBeNull();
     expect(evidence.arrow.width).toBeGreaterThan(0);
     expect(evidence.body).not.toBeNull();
@@ -536,12 +541,14 @@ const runCell = async(env, zoom, root) => {
             expect(row.typeIconInSortOrderCell).toBe(false);
             expect(Number(row.imageTypeIcon?.opacity)).toBeGreaterThan(0);
             expect(row.statusIndicatorsInSortOrderCell).toBe(true);
+            expect(row.statusIndicatorCursors).toEqual(row.statusIndicatorCursors.map(() => 'pointer'));
             expect(row.duplicateStatusIndicators).toBe(false);
             expect(row.aboveOverlayStatusBadgeCount).toBeLessThanOrEqual(1);
             expect(row.selectionCellStatusIndicatorCount).toBe(0);
             expect(row.bannerLayerCellStatusIndicatorCount).toBe(0);
             expect(row.selectionCheckbox).toBe('inline-flex');
             expect(row.enabledCheckbox).toBe('inline-flex');
+            expect(row.fitOverrideCellBackground).toBe(row.cellBackground);
         });
         expect(lockedRow).toBeTruthy();
         expect(lockedRow.draggable).toBe(false);
@@ -556,8 +563,9 @@ const runCell = async(env, zoom, root) => {
         expect(lockedRow.lockHelpInSortOrderCell).toBe(true);
         expect(lockedRow.lockHelpInIndicatorStack).toBe(true);
         expect(lockedRow.lockHelpBesideSortPosition).toBe(false);
-        expect(lockedRow.sortPositionText).not.toContain('—');
+        expect(lockedRow.sortPositionText).toContain('Locked');
         expect(lockedRow.statusIndicatorsInSortOrderCell).toBe(true);
+        expect(lockedRow.statusIndicatorCursors).toEqual(lockedRow.statusIndicatorCursors.map(() => 'pointer'));
         expect(lockedRow.duplicateStatusIndicators).toBe(false);
         expect(lockedRow.aboveOverlayStatusBadgeCount).toBeLessThanOrEqual(1);
         expect(lockedRow.selectionCellStatusIndicatorCount).toBe(0);

@@ -19,7 +19,7 @@ $emit = static function(array $value): void {
 };
 
 $createimage = static function(\stdClass $source, int $categoryid, string $name, string $colour,
-        int $sortorder, bool $dynamic = false): int {
+        int $sortorder, bool $dynamic = false, bool $aboveoverlay = false): int {
     global $USER;
     $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" role="img">' .
         '<rect width="1200" height="300" fill="' . s($colour) . '"/>' .
@@ -54,7 +54,7 @@ $createimage = static function(\stdClass $source, int $categoryid, string $name,
         'customsizekeepaspect' => 1,
         'dynamicimagesizeenabled' => $dynamic ? 1 : 0,
         'imagecenterfixed' => 0,
-        'imageaboveoverlayenabled' => 0,
+        'imageaboveoverlayenabled' => $aboveoverlay ? 1 : 0,
         'imagecropenabled' => 0,
         'imageopacity' => 1,
         'bannerimage_filemanager' => $draftitemid,
@@ -128,7 +128,7 @@ if ($command === 'setup') {
         }
         $first = $createimage($source, $categoryid, 'CCB QA row one', '#176b87', 0);
         $second = $createimage($source, $categoryid, 'CCB QA row two', '#7d3c98', 1);
-        $locked = $createimage($source, $categoryid, 'CCB QA row locked dynamic', '#9a5b13', 2, true);
+        $locked = $createimage($source, $categoryid, 'CCB QA row locked dynamic', '#9a5b13', 2, true, true);
         $border = $createborder($source, $categoryid);
         $overlay = $createoverlay($source, $categoryid);
         $emit([

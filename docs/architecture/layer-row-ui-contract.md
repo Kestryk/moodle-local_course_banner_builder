@@ -36,10 +36,32 @@ checkbox state or transient DOM position.
   unchanged.
 - Reduced-motion and forced-colors behavior comes from the Kit primitive.
 
+## Indicator and disclosure rules
+
+- The coloured leading rail is the only place that identifies the layer type.
+  `Sort order` carries only the localised `Locked` state, distinct placement
+  status badges and the lock badge.
+- If one layer is both above the overlay and above inherited content, its
+  single `fa-layer-group` badge represents the more specific Above overlay
+  state. The same glyph must never be rendered twice for one row.
+- Chain Border and Overlay rows use the localised `Locked` string rather than
+  a decorative em dash. Chain Overlay keeps its lock badge in the indicator
+  stack below that text.
+- CCB popover triggers are interactive controls: status badges, lock badges
+  and contextual `?` help controls use the pointer cursor and remain keyboard
+  focusable. Passive decoration must not gain this cursor.
+- An unlocked Image row keeps its `Layer infos & overrides` cell on the same
+  row surface as its sibling cells. The legacy inline beige tint is overridden
+  only for that presentational state; locked, Border and Overlay row surfaces
+  retain their existing product-specific treatment.
+
 ## Validation contract
 
 Static validation must compile the public SCSS entry, reject whitespace errors
-and prove that the adapter emits no forbidden row geometry. Runtime validation
+and prove that the adapter emits no forbidden row geometry. The focused
+scenario also asserts a single status glyph per semantic state, localised
+locked text, pointer cursors for popover triggers and the matching unlocked
+Image disclosure-cell surface. Runtime validation
 is a separate, lease-protected Moodle 5.1 scenario selecting exactly one test.
 It must check row hover, keyboard `focus-within`, visible native drag source,
 locked rows, persisted reorder, non-drag reorder, 200% zoom, horizontal

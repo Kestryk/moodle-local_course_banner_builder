@@ -55,6 +55,21 @@
             background-color: color-mix(in srgb, var(--local-course-banner-builder-layer-row-rail) 9%, #fff);
         }
 
+        // An old inline presentation tint makes Image details cells look like
+        // a separate beige panel. Keep the disclosure in the same surface as
+        // the rest of each unlocked Image row, including hover/focus states.
+        &:not(.local-course-banner-builder-layer-row--order-locked) > .local-course-banner-builder-fit-override-cell {
+            background-color: var(--bs-body-bg, #fff) !important;
+        }
+
+        &:not(.local-course-banner-builder-layer-row--order-locked):hover > .local-course-banner-builder-fit-override-cell {
+            background-color: color-mix(in srgb, var(--local-course-banner-builder-layer-row-rail) 5%, #fff) !important;
+        }
+
+        &:not(.local-course-banner-builder-layer-row--order-locked):focus-within > .local-course-banner-builder-fit-override-cell {
+            background-color: color-mix(in srgb, var(--local-course-banner-builder-layer-row-rail) 9%, #fff) !important;
+        }
+
         &:focus-within > :first-child {
             box-shadow: inset var(--local-course-banner-builder-layer-row-rail-width) 0 0
                 var(--local-course-banner-builder-layer-row-rail);
@@ -245,7 +260,7 @@
         border-radius: 999px;
         background: rgba(248, 250, 252, 0.62);
         box-shadow: 0 0.08rem 0.22rem rgba(15, 23, 42, 0.08);
-        cursor: help;
+        cursor: pointer;
         opacity: 0.72;
         pointer-events: auto;
         top: auto;

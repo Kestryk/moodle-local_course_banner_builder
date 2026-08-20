@@ -330,7 +330,7 @@
                                                 <i class="fa fa-level-down" aria-hidden="true"></i>
                                             </span>
                                         {{/isbelowinheritedlayer}}
-                                        {{#isaboveinheritedlayer}}
+                                        {{^isaboveoverlaylayer}}{{#isaboveinheritedlayer}}
                                             <span class="local-course-banner-builder-thumb-status-badge local-course-banner-builder-thumb-above-inherited-badge"
                                                 role="button"
                                                 data-container="body"
@@ -343,7 +343,7 @@
                                                 aria-label="{{aboveinheritedlabel}}">
                                                 <i class="fa fa-layer-group" aria-hidden="true"></i>
                                             </span>
-                                        {{/isaboveinheritedlayer}}
+                                        {{/isaboveinheritedlayer}}{{/isaboveoverlaylayer}}
                                         {{#iscenterfixedlayer}}
                                             <span class="local-course-banner-builder-thumb-status-badge local-course-banner-builder-thumb-center-fixed-badge"
                                                 role="button"
@@ -496,7 +496,7 @@
                                     {{actionlabel}}
                                 </td>
                                 <td>
-                                    <span class="local-course-banner-builder-sort-position" aria-hidden="true">&mdash;</span>
+                                    <span class="local-course-banner-builder-sort-position">{{#str}}locked, local_course_banner_builder{{/str}}</span>
                                 </td>
                                 <td>
                                     {{name}}
@@ -549,8 +549,11 @@
                             </td>
                             <td>
                                 <div class="local-course-banner-builder-layer-sort-indicator-zone">
-                                    <span class="local-course-banner-builder-sort-position" aria-hidden="true">&mdash;</span>
-                                    <a class="btn btn-link p-0 icon-no-margin local-course-banner-builder-lock-help local-course-banner-builder-lock-help--overlay"
+                                    <span class="local-course-banner-builder-layer-order-state">
+                                        <span class="local-course-banner-builder-sort-position">{{#str}}locked, local_course_banner_builder{{/str}}</span>
+                                    </span>
+                                    <span class="local-course-banner-builder-layer-sort-indicators">
+                                    <a class="btn btn-link p-0 icon-no-margin local-course-banner-builder-layer-sort-indicator local-course-banner-builder-layer-sort-indicator--lock local-course-banner-builder-lock-help local-course-banner-builder-lock-help--overlay"
                                        role="button"
                                        data-container="body"
                                        data-toggle="popover"
@@ -562,6 +565,7 @@
                                        aria-label="{{chainoverlaylayer.orderlocklabel}}">
                                         <i class="icon fa fa-lock fa-fw" role="img" aria-label="{{chainoverlaylayer.orderlocklabel}}"></i>
                                     </a>
+                                    </span>
                                 </div>
                             </td>
                             <td>{{chainoverlaylayer.name}}</td>
