@@ -4239,7 +4239,7 @@ button[data-toggler=drawers][data-target=theme_boost-drawers-blocks] {
 
 .modal[id^=local-course-banner-builder-] .local-course-banner-builder-layer-modal-body form.local-course-banner-builder-has-preview-proxy > .local-course-banner-builder-modal-preview-action-list {
   position: absolute;
-  top: 3.5rem;
+  top: 4.25rem;
   right: 1rem;
   bottom: 0;
   z-index: 13;
@@ -4247,8 +4247,9 @@ button[data-toggler=drawers][data-target=theme_boost-drawers-blocks] {
   width: var(--local-course-banner-builder-modal-action-rail-width);
   min-width: 0;
   max-height: none;
-  overflow: visible;
-  padding-right: 0.15rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 0 0.15rem 0.75rem 0;
 }
 
 .modal[id^=local-course-banner-builder-] .local-course-banner-builder-banner-preview-panel > .local-course-banner-builder-modal-preview-icon-row {
@@ -4272,6 +4273,9 @@ button[data-toggler=drawers][data-target=theme_boost-drawers-blocks] {
     width: 100%;
     max-height: none;
     margin-top: 0.75rem;
+    overflow: visible;
+    padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+    scroll-margin-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
   }
 }
 /* stylelint-disable -- Complex Moodle admin/preview styles intentionally use modern CSS and targeted overrides. */

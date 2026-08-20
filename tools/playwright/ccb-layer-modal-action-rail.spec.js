@@ -228,6 +228,10 @@ const assertDesktopRail = (evidence, cell) => {
     expect(evidence.bodyPaddingRight, cell.id + ': body must reserve rail space').not.toBe('0px');
     expect(evidence.preview.right, cell.id + ': preview overlaps the right rail').toBeLessThanOrEqual(evidence.rail.left + 1);
     expect(evidence.rail.width, cell.id + ': desktop rail must retain a useful action width').not.toBe('0px');
+    const firstAction = evidence.buttons[0];
+    expect(firstAction, cell.id + ': desktop rail must expose a first action').toBeTruthy();
+    expect(firstAction.rect.top - evidence.preview.top,
+        cell.id + ': desktop rail must leave 0.75rem above its first action').toBeGreaterThanOrEqual(11.5);
 };
 
 const assertCompactRail = (evidence, cell) => {
@@ -258,6 +262,74 @@ const validateModalAccordions = async(page, modal, cell, modalId, selectors) => 
         expect(accordion.contentHidden, cell.id + ': ' + accordion.selector + ' content must not remain hidden after expansion').toBe(false);
     }
     return {initial};
+};
+
+const overlayControlSelector = [
+    '[data-overlay-style-mode-option]',
+    '[data-overlay-target-option]',
+    '[data-overlay-color-picker="overlaybanner"]',
+    '[data-overlay-opacity-control="1"] input[type="range"]',
+    '[data-overlay-toggle-button-for="#id_overlaytitleabove"]',
+    '[data-overlay-toggle-button-for="#id_overlayborderabove"]',
+].join(', ');
+
+const readOverlayControlReachability = async(accordion, selector) => accordion.evaluate((panel, controlSelector) => {
+    const rect = element => {
+        const box = element.getBoundingClientRect();
+        return {left: box.left, top: box.top, right: box.right, bottom: box.bottom, width: box.width, height: box.height};
+    };
+    const visibleControls = Array.from(panel.querySelectorAll(controlSelector)).filter(control => {
+        const style = getComputedStyle(control);
+        const box = control.getBoundingClientRect();
+        return !control.hidden && style.display !== 'none' && style.visibility !== 'hidden' &&
+            box.width > 0 && box.height > 0;
+    });
+    const modal = panel.closest('.modal');
+    const body = modal?.querySelector('.local-course-banner-builder-layer-modal-body');
+    const rail = panel.closest('[data-modal-preview-action-list="1"]');
+    const footer = modal?.querySelector('.local-course-banner-builder-layer-modal-footer, .modal-footer');
+    return {
+        count: visibleControls.length,
+        first: visibleControls[0] ? rect(visibleControls[0]) : null,
+        last: visibleControls.length ? rect(visibleControls[visibleControls.length - 1]) : null,
+        body: body ? rect(body) : null,
+        rail: rail ? rect(rail) : null,
+        footer: footer ? rect(footer) : null,
+    };
+}, selector);
+
+const validateOverlayControlReachability = async(modal, rail, accordion, cell) => {
+    const controls = accordion.locator(overlayControlSelector);
+    await expect(controls.first(), cell.id + ': first Overlay control must be visible').toBeVisible();
+    await controls.first().focus();
+    await expect(controls.first(), cell.id + ': first Overlay control must accept keyboard focus').toBeFocused();
+
+    const scrollTarget = cell.compact
+        ? modal.locator('.local-course-banner-builder-layer-modal-body').first()
+        : rail;
+    await scrollTarget.evaluate(element => {
+        element.scrollTop = element.scrollHeight;
+    });
+    await expect(controls.last(), cell.id + ': final Overlay control must remain visible after normal scrolling').toBeVisible();
+    await controls.last().focus();
+    await expect(controls.last(), cell.id + ': final Overlay control must accept keyboard focus').toBeFocused();
+
+    const evidence = await readOverlayControlReachability(accordion, overlayControlSelector);
+    expect(evidence.count, cell.id + ': Overlay panel must expose multiple real controls').toBeGreaterThanOrEqual(2);
+    expect(evidence.first, cell.id + ': first Overlay control geometry must be measurable').toBeTruthy();
+    expect(evidence.last, cell.id + ': final Overlay control geometry must be measurable').toBeTruthy();
+    if (cell.compact) {
+        expect(evidence.footer, cell.id + ': compact modal footer geometry must be measurable').toBeTruthy();
+        expect(evidence.last.bottom, cell.id + ': final Overlay control must stop above the fixed footer').toBeLessThanOrEqual(
+            evidence.footer.top + 1
+        );
+    } else {
+        expect(evidence.rail, cell.id + ': desktop Overlay rail geometry must be measurable').toBeTruthy();
+        expect(evidence.last.bottom, cell.id + ': final Overlay control must stay inside the scrollable rail').toBeLessThanOrEqual(
+            evidence.rail.bottom + 1
+        );
+    }
+    return evidence;
 };
 
 const cells = [
@@ -578,11 +650,17 @@ const runModalScenario = async(page, context, cell, cellRoot, scenario) => {
         scenario.modalId,
         scenario.accordionSelectors
     );
+    const overlayControls = scenario.id === 'overlay'
+        ? await validateOverlayControlReachability(modal, rail, accordion, cell)
+        : null;
     const panelToggle = {
         initial: initialPanelState,
         final: await panelTrigger.getAttribute('aria-expanded'),
     };
     await captureCdp(page, context, path.join(cellRoot, 'modal-accordion-' + scenario.id + '-expanded-' + cell.id + '.png'));
+    if (overlayControls) {
+        await captureCdp(page, context, path.join(cellRoot, 'modal-overlay-controls-reachable-' + cell.id + '.png'));
+    }
 
     let scrolledLayout = null;
     if (cell.compact) {
@@ -612,7 +690,7 @@ const runModalScenario = async(page, context, cell, cellRoot, scenario) => {
     }
     await page.keyboard.press('Escape');
     await expect(modal, scenarioCell.id + ': Escape must close the modal').toBeHidden({timeout: 30000});
-    return {layout, scrolledLayout, accordions, panelToggle, triggerDecoration, panelBoundary, loading};
+    return {layout, scrolledLayout, accordions, overlayControls, panelToggle, triggerDecoration, panelBoundary, loading};
 };
 
 const runCell = async(env, cell, root) => {

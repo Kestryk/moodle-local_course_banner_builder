@@ -111,9 +111,9 @@
     form.local-course-banner-builder-has-preview-proxy
     > .local-course-banner-builder-modal-preview-action-list {
     position: absolute;
-    // Align the action rail with the preview frame, rather than the form label
-    // immediately before it.
-    top: 3.5rem;
+    // Keep the rail visually associated with the preview without making its
+    // first action touch the preview's top edge.
+    top: calc(3.5rem + 0.75rem);
     right: 1rem;
     bottom: 0;
     z-index: 13;
@@ -121,8 +121,9 @@
     width: var(--local-course-banner-builder-modal-action-rail-width);
     min-width: 0;
     max-height: none;
-    overflow: visible;
-    padding-right: 0.15rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 0 0.15rem 0.75rem 0;
 }
 
 .modal[id^="local-course-banner-builder-"] {
@@ -156,5 +157,10 @@
         width: 100%;
         max-height: none;
         margin-top: 0.75rem;
+        overflow: visible;
+        // The modal footer remains visible while the body scrolls. Reserve its
+        // height so the final Overlay control can stop above it.
+        padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+        scroll-margin-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
     }
 }
