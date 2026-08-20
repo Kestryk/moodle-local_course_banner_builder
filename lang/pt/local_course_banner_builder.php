@@ -869,6 +869,7 @@ $string['tour:transfer:strategy:title'] = 'Fluxo de trabalho recomendado';
 $string['transferconfig'] = 'TransferÃªncia';
 $string['unabletodeletealllayers'] = 'NÃ£o foi possÃ­vel excluir todas as camadas';
 $string['unabletodeleteselectedlayer'] = 'NÃ£o foi possÃ­vel excluir a camada selecionada';
+$string['unabletosavepreviewchanges'] = 'NÃ£o foi possÃ­vel guardar as alteraÃ§Ãµes da prÃ©-visualizaÃ§Ã£o';
 $string['unabletoloadlayerform'] = 'NÃ£o foi possÃ­vel carregar o formulÃ¡rio da camada';
 $string['unabletoloadsourcepreview'] = 'NÃ£o foi possÃ­vel carregar a visualizaÃ§Ã£o da fonte';
 $string['undopreviewchange'] = 'Desfazer';

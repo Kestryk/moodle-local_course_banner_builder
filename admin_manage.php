@@ -1687,12 +1687,15 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
             'type' => 'submit',
             'class' => 'btn btn-primary local-course-banner-builder-source-preview-button',
             'form' => 'local-course-banner-builder-source-preview-save-form',
+            'data-source-preview-async-control' => '1',
+            'data-source-preview-save-control' => '1',
         ] + $disabledattributes) .
         html_writer::tag('button', $buttoncontent('fa-trash-can', get_string('deleteselectedlayer', 'local_course_banner_builder')), [
             'type' => 'button',
             'class' => 'btn btn-danger local-course-banner-builder-source-preview-button',
             'data-action' => 'local-course-banner-builder-delete-selected-preview-layer',
             'data-confirm-message' => get_string('deleteselectedlayersconfirm', 'local_course_banner_builder'),
+            'data-source-preview-async-control' => '1',
             'hidden' => 'hidden',
         ]) .
         html_writer::tag('button', $buttoncontent('fa-trash-can', get_string('deletealllayers', 'local_course_banner_builder')), [
@@ -1701,6 +1704,7 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
             'data-action' => 'local-course-banner-builder-delete-all-layers',
             'data-confirm-title' => get_string('confirm', 'moodle'),
             'data-confirm-message' => get_string('deletealllayersconfirm', 'local_course_banner_builder'),
+            'data-source-preview-async-control' => '1',
         ] + $disabledattributes + $deleteallbuttonattributes);
     $previewmodehelpid = 'local-course-banner-builder-source-preview-mode-help';
     $previewmodecontrol = html_writer::div(
@@ -1845,6 +1849,7 @@ $updatesourceparentfield = optional_param('updatesourceparentfield', 0, PARAM_BO
 $updatelayerinline = optional_param('updatelayerinline', 0, PARAM_BOOL);
 $updatelayersbulk = optional_param('updatelayersbulk', 0, PARAM_BOOL);
 $updatepreviewlayers = optional_param('updatepreviewlayers', 0, PARAM_BOOL);
+$updatepreviewlayersajax = optional_param('updatepreviewlayersajax', 0, PARAM_BOOL);
 $deleteselectedlayers = optional_param('deleteselectedlayers', 0, PARAM_BOOL);
 $deleteselectedlayersajax = optional_param('deleteselectedlayersajax', 0, PARAM_BOOL);
 $deletealllayersajax = optional_param('deletealllayersajax', 0, PARAM_BOOL);
@@ -2141,6 +2146,7 @@ $PAGE->requires->strings_for_js([
     'togglepreviewsnap',
     'unabletodeletealllayers',
     'unabletodeleteselectedlayer',
+    'unabletosavepreviewchanges',
     'unabletoloadlayerform',
     'unabletoloadsourcepreview',
     'undopreviewchange',
@@ -2588,6 +2594,39 @@ if ($updatelayersbulk && confirm_sesskey() && $selectedsource) {
         new moodle_url($adminpagepath, $selectedsourceparams),
         get_string('changessaved')
     );
+}
+
+if (
+    $updatepreviewlayersajax &&
+    $_SERVER['REQUEST_METHOD'] === 'POST' &&
+    confirm_sesskey() &&
+    $selectedsource
+) {
+    $storedsettings = \local_course_banner_builder\manager::get_source_settings($selectedsource);
+    if (empty($storedsettings->id)) {
+        http_response_code(422);
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'message' => get_string('sourcesettingsrequiredbeforelayers', 'local_course_banner_builder'),
+        ]);
+        exit;
+    }
+    $payload = optional_param('previewlayerpayload', '', PARAM_TEXT);
+    $payloaddata = json_decode($payload, true);
+    \local_course_banner_builder\manager::update_source_visual_editor_layers(
+        $selectedsource,
+        is_array($payloaddata) ? $payloaddata : []
+    );
+    $updatedcontext = \local_course_banner_builder\manager::export_selected_source($selectedsource);
+    $updatedcontext['sourcevisualeditorhtml'] = local_course_banner_builder_render_source_visual_editor($selectedsource);
+    header('Content-Type: application/json');
+    echo json_encode([
+        'success' => true,
+        'html' => $OUTPUT->render_from_template('local_course_banner_builder/admin_selected', $updatedcontext),
+        'message' => get_string('changessaved'),
+    ]);
+    exit;
 }
 
 if ($updatepreviewlayers && confirm_sesskey() && $selectedsource) {

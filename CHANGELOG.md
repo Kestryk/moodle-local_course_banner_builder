@@ -8,6 +8,22 @@ many small sections.
 
 ## Unreleased
 
+### 2026-08-19
+
+#### Changed
+
+- Added the `EED-CCB-2026-0020` asynchronous Save preview changes route for
+  the Site and Course visual preview. It keeps Moodle's POST, sesskey,
+  capability and server-rendered selected-source fragment contracts.
+- Serialized Save preview changes with Delete selected layer and Delete all
+  layers. The three controls now share the existing confirmation, bottom-end
+  loading, Moodle toast and focus-return behavior without reloading the page.
+
+#### Validation
+
+- Added the focused source/generated contract for the asynchronous general
+  preview save and its shared destructive-action lock.
+
 ### 2026-08-18
 
 #### Fixed
