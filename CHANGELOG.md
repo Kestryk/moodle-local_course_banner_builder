@@ -8,6 +8,16 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0028 - 2026-08-20
+
+#### Fixed
+
+- Hide the empty `Layer infos & overrides` disclosure and its `?` help when an image layer has no display, border or overlay summary. Populated layer summaries keep their existing content and keyboard-accessible help.
+
+#### Validation
+
+- Extended the one-test `ccb-layer-object-row` scenario with empty and populated Layer infos states; a browser run remains separately authorised.
+
 ### EED-CCB-2026-0027 - 2026-08-20
 
 #### Fixed
