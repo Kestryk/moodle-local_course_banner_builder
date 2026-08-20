@@ -7730,15 +7730,10 @@ class manager {
                 'isreorderable' => !$islockedlayer,
                 'hasorderlockhelp' => $islockedlayer,
                 'orderlocklabel' => $orderlocklabel,
-                'orderlockicon' => $isborderlayer
-                    ? 'fa-lock'
-                    : ($isoverlaylayer
-                        ? 'fa-lock'
-                        : ($isbelowinheritedlayer
-                            ? 'fa-level-down'
-                            : ($isaboveinheritedlayer
-                                ? 'fa-layer-group'
-                                : ($isabovebothlayer ? 'fa-clone' : ($isaboveoverlaylayer ? 'fa-layer-group' : 'fa-level-up'))))),
+                // Placement remains a status badge. The separate order-lock
+                // control must always be a lock, otherwise Above overlay can
+                // render two visually identical layer-group glyphs.
+                'orderlockicon' => 'fa-lock',
                 'orderlockpopovercontent' => '<div class="no-overflow"><p>' .
                     $orderlockhelp .
                     '</p></div>',

@@ -18081,6 +18081,13 @@ span[data-flexitour=container].orphan .modal-dialog {
   display: inline-flex;
   justify-content: center;
   position: static;
+  text-decoration: none;
+}
+.local-course-banner-builder-admin .local-course-banner-builder-lock-help:hover, .local-course-banner-builder-admin .local-course-banner-builder-lock-help:focus, .local-course-banner-builder-admin .local-course-banner-builder-lock-help:focus-visible,
+[data-source-visual-editor="1"] .local-course-banner-builder-lock-help:hover,
+[data-source-visual-editor="1"] .local-course-banner-builder-lock-help:focus,
+[data-source-visual-editor="1"] .local-course-banner-builder-lock-help:focus-visible {
+  text-decoration: none;
 }
 .local-course-banner-builder-admin .local-course-banner-builder-layer-row[draggable=true] :is(input, select, button, a),
 [data-source-visual-editor="1"] .local-course-banner-builder-layer-row[draggable=true] :is(input, select, button, a) {

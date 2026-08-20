@@ -273,6 +273,13 @@
         display: inline-flex;
         justify-content: center;
         position: static;
+        text-decoration: none;
+
+        &:hover,
+        &:focus,
+        &:focus-visible {
+            text-decoration: none;
+        }
     }
 
     // Preserve a normal pointer over interactive descendants of draggable rows.

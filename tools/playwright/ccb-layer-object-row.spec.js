@@ -134,6 +134,8 @@ const rowEvidence = async page => page.evaluate(() => {
             '.local-course-banner-builder-thumb-status-badge',
         ].join(', ');
         const statusIndicators = Array.from(row.querySelectorAll(statusIndicatorSelector));
+        const layerGroupIndicatorCount = statusIndicators.filter(indicator => indicator.querySelector('.fa')?.classList
+            .contains('fa-layer-group')).length;
         const statusIndicatorKinds = statusIndicators.map(indicator => Array.from(indicator.classList)
             .filter(className => /(?:--dynamic|--lock|-crop-badge|-above-border-badge|-above-overlay-badge|-below-inherited-badge|-above-inherited-badge|-center-fixed-badge)$/.test(className))
             .sort()
@@ -175,9 +177,11 @@ const rowEvidence = async page => page.evaluate(() => {
             lockHelpInSortOrderCell: !!lockHelp && lockHelp.closest('td') === sortOrderCell,
             lockHelpInIndicatorStack: !!lockHelp && lockHelp.closest('.local-course-banner-builder-layer-sort-indicators') !== null,
             lockHelpBesideSortPosition: !!lockHelp && lockHelp.closest('.local-course-banner-builder-layer-order-state') !== null,
+            lockHelpIconClass: lockHelp?.querySelector('.fa')?.className || '',
             sortPositionText: sortOrderCell?.querySelector('[data-sort-display]')?.textContent.trim() || '',
             statusIndicatorCount: statusIndicators.length,
             statusIndicatorCursors: statusIndicators.map(indicator => getComputedStyle(indicator).cursor),
+            layerGroupIndicatorCount,
             statusIndicatorsInSortOrderCell: statusIndicators.every(indicator => indicator.closest('td') === sortOrderCell),
             duplicateStatusIndicators: statusIndicatorKinds.some((kind, index) => kind && statusIndicatorKinds.indexOf(kind) !== index),
             aboveOverlayStatusBadgeCount: row.querySelectorAll('.local-course-banner-builder-thumb-above-overlay-badge').length,
@@ -542,6 +546,7 @@ const runCell = async(env, zoom, root) => {
             expect(Number(row.imageTypeIcon?.opacity)).toBeGreaterThan(0);
             expect(row.statusIndicatorsInSortOrderCell).toBe(true);
             expect(row.statusIndicatorCursors).toEqual(row.statusIndicatorCursors.map(() => 'pointer'));
+            expect(row.layerGroupIndicatorCount).toBeLessThanOrEqual(1);
             expect(row.duplicateStatusIndicators).toBe(false);
             expect(row.aboveOverlayStatusBadgeCount).toBeLessThanOrEqual(1);
             expect(row.selectionCellStatusIndicatorCount).toBe(0);
@@ -563,9 +568,11 @@ const runCell = async(env, zoom, root) => {
         expect(lockedRow.lockHelpInSortOrderCell).toBe(true);
         expect(lockedRow.lockHelpInIndicatorStack).toBe(true);
         expect(lockedRow.lockHelpBesideSortPosition).toBe(false);
+        expect(lockedRow.lockHelpIconClass).toContain('fa-lock');
         expect(lockedRow.sortPositionText).toContain('Locked');
         expect(lockedRow.statusIndicatorsInSortOrderCell).toBe(true);
         expect(lockedRow.statusIndicatorCursors).toEqual(lockedRow.statusIndicatorCursors.map(() => 'pointer'));
+        expect(lockedRow.layerGroupIndicatorCount).toBeLessThanOrEqual(1);
         expect(lockedRow.duplicateStatusIndicators).toBe(false);
         expect(lockedRow.aboveOverlayStatusBadgeCount).toBeLessThanOrEqual(1);
         expect(lockedRow.selectionCellStatusIndicatorCount).toBe(0);

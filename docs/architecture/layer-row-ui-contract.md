@@ -44,6 +44,8 @@ checkbox state or transient DOM position.
 - If one layer is both above the overlay and above inherited content, its
   single `fa-layer-group` badge represents the more specific Above overlay
   state. The same glyph must never be rendered twice for one row.
+- The order-lock control always uses `fa-lock`; it must never reuse a placement
+  glyph or receive the text-decoration hover treatment of a link.
 - Chain Border and Overlay rows use the localised `Locked` string rather than
   a decorative em dash. Chain Overlay keeps its lock badge in the indicator
   stack below that text.

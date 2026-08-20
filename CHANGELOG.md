@@ -21,6 +21,8 @@ many small sections.
   instead of an em dash, all CCB explanatory popover triggers use a pointer
   cursor, and unlocked Image `Layer infos & overrides` cells share their row's
   surface instead of retaining the legacy beige tint.
+- Restore the order-lock icon to a real lock in every locked state, so Above
+  overlay has one layer-group badge only and no link-style hover underline.
 
 #### Validation
 
