@@ -90,6 +90,15 @@ per-cell Chromium profiles were removed in `finally`. External evidence and
 its artifact manifest are retained under
 `%LOCALAPPDATA%\EasyEdu\artifacts\ccb\layer-object-row\supervised\ccb-layer-object-row-20260731T132035519Z-20296`.
 
+## EED-CCB-2026-0027 acceptance
+
+The managed Moodle 5.1 preview was accepted visually on 2026-08-20. The
+accepted state has one Above overlay glyph, a separate lock badge, matching
+Above overlay/lock glyph scale, pointer affordances on popover triggers and no
+beige surface on unlocked Image disclosure cells. The supervised browser
+scenario remains deferred until its runner performs exact discovery before it
+loads process-local credentials.
+
 At 200%, the wide layer table remains inside its existing responsive scroll
 shell. This avoids document overflow but leaves the rightmost columns reachable
 through local table scrolling; a future responsive-table lot should decide

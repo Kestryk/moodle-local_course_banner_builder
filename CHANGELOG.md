@@ -26,6 +26,12 @@ many small sections.
 - Match the Above overlay glyph scale to the order-lock glyph while preserving
   the existing circular badge dimensions.
 
+#### Human review
+
+- Accepted visually on the managed Moodle 5.1 CCB preview on 2026-08-20:
+  one Above overlay glyph, a separate lock badge, matching glyph scale,
+  pointer affordances and the aligned Image disclosure-cell surface.
+
 #### Validation
 
 - Updated the isolated `ccb-layer-object-row` scenario for type-rail placement,
