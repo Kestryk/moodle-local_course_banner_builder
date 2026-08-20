@@ -127,13 +127,16 @@ const rowEvidence = async page => page.evaluate(() => {
         const selectionCell = cells[0] || null;
         const sortOrderCell = cells[1] || null;
         const bannerLayerCell = cells[5] || null;
-        const semanticIndicatorSelector = [
-            '.local-course-banner-builder-layer-type-icon',
+        const statusIndicatorSelector = [
             '.local-course-banner-builder-lock-help',
             '.local-course-banner-builder-layer-sort-indicator',
             '.local-course-banner-builder-thumb-status-badge',
         ].join(', ');
-        const semanticIndicators = Array.from(row.querySelectorAll(semanticIndicatorSelector));
+        const statusIndicators = Array.from(row.querySelectorAll(statusIndicatorSelector));
+        const statusIndicatorKinds = statusIndicators.map(indicator => Array.from(indicator.classList)
+            .filter(className => /(?:--dynamic|--lock|-crop-badge|-above-border-badge|-above-overlay-badge|-below-inherited-badge|-above-inherited-badge|-center-fixed-badge)$/.test(className))
+            .sort()
+            .join(' '));
         const overlayVisual = row.querySelector('.local-course-banner-builder-admin-layer-visual--overlay');
         const selectionCheckbox = row.querySelector('.local-course-banner-builder-layer-select')?.closest(
             '.local-course-banner-builder-selection-checkbox'
@@ -165,12 +168,19 @@ const rowEvidence = async page => page.evaluate(() => {
                 opacity: getComputedStyle(imageTypeIcon).opacity,
                 rect: rect(imageTypeIcon),
             } : null,
+            typeIconInSelectionCell: !!typeIcon && typeIcon.closest('td') === selectionCell,
+            typeIconInIdentityRail: !!typeIcon && typeIcon.closest('.local-course-banner-builder-layer-row-identity') !== null,
             typeIconInSortOrderCell: !!typeIcon && typeIcon.closest('td') === sortOrderCell,
             lockHelpInSortOrderCell: !!lockHelp && lockHelp.closest('td') === sortOrderCell,
-            semanticIndicatorCount: semanticIndicators.length,
-            semanticIndicatorsInSortOrderCell: semanticIndicators.every(indicator => indicator.closest('td') === sortOrderCell),
-            selectionCellIndicatorCount: selectionCell ? selectionCell.querySelectorAll(semanticIndicatorSelector).length : 0,
-            bannerLayerCellIndicatorCount: bannerLayerCell ? bannerLayerCell.querySelectorAll(semanticIndicatorSelector).length : 0,
+            lockHelpInIndicatorStack: !!lockHelp && lockHelp.closest('.local-course-banner-builder-layer-sort-indicators') !== null,
+            lockHelpBesideSortPosition: !!lockHelp && lockHelp.closest('.local-course-banner-builder-layer-order-state') !== null,
+            sortPositionText: sortOrderCell?.querySelector('[data-sort-display]')?.textContent.trim() || '',
+            statusIndicatorCount: statusIndicators.length,
+            statusIndicatorsInSortOrderCell: statusIndicators.every(indicator => indicator.closest('td') === sortOrderCell),
+            duplicateStatusIndicators: statusIndicatorKinds.some((kind, index) => kind && statusIndicatorKinds.indexOf(kind) !== index),
+            aboveOverlayStatusBadgeCount: row.querySelectorAll('.local-course-banner-builder-thumb-above-overlay-badge').length,
+            selectionCellStatusIndicatorCount: selectionCell ? selectionCell.querySelectorAll(statusIndicatorSelector).length : 0,
+            bannerLayerCellStatusIndicatorCount: bannerLayerCell ? bannerLayerCell.querySelectorAll(statusIndicatorSelector).length : 0,
             keyboardPopoverIndicatorCount: sortOrderCell ? sortOrderCell.querySelectorAll(
                 '[role="button"][tabindex="0"][data-toggle="popover"]'
             ).length : 0,
@@ -521,11 +531,15 @@ const runCell = async(env, zoom, root) => {
             expect(row.cellBoxShadows.slice(1)).toEqual(row.cellBoxShadows.slice(1).map(() => 'none'));
             expect(row.grip?.className).toContain('local-course-banner-builder-drag-corner');
             expect(row.typeIcon).toContain('fa-image');
-            expect(row.typeIconInSortOrderCell).toBe(true);
+            expect(row.typeIconInSelectionCell).toBe(true);
+            expect(row.typeIconInIdentityRail).toBe(true);
+            expect(row.typeIconInSortOrderCell).toBe(false);
             expect(Number(row.imageTypeIcon?.opacity)).toBeGreaterThan(0);
-            expect(row.semanticIndicatorsInSortOrderCell).toBe(true);
-            expect(row.selectionCellIndicatorCount).toBe(0);
-            expect(row.bannerLayerCellIndicatorCount).toBe(0);
+            expect(row.statusIndicatorsInSortOrderCell).toBe(true);
+            expect(row.duplicateStatusIndicators).toBe(false);
+            expect(row.aboveOverlayStatusBadgeCount).toBeLessThanOrEqual(1);
+            expect(row.selectionCellStatusIndicatorCount).toBe(0);
+            expect(row.bannerLayerCellStatusIndicatorCount).toBe(0);
             expect(row.selectionCheckbox).toBe('inline-flex');
             expect(row.enabledCheckbox).toBe('inline-flex');
         });
@@ -536,12 +550,20 @@ const runCell = async(env, zoom, root) => {
         expect(lockedRow.cellBackgroundImage).toBe('none');
         expect(lockedRow.firstCellBeforeContent).toMatch(/^(none|""|'')$/);
         expect(lockedRow.typeIcon).toContain('fa-');
-        expect(lockedRow.typeIconInSortOrderCell).toBe(true);
+        expect(lockedRow.typeIconInSelectionCell).toBe(true);
+        expect(lockedRow.typeIconInIdentityRail).toBe(true);
+        expect(lockedRow.typeIconInSortOrderCell).toBe(false);
         expect(lockedRow.lockHelpInSortOrderCell).toBe(true);
-        expect(lockedRow.semanticIndicatorsInSortOrderCell).toBe(true);
-        expect(lockedRow.selectionCellIndicatorCount).toBe(0);
-        expect(lockedRow.bannerLayerCellIndicatorCount).toBe(0);
+        expect(lockedRow.lockHelpInIndicatorStack).toBe(true);
+        expect(lockedRow.lockHelpBesideSortPosition).toBe(false);
+        expect(lockedRow.sortPositionText).not.toContain('—');
+        expect(lockedRow.statusIndicatorsInSortOrderCell).toBe(true);
+        expect(lockedRow.duplicateStatusIndicators).toBe(false);
+        expect(lockedRow.aboveOverlayStatusBadgeCount).toBeLessThanOrEqual(1);
+        expect(lockedRow.selectionCellStatusIndicatorCount).toBe(0);
+        expect(lockedRow.bannerLayerCellStatusIndicatorCount).toBe(0);
         expect(lockedRow.keyboardPopoverIndicatorCount).toBeGreaterThan(0);
+        expect(evidence.initial.rows.some(row => row.aboveOverlayStatusBadgeCount === 1)).toBe(true);
         evidence.initial.rows.filter(row => row.locked).forEach(row => {
             expect(row.cellBoxShadows.slice(1)).toEqual(row.cellBoxShadows.slice(1).map(() => 'none'));
             expect(row.cellBackgroundImage).toBe('none');
@@ -676,7 +698,7 @@ const runCell = async(env, zoom, root) => {
     }
 };
 
-test('CCB layer table keeps semantic indicators in Sort order and preserves native ordering', async() => {
+test('CCB layer table keeps type identity in the rail and preserves native ordering', async() => {
     test.setTimeout(300000);
     const env = requireEnvironment();
     const root = path.join(env.artifactRoot, 'layer-object-row');

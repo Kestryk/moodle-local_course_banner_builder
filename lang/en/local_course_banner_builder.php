@@ -284,6 +284,7 @@ $string['forcecourseoverviewreplacement'] = 'Force generated banners';
 $string['forcecourseoverviewreplacementhelp'] = 'Deletes course-specific overview images on courses affected by banner rules, then regenerates the plugin-managed banner images. Slideshow and title settings are kept.';
 $string['guidebadgelabel'] = 'Guide';
 $string['guidelockedbadge'] = 'Locked';
+$string['locked'] = 'Locked';
 $string['guidelockedsourcecontent'] = 'Create or select a course banner source first. The preview, settings and layer list become available once a source exists in this view.';
 $string['guidelockedtitle'] = 'This slide needs a source';
 $string['guidecategoryactions'] = 'Actions';
