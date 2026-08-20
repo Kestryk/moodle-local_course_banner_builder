@@ -119,7 +119,7 @@ Status values:
 | LYR-01 | Reorder layers by buttons | Preview z-order changes and persists | Behat/Playwright | Blocked |
 | LYR-02 | Reorder layers by drag/drop | Same persisted order as button flow | Playwright | Blocked |
 | LYR-03 | Push image above overlay/border | Conflicting order controls are disabled | Playwright | Blocked |
-| LYR-04 | Inspect Sort order semantic indicators | Type, lock and active state indicators are grouped in `Sort order`; none remain in Selection or Banner layer. Every rendered popover indicator remains keyboard-focusable. Native drag and selection remain available. | One leased Moodle 5.1 Playwright scenario (`ccb-layer-object-row.spec.js`) | Candidate |
+| LYR-04 | Inspect layer identity and Sort order status | Image, Border and Overlay types stay in the coloured leading rail. Sort order shows only one copy of each status badge and its lock badge below the localised `Locked` label; neither status nor lock appears in Banner layer. Every rendered popover indicator remains keyboard-focusable. Native drag and selection remain available. | One leased Moodle 5.1 Playwright scenario (`ccb-layer-object-row.spec.js`) | Candidate |
 | DEL-01 | Cancel then confirm selected and all layer deletion | Cancellation makes no POST; confirmed actions use the local selected-source refresh, loading feedback, success toast and deterministic focus return | One leased Moodle 5.1 Playwright scenario (`ccb-async-editor-actions.spec.js`) | Candidate |
 | SAVE-01 | Save and reload source | All visual settings persist | Behat/Playwright | Blocked |
 | PREV-01 | Resize admin preview | Layout remains usable at desktop/tablet/mobile | Playwright/manual | Manual |

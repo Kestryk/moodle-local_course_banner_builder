@@ -609,6 +609,15 @@ ordering, five fixture rows (two reorderable and three locked), no document or
 root overflow, no console/request failure and complete fixture/profile cleanup.
 The external artifact manifest records the eight CDP captures for the run.
 
+### Layer indicator placement - 2026-08-20
+
+The coloured leading rail is again the sole location for each Image, Border or
+Overlay type icon. The `Sort order` cell retains only its localised order label,
+one copy of each active status badge and the lock badge below that label; it no
+longer duplicates the type icon or places the lock beside the order text.
+Status badges remain absent from `Banner layer`, preserve their keyboard
+popover hooks, and do not change native drag or selection behavior.
+
 ### Layer-list identity, locked surfaces and selection controls - 2026-08-02
 
 Locked rows now carry one low-contrast striped background on the table row

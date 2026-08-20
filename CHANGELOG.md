@@ -8,6 +8,20 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0027 - 2026-08-20
+
+#### Fixed
+
+- Restored Image, Border and Overlay type icons to the coloured leading rail of
+  the layer list. `Sort order` now shows its localised `Locked` label, one copy
+  of each status badge and the lock badge below the order label, without
+  duplicating status indicators in `Banner layer`.
+
+#### Validation
+
+- Updated the isolated `ccb-layer-object-row` scenario for type-rail placement,
+  unique status/lock badges, keyboard popovers and unchanged drag/selection.
+
 ### EED-CCB-2026-0026 - 2026-08-20
 
 #### Changed

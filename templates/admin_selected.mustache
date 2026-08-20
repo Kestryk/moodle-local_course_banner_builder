@@ -232,6 +232,17 @@
                                 <span class="local-course-banner-builder-layer-row-identity">
                                     {{#iscumulative}}{{#isreorderable}}
                                     <span class="local-course-banner-builder-drag-corner" title="{{#str}}dragreorderlayer, local_course_banner_builder{{/str}}" aria-hidden="true"></span>
+                                    <span class="local-course-banner-builder-layer-type-icon local-course-banner-builder-layer-type-icon--image" role="img" aria-label="{{#str}}bannerimage, local_course_banner_builder{{/str}}"><i class="icon fa fa-image fa-fw" aria-hidden="true"></i></span>
+                                    {{/isreorderable}}{{/iscumulative}}
+                                    {{^isreorderable}}
+                                    <span class="local-course-banner-builder-layer-type-icon" role="img" aria-label="{{#isborderlayer}}{{#str}}bordertitle, local_course_banner_builder{{/str}}{{/isborderlayer}}{{#isoverlaylayer}}{{#str}}overlaytitle, local_course_banner_builder{{/str}}{{/isoverlaylayer}}{{^isborderlayer}}{{^isoverlaylayer}}{{#str}}bannerimage, local_course_banner_builder{{/str}}{{/isoverlaylayer}}{{/isborderlayer}}">
+                                        {{#isborderlayer}}<i class="icon fa fa-square-o fa-fw" aria-hidden="true"></i>{{/isborderlayer}}
+                                        {{#isoverlaylayer}}<i class="icon fa fa-adjust fa-fw" aria-hidden="true"></i>{{/isoverlaylayer}}
+                                        {{^isborderlayer}}{{^isoverlaylayer}}<i class="icon fa fa-image fa-fw" aria-hidden="true"></i>{{/isoverlaylayer}}{{/isborderlayer}}
+                                    </span>
+                                    {{/isreorderable}}
+                                    {{^iscumulative}}{{#isreorderable}}
+                                    <span class="local-course-banner-builder-layer-type-icon" role="img" aria-label="{{#str}}bannerimage, local_course_banner_builder{{/str}}"><i class="icon fa fa-image fa-fw" aria-hidden="true"></i></span>
                                     {{/isreorderable}}{{/iscumulative}}
                                 </span>
                                 <label class="local-course-banner-builder-selection-checkbox local-course-banner-builder-selection-checkbox--small" aria-label="{{#str}}select, core{{/str}}: {{name}}">
@@ -244,37 +255,10 @@
                                 <div class="local-course-banner-builder-layer-sort-indicator-zone">
                                     <span class="local-course-banner-builder-layer-order-state">
                                         <span class="local-course-banner-builder-sort-position" data-sort-display>
-                                            {{#hasorderlockhelp}}&mdash;{{/hasorderlockhelp}}{{^hasorderlockhelp}}{{sortorder}}{{/hasorderlockhelp}}
+                                            {{#hasorderlockhelp}}{{#str}}locked, local_course_banner_builder{{/str}}{{/hasorderlockhelp}}{{^hasorderlockhelp}}{{sortorder}}{{/hasorderlockhelp}}
                                         </span>
-                                        {{#hasorderlockhelp}}
-                                        <a class="btn btn-link p-0 icon-no-margin local-course-banner-builder-lock-help{{#isborderlayer}} local-course-banner-builder-lock-help--border{{/isborderlayer}}{{#isoverlaylayer}} local-course-banner-builder-lock-help--overlay{{/isoverlaylayer}}{{#isdynamiclayer}} local-course-banner-builder-lock-help--dynamic{{/isdynamiclayer}}{{#isaboveoverlaylayer}} local-course-banner-builder-lock-help--overlay-top{{/isaboveoverlaylayer}}{{#isbelowinheritedlayer}} local-course-banner-builder-lock-help--below-inherited{{/isbelowinheritedlayer}}{{#isaboveinheritedlayer}} local-course-banner-builder-lock-help--above-inherited{{/isaboveinheritedlayer}}"
-                                           role="button"
-                                           data-container="body"
-                                           data-toggle="popover"
-                                           data-placement="right"
-                                           data-content="{{orderlockpopovercontent}}"
-                                           data-html="true"
-                                           data-trigger="hover"
-                                           tabindex="0"
-                                           aria-label="{{orderlocklabel}}">
-                                            <i class="icon fa {{orderlockicon}} fa-fw" aria-hidden="true"></i>
-                                        </a>
-                                        {{/hasorderlockhelp}}
                                     </span>
                                     <span class="local-course-banner-builder-layer-sort-indicators">
-                                        {{#iscumulative}}{{#isreorderable}}
-                                        <span class="local-course-banner-builder-layer-type-icon local-course-banner-builder-layer-type-icon--image" role="img" aria-label="{{#str}}bannerimage, local_course_banner_builder{{/str}}"><i class="icon fa fa-image fa-fw" aria-hidden="true"></i></span>
-                                        {{/isreorderable}}{{/iscumulative}}
-                                        {{^isreorderable}}
-                                        <span class="local-course-banner-builder-layer-type-icon" role="img" aria-label="{{#isborderlayer}}{{#str}}bordertitle, local_course_banner_builder{{/str}}{{/isborderlayer}}{{#isoverlaylayer}}{{#str}}overlaytitle, local_course_banner_builder{{/str}}{{/isoverlaylayer}}{{^isborderlayer}}{{^isoverlaylayer}}{{#str}}bannerimage, local_course_banner_builder{{/str}}{{/isoverlaylayer}}{{/isborderlayer}}">
-                                            {{#isborderlayer}}<i class="icon fa fa-square-o fa-fw" aria-hidden="true"></i>{{/isborderlayer}}
-                                            {{#isoverlaylayer}}<i class="icon fa fa-adjust fa-fw" aria-hidden="true"></i>{{/isoverlaylayer}}
-                                            {{^isborderlayer}}{{^isoverlaylayer}}<i class="icon fa fa-image fa-fw" aria-hidden="true"></i>{{/isoverlaylayer}}{{/isborderlayer}}
-                                        </span>
-                                        {{/isreorderable}}
-                                        {{^iscumulative}}{{#isreorderable}}
-                                        <span class="local-course-banner-builder-layer-type-icon" role="img" aria-label="{{#str}}bannerimage, local_course_banner_builder{{/str}}"><i class="icon fa fa-image fa-fw" aria-hidden="true"></i></span>
-                                        {{/isreorderable}}{{/iscumulative}}
                                         {{#isdynamiclayer}}
                                             <span class="local-course-banner-builder-layer-sort-indicator local-course-banner-builder-layer-sort-indicator--dynamic"
                                                 role="button"
@@ -374,6 +358,20 @@
                                                 <i class="fa fa-thumb-tack" aria-hidden="true"></i>
                                             </span>
                                         {{/iscenterfixedlayer}}
+                                        {{#hasorderlockhelp}}
+                                        <a class="btn btn-link p-0 icon-no-margin local-course-banner-builder-layer-sort-indicator local-course-banner-builder-layer-sort-indicator--lock local-course-banner-builder-lock-help{{#isborderlayer}} local-course-banner-builder-lock-help--border{{/isborderlayer}}{{#isoverlaylayer}} local-course-banner-builder-lock-help--overlay{{/isoverlaylayer}}{{#isdynamiclayer}} local-course-banner-builder-lock-help--dynamic{{/isdynamiclayer}}{{#isaboveoverlaylayer}} local-course-banner-builder-lock-help--overlay-top{{/isaboveoverlaylayer}}{{#isbelowinheritedlayer}} local-course-banner-builder-lock-help--below-inherited{{/isbelowinheritedlayer}}{{#isaboveinheritedlayer}} local-course-banner-builder-lock-help--above-inherited{{/isaboveinheritedlayer}}"
+                                           role="button"
+                                           data-container="body"
+                                           data-toggle="popover"
+                                           data-placement="right"
+                                           data-content="{{orderlockpopovercontent}}"
+                                           data-html="true"
+                                           data-trigger="hover"
+                                           tabindex="0"
+                                           aria-label="{{orderlocklabel}}">
+                                            <i class="icon fa {{orderlockicon}} fa-fw" aria-hidden="true"></i>
+                                        </a>
+                                        {{/hasorderlockhelp}}
                                     </span>
                                 </div>
                             </td>

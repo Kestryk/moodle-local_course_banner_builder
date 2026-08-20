@@ -283,6 +283,7 @@ $string['forcecourseoverviewreplacement'] = 'Forcer les bannières générées';
 $string['forcecourseoverviewreplacementhelp'] = 'Supprime les images de cours spécifiques sur les cours concernés par des règles de bannière, puis régénère les images gérées par le plugin. Les réglages de diaporama et de titres sont conservés.';
 $string['guidebadgelabel'] = 'Guide';
 $string['guidelockedbadge'] = 'Bloque';
+$string['locked'] = 'Verrouillé';
 $string['guidelockedsourcecontent'] = 'Creez ou selectionnez d abord une source de banniere de cours. L apercu, les reglages et la liste des calques deviennent disponibles des qu une source existe dans cette vue.';
 $string['guidelockedtitle'] = 'Ce slide necessite une source';
 $string['guidecategoryactions'] = 'Actions';
