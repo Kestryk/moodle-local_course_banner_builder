@@ -18089,6 +18089,13 @@ span[data-flexitour=container].orphan .modal-dialog {
 [data-source-visual-editor="1"] .local-course-banner-builder-lock-help:focus-visible {
   text-decoration: none;
 }
+.local-course-banner-builder-admin .local-course-banner-builder-thumb-above-overlay-badge .fa,
+.local-course-banner-builder-admin .local-course-banner-builder-lock-help .fa,
+[data-source-visual-editor="1"] .local-course-banner-builder-thumb-above-overlay-badge .fa,
+[data-source-visual-editor="1"] .local-course-banner-builder-lock-help .fa {
+  font-size: 0.875rem;
+  line-height: 1;
+}
 .local-course-banner-builder-admin .local-course-banner-builder-layer-row[draggable=true] :is(input, select, button, a),
 [data-source-visual-editor="1"] .local-course-banner-builder-layer-row[draggable=true] :is(input, select, button, a) {
   cursor: auto;
