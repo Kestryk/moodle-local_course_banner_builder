@@ -124,6 +124,8 @@ const rowEvidence = async page => page.evaluate(() => {
         const typeIcon = row.querySelector('.local-course-banner-builder-layer-type-icon .fa');
         const imageTypeIcon = row.querySelector('.local-course-banner-builder-layer-type-icon--image');
         const lockHelp = row.querySelector('.local-course-banner-builder-lock-help');
+        const aboveOverlayIcon = row.querySelector('.local-course-banner-builder-thumb-above-overlay-badge .fa');
+        const lockHelpIcon = lockHelp?.querySelector('.fa');
         const selectionCell = cells[0] || null;
         const sortOrderCell = cells[1] || null;
         const fitOverrideCell = cells[4] || null;
@@ -177,7 +179,9 @@ const rowEvidence = async page => page.evaluate(() => {
             lockHelpInSortOrderCell: !!lockHelp && lockHelp.closest('td') === sortOrderCell,
             lockHelpInIndicatorStack: !!lockHelp && lockHelp.closest('.local-course-banner-builder-layer-sort-indicators') !== null,
             lockHelpBesideSortPosition: !!lockHelp && lockHelp.closest('.local-course-banner-builder-layer-order-state') !== null,
-            lockHelpIconClass: lockHelp?.querySelector('.fa')?.className || '',
+            lockHelpIconClass: lockHelpIcon?.className || '',
+            lockHelpGlyphFontSize: lockHelpIcon ? getComputedStyle(lockHelpIcon).fontSize : null,
+            aboveOverlayGlyphFontSize: aboveOverlayIcon ? getComputedStyle(aboveOverlayIcon).fontSize : null,
             sortPositionText: sortOrderCell?.querySelector('[data-sort-display]')?.textContent.trim() || '',
             statusIndicatorCount: statusIndicators.length,
             statusIndicatorCursors: statusIndicators.map(indicator => getComputedStyle(indicator).cursor),
@@ -569,6 +573,7 @@ const runCell = async(env, zoom, root) => {
         expect(lockedRow.lockHelpInIndicatorStack).toBe(true);
         expect(lockedRow.lockHelpBesideSortPosition).toBe(false);
         expect(lockedRow.lockHelpIconClass).toContain('fa-lock');
+        expect(lockedRow.aboveOverlayGlyphFontSize).toBe(lockedRow.lockHelpGlyphFontSize);
         expect(lockedRow.sortPositionText).toContain('Locked');
         expect(lockedRow.statusIndicatorsInSortOrderCell).toBe(true);
         expect(lockedRow.statusIndicatorCursors).toEqual(lockedRow.statusIndicatorCursors.map(() => 'pointer'));

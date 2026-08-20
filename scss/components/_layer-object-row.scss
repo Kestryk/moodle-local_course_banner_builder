@@ -282,6 +282,15 @@
         }
     }
 
+    // The Above overlay glyph and its adjacent order lock share one visual
+    // scale. This prevents the placement status from looking undersized inside
+    // its otherwise identical circular badge.
+    .local-course-banner-builder-thumb-above-overlay-badge .fa,
+    .local-course-banner-builder-lock-help .fa {
+        font-size: 0.875rem;
+        line-height: 1;
+    }
+
     // Preserve a normal pointer over interactive descendants of draggable rows.
     .local-course-banner-builder-layer-row[draggable="true"] :is(input, select, button, a) {
         cursor: auto;

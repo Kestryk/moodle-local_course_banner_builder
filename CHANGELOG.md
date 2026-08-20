@@ -23,6 +23,8 @@ many small sections.
   surface instead of retaining the legacy beige tint.
 - Restore the order-lock icon to a real lock in every locked state, so Above
   overlay has one layer-group badge only and no link-style hover underline.
+- Match the Above overlay glyph scale to the order-lock glyph while preserving
+  the existing circular badge dimensions.
 
 #### Validation
 
