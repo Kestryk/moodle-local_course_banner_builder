@@ -12,11 +12,11 @@ many small sections.
 
 #### Fixed
 
-- Hide the empty `Layer infos & overrides` disclosure and its `?` help when an image layer has no override or meaningful layer information. The guard now ignores technical default summary values while populated layer summaries keep their existing content and keyboard-accessible help.
+- Display an image layer's native `Original size` dimensions when no custom size is applied. If no layer information can be read, `Layer infos & overrides` now uses the shared EasyEdu Kit empty state instead of an unexplained blank cell; its redundant `?` help stays hidden.
 
 #### Validation
 
-- Extended the one-test `ccb-layer-object-row` scenario with empty and populated Layer infos states; a browser run remains separately authorised.
+- Extended the one-test `ccb-layer-object-row` scenario with native-size and populated Layer infos states; a browser run remains separately authorised.
 
 ### EED-CCB-2026-0027 - 2026-08-20
 

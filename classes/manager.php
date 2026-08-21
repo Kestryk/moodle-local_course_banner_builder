@@ -7653,23 +7653,16 @@ class manager {
             if ($fitoverride === $sourcefitmode) {
                 $fitoverride = '';
             }
+            $isborderlayer = self::is_border_only_layer($record);
+            $isoverlaylayer = !empty($record->overlayenabled);
             $bordersummary = self::export_border_summary($record);
             $overlaysummary = self::export_overlay_summary($record);
             $layersummary = self::export_layer_display_summary($record);
-            $haslayerinfodisclosure = $fitoverride !== '' || !empty($bordersummary) || !empty($overlaysummary) ||
-                (!empty($record->dynamicimagesizeenabled)) || (!empty($record->imageaboveoverlayenabled)) ||
-                (!empty($record->imagebelowinheritedenabled)) || (!empty($record->imageaboveinheritedenabled)) ||
-                (!empty($record->imagecenterfixed)) || ((float)($record->imageopacity ?? 1) < 0.999) ||
-                (self::layer_uses_custom_fit_override($record) && (
-                    self::normalise_percentage((float)($record->customwidthpercent ?? 100)) !== 100.0 ||
-                    self::normalise_percentage((float)($record->customheightpercent ?? 100)) !== 100.0 ||
-                    self::normalise_percentage((float)($record->offsettoppercent ?? 0), -1000.0, 1000.0) > 0 ||
-                    self::normalise_percentage((float)($record->offsetrightpercent ?? 0), -1000.0, 1000.0) > 0 ||
-                    self::normalise_percentage((float)($record->offsetbottompercent ?? 0), -1000.0, 1000.0) > 0 ||
-                    self::normalise_percentage((float)($record->offsetleftpercent ?? 0), -1000.0, 1000.0) > 0
-                ));
-            $isborderlayer = self::is_border_only_layer($record);
-            $isoverlaylayer = !empty($record->overlayenabled);
+            $haslayerdetailscontent = !empty($layersummary) || !empty($bordersummary) || !empty($overlaysummary);
+            // An image layer normally exposes its native dimensions. If Moodle cannot read them,
+            // keep the cell intentional with the Kit empty state instead of leaving a blank gap.
+            $haslayerdetailsplaceholder = !$haslayerdetailscontent && !$isborderlayer && !$isoverlaylayer;
+            $haslayerinfodisclosure = $haslayerdetailscontent || $haslayerdetailsplaceholder;
             $layerpreviewhtml = self::render_admin_layer_visual_preview($record);
             $isdynamiclayer = self::is_top_image_layer($record);
             $isaboveoverlaylayer = self::is_overlay_top_image_layer($record);
@@ -7798,6 +7791,9 @@ class manager {
                 'layerpreviewhtml' => $layerpreviewhtml,
                 'haslayersummary' => !empty($layersummary),
                 'layersummaryitems' => $layersummary,
+                'haslayerdetailscontent' => $haslayerdetailscontent,
+                'haslayerdetailsplaceholder' => $haslayerdetailsplaceholder,
+                'layerdetailsplaceholder' => get_string('layerdetailsplaceholder', 'local_course_banner_builder'),
                 'hasbordersummary' => !empty($bordersummary),
                 'bordersummarytitle' => get_string('bordertitle', 'local_course_banner_builder'),
                 'bordersummaryitems' => $bordersummary,
@@ -7805,6 +7801,7 @@ class manager {
                 'overlaysummarytitle' => get_string('overlaytitle', 'local_course_banner_builder'),
                 'overlaysummaryitems' => $overlaysummary,
                 'haslayerinfodisclosure' => $haslayerinfodisclosure,
+                'haslayerdetailshelp' => $haslayerdetailscontent,
                 'editlabel' => $isborderlayer
                     ? get_string('editborderlayer', 'local_course_banner_builder')
                     : ($isoverlaylayer
@@ -8855,7 +8852,8 @@ class manager {
      * @return array
      */
     protected static function export_layer_display_summary(\stdClass $record): array {
-        if (!self::get_banner_image_file($record)) {
+        $file = self::get_banner_image_file($record);
+        if (!$file) {
             return [];
         }
 
@@ -8874,6 +8872,16 @@ class manager {
                 'label' => get_string('customsizesummary', 'local_course_banner_builder'),
                 'value' => $sizevalue,
             ];
+        } else {
+            $imageinfo = $file->get_imageinfo();
+            $imagewidth = (int)($imageinfo['width'] ?? 0);
+            $imageheight = (int)($imageinfo['height'] ?? 0);
+            if ($imagewidth > 0 && $imageheight > 0) {
+                $items[] = [
+                    'label' => get_string('originalsizesummary', 'local_course_banner_builder'),
+                    'value' => $imagewidth . ' × ' . $imageheight . ' px',
+                ];
+            }
         }
 
         $offsets = [];

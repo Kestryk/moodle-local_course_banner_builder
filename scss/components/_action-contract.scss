@@ -148,6 +148,12 @@
     }
 }
 
+.local-course-banner-builder-layer-details-empty-state {
+    @include easyedu.inline-empty-state;
+
+    font-size: 0.78rem;
+}
+
 .local-course-banner-builder-admin--native .local-course-banner-builder-layer-details-help {
     position: absolute;
     top: 0.52rem;

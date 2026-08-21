@@ -392,6 +392,7 @@
                                         <span>{{#str}}fitoverride, local_course_banner_builder{{/str}}</span>
                                     </summary>
                                     <div class="local-course-banner-builder-layer-details-accordion-content">
+                                        {{#haslayerdetailscontent}}
                                         {{#haslayersummary}}
                                             <div class="local-course-banner-builder-border-summary">
                                                 <dl class="local-course-banner-builder-border-summary-list">
@@ -430,8 +431,15 @@
                                                 </dl>
                                             </div>
                                         {{/hasoverlaysummary}}
+                                        {{/haslayerdetailscontent}}
+                                        {{#haslayerdetailsplaceholder}}
+                                            <p class="local-course-banner-builder-layer-details-empty-state mb-0">
+                                                {{layerdetailsplaceholder}}
+                                            </p>
+                                        {{/haslayerdetailsplaceholder}}
                                     </div>
                                     </details>
+                                    {{#haslayerdetailshelp}}
                                     <button type="button"
                                         class="btn btn-link p-0 icon-no-margin local-course-banner-builder-table-help-icon local-course-banner-builder-layer-details-help"
                                         data-local-course-banner-builder-hover-popover="1"
@@ -441,6 +449,7 @@
                                         aria-label="{{#str}}layerinfoshelp, local_course_banner_builder{{/str}}">
                                         ?
                                     </button>
+                                    {{/haslayerdetailshelp}}
                                 </div>
                                 {{/haslayerinfodisclosure}}
                             </td>

@@ -17397,6 +17397,23 @@ span[data-flexitour=container].orphan .modal-dialog {
   transform: rotate(225deg) translateY(-0.08rem);
 }
 
+.local-course-banner-builder-layer-details-empty-state {
+  align-items: center;
+  background: linear-gradient(180deg, var(--easyedu-empty-bg-start) 0%, var(--easyedu-empty-bg-end) 100%);
+  border: 1px dashed var(--easyedu-empty-border);
+  border-radius: 0.85rem;
+  color: var(--easyedu-text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  justify-content: center;
+  padding: 0.9rem 1rem;
+  text-align: center;
+  min-height: 3.2rem;
+  padding: 0.7rem 0.85rem;
+  font-size: 0.78rem;
+}
+
 .local-course-banner-builder-admin--native .local-course-banner-builder-layer-details-help {
   position: absolute;
   top: 0.52rem;
