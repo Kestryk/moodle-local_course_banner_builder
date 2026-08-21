@@ -2295,6 +2295,10 @@ JS;
         const buildLabelSize = function (percent) {
             const value = Math.max(25, Math.min(100, parseInt(percent || 100, 10)));
             const scale = value / 100 * getFormatSizeScale(format, 'label');
+            if (format === 'contentwide' || format === 'fullwidthtop') {
+                return 'clamp(' + (0.35 * scale).toFixed(3) + 'rem, ' +
+                    (0.807 * scale).toFixed(3) + 'vw, ' + (1.68 * scale).toFixed(3) + 'rem)';
+            }
             return 'clamp(' + (3.5 * scale).toFixed(3) + 'cqh, ' +
                 'min(' + (6.4 * scale).toFixed(3) + 'cqh, ' +
                 (0.82 * scale).toFixed(3) + 'cqw), ' +
