@@ -136,6 +136,7 @@ const rowEvidence = async page => page.evaluate(() => {
             '.local-course-banner-builder-thumb-status-badge',
         ].join(', ');
         const statusIndicators = Array.from(row.querySelectorAll(statusIndicatorSelector));
+        const layerDetailsDisclosure = row.querySelector('.local-course-banner-builder-layer-details-disclosure-shell');
         const layerGroupIndicatorCount = statusIndicators.filter(indicator => indicator.querySelector('.fa')?.classList
             .contains('fa-layer-group')).length;
         const statusIndicatorKinds = statusIndicators.map(indicator => Array.from(indicator.classList)
@@ -194,6 +195,8 @@ const rowEvidence = async page => page.evaluate(() => {
             keyboardPopoverIndicatorCount: sortOrderCell ? sortOrderCell.querySelectorAll(
                 '[role="button"][tabindex="0"][data-toggle="popover"]'
             ).length : 0,
+            hasLayerDetailsDisclosure: !!layerDetailsDisclosure,
+            hasLayerDetailsHelp: !!layerDetailsDisclosure?.querySelector('.local-course-banner-builder-layer-details-help'),
             overlayVisual: overlayVisual ? {
                 backgroundImage: getComputedStyle(overlayVisual).backgroundImage,
                 backgroundColor: getComputedStyle(overlayVisual).backgroundColor,
@@ -351,8 +354,8 @@ const assertHelpPopover = evidence => {
     expect(evidence.isCompactCentered).toBe(true);
 };
 
-const layerDetailsEvidence = async page => page.evaluate(() => {
-    const details = document.querySelector('.local-course-banner-builder-layer-details-accordion');
+const layerDetailsEvidence = async(page, selector = '.local-course-banner-builder-layer-details-accordion') => page.evaluate(selector => {
+    const details = document.querySelector(selector);
     const summary = details?.querySelector(':scope > summary');
     const shell = details?.closest('.local-course-banner-builder-layer-details-disclosure-shell');
     const help = shell?.querySelector(':scope > .local-course-banner-builder-layer-details-help');
@@ -371,7 +374,7 @@ const layerDetailsEvidence = async page => page.evaluate(() => {
         content: content ? {text: content.textContent.trim(), ...rect(content)} : null,
         metadata,
     };
-});
+}, selector);
 
 const assertLayerDetailsAccordion = evidence => {
     expect(evidence.exists).toBe(true);
@@ -500,19 +503,38 @@ const runCell = async(env, zoom, root) => {
         evidence.initial = await rowEvidence(page);
         assertNoOverflow(evidence.initial);
         assertActionAlignment(evidence.initial, 'Layer action list');
-        const layerDetails = page.locator('.local-course-banner-builder-layer-details-accordion').first();
+        const emptyLayer = tbody.locator(':scope > .local-course-banner-builder-layer-row').filter({
+            has: page.locator('input[name^="layername_inline["][value="CCB QA row two"]'),
+        });
+        await expect(emptyLayer).toHaveCount(1);
+        await expect(emptyLayer.locator('.local-course-banner-builder-layer-details-disclosure-shell')).toHaveCount(0);
+        await expect(emptyLayer.locator('.local-course-banner-builder-layer-details-help')).toHaveCount(0);
+        const populatedLayer = tbody.locator(':scope > .local-course-banner-builder-layer-row--dynamic').first();
+        await expect(populatedLayer).toHaveCount(1);
+        const layerDetails = populatedLayer.locator('.local-course-banner-builder-layer-details-accordion');
         await expect(layerDetails).toBeVisible();
         await expect(layerDetails).not.toHaveAttribute('open', '');
-        const layerDetailsShell = page.locator('.local-course-banner-builder-layer-details-disclosure-shell').first();
+        const layerDetailsShell = populatedLayer.locator('.local-course-banner-builder-layer-details-disclosure-shell');
         const helpTrigger = layerDetailsShell.locator(':scope > .local-course-banner-builder-layer-details-help');
         await expect(helpTrigger).toBeVisible();
         const layerDetailsSummary = layerDetails.locator(':scope > summary');
         await layerDetailsSummary.focus();
         await layerDetailsSummary.press('Enter');
         await expect(layerDetails).toHaveAttribute('open', '');
-        evidence.layerDetails = await layerDetailsEvidence(page);
+        evidence.layerDetails = await layerDetailsEvidence(
+            page,
+            '.local-course-banner-builder-layer-row--dynamic .local-course-banner-builder-layer-details-accordion'
+        );
         assertLayerDetailsAccordion(evidence.layerDetails);
         evidence.layerDetailsAfterOpen = await rowEvidence(page);
+        const emptyLayerEvidence = evidence.layerDetailsAfterOpen.rows.find(row => row.name === 'CCB QA row two');
+        expect(emptyLayerEvidence).toBeTruthy();
+        expect(emptyLayerEvidence.hasLayerDetailsDisclosure).toBe(false);
+        expect(emptyLayerEvidence.hasLayerDetailsHelp).toBe(false);
+        const populatedLayerEvidence = evidence.layerDetailsAfterOpen.rows.find(row => row.name === 'CCB QA row locked dynamic');
+        expect(populatedLayerEvidence).toBeTruthy();
+        expect(populatedLayerEvidence.hasLayerDetailsDisclosure).toBe(true);
+        expect(populatedLayerEvidence.hasLayerDetailsHelp).toBe(true);
         assertNoOverflow(evidence.layerDetailsAfterOpen);
         await captureCdp(page, context, path.join(cellRoot, 'layer-details-accordion-' + zoom + '.png'));
         await helpTrigger.focus();
