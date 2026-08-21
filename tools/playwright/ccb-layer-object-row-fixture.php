@@ -56,7 +56,7 @@ $createimage = static function(\stdClass $source, int $categoryid, string $name,
         'imagecenterfixed' => 0,
         'imageaboveoverlayenabled' => $aboveoverlay ? 1 : 0,
         'imagecropenabled' => 0,
-        'imageopacity' => 1,
+        'imageopacity' => 100,
         'bannerimage_filemanager' => $draftitemid,
         'multilayerdraftsettings' => '',
     ];
