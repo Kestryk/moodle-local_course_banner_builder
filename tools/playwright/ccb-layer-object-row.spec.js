@@ -568,7 +568,7 @@ const runCell = async(env, zoom, root) => {
             expect(row.typeIconInSelectionCell).toBe(true);
             expect(row.typeIconInIdentityRail).toBe(true);
             expect(row.typeIconInSortOrderCell).toBe(false);
-            expect(Number(row.imageTypeIcon?.opacity)).toBeGreaterThan(0);
+            expect(Number(row.imageTypeIcon?.opacity)).toBeGreaterThan(0.95);
             expect(row.statusIndicatorsInSortOrderCell).toBe(true);
             expect(row.statusIndicatorCursors).toEqual(row.statusIndicatorCursors.map(() => 'pointer'));
             expect(row.layerGroupIndicatorCount).toBeLessThanOrEqual(1);
@@ -640,7 +640,7 @@ const runCell = async(env, zoom, root) => {
         ))).toBeGreaterThan(0.95);
         await expect.poll(async() => Number(await firstImageIcon.evaluate(
             element => getComputedStyle(element).opacity
-        ))).toBeGreaterThan(0.95);
+        ))).toBeLessThan(0.05);
         evidence.hover = await rowEvidence(page);
         const hoveredRow = evidence.hover.rows.find(row => row.id === normalRows[0].id);
         expect(hoveredRow.cellBackground).not.toBe(idleBackground);
@@ -649,7 +649,7 @@ const runCell = async(env, zoom, root) => {
         );
         expect(hoveredRow.grip.rect.width).toBeGreaterThanOrEqual(15.9);
         expect(hoveredRow.grip.rect.height).toBeGreaterThanOrEqual(15.9);
-        expect(Number(hoveredRow.imageTypeIcon?.opacity || 0)).toBeGreaterThan(0.95);
+        expect(Number(hoveredRow.imageTypeIcon?.opacity || 0)).toBeLessThan(0.05);
 
         const focusControl = first.locator('input[name^="layername_inline["]').first();
         await focusControl.focus();
