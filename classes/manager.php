@@ -7656,6 +7656,7 @@ class manager {
             $bordersummary = self::export_border_summary($record);
             $overlaysummary = self::export_overlay_summary($record);
             $layersummary = self::export_layer_display_summary($record);
+            $haslayerinfodisclosure = !empty($layersummary) || !empty($bordersummary) || !empty($overlaysummary);
             $isborderlayer = self::is_border_only_layer($record);
             $isoverlaylayer = !empty($record->overlayenabled);
             $layerpreviewhtml = self::render_admin_layer_visual_preview($record);
@@ -7792,6 +7793,7 @@ class manager {
                 'hasoverlaysummary' => !empty($overlaysummary),
                 'overlaysummarytitle' => get_string('overlaytitle', 'local_course_banner_builder'),
                 'overlaysummaryitems' => $overlaysummary,
+                'haslayerinfodisclosure' => $haslayerinfodisclosure,
                 'editlabel' => $isborderlayer
                     ? get_string('editborderlayer', 'local_course_banner_builder')
                     : ($isoverlaylayer

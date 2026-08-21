@@ -385,6 +385,7 @@
                                 </label>
                             </td>
                             <td class="local-course-banner-builder-fit-override-cell {{fitoverridecellclass}}" {{#fitoverridecellstyle}}style="{{fitoverridecellstyle}}"{{/fitoverridecellstyle}}>
+                                {{#haslayerinfodisclosure}}
                                 <div class="local-course-banner-builder-layer-details-disclosure-shell">
                                     <details class="local-course-banner-builder-layer-details-accordion">
                                     <summary>
@@ -441,6 +442,7 @@
                                         ?
                                     </button>
                                 </div>
+                                {{/haslayerinfodisclosure}}
                             </td>
                             <td class="local-course-banner-builder-layer-render-cell">
                                 {{#haslayerpreviewhtml}}
