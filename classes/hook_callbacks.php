@@ -552,7 +552,8 @@ class hook_callbacks {
             '    position: absolute;',
             '    top: var(--local-course-banner-builder-slideshow-label-y, 10%);',
             '    left: var(--local-course-banner-builder-slideshow-label-x, 14%);',
-            '    transform: translate(var(--local-course-banner-builder-slideshow-label-translate-x, -50%), -50%);',
+            '    transform: translate(var(--local-course-banner-builder-slideshow-label-translate-x, -50%), -50%) ' .
+                'translateX(var(--local-course-banner-builder-slideshow-label-confinement-x, 0px));',
             '    display: flex;',
             '    align-items: center;',
             '    flex-direction: var(--local-course-banner-builder-slideshow-label-orientation, row);',
@@ -2218,6 +2219,34 @@ JS;
         return node;
     };
 
+    const constrainActiveLabels = function (root) {
+        const host = root.parentElement;
+        const active = root.querySelector('[data-slideshow-slide].is-active');
+        const labels = active ? active.querySelector('.local-course-banner-builder-slideshow-labels') : null;
+        if (!host || !labels) {
+            return;
+        }
+
+        const inset = 8;
+        labels.style.setProperty('--local-course-banner-builder-slideshow-label-confinement-x', '0px');
+        const hostRect = host.getBoundingClientRect();
+        const labelsRect = labels.getBoundingClientRect();
+        const minimumLeft = hostRect.left + inset;
+        const maximumRight = hostRect.right - inset;
+        let offset = 0;
+        if (labelsRect.left < minimumLeft) {
+            offset = minimumLeft - labelsRect.left;
+        } else if (labelsRect.right > maximumRight) {
+            offset = maximumRight - labelsRect.right;
+        }
+        if (offset) {
+            labels.style.setProperty(
+                '--local-course-banner-builder-slideshow-label-confinement-x',
+                offset.toFixed(2) + 'px'
+            );
+        }
+    };
+
     const activate = function (root, index, direction) {
         const slides = Array.prototype.slice.call(root.querySelectorAll('[data-slideshow-slide]'));
         const dots = Array.prototype.slice.call(root.querySelectorAll('[data-slideshow-dot]'));
@@ -2240,11 +2269,17 @@ JS;
         dots.forEach(function (dot, dotIndex) {
             dot.classList.toggle('is-active', dotIndex === next);
         });
+        window.requestAnimationFrame(function () {
+            constrainActiveLabels(root);
+        });
     };
 
     const buildSlideshow = function (target) {
         const old = target.querySelector(':scope > .local-course-banner-builder-slideshow');
         if (old) {
+            if (typeof old._localCourseBannerBuilderDestroy === 'function') {
+                old._localCourseBannerBuilderDestroy();
+            }
             old.remove();
         }
 
@@ -2622,6 +2657,25 @@ JS;
         target.removeAttribute('aria-hidden');
         target.appendChild(root);
         target.setAttribute(processedAttribute, context);
+
+        const scheduleLabelConfinement = function () {
+            window.requestAnimationFrame(function () {
+                constrainActiveLabels(root);
+            });
+        };
+        window.addEventListener('resize', scheduleLabelConfinement);
+        let labelResizeObserver = null;
+        if (typeof window.ResizeObserver === 'function') {
+            labelResizeObserver = new window.ResizeObserver(scheduleLabelConfinement);
+            labelResizeObserver.observe(target);
+        }
+        root._localCourseBannerBuilderDestroy = function () {
+            window.removeEventListener('resize', scheduleLabelConfinement);
+            if (labelResizeObserver) {
+                labelResizeObserver.disconnect();
+            }
+        };
+        scheduleLabelConfinement();
 
         let timer = null;
         const stop = function () {
