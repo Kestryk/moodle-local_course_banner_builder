@@ -557,7 +557,7 @@ const runCell = async(env, zoom, root) => {
         assertHelpPopover(evidence.sortOrderHelpPopover);
         await captureCdp(page, context, path.join(cellRoot, 'sort-order-help-popover-' + zoom + '.png'));
         const normalRows = evidence.initial.rows.filter(row => row.draggable);
-        const lockedRow = evidence.initial.rows.find(row => row.locked);
+        const lockedRow = evidence.initial.rows.find(row => row.name === 'CCB QA row locked dynamic');
         expect(normalRows).toHaveLength(2);
         normalRows.forEach(row => {
             expect(row.cursor).toBe('grab');
