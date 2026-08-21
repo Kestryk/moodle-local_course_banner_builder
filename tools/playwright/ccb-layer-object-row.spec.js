@@ -506,8 +506,10 @@ const runCell = async(env, zoom, root) => {
             has: page.locator('input[name^="layername_inline["][value="CCB QA row two"]'),
         });
         await expect(emptyLayer).toHaveCount(1);
-        await expect(emptyLayer.locator('.local-course-banner-builder-layer-details-disclosure-shell')).toHaveCount(0);
-        await expect(emptyLayer.locator('.local-course-banner-builder-layer-details-help')).toHaveCount(0);
+        await expect(emptyLayer.locator('.local-course-banner-builder-layer-details-disclosure-shell')).toHaveCount(1);
+        await expect(emptyLayer.locator('.local-course-banner-builder-layer-details-help')).toHaveCount(1);
+        await expect(emptyLayer.locator('.local-course-banner-builder-layer-details-accordion')).toContainText('Original size');
+        await expect(emptyLayer.locator('.local-course-banner-builder-layer-details-accordion')).toContainText('1200 × 300 px');
         const populatedLayer = tbody.locator(':scope > .local-course-banner-builder-layer-row--dynamic').first();
         await expect(populatedLayer).toHaveCount(1);
         const layerDetails = populatedLayer.locator('.local-course-banner-builder-layer-details-accordion');
@@ -528,8 +530,8 @@ const runCell = async(env, zoom, root) => {
         evidence.layerDetailsAfterOpen = await rowEvidence(page);
         const emptyLayerEvidence = evidence.layerDetailsAfterOpen.rows.find(row => row.name === 'CCB QA row two');
         expect(emptyLayerEvidence).toBeTruthy();
-        expect(emptyLayerEvidence.hasLayerDetailsDisclosure).toBe(false);
-        expect(emptyLayerEvidence.hasLayerDetailsHelp).toBe(false);
+        expect(emptyLayerEvidence.hasLayerDetailsDisclosure).toBe(true);
+        expect(emptyLayerEvidence.hasLayerDetailsHelp).toBe(true);
         expect(emptyLayerEvidence.fitOverrideCellBackground).toBe(emptyLayerEvidence.cellBackground);
         const populatedLayerEvidence = evidence.layerDetailsAfterOpen.rows.find(row => row.name === 'CCB QA row locked dynamic');
         expect(populatedLayerEvidence).toBeTruthy();
