@@ -1614,8 +1614,8 @@ function localCourseBannerBuilderSyncLayerSortOrders() {
             if (input) {
                 input.value = index;
             }
-            if (display) {
-                display.textContent = lockedOrder ? 'u2014' : index;
+            if (display && !lockedOrder) {
+                display.textContent = index;
             }
         });
     });
@@ -1686,8 +1686,8 @@ function localCourseBannerBuilderApplyLayerSortableOrderToSourcePreview(root, tb
         if (sortInput) {
             sortInput.value = String(index);
         }
-        if (display) {
-            display.textContent = lockedOrder ? 'u2014' : index;
+        if (display && !lockedOrder) {
+            display.textContent = index;
         }
         if (!layerId) {
             return;
