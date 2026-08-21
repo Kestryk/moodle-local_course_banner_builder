@@ -299,8 +299,7 @@ const sourceActionEvidence = async page => page.evaluate(() => {
     return {actionButtons};
 });
 
-const helpPopoverEvidence = async (page, selector = '.local-course-banner-builder-layer-details-help') => page.evaluate(selector => {
-    const trigger = document.querySelector(selector);
+const helpPopoverEvidence = async trigger => trigger.evaluate(trigger => {
     const popover = trigger?.getAttribute('aria-describedby') ?
         document.getElementById(trigger.getAttribute('aria-describedby')) : null;
     const arrow = popover?.querySelector(':scope > .popover-arrow');
@@ -333,7 +332,7 @@ const helpPopoverEvidence = async (page, selector = '.local-course-banner-builde
         isBodyPortal: popover?.parentElement === document.body,
         isCompactCentered: popover?.classList.contains('local-course-banner-builder-hover-popover--compact-centered') || false,
     };
-}, selector);
+});
 
 const assertHelpPopover = evidence => {
     expect(evidence.trigger).not.toBeNull();
@@ -542,7 +541,7 @@ const runCell = async(env, zoom, root) => {
         await expect.poll(async() => helpTrigger.getAttribute('aria-describedby')).not.toBeNull();
         const helpPopoverId = await helpTrigger.getAttribute('aria-describedby');
         await expect(page.locator('[id="' + helpPopoverId + '"]')).toBeVisible();
-        evidence.helpPopover = await helpPopoverEvidence(page);
+        evidence.helpPopover = await helpPopoverEvidence(helpTrigger);
         assertHelpPopover(evidence.helpPopover);
         await captureCdp(page, context, path.join(cellRoot, 'table-help-popover-' + zoom + '.png'));
         const sortOrderHelp = page.locator('.local-course-banner-builder-layer-heading-with-help .local-course-banner-builder-table-help-icon').first();
@@ -552,10 +551,7 @@ const runCell = async(env, zoom, root) => {
         await expect.poll(async() => sortOrderHelp.getAttribute('aria-describedby')).not.toBeNull();
         const sortOrderPopoverId = await sortOrderHelp.getAttribute('aria-describedby');
         await expect(page.locator('[id="' + sortOrderPopoverId + '"]')).toBeVisible();
-        evidence.sortOrderHelpPopover = await helpPopoverEvidence(
-            page,
-            '.local-course-banner-builder-layer-heading-with-help .local-course-banner-builder-table-help-icon'
-        );
+        evidence.sortOrderHelpPopover = await helpPopoverEvidence(sortOrderHelp);
         assertHelpPopover(evidence.sortOrderHelpPopover);
         await captureCdp(page, context, path.join(cellRoot, 'sort-order-help-popover-' + zoom + '.png'));
         const normalRows = evidence.initial.rows.filter(row => row.draggable);
