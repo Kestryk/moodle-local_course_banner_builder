@@ -8,6 +8,20 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0017 - 2026-08-20
+
+#### Fixed
+
+- Added intentional desktop and tablet separation between the banner preview
+  and its action rail. Narrow modal rails now reserve space after their last
+  control so Overlay settings can scroll clear of the persistent footer.
+
+#### Validation
+
+- Strengthened the focused modal-action-rail scenario to measure the desktop
+  rail gap and prove keyboard reachability of the first and final Overlay
+  controls, including the compact footer boundary.
+
 ### EED-CCB-2026-0027 - 2026-08-20
 
 #### Fixed

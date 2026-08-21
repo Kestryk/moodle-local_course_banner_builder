@@ -419,6 +419,21 @@ and profile cleanup. Its evidence is retained outside Git/Syncthing at
 
 ### Modal action rail lot - 2026-07-31
 
+### Rail spacing and Overlay reachability - 2026-08-20
+
+The CCB-only modal action rail leaves at least `0.75rem` between the preview
+top edge and its first action on desktop and tablet. In compact modals, the
+rail reserves footer clearance after its final control so normal modal-body
+scrolling can reveal all Overlay settings without placing the last control
+under the persistent footer.
+
+`ccb-layer-modal-action-rail.spec.js` must prove more than the native
+`details[open]` state: it checks the first and final visible Overlay controls,
+their keyboard focusability, the compact footer boundary after scrolling, and
+the desktop rail boundary after its own scroll. Its generated screenshots and
+JSON evidence remain external to Git and must be registered by the supervised
+runner.
+
 ### Modal runner output-drain recovery - 2026-08-04
 
 The local supervised runner starts asynchronous reads of both redirected Node
