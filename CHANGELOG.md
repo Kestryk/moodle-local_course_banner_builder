@@ -12,7 +12,7 @@ many small sections.
 
 #### Fixed
 
-- Hide the empty `Layer infos & overrides` disclosure and its `?` help when an image layer has no display, border or overlay summary. Populated layer summaries keep their existing content and keyboard-accessible help.
+- Hide the empty `Layer infos & overrides` disclosure and its `?` help when an image layer has no override or meaningful layer information. The guard now ignores technical default summary values while populated layer summaries keep their existing content and keyboard-accessible help.
 
 #### Validation
 

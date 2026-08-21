@@ -531,6 +531,7 @@ const runCell = async(env, zoom, root) => {
         expect(emptyLayerEvidence).toBeTruthy();
         expect(emptyLayerEvidence.hasLayerDetailsDisclosure).toBe(false);
         expect(emptyLayerEvidence.hasLayerDetailsHelp).toBe(false);
+        expect(emptyLayerEvidence.fitOverrideCellBackground).toBe(emptyLayerEvidence.cellBackground);
         const populatedLayerEvidence = evidence.layerDetailsAfterOpen.rows.find(row => row.name === 'CCB QA row locked dynamic');
         expect(populatedLayerEvidence).toBeTruthy();
         expect(populatedLayerEvidence.hasLayerDetailsDisclosure).toBe(true);
