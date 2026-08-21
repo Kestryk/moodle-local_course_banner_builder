@@ -7656,7 +7656,18 @@ class manager {
             $bordersummary = self::export_border_summary($record);
             $overlaysummary = self::export_overlay_summary($record);
             $layersummary = self::export_layer_display_summary($record);
-            $haslayerinfodisclosure = !empty($layersummary) || !empty($bordersummary) || !empty($overlaysummary);
+            $haslayerinfodisclosure = $fitoverride !== '' || !empty($bordersummary) || !empty($overlaysummary) ||
+                (!empty($record->dynamicimagesizeenabled)) || (!empty($record->imageaboveoverlayenabled)) ||
+                (!empty($record->imagebelowinheritedenabled)) || (!empty($record->imageaboveinheritedenabled)) ||
+                (!empty($record->imagecenterfixed)) || ((float)($record->imageopacity ?? 1) < 0.999) ||
+                (self::layer_uses_custom_fit_override($record) && (
+                    self::normalise_percentage((float)($record->customwidthpercent ?? 100)) !== 100.0 ||
+                    self::normalise_percentage((float)($record->customheightpercent ?? 100)) !== 100.0 ||
+                    self::normalise_percentage((float)($record->offsettoppercent ?? 0), -1000.0, 1000.0) > 0 ||
+                    self::normalise_percentage((float)($record->offsetrightpercent ?? 0), -1000.0, 1000.0) > 0 ||
+                    self::normalise_percentage((float)($record->offsetbottompercent ?? 0), -1000.0, 1000.0) > 0 ||
+                    self::normalise_percentage((float)($record->offsetleftpercent ?? 0), -1000.0, 1000.0) > 0
+                ));
             $isborderlayer = self::is_border_only_layer($record);
             $isoverlaylayer = !empty($record->overlayenabled);
             $layerpreviewhtml = self::render_admin_layer_visual_preview($record);
