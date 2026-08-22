@@ -32,6 +32,8 @@ module.exports = defineConfig({
     testDir: __dirname,
     testMatch: 'ccb-primary-accordion-parity.spec.js',
     outputDir: path.join(artifactRoot, 'playwright-output'),
+    // Covers Moodle login plus the initial CCB render before assertions.
+    timeout: 90 * 1000,
     workers: 1,
     retries: 0,
     use: {
