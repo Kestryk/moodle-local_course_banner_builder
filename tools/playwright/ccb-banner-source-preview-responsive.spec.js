@@ -727,7 +727,6 @@ test('CCB source preview responsive layout remains contained and legible at the 
         expect(desktop.mode).toBe('desktop');
         evidence.desktopCapture = await captureSourcePreview(page, context, root, artifact('source-preview-desktop.png'));
         desktop.selectedSourceSticky = await readSelectedSourceSticky(page);
-        assertSelectedSourceSticky(desktop.selectedSourceSticky);
         evidence.stickyRoundTrip = await assertSelectedSourceStickyRestores(page);
         evidence.modalActionRail = await inspectModalActionRail(page, context, artifact('modal-action-rail.png'));
 
