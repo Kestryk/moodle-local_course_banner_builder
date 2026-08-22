@@ -19,6 +19,7 @@
 define([], function() {
 
 const activeAnimations = new WeakMap();
+const activeElements = new Set();
 const reducedMotionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
 const durations = {fast: 100, normal: 160, slow: 220};
 const easing = 'cubic-bezier(0.22, 1, 0.36, 1)';
@@ -54,10 +55,30 @@ const cancel = element => {
         return;
     }
     activeAnimations.delete(element);
+    activeElements.delete(element);
     current.animation.cancel();
     if (current.cleanup) {
         current.cleanup(false);
     }
+};
+
+const finish = element => {
+    const current = element ? activeAnimations.get(element) : null;
+    if (!current) {
+        return false;
+    }
+    try {
+        current.animation.finish();
+        return true;
+    } catch (error) {
+        void error;
+        cancel(element);
+        return false;
+    }
+};
+
+const finishAll = () => {
+    Array.from(activeElements).forEach(finish);
 };
 
 const play = (element, keyframes, options, cleanup) => {
@@ -73,11 +94,13 @@ const play = (element, keyframes, options, cleanup) => {
     }, options));
     const record = {animation, cleanup};
     activeAnimations.set(element, record);
+    activeElements.add(element);
     return animation.finished.catch(() => undefined).then(() => {
         if (activeAnimations.get(element) !== record) {
             return false;
         }
         activeAnimations.delete(element);
+        activeElements.delete(element);
         cleanup(true);
         animation.cancel();
         return true;
@@ -307,12 +330,26 @@ const init = root => {
     }
 };
 
+if (reducedMotionQuery) {
+    const finishForReducedMotion = event => {
+        if (event.matches) {
+            finishAll();
+        }
+    };
+    if (reducedMotionQuery.addEventListener) {
+        reducedMotionQuery.addEventListener('change', finishForReducedMotion);
+    } else if (reducedMotionQuery.addListener) {
+        reducedMotionQuery.addListener(finishForReducedMotion);
+    }
+}
+
 return {
     cancel,
     collapse,
     enter,
     exit,
     expand,
+    finish,
     init,
     isEnabled,
     resize,
