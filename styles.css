@@ -12166,8 +12166,8 @@ span[data-flexitour=container].orphan .modal-dialog {
 }
 
 @media (min-width: 48.0625rem) {
-  .local-course-banner-builder-selected-source-sticky-holder--portal .local-course-banner-builder-sticky-deselect {
-    margin-right: var(--local-course-banner-builder-sticky-header-right-space, 0px);
+  .local-course-banner-builder-selected-source-sticky-holder--portal[data-sticky-state=stuck] .local-course-banner-builder-selected-source-sticky {
+    padding-inline-end: var(--local-course-banner-builder-sticky-header-right-space, 0px);
   }
   .local-course-banner-builder-selected-source-sticky-holder--portal[data-sticky-state=stuck] .local-course-banner-builder-sticky-deselect {
     margin-inline-end: 0;
