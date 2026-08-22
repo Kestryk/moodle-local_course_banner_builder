@@ -6012,6 +6012,12 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
     transition-duration: 0.01ms;
   }
 }
+@media (max-width: 48rem) {
+  .local-course-banner-builder-admin--native .local-course-banner-builder-section[data-primary-accordion] > summary {
+    align-items: center;
+    flex-direction: row;
+  }
+}
 .local-course-banner-builder-admin--native .local-course-banner-builder-summary,
 .local-course-banner-builder-admin--native .local-course-banner-builder-table-heading,
 .local-course-banner-builder-admin--native .local-course-banner-builder-section > .table-responsive,
