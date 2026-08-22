@@ -69,6 +69,29 @@ const inspectAccordion = async accordion => accordion.evaluate(details => {
     };
 });
 
+const inspectOptionsAccordion = async accordion => accordion.evaluate(details => {
+    const summary = details.querySelector(':scope > summary');
+    const title = summary?.querySelector(':scope > .local-course-banner-builder-options-panel-title');
+    const chevron = summary?.querySelector(':scope > .local-course-banner-builder-options-panel-chevron');
+    const rect = element => {
+        const box = element.getBoundingClientRect();
+        return {left: box.left, right: box.right};
+    };
+    const chevronStyle = chevron ? getComputedStyle(chevron) : null;
+    const chevronRect = chevron ? rect(chevron) : null;
+    const titleRect = title ? rect(title) : null;
+    return {
+        isDetails: details.tagName === 'DETAILS',
+        isOpen: details.open,
+        visibleChevronCount: chevron && chevronStyle.display !== 'none' ? 1 : 0,
+        chevronFontSize: chevronStyle?.fontSize || null,
+        chevronOrder: chevronStyle?.order || null,
+        chevronTransform: chevronStyle?.transform || null,
+        chevronTransition: chevronStyle?.transitionProperty || null,
+        chevronLeftOfTitle: Boolean(chevronRect && titleRect && chevronRect.right <= titleRect.left + 1),
+    };
+});
+
 const assertPrimarySurface = (surface, referenceSurface) => {
     expect(surface.isDetails).toBe(true);
     expect(surface.hasSummary).toBe(true);
@@ -84,6 +107,17 @@ const assertPrimarySurface = (surface, referenceSurface) => {
     expect(surface.primaryChevronFontSize).toBe('12.48px');
     expect(surface.primaryChevronTransform).not.toBe('none');
     expect(surface.primaryChevronTransition).toContain('transform');
+};
+
+const assertOptionsSurface = surface => {
+    expect(surface.isDetails).toBe(true);
+    expect(surface.isOpen).toBe(true);
+    expect(surface.visibleChevronCount).toBe(1);
+    expect(surface.chevronLeftOfTitle).toBe(true);
+    expect(surface.chevronOrder).toBe('-1');
+    expect(surface.chevronFontSize).toBe('12.48px');
+    expect(surface.chevronTransform).not.toBe('none');
+    expect(surface.chevronTransition).toContain('transform');
 };
 
 const assertNativeSummaryToggles = async(page, accordion) => {
@@ -133,11 +167,13 @@ test('CCB primary accordions keep parity, left chevrons and native disclosure st
     await reference.evaluate(details => {
         details.open = true;
     });
-    const [referenceSurface, selectedSurface, configuredSurface] = await Promise.all([
+    const [referenceSurface, optionsSurface, selectedSurface, configuredSurface] = await Promise.all([
         inspectAccordion(reference),
+        inspectOptionsAccordion(reference),
         inspectAccordion(selected),
         inspectAccordion(configured),
     ]);
+    assertOptionsSurface(optionsSurface);
     assertPrimarySurface(selectedSurface, referenceSurface);
     assertPrimarySurface(configuredSurface, referenceSurface);
     expect(selectedSurface.settingsHeight).toBeGreaterThanOrEqual(24);
@@ -149,10 +185,14 @@ test('CCB primary accordions keep parity, left chevrons and native disclosure st
     await assertNativeSummaryToggles(page, configured);
 
     await page.setViewportSize({width: 390, height: 844});
-    const [mobileSelected, mobileConfigured] = await Promise.all([
+    const [mobileOptions, mobileSelected, mobileConfigured] = await Promise.all([
+        inspectOptionsAccordion(reference),
         inspectAccordion(selected),
         inspectAccordion(configured),
     ]);
+    expect(mobileOptions.visibleChevronCount).toBe(1);
+    expect(mobileOptions.chevronLeftOfTitle).toBe(true);
+    expect(mobileOptions.chevronTransition).toContain('transform');
     for (const surface of [mobileSelected, mobileConfigured]) {
         expect(surface.visiblePrimaryChevronCount).toBe(1);
         expect(surface.primaryChevronLeftOfTitle).toBe(true);

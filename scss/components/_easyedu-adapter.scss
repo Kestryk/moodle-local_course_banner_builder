@@ -369,7 +369,7 @@
         cursor: pointer;
         display: flex;
         gap: 0.65rem;
-        justify-content: space-between;
+        justify-content: flex-start;
         list-style: none;
         min-height: 3.2rem;
         padding: 0.76rem 0.95rem;
@@ -389,11 +389,21 @@
 
     .local-course-banner-builder-options-panel-title {
         @include easyedu.type-section-title;
+
+        flex: 1 1 auto;
+        min-width: 0;
+        order: 0;
     }
 
     .local-course-banner-builder-options-panel-chevron {
+        align-items: center;
         color: var(--easyedu-text-muted);
+        display: inline-flex;
+        flex: 0 0 auto;
         font-size: 0.78rem;
+        justify-content: center;
+        order: -1;
+        transform: rotate(0deg);
         transition: color 180ms ease, transform 180ms ease;
     }
 
