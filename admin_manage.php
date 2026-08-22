@@ -4320,7 +4320,11 @@ if ($selectedsource) {
             'local_course_banner_builder'
         );
     }
-    echo html_writer::start_tag('details', ['class' => 'local-course-banner-builder-section mb-4', 'open' => 'open']);
+    echo html_writer::start_tag('details', [
+        'class' => 'local-course-banner-builder-section mb-4',
+        'data-primary-accordion' => 'selected-source',
+        'open' => 'open',
+    ]);
     echo html_writer::tag(
         'summary',
         html_writer::span(
@@ -4359,7 +4363,11 @@ if ($selectedsource) {
                     'data-bs-toggle' => 'modal',
                     'data-bs-target' => '#local-course-banner-builder-source-settings-modal',
                 ]
-        ),
+            ) .
+            html_writer::tag('i', '', [
+                'class' => 'fa fa-chevron-down local-course-banner-builder-primary-accordion-chevron',
+                'aria-hidden' => 'true',
+            ]),
         ['class' => 'local-course-banner-builder-section-summary local-course-banner-builder-section-summary-actions']
     );
     echo $OUTPUT->render_from_template(
@@ -4372,6 +4380,7 @@ if ($selectedsource) {
 if (!$issitebanneradmin) {
     echo html_writer::start_tag('details', [
         'class' => 'local-course-banner-builder-section mb-4',
+        'data-primary-accordion' => 'configured-sources',
         'open' => 'open',
     ]);
     echo html_writer::tag(
@@ -4397,7 +4406,11 @@ if (!$issitebanneradmin) {
                 'class' => 'local-course-banner-builder-section-title-text',
             ]),
             'local-course-banner-builder-section-heading'
-        )
+        ) .
+            html_writer::tag('i', '', [
+                'class' => 'fa fa-chevron-down local-course-banner-builder-primary-accordion-chevron',
+                'aria-hidden' => 'true',
+            ])
     );
     echo $OUTPUT->render_from_template(
         'local_course_banner_builder/admin_manage',

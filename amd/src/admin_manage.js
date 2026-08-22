@@ -18567,6 +18567,36 @@ function localCourseBannerBuilderDeleteSelectedLayers(button) {
 
 var localCourseBannerBuilderAccordionSequence = 0;
 
+function localCourseBannerBuilderFinishActiveAccordions(scope) {
+    Array.prototype.slice.call((scope || document).querySelectorAll([
+        'details.local-course-banner-builder-upload-accordion',
+        'details.local-course-banner-builder-advanced-accordion',
+        'details.local-course-banner-builder-section'
+    ].join(','))).forEach(function(details) {
+        if (details.dataset.accordionMotionActive !== '1') {
+            return;
+        }
+        var content = details.querySelector(':scope > .local-course-banner-builder-accordion-content');
+        if (content) {
+            Motion.finish(content);
+        }
+    });
+}
+
+function localCourseBannerBuilderSetAccordionSettledState(details, summary, content, opening) {
+    if (opening) {
+        details.setAttribute('open', 'open');
+        content.hidden = false;
+    } else {
+        details.removeAttribute('open');
+        content.hidden = true;
+    }
+    summary.setAttribute('aria-expanded', opening ? 'true' : 'false');
+    delete details.dataset.accordionMotionActive;
+    delete details.dataset.accordionTargetOpen;
+    delete details.dataset.accordionTransitionId;
+}
+
 function localCourseBannerBuilderEnhanceAccordions(root) {
     Array.prototype.slice.call((root || document).querySelectorAll([
         'details.local-course-banner-builder-upload-accordion',
@@ -18618,11 +18648,13 @@ function localCourseBannerBuilderEnhanceAccordions(root) {
         if (!details.dataset.chevronBound) {
             details.addEventListener('toggle', function () {
                 var toggleIcon = summary.querySelector('[data-accordion-chevron="1"], [data-local-details-toggle-icon="1"], .icons-collapse-expand');
+                var targetOpen = details.dataset.accordionTargetOpen;
+                var isExpanded = targetOpen === undefined ? details.hasAttribute('open') : targetOpen === '1';
                 if (toggleIcon) {
                     toggleIcon.style.removeProperty('transform');
-                    toggleIcon.classList.toggle('collapsed', !details.hasAttribute('open'));
+                    toggleIcon.classList.toggle('collapsed', !isExpanded);
                 }
-                summary.setAttribute('aria-expanded', details.hasAttribute('open') ? 'true' : 'false');
+                summary.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
                 if (!details.dataset.accordionMotionActive) {
                     content.hidden = !details.hasAttribute('open');
                 }
@@ -18632,23 +18664,26 @@ function localCourseBannerBuilderEnhanceAccordions(root) {
         if (!details.dataset.accordionMotionBound) {
             summary.addEventListener('click', function (event) {
                 event.preventDefault();
-                var opening = !details.hasAttribute('open');
+                var targetOpen = details.dataset.accordionTargetOpen;
+                var opening = targetOpen === undefined ? !details.hasAttribute('open') : targetOpen !== '1';
+                var transitionId = String((parseInt(details.dataset.accordionTransitionId || '0', 10) || 0) + 1);
                 details.dataset.accordionMotionActive = '1';
+                details.dataset.accordionTargetOpen = opening ? '1' : '0';
+                details.dataset.accordionTransitionId = transitionId;
+                summary.setAttribute('aria-expanded', opening ? 'true' : 'false');
+                icon.classList.toggle('collapsed', !opening);
                 if (opening) {
                     details.setAttribute('open', 'open');
                     content.hidden = false;
                     Motion.expand(content).then(function () {
-                        delete details.dataset.accordionMotionActive;
-                        summary.setAttribute('aria-expanded', 'true');
+                        if (details.dataset.accordionTransitionId !== transitionId) { return; }
+                        localCourseBannerBuilderSetAccordionSettledState(details, summary, content, true);
                     });
                     return;
                 }
-                Motion.collapse(content).then(function (completed) {
-                    if (completed) {
-                        details.removeAttribute('open');
-                    }
-                    delete details.dataset.accordionMotionActive;
-                    summary.setAttribute('aria-expanded', details.hasAttribute('open') ? 'true' : 'false');
+                Motion.collapse(content).then(function () {
+                    if (details.dataset.accordionTransitionId !== transitionId) { return; }
+                    localCourseBannerBuilderSetAccordionSettledState(details, summary, content, false);
                 });
             });
             details.dataset.accordionMotionBound = '1';
@@ -19204,6 +19239,7 @@ localCourseBannerBuilderOnReady(function () {
     });
     if (!document.documentElement.dataset.localCourseBannerBuilderFilmstripResizeBound) {
         window.addEventListener('resize', function () {
+            localCourseBannerBuilderFinishActiveAccordions(document);
             Array.prototype.slice.call(document.querySelectorAll('[data-source-preview-filmstrip="1"]')).forEach(function (filmstrip) {
                 localCourseBannerBuilderUpdateSourcePreviewFilmstripNav(filmstrip);
             });
