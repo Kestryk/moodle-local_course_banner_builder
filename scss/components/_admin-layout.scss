@@ -370,6 +370,14 @@ html[data-local-course-banner-builder-sticky-runtime="1"]
     top: auto;
 }
 
+// The AMD controller already exposes inline versus portal-sticky state. Give
+// Deselect breathing room only in that explicit inline state; the floating
+// tray keeps its established edge-to-edge geometry unchanged.
+.local-course-banner-builder-selected-source-sticky-holder[data-sticky-state="inline"]
+    .local-course-banner-builder-sticky-deselect {
+    margin-inline-end: 0.5rem;
+}
+
 .local-course-banner-builder-selected-source-sticky-placeholder {
     display: block;
     width: 100%;

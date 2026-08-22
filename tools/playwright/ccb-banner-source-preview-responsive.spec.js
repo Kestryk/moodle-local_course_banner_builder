@@ -166,6 +166,7 @@ const readSelectedSourceSticky = async page => page.evaluate(() => {
         holderClassName: holder ? holder.className : null,
         holderInBody: Boolean(holder && holder.parentElement === document.body),
         holderPortal: Boolean(holder && holder.dataset.stickyPortal === '1'),
+        holderState: holder ? holder.dataset.stickyState || null : null,
         runtimePortalCode: Boolean(runtimeStickySync && runtimeStickySync.toString().includes('stickyPortal')),
         holderInlineTop: holder ? holder.style.top || null : null,
         holderComputedTop: holderStyle ? holderStyle.top : null,
@@ -177,6 +178,7 @@ const readSelectedSourceSticky = async page => page.evaluate(() => {
             .filter(name => /admin_manage(?:\.min)?\.js|requirejs\.php/i.test(name)),
         leadingRect,
         deselectRect,
+        deselectMarginInlineEnd: deselect ? getComputedStyle(deselect).marginInlineEnd : null,
         fillsViewportWidth: Math.abs(stickyRect.left) <= 1 && Math.abs(stickyRect.right - documentWidth) <= 1,
         belowMoodleNavigation: Math.abs(stickyRect.top - navbarBottom) <= 1,
         leadingTextAlign: leading ? getComputedStyle(leading).textAlign : null,
@@ -445,7 +447,9 @@ const assertSelectedSourceSticky = sticky => {
     }
     expect(sticky.holderInBody).toBe(true);
     expect(sticky.holderPortal).toBe(true);
+    expect(sticky.holderState).toBe('stuck');
     expect(sticky.holderPosition).toBe('fixed');
+    expect(Number.parseFloat(sticky.deselectMarginInlineEnd)).toBe(0);
     expect(sticky.fillsViewportWidth).toBe(true);
     expect(sticky.belowMoodleNavigation).toBe(true);
     expect(sticky.backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
@@ -608,19 +612,24 @@ const assertSelectedSourceStickyRestores = async page => {
     }, null, {timeout: 2000});
     const restored = await page.evaluate(() => {
         const holder = document.querySelector('.local-course-banner-builder-selected-source-sticky-holder');
+        const deselect = holder?.querySelector('.local-course-banner-builder-sticky-deselect');
         return {
             inBody: Boolean(holder && holder.parentElement === document.body),
             floating: Boolean(holder && holder.classList.contains('focus-navigation-buttons-holder--floating')),
             portal: Boolean(holder && holder.dataset.stickyPortal === '1'),
+            state: holder ? holder.dataset.stickyState || null : null,
             placeholderPresent: Boolean(document.getElementById('local-course-banner-builder-selected-source-sticky-placeholder')),
             position: holder ? getComputedStyle(holder).position : null,
+            deselectMarginInlineEnd: deselect ? getComputedStyle(deselect).marginInlineEnd : null,
         };
     });
     expect(restored.inBody).toBe(false);
     expect(restored.floating).toBe(false);
     expect(restored.portal).toBe(false);
+    expect(restored.state).toBe('inline');
     expect(restored.placeholderPresent).toBe(false);
     expect(restored.position).not.toBe('fixed');
+    expect(Number.parseFloat(restored.deselectMarginInlineEnd)).toBeGreaterThan(0);
     return {oscillation, restored};
 };
 
