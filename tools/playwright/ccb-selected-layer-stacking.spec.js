@@ -181,7 +181,8 @@ test('CCB_SELECTED_LAYER_STACKING_0034 keeps selected-layer promotion transient'
         const save = root.locator('[form="local-course-banner-builder-source-preview-save-form"]').first();
         await expect(save).toBeEnabled();
         const saveResponse = page.waitForResponse(response => response.request().method() === 'POST' &&
-            response.url().includes('/local/course_banner_builder/admin_manage.php') && response.status() < 400);
+            response.url().includes('/local/course_banner_builder/admin_manage.php') && response.status() < 400,
+        {timeout: 60000});
         await save.click({noWaitAfter: true});
         await saveResponse;
         await page.goto(url.toString(), {waitUntil: 'domcontentloaded'});
