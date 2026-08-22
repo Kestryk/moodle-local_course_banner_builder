@@ -12169,6 +12169,9 @@ span[data-flexitour=container].orphan .modal-dialog {
   .local-course-banner-builder-selected-source-sticky-holder--portal .local-course-banner-builder-sticky-deselect {
     margin-right: var(--local-course-banner-builder-sticky-header-right-space, 0px);
   }
+  .local-course-banner-builder-selected-source-sticky-holder--portal[data-sticky-state=stuck] .local-course-banner-builder-sticky-deselect {
+    margin-inline-end: 0;
+  }
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-fit-override-cell .custom-select {
   width: 100%;
