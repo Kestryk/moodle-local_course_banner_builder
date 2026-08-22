@@ -8,6 +8,19 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0031-RF5 - 2026-08-22
+
+#### Changed
+
+- Moved the existing Course Banner options chevron before its title with the
+  same CCB-local flex ordering as Selected source and Configured sources. Its
+  native disclosure markup, state and transition remain unchanged.
+
+#### Validation
+
+- Extended `ccb-primary-accordion-parity` to prove Course Banner options'
+  left chevron at desktop and 390 px, alongside the existing primary headers.
+
 ### EED-CCB-2026-0031-RF4 - 2026-08-22
 
 #### Changed

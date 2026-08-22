@@ -14617,7 +14617,7 @@ span[data-flexitour=container].orphan .modal-dialog {
   cursor: pointer;
   display: flex;
   gap: 0.65rem;
-  justify-content: space-between;
+  justify-content: flex-start;
   list-style: none;
   min-height: 3.2rem;
   padding: 0.76rem 0.95rem;
@@ -14639,10 +14639,19 @@ span[data-flexitour=container].orphan .modal-dialog {
   font-size: var(--easyedu-font-size-section-title);
   font-weight: var(--easyedu-font-weight-semibold);
   line-height: var(--easyedu-line-height-title);
+  flex: 1 1 auto;
+  min-width: 0;
+  order: 0;
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-options-panel-chevron {
+  align-items: center;
   color: var(--easyedu-text-muted);
+  display: inline-flex;
+  flex: 0 0 auto;
   font-size: 0.78rem;
+  justify-content: center;
+  order: -1;
+  transform: rotate(0deg);
   transition: color 180ms ease, transform 180ms ease;
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-options-panel[open] .local-course-banner-builder-options-panel-summary {
