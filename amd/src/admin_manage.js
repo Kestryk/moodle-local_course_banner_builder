@@ -765,7 +765,7 @@ document.addEventListener('click', function (e) {
 
     var sourcePreviewRoot = e.target.closest('[data-source-visual-editor="1"]');
     if (sourcePreviewRoot && !localCourseBannerBuilderIsSourcePreviewReadonly(sourcePreviewRoot)) {
-        if (Date.now() < localCourseBannerBuilderSuppressSourcePreviewClickUntil) {
+        if (localCourseBannerBuilderShouldSuppressSourcePreviewClick(sourcePreviewRoot, e)) {
             e.preventDefault();
             e.stopPropagation();
             return;
@@ -12518,6 +12518,17 @@ function localCourseBannerBuilderSuppressNextSourcePreviewClick() {
     localCourseBannerBuilderSuppressSourcePreviewClickUntil = Date.now() + 500;
 }
 
+function localCourseBannerBuilderShouldSuppressSourcePreviewClick(root, event) {
+    if (!root || Date.now() >= localCourseBannerBuilderSuppressSourcePreviewClickUntil ||
+            !event || !event.target || !event.target.closest) {
+        return false;
+    }
+    var surface = event.target.closest(
+        '[data-source-preview-frame="1"], [data-source-preview-layer="1"], [data-preview-resize-handle="1"]'
+    );
+    return !!surface && root.contains(surface);
+}
+
 function localCourseBannerBuilderGetSourcePreviewLayerState(layer) {
     if (!layer) {
         return null;
@@ -13798,7 +13809,7 @@ function localCourseBannerBuilderInitSourceVisualEditor(scope) {
                 if (localCourseBannerBuilderIsSourcePreviewReadonly(root)) {
                     return;
                 }
-                if (Date.now() < localCourseBannerBuilderSuppressSourcePreviewClickUntil) {
+                if (localCourseBannerBuilderShouldSuppressSourcePreviewClick(root, event)) {
                     event.preventDefault();
                     event.stopPropagation();
                     return;
@@ -18567,6 +18578,51 @@ function localCourseBannerBuilderDeleteSelectedLayers(button) {
 
 var localCourseBannerBuilderAccordionSequence = 0;
 
+/**
+ * Finish every active CCB accordion within a scope before its layout changes.
+ *
+ * @param {HTMLElement|Document} scope Accordion scope.
+ * @returns {void}
+ */
+function localCourseBannerBuilderFinishActiveAccordions(scope) {
+    Array.prototype.slice.call((scope || document).querySelectorAll([
+        'details.local-course-banner-builder-upload-accordion',
+        'details.local-course-banner-builder-advanced-accordion',
+        'details.local-course-banner-builder-section'
+    ].join(','))).forEach(function(details) {
+        if (details.dataset.accordionMotionActive !== '1') {
+            return;
+        }
+        var content = details.querySelector(':scope > .local-course-banner-builder-accordion-content');
+        if (content) {
+            Motion.finish(content);
+        }
+    });
+}
+
+/**
+ * Apply the final native and ARIA state for the latest accordion intent.
+ *
+ * @param {HTMLDetailsElement} details Accordion disclosure.
+ * @param {HTMLElement} summary Accordion trigger.
+ * @param {HTMLElement} content Accordion content wrapper.
+ * @param {boolean} opening Whether the final state is open.
+ * @returns {void}
+ */
+function localCourseBannerBuilderSetAccordionSettledState(details, summary, content, opening) {
+    if (opening) {
+        details.setAttribute('open', 'open');
+        content.hidden = false;
+    } else {
+        details.removeAttribute('open');
+        content.hidden = true;
+    }
+    summary.setAttribute('aria-expanded', opening ? 'true' : 'false');
+    delete details.dataset.accordionMotionActive;
+    delete details.dataset.accordionTargetOpen;
+    delete details.dataset.accordionTransitionId;
+}
+
 function localCourseBannerBuilderEnhanceAccordions(root) {
     Array.prototype.slice.call((root || document).querySelectorAll([
         'details.local-course-banner-builder-upload-accordion',
@@ -18618,11 +18674,13 @@ function localCourseBannerBuilderEnhanceAccordions(root) {
         if (!details.dataset.chevronBound) {
             details.addEventListener('toggle', function () {
                 var toggleIcon = summary.querySelector('[data-accordion-chevron="1"], [data-local-details-toggle-icon="1"], .icons-collapse-expand');
+                var targetOpen = details.dataset.accordionTargetOpen;
+                var isExpanded = targetOpen === undefined ? details.hasAttribute('open') : targetOpen === '1';
                 if (toggleIcon) {
                     toggleIcon.style.removeProperty('transform');
-                    toggleIcon.classList.toggle('collapsed', !details.hasAttribute('open'));
+                    toggleIcon.classList.toggle('collapsed', !isExpanded);
                 }
-                summary.setAttribute('aria-expanded', details.hasAttribute('open') ? 'true' : 'false');
+                summary.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
                 if (!details.dataset.accordionMotionActive) {
                     content.hidden = !details.hasAttribute('open');
                 }
@@ -18632,23 +18690,30 @@ function localCourseBannerBuilderEnhanceAccordions(root) {
         if (!details.dataset.accordionMotionBound) {
             summary.addEventListener('click', function (event) {
                 event.preventDefault();
-                var opening = !details.hasAttribute('open');
+                var targetOpen = details.dataset.accordionTargetOpen;
+                var opening = targetOpen === undefined ? !details.hasAttribute('open') : targetOpen !== '1';
+                var transitionId = String((parseInt(details.dataset.accordionTransitionId || '0', 10) || 0) + 1);
                 details.dataset.accordionMotionActive = '1';
+                details.dataset.accordionTargetOpen = opening ? '1' : '0';
+                details.dataset.accordionTransitionId = transitionId;
+                summary.setAttribute('aria-expanded', opening ? 'true' : 'false');
+                icon.classList.toggle('collapsed', !opening);
                 if (opening) {
                     details.setAttribute('open', 'open');
                     content.hidden = false;
                     Motion.expand(content).then(function () {
-                        delete details.dataset.accordionMotionActive;
-                        summary.setAttribute('aria-expanded', 'true');
+                        if (details.dataset.accordionTransitionId !== transitionId) {
+                            return;
+                        }
+                        localCourseBannerBuilderSetAccordionSettledState(details, summary, content, true);
                     });
                     return;
                 }
-                Motion.collapse(content).then(function (completed) {
-                    if (completed) {
-                        details.removeAttribute('open');
+                Motion.collapse(content).then(function () {
+                    if (details.dataset.accordionTransitionId !== transitionId) {
+                        return;
                     }
-                    delete details.dataset.accordionMotionActive;
-                    summary.setAttribute('aria-expanded', details.hasAttribute('open') ? 'true' : 'false');
+                    localCourseBannerBuilderSetAccordionSettledState(details, summary, content, false);
                 });
             });
             details.dataset.accordionMotionBound = '1';
@@ -19204,6 +19269,7 @@ localCourseBannerBuilderOnReady(function () {
     });
     if (!document.documentElement.dataset.localCourseBannerBuilderFilmstripResizeBound) {
         window.addEventListener('resize', function () {
+            localCourseBannerBuilderFinishActiveAccordions(document);
             Array.prototype.slice.call(document.querySelectorAll('[data-source-preview-filmstrip="1"]')).forEach(function (filmstrip) {
                 localCourseBannerBuilderUpdateSourcePreviewFilmstripNav(filmstrip);
             });
