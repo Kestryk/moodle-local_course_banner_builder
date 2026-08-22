@@ -6004,6 +6004,7 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 
 .local-course-banner-builder-admin--native .local-course-banner-builder-settings-action .fa {
   margin-right: 0.45rem !important;
+  padding-block: 0 !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
