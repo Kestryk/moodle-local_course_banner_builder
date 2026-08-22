@@ -8,6 +8,26 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-WAVE-II - 2026-08-23
+
+#### Changed
+
+- Integrated `EED-CCB-2026-0020`: Save preview changes now refreshes the
+  selected-source fragment without reloading the Site or Course page, while
+  preserving the existing POST, sesskey, server authority, confirmation,
+  loading, toast and focus-return contracts shared with layer deletion.
+- Integrated `EED-CCB-2026-0023`: the image modal now uses one scoped-field
+  transaction for Fit, Fill, selection, drag and resize. Crop/recrop,
+  undo/redo, Slideshow and the image-options accordion remain unchanged.
+
+#### Validation
+
+- Added focused static contracts and the supervised single-scenario source for
+  general preview asynchronous actions; runtime execution remains separately
+  authorised.
+- Extended IMG-06 static coverage for the modal transaction, deferred draft
+  serialization and coalesced file-manager refreshes.
+
 ### EED-CCB-2026-0031-RF5 - 2026-08-22
 
 #### Changed

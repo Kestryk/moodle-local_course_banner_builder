@@ -864,6 +864,7 @@ $string['tour:transfer:strategy:title'] = 'Empfohlener Arbeitsablauf';
 $string['transferconfig'] = 'Transfer';
 $string['unabletodeletealllayers'] = 'Es kÃ¶nnen nicht alle Ebenen gelÃ¶scht werden';
 $string['unabletodeleteselectedlayer'] = 'Die ausgewÃ¤hlte Ebene kann nicht gelÃ¶scht werden';
+$string['unabletosavepreviewchanges'] = 'VorschauÃ¤nderungen kÃ¶nnen nicht gespeichert werden';
 $string['unabletoloadlayerform'] = 'Das Ebenenformular kann nicht geladen werden';
 $string['unabletoloadsourcepreview'] = 'Quellvorschau kann nicht geladen werden';
 $string['undopreviewchange'] = 'RÃ¼ckgÃ¤ngig machen';
