@@ -11,8 +11,10 @@ $form = Get-Content -LiteralPath (Join-Path $pluginRoot 'classes\form\manage_ban
 $checks = [ordered]@{
     'New drafts start at original image geometry' =
         ($source -match "(?s)function localCourseBannerBuilderGetDefaultDraftPreviewState\(file\).*?fitmodeoverride:\s*'original'");
-    'Fit applies proportional preview geometry and saves the draft' =
-        ($source -match "(?s)function localCourseBannerBuilderApplyFitToLayerFormPreview\(form\).*?fitOverride\.value\s*=\s*'cover'.*?anchorInput\.value\s*=\s*'center'.*?widthInput\.value\s*=\s*'100'.*?heightInput\.value\s*=\s*'100'.*?keepAspectInput\.checked\s*=\s*true.*?localCourseBannerBuilderSaveActiveDraftPreviewState\(form\)");
+    'Modal image controls resolve the scoped id before the canonical field name' =
+        ($source -match "(?s)function localCourseBannerBuilderGetLayerFormControl\(form, id, name\).*?form\.querySelector\('#' \+ id\).*?return byId \|\| \(name \? form\.querySelector");
+    'Fit applies proportional preview geometry through the modal transaction' =
+        ($source -match "(?s)function localCourseBannerBuilderApplyFitToLayerFormPreview\(form\).*?fitmodeoverride:\s*'cover'.*?positionanchor:\s*'center'.*?customwidthpercent:\s*100.*?customheightpercent:\s*100.*?customsizekeepaspect:\s*true.*?localCourseBannerBuilderCommitModalImagePreviewState\(");
     'Fit action has a local modal event route through history' =
         ($source -match '(?s)var fitLayerPreviewButton = localCourseBannerBuilderCreatePreviewIconButton\(.*?local-course-banner-builder-fit-layer-preview-image.*?fitLayerPreviewButton\.addEventListener\(''click''.*?event\.stopPropagation\(\).*?localCourseBannerBuilderPushModalPreviewHistoryFromControl\(fitLayerPreviewButton\).*?localCourseBannerBuilderFitSelectedLayerPreviewImageToFrame\(fitLayerPreviewButton\).*?modalPreviewFitBound');
     'Preview exposes corner and edge resize handles' =
@@ -23,17 +25,13 @@ $checks = [ordered]@{
         ($source -match '(?s)function localCourseBannerBuilderGetPreviewGuideTargets\(.*?!localCourseBannerBuilderIsDraftSelectionVisualTwin\(activeLayer, node\)'));
     'Aspect-locked vertical and corner resize use their moved axis' =
         ($source -match "(?s)function localCourseBannerBuilderConstrainPreviewResizeAspect\(state, widthPercent, heightPercent, deltaX, deltaY\).*?verticalEdge.*?cornerFollowsHeight.*?useHeight.*?localCourseBannerBuilderClampPreviewSize");
-    'Fit commits and renders the active draft once' =
-        ($source -match '(?s)function localCourseBannerBuilderApplyFitToLayerFormPreview\(form\).*?localCourseBannerBuilderSaveActiveDraftPreviewState\(form\).*?activeDraftIndex.*?localCourseBannerBuilderRenderDraftUploadPreview\(form\)');
-    'Create Fit writes the active draft state directly' =
-        ($source -match '(?s)function localCourseBannerBuilderApplyFitToLayerFormPreview\(form\).*?isCreateDraft.*?draftSettings\[activeDraftIndex\]\s*=\s*Object\.assign\(.*?fitmodeoverride:\s*''cover''.*?positionanchor:\s*''center''.*?imagecropenabled:\s*false.*?localCourseBannerBuilderSetDraftPreviewSettings\(form, draftSettings\).*?localCourseBannerBuilderApplyLayerFormPreviewState\(form, draftSettings\[activeDraftIndex\]\).*?localCourseBannerBuilderRenderDraftUploadPreview\(form\).*?return;');
+    'Fit and Fill share one modal image-state transaction' =
+        (($source -match '(?s)function localCourseBannerBuilderApplyFitToLayerFormPreview\(form\).*?localCourseBannerBuilderCommitModalImagePreviewState\(') -and
+        ($source -match '(?s)function localCourseBannerBuilderApplyFillBannerToLayerFormPreview\(form\).*?localCourseBannerBuilderCommitModalImagePreviewState\('));
+    'The transaction writes fields then draft JSON then mirrors' =
+        ($source -match '(?s)function localCourseBannerBuilderCommitModalImagePreviewState\(form, patch, options\).*?localCourseBannerBuilderApplyLayerFormPreviewState\(form, nextState, \{deferDom: true\}\).*?localCourseBannerBuilderWriteActiveDraftPreviewState\(form, nextState\).*?localCourseBannerBuilderSyncCurrentLayerDataFromForm\(form\).*?localCourseBannerBuilderSyncStandalonePreviewLayer');
     'Create draft handles use the dedicated resize state' =
         ($source -match '(?s)function localCourseBannerBuilderHandleLayerModalPreviewPointerDown\(form, event\).*?if \(resizeHandle\).*?data-preview-draft-selection-overlay.*?localCourseBannerBuilderStartModalResizeInteraction\(event, resizeHandle\).*?return true;.*?localCourseBannerBuilderStartPreviewInteraction');
-    'Create Fit and resize resolve Moodle hidden fields by scoped name' =
-        (([regex]::Matches(
-            $source,
-            'form\.querySelector\(''#id_fitmodeoverride, \[name="fitmodeoverride"\]''\)'
-        ).Count -ge 4));
     'Generic preview sync avoids redundant pre-render draft serialization' =
         -not ($source -match '(?s)function localCourseBannerBuilderSyncLayerBannerPreview\(scope\).*?previewUserChanged === ''1''.*?localCourseBannerBuilderSaveActiveDraftPreviewState\(layerScope\).*?localCourseBannerBuilderSyncDraftUploadPreview\(layerScope\)');
     'Live pointer frames synchronize sliders once and defer chrome measurement' =
@@ -50,10 +48,13 @@ $checks = [ordered]@{
         (($source -match '(?s)function localCourseBannerBuilderPrepareModalCustomSizeInput\(scope\).*?localCourseBannerBuilderEnsurePreviewCustomMode\(form, layer, frame\)') -and
         ($source -match '(?s)function localCourseBannerBuilderSyncCustomSizeFields\(scope\).*?hasEditableImage.*?widthInput\.disabled\s*=\s*!hasEditableImage') -and
         ($source -match '(?s)function localCourseBannerBuilderBindPercentSliders\(scope\).*?localCourseBannerBuilderPrepareModalCustomSizeInput\(layerForm\)'));
-    'Draft geometry is committed at Fit and interaction boundaries' =
-        (($source -match '(?s)function localCourseBannerBuilderApplyFitToLayerFormPreview\(form\).*?localCourseBannerBuilderSaveActiveDraftPreviewState\(form\).*?localCourseBannerBuilderRenderDraftUploadPreview\(form\)') -and
-        ($source -match '(?s)function localCourseBannerBuilderStopPreviewInteraction\(\).*?localCourseBannerBuilderSaveActiveDraftPreviewState\(form\).*?localCourseBannerBuilderSyncLayerBannerPreview\(form\)') -and
-        ($source -match '(?s)function localCourseBannerBuilderStopModalResizeInteraction\(\).*?localCourseBannerBuilderSaveActiveDraftPreviewState\(state\.form\).*?localCourseBannerBuilderSyncLayerBannerPreview\(state\.form\)'));
+    'Pointer frames stage draft JSON and serialize once at interaction end' =
+        (($source -match '(?s)function localCourseBannerBuilderRunPreviewInteractionFieldBatch\(state, callback\).*?deferDraftSerialization:\s*true.*?live:\s*true') -and
+        ($source -match '(?s)function localCourseBannerBuilderStopPreviewInteraction\(\).*?_localCourseBannerBuilderPendingDraftPreviewState') -and
+        ($source -match '(?s)function localCourseBannerBuilderStopModalResizeInteraction\(\).*?_localCourseBannerBuilderPendingDraftPreviewState'));
+    'File-manager refreshes are coalesced per modal form' =
+        (($source -match '(?s)function localCourseBannerBuilderScheduleDraftPreviewRefresh\(form, delays\).*?form\._localCourseBannerBuilderDraftPreviewRefreshQueue.*?window\.clearTimeout\(queue\.timer\).*?window\.setTimeout') -and
+        ($source -match '(?s)new MutationObserver\(function \(\) \{.*?localCourseBannerBuilderScheduleDraftPreviewRefresh\('));
     'Generated AMD contains the original-size draft default' =
         ($build -match 'fitmodeoverride:"original"');
 }

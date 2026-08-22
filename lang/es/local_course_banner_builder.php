@@ -864,6 +864,7 @@ $string['tour:transfer:strategy:title'] = 'Flujo de trabajo recomendado';
 $string['transferconfig'] = 'Transferencia';
 $string['unabletodeletealllayers'] = 'No se pueden eliminar todas las capas';
 $string['unabletodeleteselectedlayer'] = 'No se puede eliminar la capa seleccionada';
+$string['unabletosavepreviewchanges'] = 'No se pueden guardar los cambios de la vista previa';
 $string['unabletoloadlayerform'] = 'No se puede cargar el formulario de capa';
 $string['unabletoloadsourcepreview'] = 'No se puede cargar la vista previa del cÃ³digo fuente';
 $string['undopreviewchange'] = 'Deshacer';

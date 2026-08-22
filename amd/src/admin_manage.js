@@ -972,6 +972,15 @@ document.addEventListener('submit', function (e) {
     if (!form || !form.closest('[class*="local-course-banner-builder"]')) {
         return;
     }
+    if (form.id === 'local-course-banner-builder-source-preview-save-form') {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof e.stopImmediatePropagation === 'function') {
+            e.stopImmediatePropagation();
+        }
+        localCourseBannerBuilderSaveSourcePreviewChanges(form);
+        return;
+    }
     if (form.dataset.formSubmitting === '1') {
         e.preventDefault();
         e.stopPropagation();
@@ -1787,6 +1796,28 @@ function localCourseBannerBuilderGetLayerScope(scope) {
         return visibleModalForm;
     }
     return document.querySelector('#local-course-banner-builder-add-layer-modal form.mform, form.mform');
+}
+
+/**
+ * Resolve a Moodle control inside its owning modal. Moodle can omit the
+ * generated id for hidden fields, so image-modal paths must also use the
+ * canonical field name instead of querying the page globally.
+ *
+ * @param {HTMLElement} form Layer modal form.
+ * @param {string} id Expected generated id.
+ * @param {string} name Canonical Moodle field name.
+ * @returns {HTMLElement|null} The scoped control when available.
+ */
+function localCourseBannerBuilderGetLayerFormControl(form, id, name) {
+    if (!form) {
+        return null;
+    }
+    var byId = id ? form.querySelector('#' + id) : null;
+    return byId || (name ? form.querySelector('[name="' + name + '"]') : null);
+}
+
+function localCourseBannerBuilderGetLayerFitOverride(form) {
+    return localCourseBannerBuilderGetLayerFormControl(form, 'id_fitmodeoverride', 'fitmodeoverride');
 }
 
 function localCourseBannerBuilderSyncBorderSideGroup(scope) {
@@ -2853,7 +2884,7 @@ function localCourseBannerBuilderSyncLayerInputModes(scope) {
         );
     }
     [
-        layerForm.querySelector('#id_fitmodeoverride'),
+        localCourseBannerBuilderGetLayerFitOverride(layerForm),
         layerForm.querySelector('[data-layer-position-anchor="1"]')
     ].forEach(function (input) {
         var item = input ? input.closest('.fitem, .form-group, .mb-3, .row') : null;
@@ -2927,7 +2958,7 @@ function localCourseBannerBuilderSyncOffsetFields(scope) {
     var filemanager = layerForm.querySelector('#fitem_id_bannerimage_filemanager');
     var hasFiles = localCourseBannerBuilderGetVisibleDraftFileItems(layerForm).length > 0;
     var isBorderOnly = !!(borderToggle && borderToggle.checked && !hasExistingImage && !hasFiles);
-    var fitOverride = layerForm.querySelector('#id_fitmodeoverride');
+    var fitOverride = localCourseBannerBuilderGetLayerFitOverride(layerForm);
     var previewRoot = layerForm.querySelector('[data-layer-banner-preview="1"]');
     var defaultFitMode = previewRoot ? (previewRoot.getAttribute('data-default-fitmode') || 'bannerfit') : 'bannerfit';
     var effectiveFitMode = fitOverride && fitOverride.value ? fitOverride.value : defaultFitMode;
@@ -4065,7 +4096,7 @@ function localCourseBannerBuilderApplyCropSelectionCustomStateToForm(form, state
     if (!form || !state) {
         return;
     }
-    var fitOverride = form.querySelector('#id_fitmodeoverride');
+    var fitOverride = localCourseBannerBuilderGetLayerFitOverride(form);
     var anchorInput = form.querySelector('[data-layer-position-anchor="1"]');
     var widthInput = form.querySelector('#id_customwidthpercent');
     var heightInput = form.querySelector('#id_customheightpercent');
@@ -4408,7 +4439,7 @@ function localCourseBannerBuilderStopCropInteraction() {
 
 function localCourseBannerBuilderSyncCustomSizeFields(scope) {
     var layerForm = localCourseBannerBuilderGetLayerScope(scope);
-    var fitOverride = layerForm ? layerForm.querySelector('#id_fitmodeoverride') : null;
+    var fitOverride = layerForm ? localCourseBannerBuilderGetLayerFitOverride(layerForm) : null;
     var widthInput = layerForm ? layerForm.querySelector('#id_customwidthpercent') : null;
     var heightInput = layerForm ? layerForm.querySelector('#id_customheightpercent') : null;
     var keepAspect = layerForm ? layerForm.querySelector('[data-custom-size-keep-aspect="1"][type="checkbox"]') : null;
@@ -5581,7 +5612,7 @@ function localCourseBannerBuilderApplyClosestKeepAspectToLayerForm(form, layer) 
         return true;
     }
     var frame = layer.closest('[data-banner-preview-frame="1"]');
-    var fitOverride = form.querySelector('#id_fitmodeoverride');
+    var fitOverride = localCourseBannerBuilderGetLayerFitOverride(form);
     var anchorInput = form.querySelector('[data-layer-position-anchor="1"]');
     var widthInput = form.querySelector('#id_customwidthpercent');
     var heightInput = form.querySelector('#id_customheightpercent');
@@ -5716,7 +5747,7 @@ function localCourseBannerBuilderPreserveLayerFormVisualBox(form, layer) {
         return false;
     }
     var frame = layer.closest('[data-banner-preview-frame="1"]');
-    var fitOverride = form.querySelector('#id_fitmodeoverride');
+    var fitOverride = localCourseBannerBuilderGetLayerFitOverride(form);
     var anchorInput = form.querySelector('[data-layer-position-anchor="1"]');
     var widthInput = form.querySelector('#id_customwidthpercent');
     var heightInput = form.querySelector('#id_customheightpercent');
@@ -6367,7 +6398,7 @@ function localCourseBannerBuilderSyncCurrentImagePreview(scope) {
         return;
     }
 
-    var fitOverride = form.querySelector('#id_fitmodeoverride');
+    var fitOverride = localCourseBannerBuilderGetLayerFitOverride(form);
     var sortOrderInput = form.querySelector('#id_sortorder');
     var widthInput = form.querySelector('#id_customwidthpercent');
     var heightInput = form.querySelector('#id_customheightpercent');
@@ -6814,28 +6845,20 @@ function localCourseBannerBuilderSetPreviewFieldValue(field, value) {
 
 function localCourseBannerBuilderRunPreviewInteractionFieldBatch(state, callback) {
     var form = state ? state.form : null;
-    if (form) {
-        form.dataset.previewApplyingInteraction = '1';
+    if (!form) {
+        return;
     }
+    form.dataset.previewApplyingInteraction = '1';
     try {
         callback();
+        var liveState = localCourseBannerBuilderReadLayerFormPreviewState(form);
+        localCourseBannerBuilderCommitModalImagePreviewState(form, liveState, {
+            deferDraftSerialization: true,
+            frame: state.frame,
+            live: true
+        });
     } finally {
-        if (form) {
-            localCourseBannerBuilderSyncCurrentLayerDataFromForm(form);
-            var currentLayer = state && state.layer ? state.layer : localCourseBannerBuilderGetEditableCurrentPreviewImage(form);
-            var previewRoot = currentLayer ? currentLayer.closest('[data-layer-banner-preview="1"]') : null;
-            localCourseBannerBuilderDebugInteractionCost('sync layer style', function () {
-                localCourseBannerBuilderSyncStandalonePreviewLayer(previewRoot, currentLayer);
-                localCourseBannerBuilderMirrorDraftSelectionVisual(form, currentLayer);
-                if (state && state.frame) {
-                    localCourseBannerBuilderSyncPreviewSelectionOutline(state.frame, currentLayer);
-                }
-            });
-            localCourseBannerBuilderDebugInteractionCost('sync sliders', function () {
-                localCourseBannerBuilderSyncPercentSliderValues(form);
-            });
-            form.dataset.previewApplyingInteraction = '0';
-        }
+        form.dataset.previewApplyingInteraction = '0';
     }
 }
 
@@ -6947,6 +6970,22 @@ function localCourseBannerBuilderApplyFitToLayerFormPreview(form) {
     if (!form) {
         return;
     }
+    var fitState = {
+        fitmodeoverride: 'cover',
+        positionanchor: 'center',
+        customwidthpercent: 100,
+        customheightpercent: 100,
+        customsizekeepaspect: true,
+        imagecropenabled: false,
+        imagecropleftpercent: 0,
+        imagecroptoppercent: 0,
+        imagecropwidthpercent: 100,
+        imagecropheightpercent: 100,
+        offsettoppercent: 0,
+        offsetrightpercent: 0,
+        offsetbottompercent: 0,
+        offsetleftpercent: 0
+    };
     var elementIdInput = form.querySelector('#id_elementid');
     var activeDraftIndex = typeof form.dataset.activeDraftIndex !== 'undefined' ?
         String(form.dataset.activeDraftIndex) :
@@ -6971,116 +7010,37 @@ function localCourseBannerBuilderApplyFitToLayerFormPreview(form) {
         var draftState = draftSettings[activeDraftIndex] ||
             localCourseBannerBuilderReadLayerPreviewStateFromLayer(currentDraftLayer || visualDraftLayer);
         if (draftState) {
-            draftSettings[activeDraftIndex] = Object.assign({}, draftState, {
-                fitmodeoverride: 'cover',
-                positionanchor: 'center',
-                customwidthpercent: 100,
-                customheightpercent: 100,
-                customsizekeepaspect: true,
-                imagecropenabled: false,
-                imagecropleftpercent: 0,
-                imagecroptoppercent: 0,
-                imagecropwidthpercent: 100,
-                imagecropheightpercent: 100,
-                offsettoppercent: 0,
-                offsetrightpercent: 0,
-                offsetbottompercent: 0,
-                offsetleftpercent: 0
-            });
-            localCourseBannerBuilderSetDraftPreviewSettings(form, draftSettings);
-            localCourseBannerBuilderApplyLayerFormPreviewState(form, draftSettings[activeDraftIndex]);
-            localCourseBannerBuilderRenderDraftUploadPreview(form);
+            localCourseBannerBuilderCommitModalImagePreviewState(
+                form,
+                Object.assign({}, draftState, fitState)
+            );
             return;
         }
     }
     var currentLayer = localCourseBannerBuilderGetEditableCurrentPreviewImage(form);
-    var fitOverride = form.querySelector('#id_fitmodeoverride, [name="fitmodeoverride"]');
-    var anchorInput = form.querySelector('[data-layer-position-anchor="1"]');
-    var widthInput = form.querySelector('#id_customwidthpercent');
-    var heightInput = form.querySelector('#id_customheightpercent');
-    var keepAspectInput = form.querySelector('[data-custom-size-keep-aspect="1"][type="checkbox"]');
-    var offsetTopInput = form.querySelector('#id_offsettoppercent');
-    var offsetRightInput = form.querySelector('#id_offsetrightpercent');
-    var offsetBottomInput = form.querySelector('#id_offsetbottompercent');
-    var offsetLeftInput = form.querySelector('#id_offsetleftpercent');
-    if (fitOverride) {
-        fitOverride.value = 'cover';
-    }
-    if (anchorInput) {
-        anchorInput.value = 'center';
-    }
-    if (widthInput) {
-        widthInput.value = '100';
-    }
-    if (heightInput) {
-        heightInput.value = '100';
-    }
-    if (keepAspectInput) {
-        keepAspectInput.checked = true;
-    }
-    [offsetTopInput, offsetRightInput, offsetBottomInput, offsetLeftInput].forEach(function (field) {
-        if (field) {
-            field.value = '0';
-        }
-    });
     if (currentLayer) {
         localCourseBannerBuilderClearLayerPreviewCropState(form, currentLayer);
     }
-    form.dataset.previewUserChanged = '1';
-    localCourseBannerBuilderSyncCurrentLayerDataFromForm(form);
-    localCourseBannerBuilderSyncCustomSizeFields(form);
-    localCourseBannerBuilderSyncOffsetFields(form);
-    localCourseBannerBuilderBindPercentSliders(form);
-    localCourseBannerBuilderSaveActiveDraftPreviewState(form);
-    if (form.dataset.activeDraftIndex && form.querySelector('[data-preview-draft-layer-host="1"]')) {
-        localCourseBannerBuilderRenderDraftUploadPreview(form);
-    } else {
-        localCourseBannerBuilderSyncLayerBannerPreview(form);
-    }
+    localCourseBannerBuilderCommitModalImagePreviewState(form, fitState);
 }
 
 function localCourseBannerBuilderApplyFillBannerToLayerFormPreview(form) {
     if (!form) {
         return;
     }
-    var fitOverride = form.querySelector('#id_fitmodeoverride');
-    var anchorInput = form.querySelector('[data-layer-position-anchor="1"]');
-    var widthInput = form.querySelector('#id_customwidthpercent');
-    var heightInput = form.querySelector('#id_customheightpercent');
-    var keepAspectInput = form.querySelector('[data-custom-size-keep-aspect="1"][type="checkbox"]');
-    var offsetTopInput = form.querySelector('#id_offsettoppercent');
-    var offsetRightInput = form.querySelector('#id_offsetrightpercent');
-    var offsetBottomInput = form.querySelector('#id_offsetbottompercent');
-    var offsetLeftInput = form.querySelector('#id_offsetleftpercent');
     var previewRoot = form.querySelector('[data-layer-banner-preview="1"], [data-source-preview-frame="1"], .local-course-banner-builder-border-preview-frame');
     var defaultFitMode = previewRoot ? (previewRoot.getAttribute('data-default-fitmode') || '') : '';
-    if (fitOverride) {
-        fitOverride.value = defaultFitMode === 'bannerfit' ? '' : 'bannerfit';
-    }
-    if (anchorInput) {
-        anchorInput.value = 'center';
-    }
-    if (widthInput) {
-        widthInput.value = '100';
-    }
-    if (heightInput) {
-        heightInput.value = '100';
-    }
-    if (keepAspectInput) {
-        keepAspectInput.checked = false;
-    }
-    [offsetTopInput, offsetRightInput, offsetBottomInput, offsetLeftInput].forEach(function (field) {
-        if (field) {
-            field.value = '0';
-        }
+    localCourseBannerBuilderCommitModalImagePreviewState(form, {
+        fitmodeoverride: defaultFitMode === 'bannerfit' ? '' : 'bannerfit',
+        positionanchor: 'center',
+        customwidthpercent: 100,
+        customheightpercent: 100,
+        customsizekeepaspect: false,
+        offsettoppercent: 0,
+        offsetrightpercent: 0,
+        offsetbottompercent: 0,
+        offsetleftpercent: 0
     });
-    form.dataset.previewUserChanged = '1';
-    localCourseBannerBuilderSyncCurrentLayerDataFromForm(form);
-    localCourseBannerBuilderSyncCustomSizeFields(form);
-    localCourseBannerBuilderSyncOffsetFields(form);
-    localCourseBannerBuilderBindPercentSliders(form);
-    localCourseBannerBuilderSyncLayerBannerPreview(form);
-    localCourseBannerBuilderSaveActiveDraftPreviewState(form);
 }
 
 function localCourseBannerBuilderFitSelectedLayerPreviewImageToFrame(scope) {
@@ -8062,6 +8022,9 @@ function localCourseBannerBuilderDeleteSelectedPreviewLayer(button) {
             button.focus({preventScroll: true});
             return;
         }
+        if (localCourseBannerBuilderIsAsyncActionBusy(button)) {
+            return;
+        }
         var busyRoot = localCourseBannerBuilderSetAsyncActionBusy(button, true);
         var formData = new FormData();
         formData.append('sesskey', M.cfg.sesskey || '');
@@ -8117,7 +8080,7 @@ function localCourseBannerBuilderReadLayerFormPreviewState(form) {
     if (!form) {
         return null;
     }
-    var fitOverride = form.querySelector('#id_fitmodeoverride, [name="fitmodeoverride"]');
+    var fitOverride = localCourseBannerBuilderGetLayerFitOverride(form);
     var anchorInput = form.querySelector('[data-layer-position-anchor="1"]');
     var widthInput = form.querySelector('#id_customwidthpercent');
     var heightInput = form.querySelector('#id_customheightpercent');
@@ -8305,11 +8268,11 @@ function localCourseBannerBuilderSyncCurrentLayerDataFromForm(form) {
     }
 }
 
-function localCourseBannerBuilderApplyLayerFormPreviewState(form, state) {
+function localCourseBannerBuilderApplyLayerFormPreviewState(form, state, options) {
     if (!form || !state) {
         return;
     }
-    var fitOverride = form.querySelector('#id_fitmodeoverride, [name="fitmodeoverride"]');
+    var fitOverride = localCourseBannerBuilderGetLayerFitOverride(form);
     var anchorInput = form.querySelector('[data-layer-position-anchor="1"]');
     var widthInput = form.querySelector('#id_customwidthpercent');
     var heightInput = form.querySelector('#id_customheightpercent');
@@ -8395,6 +8358,9 @@ function localCourseBannerBuilderApplyLayerFormPreviewState(form, state) {
     }
     if (offsetLeftInput) {
         offsetLeftInput.value = String(state.offsetleftpercent ?? 0);
+    }
+    if (options && options.deferDom) {
+        return;
     }
     if (currentLayer) {
         currentLayer.setAttribute('data-preview-fitmode', state.fitmodeoverride || '');
@@ -8541,15 +8507,28 @@ function localCourseBannerBuilderScheduleDraftPreviewRefresh(form, delays) {
     if (!form) {
         return;
     }
-    (delays || [220, 700, 1300]).forEach(function (delay) {
-        window.setTimeout(function () {
-            localCourseBannerBuilderMoveLayerPreviewToTop(form);
-            localCourseBannerBuilderSyncLayerInputModes(form);
-            localCourseBannerBuilderEnhanceBinaryOptionButtons(form);
-            localCourseBannerBuilderSyncLayerBannerPreview(form);
-            localCourseBannerBuilderSyncModalPreviewActionButtons(form);
-        }, delay);
-    });
+    var requestedDelays = delays || [180];
+    var delay = Math.max(0, Math.min.apply(null, requestedDelays.map(function (value) {
+        return Math.max(0, parseInt(value, 10) || 0);
+    })));
+    var queue = form._localCourseBannerBuilderDraftPreviewRefreshQueue || {};
+    if (queue.timer) {
+        window.clearTimeout(queue.timer);
+    }
+    form._localCourseBannerBuilderDraftPreviewRefreshQueue = queue;
+    queue.timer = window.setTimeout(function () {
+        queue.timer = 0;
+        if (localCourseBannerBuilderIsDraftFilemanagerBusy(form)) {
+            localCourseBannerBuilderScheduleDraftPreviewRefresh(form, [450]);
+            return;
+        }
+        localCourseBannerBuilderMoveLayerPreviewToTop(form);
+        localCourseBannerBuilderDisableDraftFilemanagerAlternateViews(form);
+        localCourseBannerBuilderSyncLayerInputModes(form);
+        localCourseBannerBuilderEnhanceBinaryOptionButtons(form);
+        localCourseBannerBuilderSyncLayerBannerPreview(form);
+        localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+    }, delay);
 }
 
 function localCourseBannerBuilderScheduleAllOpenDraftPreviewRefresh() {
@@ -8834,6 +8813,78 @@ function localCourseBannerBuilderSetDraftPreviewSettings(form, settings) {
         return;
     }
     input.value = JSON.stringify(settings || {});
+}
+
+function localCourseBannerBuilderWriteActiveDraftPreviewState(form, state) {
+    var activeDraftIndex = form && typeof form.dataset.activeDraftIndex !== 'undefined' ?
+        String(form.dataset.activeDraftIndex) : '';
+    if (!form || activeDraftIndex === '' || !form.querySelector('[data-preview-draft-layer-host="1"]')) {
+        return false;
+    }
+    var settings = localCourseBannerBuilderGetDraftPreviewSettings(form);
+    settings[activeDraftIndex] = Object.assign({}, settings[activeDraftIndex] || {}, state || {});
+    localCourseBannerBuilderSetDraftPreviewSettings(form, settings);
+    return true;
+}
+
+/**
+ * Apply one modal-image state transition. The form fields are written first,
+ * then the draft JSON, then the selected layer and its visual mirror. A live
+ * pointer frame deliberately stages JSON serialization until pointer release.
+ *
+ * @param {HTMLElement} form Layer modal form.
+ * @param {Object} patch Fields to apply to the active image state.
+ * @param {Object} options Transition options.
+ * @returns {Object|null} The committed active state.
+ */
+function localCourseBannerBuilderCommitModalImagePreviewState(form, patch, options) {
+    if (!form) {
+        return null;
+    }
+    options = options || {};
+    var currentState = localCourseBannerBuilderReadLayerFormPreviewState(form) || {};
+    var nextState = Object.assign({}, currentState, patch || {});
+    var isDraft = !!(
+        form.dataset.activeDraftIndex && form.querySelector('[data-preview-draft-layer-host="1"]')
+    );
+    form.dataset.previewApplyingInteraction = '1';
+    try {
+        localCourseBannerBuilderApplyLayerFormPreviewState(form, nextState, {deferDom: true});
+        nextState = localCourseBannerBuilderReadLayerFormPreviewState(form) || nextState;
+        if (options.deferDraftSerialization && isDraft) {
+            form._localCourseBannerBuilderPendingDraftPreviewState = nextState;
+        } else if (isDraft) {
+            localCourseBannerBuilderWriteActiveDraftPreviewState(form, nextState);
+            form._localCourseBannerBuilderPendingDraftPreviewState = null;
+        }
+        localCourseBannerBuilderSyncCurrentLayerDataFromForm(form);
+        var currentLayer = localCourseBannerBuilderGetEditableCurrentPreviewImage(form);
+        var previewRoot = currentLayer ? currentLayer.closest('[data-layer-banner-preview="1"]') : null;
+        if (options.live && currentLayer) {
+            localCourseBannerBuilderSyncStandalonePreviewLayer(previewRoot, currentLayer);
+            localCourseBannerBuilderMirrorDraftSelectionVisual(form, currentLayer);
+            if (options.frame) {
+                localCourseBannerBuilderSyncPreviewSelectionOutline(options.frame, currentLayer);
+            }
+            localCourseBannerBuilderSyncPercentSliderValues(form);
+        }
+    } finally {
+        form.dataset.previewApplyingInteraction = '0';
+    }
+    form.dataset.previewUserChanged = options.userChanged === false ? '0' : '1';
+    if (options.live || options.render === false) {
+        return nextState;
+    }
+    localCourseBannerBuilderSyncCustomSizeFields(form);
+    localCourseBannerBuilderSyncOffsetFields(form);
+    localCourseBannerBuilderBindPercentSliders(form);
+    if (isDraft) {
+        localCourseBannerBuilderRenderDraftUploadPreview(form);
+    } else {
+        localCourseBannerBuilderSyncLayerBannerPreview(form);
+    }
+    localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+    return nextState;
 }
 
 function localCourseBannerBuilderGetDefaultDraftPreviewState(file) {
@@ -9382,7 +9433,11 @@ function localCourseBannerBuilderSelectDraftPreviewLayer(form, index) {
     var committedDraftCrop = localCourseBannerBuilderCommitActiveDraftCropBeforeSwitch(form);
     if (!committedDraftCrop) {
         localCourseBannerBuilderCancelActivePreviewCropInScope(form, null);
-        localCourseBannerBuilderSaveActiveDraftPreviewState(form);
+        localCourseBannerBuilderCommitModalImagePreviewState(
+            form,
+            localCourseBannerBuilderReadLayerFormPreviewState(form),
+            {render: false}
+        );
     }
     var currentLayer = form.querySelector('[data-preview-current-image="1"][data-preview-draft-layer="1"]');
     if (currentLayer) {
@@ -9696,7 +9751,7 @@ function localCourseBannerBuilderEnsurePreviewDragMode(form, layer, frame) {
     var frameRect = frame.getBoundingClientRect();
     var visualLayer = localCourseBannerBuilderGetDraftSelectionVisualLayer(form, layer);
     var layerRect = (visualLayer || layer).getBoundingClientRect();
-    var fitOverride = form.querySelector('#id_fitmodeoverride');
+    var fitOverride = localCourseBannerBuilderGetLayerFitOverride(form);
     var widthInput = form.querySelector('#id_customwidthpercent');
     var heightInput = form.querySelector('#id_customheightpercent');
     if (!frameRect.width || !frameRect.height || !layerRect.width || !layerRect.height) {
@@ -9704,28 +9759,28 @@ function localCourseBannerBuilderEnsurePreviewDragMode(form, layer, frame) {
     }
     var offsetLeftValue = localCourseBannerBuilderRoundPreviewPercent(((layerRect.left - frameRect.left) / frameRect.width) * 100);
     var offsetTopValue = localCourseBannerBuilderRoundPreviewPercent(((layerRect.top - frameRect.top) / frameRect.height) * 100);
+    var dragState = {
+        positionanchor: 'top-left',
+        offsetleftpercent: offsetLeftValue,
+        offsettoppercent: offsetTopValue
+    };
     if (fitOverride && widthInput && heightInput) {
-        widthInput.value = String(localCourseBannerBuilderRoundPreviewPercent((layerRect.width / frameRect.width) * 100));
-        heightInput.value = String(localCourseBannerBuilderRoundPreviewPercent((layerRect.height / frameRect.height) * 100));
-        fitOverride.value = 'custom';
+        dragState.fitmodeoverride = 'custom';
+        dragState.customwidthpercent = localCourseBannerBuilderRoundPreviewPercent((layerRect.width / frameRect.width) * 100);
+        dragState.customheightpercent = localCourseBannerBuilderRoundPreviewPercent((layerRect.height / frameRect.height) * 100);
     }
-    anchorInput.value = 'top-left';
-    offsetLeftInput.value = String(offsetLeftValue);
-    offsetTopInput.value = String(offsetTopValue);
-    form.dataset.previewUserChanged = '1';
-    localCourseBannerBuilderSyncCurrentLayerDataFromForm(form);
-    localCourseBannerBuilderSyncCustomSizeFields(form);
-    localCourseBannerBuilderSyncOffsetFields(form);
-    localCourseBannerBuilderBindPercentSliders(form);
-    localCourseBannerBuilderSyncLayerBannerPreview(form);
-    return true;
+    return !!localCourseBannerBuilderCommitModalImagePreviewState(form, dragState, {
+        deferDraftSerialization: true,
+        frame: frame,
+        live: true
+    });
 }
 
 function localCourseBannerBuilderEnsurePreviewCustomMode(form, layer, frame) {
     if (!form) {
         return false;
     }
-    var fitOverride = form.querySelector('#id_fitmodeoverride');
+    var fitOverride = localCourseBannerBuilderGetLayerFitOverride(form);
     var anchorInput = form.querySelector('[data-layer-position-anchor="1"]');
     var widthInput = form.querySelector('#id_customwidthpercent');
     var heightInput = form.querySelector('#id_customheightpercent');
@@ -9756,22 +9811,19 @@ function localCourseBannerBuilderEnsurePreviewCustomMode(form, layer, frame) {
         }
     }
 
-    if (keepAspectInput) {
-        keepAspectInput.checked = shouldKeepAspect;
-    }
-    widthInput.value = String(widthValue);
-    heightInput.value = String(heightValue);
-    offsetLeftInput.value = String(offsetLeftValue);
-    offsetTopInput.value = String(offsetTopValue);
-    fitOverride.value = 'custom';
-    anchorInput.value = 'top-left';
-    form.dataset.previewUserChanged = '1';
-    localCourseBannerBuilderSyncCurrentLayerDataFromForm(form);
-    localCourseBannerBuilderSyncCustomSizeFields(form);
-    localCourseBannerBuilderSyncOffsetFields(form);
-    localCourseBannerBuilderBindPercentSliders(form);
-    localCourseBannerBuilderSyncLayerBannerPreview(form);
-    return true;
+    return !!localCourseBannerBuilderCommitModalImagePreviewState(form, {
+        fitmodeoverride: 'custom',
+        positionanchor: 'top-left',
+        customwidthpercent: widthValue,
+        customheightpercent: heightValue,
+        customsizekeepaspect: shouldKeepAspect,
+        offsetleftpercent: offsetLeftValue,
+        offsettoppercent: offsetTopValue
+    }, {
+        deferDraftSerialization: true,
+        frame: frame,
+        live: true
+    });
 }
 
 function localCourseBannerBuilderPrepareModalCustomSizeInput(scope) {
@@ -9779,7 +9831,7 @@ function localCourseBannerBuilderPrepareModalCustomSizeInput(scope) {
     if (!form) {
         return false;
     }
-    var fitOverride = form.querySelector('#id_fitmodeoverride');
+    var fitOverride = localCourseBannerBuilderGetLayerFitOverride(form);
     if (!fitOverride || fitOverride.value === 'custom') {
         return true;
     }
@@ -9829,14 +9881,6 @@ function localCourseBannerBuilderConstrainPreviewResizeAspect(state, widthPercen
     return localCourseBannerBuilderClampPreviewSize(state, widthPercent, heightPercent);
 }
 
-function localCourseBannerBuilderSetModalResizeField(field, value) {
-    if (field) {
-        field.value = typeof value === 'number' ?
-            String(localCourseBannerBuilderRoundPreviewPercent(value)) :
-            String(value);
-    }
-}
-
 function localCourseBannerBuilderApplyModalResizeState(state, event) {
     var deltaX = event.clientX - state.startX;
     var deltaY = event.clientY - state.startY;
@@ -9878,29 +9922,23 @@ function localCourseBannerBuilderApplyModalResizeState(state, event) {
     widthPercent = clamped.width;
     heightPercent = clamped.height;
 
-    localCourseBannerBuilderSetModalResizeField(state.fitOverride, 'custom');
-    if (state.anchorInput) {
-        state.anchorInput.value = 'top-left';
-    }
+    var resizeState = {
+        fitmodeoverride: 'custom',
+        positionanchor: 'top-left',
+        customwidthpercent: widthPercent,
+        customheightpercent: heightPercent
+    };
     if (nextLeft !== null) {
-        localCourseBannerBuilderSetModalResizeField(state.offsetLeftInput, nextLeft);
+        resizeState.offsetleftpercent = nextLeft;
     }
     if (nextTop !== null) {
-        localCourseBannerBuilderSetModalResizeField(state.offsetTopInput, nextTop);
+        resizeState.offsettoppercent = nextTop;
     }
-    localCourseBannerBuilderSetModalResizeField(state.widthInput, widthPercent);
-    localCourseBannerBuilderSetModalResizeField(state.heightInput, heightPercent);
-
-    state.form.dataset.previewApplyingInteraction = '1';
-    try {
-        localCourseBannerBuilderSyncCurrentLayerDataFromForm(state.form);
-        localCourseBannerBuilderSyncStandalonePreviewLayer(state.previewRoot, state.layer);
-        localCourseBannerBuilderMirrorDraftSelectionVisual(state.form, state.layer);
-        localCourseBannerBuilderSyncPreviewSelectionOutline(state.frame, state.layer);
-        localCourseBannerBuilderSyncPercentSliderValues(state.form);
-    } finally {
-        state.form.dataset.previewApplyingInteraction = '0';
-    }
+    localCourseBannerBuilderCommitModalImagePreviewState(state.form, resizeState, {
+        deferDraftSerialization: true,
+        frame: state.frame,
+        live: true
+    });
 }
 
 function localCourseBannerBuilderHandleModalResizePointerMove(event) {
@@ -9938,9 +9976,10 @@ function localCourseBannerBuilderStopModalResizeInteraction() {
     }
     state.layer.removeAttribute('data-preview-active-edge');
     localCourseBannerBuilderModalResizeInteraction = null;
-    localCourseBannerBuilderSaveActiveDraftPreviewState(state.form);
-    localCourseBannerBuilderSyncLayerBannerPreview(state.form);
-    localCourseBannerBuilderSyncModalPreviewActionButtons(state.form);
+    localCourseBannerBuilderCommitModalImagePreviewState(
+        state.form,
+        state.form._localCourseBannerBuilderPendingDraftPreviewState || null
+    );
     localCourseBannerBuilderClearPreviewGuides(state.frame);
 }
 
@@ -9964,7 +10003,7 @@ function localCourseBannerBuilderStartModalResizeInteraction(event, handle) {
     var visualLayer = localCourseBannerBuilderGetDraftSelectionVisualLayer(form, layer);
     var frameRect = frame ? frame.getBoundingClientRect() : null;
     var layerRect = (visualLayer || layer).getBoundingClientRect();
-    var fitOverride = form.querySelector('#id_fitmodeoverride, [name="fitmodeoverride"]');
+    var fitOverride = localCourseBannerBuilderGetLayerFitOverride(form);
     var anchorInput = form.querySelector('[data-layer-position-anchor="1"]');
     var widthInput = form.querySelector('#id_customwidthpercent');
     var heightInput = form.querySelector('#id_customheightpercent');
@@ -9986,13 +10025,18 @@ function localCourseBannerBuilderStartModalResizeInteraction(event, handle) {
 
     var offsetLeftValue = localCourseBannerBuilderRoundPreviewPercent(((layerRect.left - frameRect.left) / frameRect.width) * 100);
     var offsetTopValue = localCourseBannerBuilderRoundPreviewPercent(((layerRect.top - frameRect.top) / frameRect.height) * 100);
-    localCourseBannerBuilderSetModalResizeField(fitOverride, 'custom');
-    anchorInput.value = 'top-left';
-    localCourseBannerBuilderSetModalResizeField(widthInput, (layerRect.width / frameRect.width) * 100);
-    localCourseBannerBuilderSetModalResizeField(heightInput, (layerRect.height / frameRect.height) * 100);
-    localCourseBannerBuilderSetModalResizeField(offsetLeftInput, offsetLeftValue);
-    localCourseBannerBuilderSetModalResizeField(offsetTopInput, offsetTopValue);
-    localCourseBannerBuilderSyncCurrentLayerDataFromForm(form);
+    localCourseBannerBuilderCommitModalImagePreviewState(form, {
+        fitmodeoverride: 'custom',
+        positionanchor: 'top-left',
+        customwidthpercent: (layerRect.width / frameRect.width) * 100,
+        customheightpercent: (layerRect.height / frameRect.height) * 100,
+        offsetleftpercent: offsetLeftValue,
+        offsettoppercent: offsetTopValue
+    }, {
+        deferDraftSerialization: true,
+        frame: frame,
+        live: true
+    });
 
     localCourseBannerBuilderModalResizeInteraction = {
         mode: handle.getAttribute('data-preview-resize-mode') === 'edge' ? 'resize-edge' : 'resize',
@@ -11894,9 +11938,10 @@ function localCourseBannerBuilderStopPreviewInteraction() {
         if (localCourseBannerBuilderPreviewInteraction) {
             localCourseBannerBuilderMaybeUpdateInteractionGuides(localCourseBannerBuilderPreviewInteraction, true);
         }
-        localCourseBannerBuilderSaveActiveDraftPreviewState(form);
-        localCourseBannerBuilderSyncLayerBannerPreview(form);
-        localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+        localCourseBannerBuilderCommitModalImagePreviewState(
+            form,
+            form._localCourseBannerBuilderPendingDraftPreviewState || null
+        );
     }
     localCourseBannerBuilderClearPreviewGuides(frame);
 }
@@ -11958,7 +12003,7 @@ function localCourseBannerBuilderStartPreviewInteraction(event, mode, layer) {
     localCourseBannerBuilderPushModalPreviewHistory(form);
     form.dataset.previewInteractionStarting = '1';
     localCourseBannerBuilderSyncModalImageOpacityInputFromLayer(form);
-    var fitOverride = form.querySelector('#id_fitmodeoverride');
+    var fitOverride = localCourseBannerBuilderGetLayerFitOverride(form);
     var previewRoot = layer.closest('[data-banner-preview="1"]');
     var currentFitMode = layer.getAttribute('data-preview-fitmode') ||
         (fitOverride && fitOverride.value ? fitOverride.value : '') ||
@@ -12334,17 +12379,10 @@ function localCourseBannerBuilderBindLayerPreviewEvents(scope) {
     var filemanager = form.querySelector('#fitem_id_bannerimage_filemanager');
     if (filemanager && !filemanager.dataset.previewObserverBound) {
         var observer = new MutationObserver(function () {
-            if (filemanager.dataset.previewObserverQueued === '1') {
-                return;
-            }
-            filemanager.dataset.previewObserverQueued = '1';
-            window.setTimeout(function () {
-                filemanager.dataset.previewObserverQueued = '0';
-                localCourseBannerBuilderDisableDraftFilemanagerAlternateViews(form);
-                localCourseBannerBuilderSyncLayerInputModes(form);
-                localCourseBannerBuilderEnhanceBinaryOptionButtons(form);
-                localCourseBannerBuilderSyncLayerBannerPreview(form);
-            }, localCourseBannerBuilderIsDraftFilemanagerBusy(form) ? 500 : 120);
+            localCourseBannerBuilderScheduleDraftPreviewRefresh(
+                form,
+                [localCourseBannerBuilderIsDraftFilemanagerBusy(form) ? 500 : 120]
+            );
         });
         observer.observe(filemanager, {
             childList: true,
@@ -12862,7 +12900,7 @@ function localCourseBannerBuilderNudgeLayerModalPreview(form, deltaX, deltaY, pu
     }
     var leftInput = form.querySelector('#id_offsetleftpercent');
     var topInput = form.querySelector('#id_offsettoppercent');
-    var fitOverride = form.querySelector('#id_fitmodeoverride');
+    var fitOverride = localCourseBannerBuilderGetLayerFitOverride(form);
     var anchorInput = form.querySelector('[data-layer-position-anchor="1"]');
     if (!leftInput || !topInput || !fitOverride || !anchorInput) {
         return false;
@@ -14166,7 +14204,7 @@ function localCourseBannerBuilderBindLayerFormEvents(scope) {
     if (!layerForm) {
         return;
     }
-    var fitOverride = layerForm.querySelector('#id_fitmodeoverride');
+    var fitOverride = localCourseBannerBuilderGetLayerFitOverride(layerForm);
     if (fitOverride && !fitOverride.dataset.layerEventsBound) {
         fitOverride.addEventListener('change', function () {
             localCourseBannerBuilderSyncCustomSizeFields(layerForm);
@@ -14436,6 +14474,22 @@ function localCourseBannerBuilderSetAsyncActionBusy(button, busy) {
     }
     root.classList.toggle('is-action-busy', busy);
     root.setAttribute('aria-busy', busy ? 'true' : 'false');
+    var sourceContent = button ? button.closest('[data-selected-source-content="1"]') : null;
+    if (sourceContent) {
+        Array.prototype.slice.call(sourceContent.querySelectorAll('[data-source-preview-async-control="1"]')).forEach(
+            function (control) {
+                if (busy) {
+                    control.dataset.asyncActionWasDisabled = control.disabled ? '1' : '0';
+                    control.disabled = true;
+                    control.setAttribute('aria-disabled', 'true');
+                } else {
+                    control.disabled = control.dataset.asyncActionWasDisabled === '1';
+                    control.setAttribute('aria-disabled', control.disabled ? 'true' : 'false');
+                    delete control.dataset.asyncActionWasDisabled;
+                }
+            }
+        );
+    }
     if (button && button.isConnected) {
         if (busy) {
             button.dataset.asyncActionWasDisabled = button.disabled ? '1' : '0';
@@ -14482,6 +14536,77 @@ function localCourseBannerBuilderFocusAfterAsyncDelete(host, preferredSelector) 
         host.setAttribute('tabindex', '-1');
         host.focus({preventScroll: true});
     }
+}
+
+/**
+ * Return whether a selected-source action is already saving or deleting.
+ *
+ * @param {HTMLElement|null} control Action control.
+ * @return {boolean} Whether the shared administration root is busy.
+ */
+function localCourseBannerBuilderIsAsyncActionBusy(control) {
+    var root = control ? control.closest('.local-course-banner-builder-admin') : null;
+    return !!(root && root.classList.contains('is-action-busy'));
+}
+
+/**
+ * Save the selected source visual-preview payload without a full-page reload.
+ *
+ * @param {HTMLFormElement} form Source preview save form.
+ */
+function localCourseBannerBuilderSaveSourcePreviewChanges(form) {
+    if (!form || localCourseBannerBuilderIsAsyncActionBusy(form)) {
+        return;
+    }
+    var root = form.closest('[data-source-visual-editor="1"]');
+    var button = document.querySelector('[data-source-preview-save-control="1"][form="' + form.id + '"]');
+    if (!root || !button) {
+        return;
+    }
+    localCourseBannerBuilderSyncSourcePreviewPayload(root);
+    var busyRoot = localCourseBannerBuilderSetAsyncActionBusy(button, true);
+    var formData = new FormData(form);
+    formData.delete('updatepreviewlayers');
+    formData.append('updatepreviewlayersajax', '1');
+    fetch(window.location.href, {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin',
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    }).then(function (response) {
+        if (!response.ok) {
+            throw new Error(localCourseBannerBuilderGetJsString(
+                'unabletosavepreviewchanges',
+                'Unable to save preview changes'
+            ));
+        }
+        return response.json();
+    }).then(function (data) {
+        var host = localCourseBannerBuilderReplaceSelectedSourceContentFromDeleteResponse(data);
+        localCourseBannerBuilderNotifyAsyncAction(
+            data.message || localCourseBannerBuilderGetJsString('changessaved', 'Changes saved'),
+            'success'
+        );
+        localCourseBannerBuilderFocusAfterAsyncDelete(host, '[data-source-preview-save-control="1"]');
+    }).catch(function (error) {
+        window.console.error(error);
+        localCourseBannerBuilderNotifyAsyncAction(
+            error.message || localCourseBannerBuilderGetJsString(
+                'unabletosavepreviewchanges',
+                'Unable to save preview changes'
+            ),
+            'error'
+        );
+        if (button.isConnected) {
+            button.focus({preventScroll: true});
+        }
+    }).finally(function () {
+        localCourseBannerBuilderSetAsyncActionBusy(button, false);
+        if (busyRoot && !button.isConnected) {
+            busyRoot.classList.remove('is-action-busy');
+            busyRoot.setAttribute('aria-busy', 'false');
+        }
+    });
 }
 
 function localCourseBannerBuilderSyncBinaryOptionButton(input) {
@@ -18424,6 +18549,9 @@ function localCourseBannerBuilderDeleteAllLayers(button) {
             button.focus({preventScroll: true});
             return;
         }
+        if (localCourseBannerBuilderIsAsyncActionBusy(button)) {
+            return;
+        }
         var busyRoot = localCourseBannerBuilderSetAsyncActionBusy(button, true);
         var formData = new FormData(form);
         fetch(window.location.href, {
@@ -18525,6 +18653,9 @@ function localCourseBannerBuilderDeleteSelectedLayers(button) {
     localCourseBannerBuilderConfirmAction(message).then(function (confirmed) {
         if (!confirmed) {
             button.focus({preventScroll: true});
+            return;
+        }
+        if (localCourseBannerBuilderIsAsyncActionBusy(button)) {
             return;
         }
         var busyRoot = localCourseBannerBuilderSetAsyncActionBusy(button, true);

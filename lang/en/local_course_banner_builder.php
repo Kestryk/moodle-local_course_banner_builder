@@ -989,6 +989,7 @@ $string['tour:transfer:strategy:title'] = 'Recommended workflow';
 $string['transferconfig'] = 'Transfer';
 $string['unabletodeletealllayers'] = 'Unable to delete all layers';
 $string['unabletodeleteselectedlayer'] = 'Unable to delete selected layer';
+$string['unabletosavepreviewchanges'] = 'Unable to save preview changes';
 $string['unabletoloadlayerform'] = 'Unable to load layer form';
 $string['unabletoloadsourcepreview'] = 'Unable to load source preview';
 $string['undopreviewchange'] = 'Undo';
