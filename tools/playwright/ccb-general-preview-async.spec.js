@@ -69,14 +69,16 @@ test('CCB general preview saves and deletes locally with one shared action lock'
             '[data-action="local-course-banner-builder-delete-selected-preview-layer"]'
         ).first();
         const deleteAll = page.locator('[data-action="local-course-banner-builder-delete-all-layers"]').first();
-        const editableLayer = page.locator('[data-source-preview-layer="1"][data-source-preview-editable="1"]').first();
+        const selectLayerThumbnail = page.locator(
+            '[data-action="local-course-banner-builder-select-source-preview-thumbnail"]:not(.is-disabled)'
+        ).first();
         const confirmation = page.locator('#local-course-banner-builder-confirm-action-modal');
         await expect(root).toBeVisible({timeout: 60000});
         await expect(root).toHaveAttribute('aria-busy', 'false');
         await expect(selectedSource).toBeVisible();
         await expect(save).toBeVisible();
         await expect(deleteAll).toBeVisible();
-        await expect(editableLayer).toBeVisible();
+        await expect(selectLayerThumbnail).toBeVisible();
 
         await page.route('**/local/course_banner_builder/admin_manage.php*', async route => {
             if (isAdminPost(route.request())) {
@@ -103,7 +105,7 @@ test('CCB general preview saves and deletes locally with one shared action lock'
         });
 
         await test.step('selected-layer deletion uses the shared confirmation and locks Save', async() => {
-            await editableLayer.click();
+            await selectLayerThumbnail.click();
             await expect(deleteSelected).toBeVisible({timeout: 10000});
             await deleteSelected.click();
             await expect(confirmation).toBeVisible({timeout: 10000});
