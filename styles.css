@@ -5183,6 +5183,7 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 }
 
 .local-course-banner-builder-source-preview-layer--selected {
+  z-index: 8950 !important;
   pointer-events: auto;
   cursor: move;
 }

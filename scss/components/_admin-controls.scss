@@ -922,6 +922,11 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 }
 
 .local-course-banner-builder-source-preview-layer--selected {
+    // Transient editor-only elevation. The persisted data-preview-zindex stays
+    // authoritative for the banner draw order and is restored on deselection.
+    // Keep preview guides (9000) and the independent selection outline (9200)
+    // above the edited image.
+    z-index: 8950 !important;
     pointer-events: auto;
     cursor: move;
 }
