@@ -8,6 +8,30 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0031-RF4 - 2026-08-22
+
+#### Changed
+
+- Moved the existing Selected source and Configured sources chevrons before
+  their titles using CCB-local CSS only. Their native disclosure state now has
+  the same visible rotation and reduced-motion-safe transition as Course
+  Banner options, without changing `details`/`summary` markup or adding a
+  trigger.
+- Restyled the existing Selected source Settings action as a compact solid CCB
+  secondary button, so the header stays level with the other primary
+  accordions while preserving the Settings button's own keyboard focus and the
+  summary's native click target.
+- Added a small Deselect end clearance only while the selected-source holder
+  is explicitly inline. The existing body-portal sticky state is unchanged.
+
+#### Validation
+
+- Extended the primary-accordion regression contract for left chevrons,
+  disclosure keyboard state, transition and Settings geometry at desktop and
+  390 px. Extended the responsive source-preview contract for Deselect in both
+  inline and sticky states; browser and human proof remain separately
+  authorised.
+
 ### EED-CCB-2026-0028 - 2026-08-20
 
 #### Fixed

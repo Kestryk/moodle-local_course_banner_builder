@@ -16,6 +16,28 @@ menus.
 - configured-source actions must keep icons and labels leading-aligned;
 - no preview, document or modal horizontal overflow is allowed.
 
+## Primary accordion and inline Deselect polish (`EED-CCB-2026-0031-RF4`) - 2026-08-22
+
+Selected source and Configured sources retain their native `details` and
+`summary` markup. CCB-local SCSS moves their existing chevron ahead of the
+title with flex ordering only: it points down while closed, rotates upward when
+open and honours reduced-motion preferences. No second trigger is introduced.
+
+The existing Settings button remains a real, keyboard-focusable secondary
+button within Selected source. Its local solid compact treatment preserves the
+summary's native click and focus target while keeping the header at the same
+desktop height as the other primary accordions.
+
+The responsive source-preview scenario now proves both explicit sticky states:
+the body-portal `stuck` state has no added Deselect end margin, whereas the
+existing `data-sticky-state="inline"` state supplies the small end clearance.
+No layout rule changes the floating tray after it becomes sticky.
+
+The primary-accordion scenario covers desktop and 390 px chevron placement,
+native keyboard open/close state, the chevron transition and the unchanged
+Settings action contract. Browser proof and human review remain a separately
+authorised final preview activity.
+
 ## Responsive Selected source containment (`EED-CCB-2026-0004`) - 2026-08-08
 
 At `max-width: 48rem`, the CCB-local sticky action now keeps the leading source
