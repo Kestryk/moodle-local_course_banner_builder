@@ -765,7 +765,7 @@ document.addEventListener('click', function (e) {
 
     var sourcePreviewRoot = e.target.closest('[data-source-visual-editor="1"]');
     if (sourcePreviewRoot && !localCourseBannerBuilderIsSourcePreviewReadonly(sourcePreviewRoot)) {
-        if (Date.now() < localCourseBannerBuilderSuppressSourcePreviewClickUntil) {
+        if (localCourseBannerBuilderShouldSuppressSourcePreviewClick(sourcePreviewRoot, e)) {
             e.preventDefault();
             e.stopPropagation();
             return;
@@ -12518,6 +12518,17 @@ function localCourseBannerBuilderSuppressNextSourcePreviewClick() {
     localCourseBannerBuilderSuppressSourcePreviewClickUntil = Date.now() + 500;
 }
 
+function localCourseBannerBuilderShouldSuppressSourcePreviewClick(root, event) {
+    if (!root || Date.now() >= localCourseBannerBuilderSuppressSourcePreviewClickUntil ||
+            !event || !event.target || !event.target.closest) {
+        return false;
+    }
+    var surface = event.target.closest(
+        '[data-source-preview-frame="1"], [data-source-preview-layer="1"], [data-preview-resize-handle="1"]'
+    );
+    return !!surface && root.contains(surface);
+}
+
 function localCourseBannerBuilderGetSourcePreviewLayerState(layer) {
     if (!layer) {
         return null;
@@ -13798,7 +13809,7 @@ function localCourseBannerBuilderInitSourceVisualEditor(scope) {
                 if (localCourseBannerBuilderIsSourcePreviewReadonly(root)) {
                     return;
                 }
-                if (Date.now() < localCourseBannerBuilderSuppressSourcePreviewClickUntil) {
+                if (localCourseBannerBuilderShouldSuppressSourcePreviewClick(root, event)) {
                     event.preventDefault();
                     event.stopPropagation();
                     return;
