@@ -304,9 +304,15 @@ test('IMG-07 image-modal draft state transitions preserve Crop across Fill, A/B,
         await modal.screenshot({path: path.join(env.artifactRoot, 'img-07-a-fill-retains-crop.png')});
 
         await uploadDraft(page, form, env.imageB, 2, 'draft B upload');
-        const draftB = await form.getAttribute('data-active-draft-index');
-        ensure(/^\d+$/.test(draftB || '') && draftB !== draftA, 'Upload B must select a distinct second draft.');
-        await expectSelectedDraftButton(form, [draftA, draftB], draftB, 'after draft B upload');
+        const draftIndexes = await form.locator('[data-preview-draft-visual-layer="1"]').evaluateAll(layers =>
+            layers.map(layer => layer.getAttribute('data-draft-index'))
+        );
+        ensure(draftIndexes.length === 2 && draftIndexes.every(index => /^\d+$/.test(index || '')),
+            'Upload B must expose exactly two numeric visual draft indexes.');
+        const draftB = draftIndexes.find(index => index !== draftA);
+        ensure(draftB, 'Upload B must expose a visual draft index distinct from A.');
+        evidence.draftIndexes = draftIndexes;
+        await expectSelectedDraftButton(form, [draftA, draftB], draftA, 'after draft B upload');
         const selectBStarted = Date.now();
         await selectDraft(form, draftB, 'select B through its accessible selector');
         evidence.gestureMilliseconds.selectB = Date.now() - selectBStarted;
