@@ -2247,6 +2247,47 @@ JS;
         }
     };
 
+    const constrainLabelsAfterActiveSlideTransition = function (root) {
+        if (typeof root._localCourseBannerBuilderCancelLabelConfinement === 'function') {
+            root._localCourseBannerBuilderCancelLabelConfinement();
+        }
+        const active = root.querySelector('[data-slideshow-slide].is-active');
+        if (!active) {
+            constrainActiveLabels(root);
+            return;
+        }
+
+        let fallback = null;
+        const settle = function () {
+            active.removeEventListener('transitionend', onTransitionEnd);
+            active.removeEventListener('transitioncancel', settle);
+            if (fallback) {
+                window.clearTimeout(fallback);
+                fallback = null;
+            }
+            if (root._localCourseBannerBuilderCancelLabelConfinement === cancel) {
+                root._localCourseBannerBuilderCancelLabelConfinement = null;
+            }
+            constrainActiveLabels(root);
+        };
+        const onTransitionEnd = function (event) {
+            if (event.target === active && event.propertyName === 'transform') {
+                settle();
+            }
+        };
+        const cancel = function () {
+            active.removeEventListener('transitionend', onTransitionEnd);
+            active.removeEventListener('transitioncancel', settle);
+            if (fallback) {
+                window.clearTimeout(fallback);
+            }
+        };
+        root._localCourseBannerBuilderCancelLabelConfinement = cancel;
+        active.addEventListener('transitionend', onTransitionEnd);
+        active.addEventListener('transitioncancel', settle);
+        fallback = window.setTimeout(settle, 600);
+    };
+
     const activate = function (root, index, direction) {
         const slides = Array.prototype.slice.call(root.querySelectorAll('[data-slideshow-slide]'));
         const dots = Array.prototype.slice.call(root.querySelectorAll('[data-slideshow-dot]'));
@@ -2269,9 +2310,7 @@ JS;
         dots.forEach(function (dot, dotIndex) {
             dot.classList.toggle('is-active', dotIndex === next);
         });
-        window.requestAnimationFrame(function () {
-            constrainActiveLabels(root);
-        });
+        constrainLabelsAfterActiveSlideTransition(root);
     };
 
     const buildSlideshow = function (target) {
@@ -2660,7 +2699,9 @@ JS;
 
         const scheduleLabelConfinement = function () {
             window.requestAnimationFrame(function () {
-                constrainActiveLabels(root);
+                window.requestAnimationFrame(function () {
+                    constrainActiveLabels(root);
+                });
             });
         };
         window.addEventListener('resize', scheduleLabelConfinement);
@@ -2673,6 +2714,9 @@ JS;
             window.removeEventListener('resize', scheduleLabelConfinement);
             if (labelResizeObserver) {
                 labelResizeObserver.disconnect();
+            }
+            if (typeof root._localCourseBannerBuilderCancelLabelConfinement === 'function') {
+                root._localCourseBannerBuilderCancelLabelConfinement();
             }
         };
         scheduleLabelConfinement();
