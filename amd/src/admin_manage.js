@@ -19746,7 +19746,6 @@ localCourseBannerBuilderOnReady(function () {
         window.localCourseBannerBuilderEnsurePreviewDragMode = localCourseBannerBuilderEnsurePreviewDragMode;
         window.localCourseBannerBuilderEnsurePreviewCustomMode = localCourseBannerBuilderEnsurePreviewCustomMode;
         window.localCourseBannerBuilderClampPreviewSize = localCourseBannerBuilderClampPreviewSize;
-        window.localCourseBannerBuilderSetModalResizeField = localCourseBannerBuilderSetModalResizeField;
         window.localCourseBannerBuilderApplyModalResizeState = localCourseBannerBuilderApplyModalResizeState;
         window.localCourseBannerBuilderHandleModalResizePointerMove = localCourseBannerBuilderHandleModalResizePointerMove;
         window.localCourseBannerBuilderStopModalResizeInteraction = localCourseBannerBuilderStopModalResizeInteraction;
