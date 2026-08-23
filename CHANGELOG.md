@@ -8,6 +8,18 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0023-RF2-B - 2026-08-23
+
+#### Validation
+
+- Added the single-test IMG-07 supervised QA scenario for the add-image modal:
+  it uses two draft uploads to prove that Fill preserves an applied Crop, A/B
+  selection restores the four Crop values, Recrop Cancel retains the applied
+  state, and Undo/Redo restores the expected Crop states. The scenario records
+  gesture and long-task evidence, captures the final states, and uses the
+  existing disposable fixture and lease cleanup contract. Runtime execution
+  remains separately authorised.
+
 ### EED-CCB-2026-WAVE-II - 2026-08-23
 
 #### Changed
