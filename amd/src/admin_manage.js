@@ -776,13 +776,17 @@ document.addEventListener('click', function (e) {
         }
     }
 
+    var draftSelectionControl = e.target.closest('[data-draft-preview-select="1"]');
+    if (draftSelectionControl) {
+        e.preventDefault();
+        localCourseBannerBuilderActivateDraftPreviewSelection(draftSelectionControl);
+        return;
+    }
+
     var clickedDraftLayer = e.target.closest('[data-preview-draft-layer="1"]');
     if (clickedDraftLayer) {
         e.preventDefault();
-        localCourseBannerBuilderSelectDraftPreviewLayer(
-            localCourseBannerBuilderGetLayerScope(clickedDraftLayer),
-            clickedDraftLayer.getAttribute('data-draft-index') || '0'
-        );
+        localCourseBannerBuilderActivateDraftPreviewSelection(clickedDraftLayer);
         return;
     }
 
@@ -872,10 +876,7 @@ document.addEventListener('dblclick', function (e) {
     var draftLayer = e.target.closest('[data-preview-draft-layer="1"]');
     if (draftLayer) {
         e.preventDefault();
-        localCourseBannerBuilderSelectDraftPreviewLayer(
-            localCourseBannerBuilderGetLayerScope(draftLayer),
-            draftLayer.getAttribute('data-draft-index') || '0'
-        );
+        localCourseBannerBuilderActivateDraftPreviewSelection(draftLayer);
     }
 });
 
@@ -9017,6 +9018,48 @@ function localCourseBannerBuilderEnsureDraftPreviewSelection(form, files) {
     }
 }
 
+function localCourseBannerBuilderGetDraftPreviewSelectLabel(position) {
+    return localCourseBannerBuilderGetJsString('selectimagedraft', 'Select image {$a}')
+        .replace('{$a}', String(position + 1));
+}
+
+function localCourseBannerBuilderActivateDraftPreviewSelection(target) {
+    if (!target || !target.closest) {
+        return false;
+    }
+    var form = localCourseBannerBuilderGetLayerScope(target);
+    var draftIndex = target.getAttribute('data-draft-index');
+    if (!form || draftIndex === null || draftIndex === '') {
+        return false;
+    }
+    localCourseBannerBuilderSelectDraftPreviewLayer(form, draftIndex);
+    return true;
+}
+
+function localCourseBannerBuilderSyncDraftPreviewSelectors(form, files) {
+    if (!form) {
+        return;
+    }
+    var activeIndex = String(form.dataset.activeDraftIndex || '');
+    (files || []).forEach(function (file, position) {
+        if (!file.item || file.item.hidden || file.item.getAttribute('aria-hidden') === 'true') {
+            return;
+        }
+        var thumbnail = file.item.querySelector('.fp-thumbnail') || file.item;
+        var control = thumbnail.querySelector('[data-draft-preview-select="1"]');
+        if (!control) {
+            control = document.createElement('button');
+            control.type = 'button';
+            control.className = 'local-course-banner-builder-draft-preview-select';
+            control.setAttribute('data-draft-preview-select', '1');
+            thumbnail.appendChild(control);
+        }
+        control.setAttribute('data-draft-index', String(file.index));
+        control.setAttribute('aria-label', localCourseBannerBuilderGetDraftPreviewSelectLabel(position));
+        control.setAttribute('aria-pressed', String(file.index) === activeIndex ? 'true' : 'false');
+    });
+}
+
 function localCourseBannerBuilderMirrorDraftSelectionVisual(form, layer) {
     if (!form || !layer || !layer.hasAttribute('data-preview-draft-selection-overlay')) {
         return;
@@ -9265,6 +9308,7 @@ function localCourseBannerBuilderRenderDraftUploadPreview(form) {
     }) || files[0];
     activeIndex = String(activeFile.index);
     form.dataset.activeDraftIndex = activeIndex;
+    localCourseBannerBuilderSyncDraftPreviewSelectors(form, files);
 
     files.forEach(function (file) {
         var existingState = settings[file.index] || null;
@@ -12221,7 +12265,7 @@ function localCourseBannerBuilderHandleLayerModalPreviewPointerDown(form, event)
             !currentLayer.hasAttribute('data-preview-current-layer')) {
         event.preventDefault();
         event.stopPropagation();
-        localCourseBannerBuilderSelectDraftPreviewLayer(form, currentLayer.getAttribute('data-draft-index') || '0');
+        localCourseBannerBuilderActivateDraftPreviewSelection(currentLayer);
         return true;
     }
     if (resizeHandle) {

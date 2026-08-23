@@ -512,6 +512,7 @@ $string['selectedcategorystatus'] = 'Selected source';
 $string['selectedcustomfieldstatus'] = 'Selected custom field value';
 $string['selectedlayersdeleted'] = '{$a} selected layer(s) deleted.';
 $string['selectedsitebannersourcestatus'] = 'Selected site banner source';
+$string['selectimagedraft'] = 'Select image {$a}';
 $string['selectlayer'] = 'Select layer';
 $string['settings'] = 'Course banner builder';
 $string['sharpinnercorners'] = 'Sharp inner corners';

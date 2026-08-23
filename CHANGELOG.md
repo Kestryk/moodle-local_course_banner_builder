@@ -8,6 +8,20 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0041 - 2026-08-23
+
+#### Changed
+
+- Added a native, localised `Select image N` button to each image-draft
+  thumbnail in the modal filemanager. Its pressed state identifies the active
+  draft; keyboard activation and existing preview clicks now share the same
+  selection path, including the established crop commit before switching.
+
+#### Validation
+
+- Added the static A/B draft-selection contract. A leased Moodle 5.1 keyboard
+  and visual check is recorded as the follow-up IMG-07 scenario.
+
 ### EED-CCB-2026-WAVE-II - 2026-08-23
 
 #### Changed

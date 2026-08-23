@@ -220,6 +220,9 @@ and the EasyEdu theme when available.
 - Confirm crop validation and cancellation have accessible names.
 - Confirm crop handles do not remove access to numeric or button alternatives.
 - Confirm image order and position can be adjusted without drag and drop.
+- With two uploaded image drafts, Tab reaches each localised `Select image N`
+  thumbnail control. Enter and Space select the same draft as a pointer click,
+  expose the pressed state, and retain a visible focus indicator.
 
 Crop geometry cannot be validated by axe alone. Pointer, keyboard, and visual
 checks remain required until a stable component-level automation fixture
