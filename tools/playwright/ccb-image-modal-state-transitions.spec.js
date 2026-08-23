@@ -105,17 +105,18 @@ const expectCrop = (actual, expected, label) => {
     expect(Number(actual.settings?.imagecropheightpercent), label + ': draft JSON height').toBe(Number(expected.height));
 };
 
-const draftSelectButton = (form, index) => form.getByRole('button', {
-    exact: true,
-    name: 'Select image ' + (Number(index) + 1),
-}).first();
+const draftSelectButton = (form, index) => form.locator(
+    '[data-draft-preview-select="1"][data-draft-index="' + index + '"]'
+).first();
 
 const expectSelectedDraftButton = async(form, indexes, selectedIndex, label) => {
     const buttons = form.locator('[data-draft-preview-select="1"]');
     await expect(buttons, label + ': both draft selectors must be available').toHaveCount(2, {timeout: 30000});
     for (const index of indexes) {
-        await expect(draftSelectButton(form, index), label + ': draft selector accessible name').toBeVisible();
-        await expect(draftSelectButton(form, index), label + ': draft selector pressed state').toHaveAttribute(
+        const selector = draftSelectButton(form, index);
+        await expect(selector, label + ': draft selector accessible name').toBeVisible();
+        await expect(selector, label + ': localized accessible selector name').toHaveAccessibleName(/^Select image \d+$/);
+        await expect(selector, label + ': draft selector pressed state').toHaveAttribute(
             'aria-pressed', String(index) === String(selectedIndex) ? 'true' : 'false'
         );
     }
