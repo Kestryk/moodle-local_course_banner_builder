@@ -205,16 +205,30 @@ test('IMG-06 add-image modal Fit and resize handles transform the active draft w
         const pickerId = await visiblePicker.getAttribute('id');
         ensure(pickerId, 'Moodle file picker must expose a stable id.');
         const picker = page.locator('#' + pickerId);
-        let upload = picker.locator('input[name="repo_upload_file"]').first();
+        let upload = picker.locator('input[name="repo_upload_file"]:visible').first();
         if (await upload.count() === 0) {
             const uploadRepository = picker.locator('.fp-repo-name', {hasText: /upload/i}).first();
             await expect(uploadRepository, 'Upload repository must be available').toBeVisible();
             await uploadRepository.click();
-            upload = picker.locator('input[name="repo_upload_file"]').first();
+            upload = picker.locator('input[name="repo_upload_file"]:visible').first();
         }
-        await expect(upload, 'Upload input must be attached').toBeAttached({timeout: 30000});
+        await expect(upload, 'Upload input must be visible and ready').toBeVisible({timeout: 30000});
         await upload.setInputFiles(env.imageFixture);
-        await picker.locator('.fp-upload-btn').first().click();
+        await expect(upload, 'Moodle file picker must retain moodlelogo.png before upload').toHaveValue(
+            /moodlelogo\.png$/i,
+            {timeout: 30000}
+        );
+        const uploadResponse = page.waitForResponse(response => {
+            const url = new URL(response.url());
+            return response.request().method() === 'POST' &&
+                url.pathname === '/repository/repository_ajax.php' &&
+                url.searchParams.get('action') === 'upload' &&
+                response.status() === 200;
+        }, {timeout: 45000});
+        const uploadSubmit = picker.locator('.fp-upload-btn').first();
+        await expect(uploadSubmit, 'Moodle upload confirmation must be available').toBeVisible();
+        await uploadSubmit.click();
+        await uploadResponse;
         await expect(picker, 'File picker must close after upload').toBeHidden({timeout: 45000});
 
         const currentLayer = form.locator(
