@@ -2122,6 +2122,7 @@ $PAGE->requires->strings_for_js([
     'redopreviewchange',
     'savebannerlayers',
     'selectedlayersdeleted',
+    'selectimagedraft',
     'selectlayer',
     'showhideallimages',
     'showimageinpreview',

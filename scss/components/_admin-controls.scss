@@ -1070,6 +1070,27 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
     cursor: default;
 }
 
+#fitem_id_bannerimage_filemanager .fp-file .fp-thumbnail {
+    position: relative;
+}
+
+#fitem_id_bannerimage_filemanager [data-draft-preview-select="1"] {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    margin: 0;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+}
+
+#fitem_id_bannerimage_filemanager [data-draft-preview-select="1"]:focus-visible {
+    outline: 3px solid rgba(15, 108, 191, 0.85);
+    outline-offset: 2px;
+}
+
 .local-course-banner-builder-preview-recenter {
     align-self: flex-end;
 }

@@ -511,6 +511,7 @@ $string['selectedcategorystatus'] = 'Source sélectionnée';
 $string['selectedcustomfieldstatus'] = 'Valeur de champ sélectionnée';
 $string['selectedlayersdeleted'] = '{$a} calque(s) sélectionné(s) supprimé(s).';
 $string['selectedsitebannersourcestatus'] = 'Source de bannière de site sélectionnée';
+$string['selectimagedraft'] = 'Sélectionner l’image {$a}';
 $string['selectlayer'] = 'Sélectionner le calque';
 $string['settings'] = 'Constructeur de bannières de cours';
 $string['sharpinnercorners'] = 'Coins internes droits';
