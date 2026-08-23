@@ -1,0 +1,41 @@
+// Shared visual identity for the Course, Site and Transfer administration pages.
+//
+// CCB owns the header's placement and localised copy. Typography and colour
+// roles are consumed from the embedded UI Kit without changing its contract.
+
+@use "../easyedu" as easyedu;
+
+.local-course-banner-builder-page-identity {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0 0 1.05rem;
+    max-inline-size: 58rem;
+    min-width: 0;
+}
+
+.local-course-banner-builder-page-identity__brand {
+    @include easyedu.type-eyebrow;
+
+    color: var(--easyedu-primary);
+    margin: 0;
+}
+
+.local-course-banner-builder-page-identity__title {
+    @include easyedu.type-page-title;
+
+    margin: 0;
+}
+
+.local-course-banner-builder-page-identity__description {
+    @include easyedu.type-body;
+
+    color: var(--easyedu-text-muted);
+    margin: 0;
+}
+
+@media (max-width: 48rem) {
+    .local-course-banner-builder-page-identity {
+        gap: 0.3rem;
+        margin-bottom: 0.9rem;
+    }
+}

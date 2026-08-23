@@ -3396,6 +3396,15 @@ $navigationcontext = \local_course_banner_builder\output\navigation::context(
     $issitebanneradmin ? 'site' : 'course',
     $guidehtml
 );
+echo $OUTPUT->render_from_template('local_course_banner_builder/admin_page_identity', [
+    'brand' => get_string('pluginname', 'local_course_banner_builder'),
+    'title' => $adminpagetitle,
+    'description' => get_string(
+        $issitebanneradmin ? 'managesitebanner_desc' : 'managebanners_desc',
+        'local_course_banner_builder'
+    ),
+    'variant' => $issitebanneradmin ? 'site' : 'course',
+]);
 echo $OUTPUT->render_from_template('local_course_banner_builder/easyedu_navigation', $navigationcontext);
 $statuspopoverattributes = static function (string $label): array {
     return [
