@@ -105,15 +105,30 @@ const expectCrop = (actual, expected, label) => {
     expect(Number(actual.settings?.imagecropheightpercent), label + ': draft JSON height').toBe(Number(expected.height));
 };
 
+const draftSelectButton = (form, index) => form.getByRole('button', {
+    exact: true,
+    name: 'Select image ' + (Number(index) + 1),
+}).first();
+
+const expectSelectedDraftButton = async(form, indexes, selectedIndex, label) => {
+    const buttons = form.locator('[data-draft-preview-select="1"]');
+    await expect(buttons, label + ': both draft selectors must be available').toHaveCount(2, {timeout: 30000});
+    for (const index of indexes) {
+        await expect(draftSelectButton(form, index), label + ': draft selector accessible name').toBeVisible();
+        await expect(draftSelectButton(form, index), label + ': draft selector pressed state').toHaveAttribute(
+            'aria-pressed', String(index) === String(selectedIndex) ? 'true' : 'false'
+        );
+    }
+};
+
 const selectDraft = async(form, index, label) => {
-    const visual = form.locator(
-        '[data-preview-draft-visual-layer="1"][data-draft-index="' + index + '"]'
-    ).first();
-    await expect(visual, label + ': draft visual must be visible for user selection').toBeVisible({timeout: 30000});
-    await visual.click();
+    const selector = draftSelectButton(form, index);
+    await expect(selector, label + ': accessible draft selector must be visible for user selection').toBeVisible({timeout: 30000});
+    await selector.click();
     await expect.poll(() => form.getAttribute('data-active-draft-index'), {
         message: label + ': selected draft must become active', timeout: 30000,
     }).toBe(String(index));
+    await expect(selector, label + ': selected draft must expose aria-pressed').toHaveAttribute('aria-pressed', 'true');
 };
 
 const uploadDraft = async(page, form, imagePath, expectedCount, label) => {
@@ -291,6 +306,11 @@ test('IMG-07 image-modal draft state transitions preserve Crop across Fill, A/B,
         await uploadDraft(page, form, env.imageB, 2, 'draft B upload');
         const draftB = await form.getAttribute('data-active-draft-index');
         ensure(/^\d+$/.test(draftB || '') && draftB !== draftA, 'Upload B must select a distinct second draft.');
+        await expectSelectedDraftButton(form, [draftA, draftB], draftB, 'after draft B upload');
+        const selectBStarted = Date.now();
+        await selectDraft(form, draftB, 'select B through its accessible selector');
+        evidence.gestureMilliseconds.selectB = Date.now() - selectBStarted;
+        await expectSelectedDraftButton(form, [draftA, draftB], draftB, 'after explicit accessible B selection');
         evidence.draftB = await readDraft(form, draftB);
         await modal.screenshot({path: path.join(env.artifactRoot, 'img-07-b-selected.png')});
 
@@ -298,6 +318,17 @@ test('IMG-07 image-modal draft state transitions preserve Crop across Fill, A/B,
         await selectDraft(form, draftA, 'switch B to A');
         evidence.gestureMilliseconds.switchBToA = Date.now() - selectAStarted;
         await waitForFrames(page);
+        await expectSelectedDraftButton(form, [draftA, draftB], draftA, 'after B to A selection');
+        const selectBFromAStarted = Date.now();
+        await selectDraft(form, draftB, 'switch A to B');
+        evidence.gestureMilliseconds.switchAToB = Date.now() - selectBFromAStarted;
+        await waitForFrames(page);
+        await expectSelectedDraftButton(form, [draftA, draftB], draftB, 'after A to B selection');
+        const selectAFromBStarted = Date.now();
+        await selectDraft(form, draftA, 'switch B to A again');
+        evidence.gestureMilliseconds.switchBToAAgain = Date.now() - selectAFromBStarted;
+        await waitForFrames(page);
+        await expectSelectedDraftButton(form, [draftA, draftB], draftA, 'after B to A selection again');
         evidence.afterSwitchBackA = await readDraft(form, draftA);
         expectCrop(evidence.afterSwitchBackA, appliedCrop, 'Switch B to A must restore all Crop A values');
         await modal.screenshot({path: path.join(env.artifactRoot, 'img-07-a-restored.png')});
