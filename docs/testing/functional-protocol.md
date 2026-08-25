@@ -103,6 +103,7 @@ Status values:
 | SRC-01 | Create and select category source | Source becomes active | Behat | Blocked |
 | SRC-02 | Create custom-field source | Value-specific source is available | Behat | Blocked |
 | SRC-03 | Configure inheritance chain | Final layer order follows inheritance rules | PHPUnit/Behat | Blocked |
+| SRC-04 | Change a configured source parent | Parent source is informative in the table; the action opens a keyboard-operable modal. It offers root plus configured non-descendants only, Cancel makes no request and restores focus, Confirm recalculates the affected source chain, refreshes the complete table then restores focus to the edited source action. A forged descendant is rejected by the server while the modal stays open. | One leased Moodle 5.1 Playwright scenario (`ccb-parent-source-modal.spec.js`) | Candidate — requires a disposable three-source chain fixture and explicit runtime authorisation |
 | IMG-01 | Upload a valid image through filepicker | Draft image appears once | Playwright | Blocked |
 | IMG-02 | Drop a valid image | Same state as filepicker upload | Playwright | Blocked |
 | IMG-03 | Upload invalid type or oversized file | Localised error, no layer created | Behat/Playwright | Blocked |
