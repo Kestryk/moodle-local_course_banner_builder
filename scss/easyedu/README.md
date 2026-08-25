@@ -99,6 +99,15 @@ Prefer generic `--easyedu-*` variables. Plugin-specific aliases such as
 - `token-pill`: semantic labels.
 - `count-badge`: small quantity badges.
 - `empty-state`: empty or no-result placeholders.
+- `skeleton-surface`, `skeleton-shimmer-direct`,
+  `skeleton-shimmer-overlay`, `skeleton-stack`: loading-state primitives.
+- `skeleton-section-top-border`, `skeleton-section-heading`,
+  `skeleton-section-icon-slot`, `skeleton-section-title`,
+  `skeleton-section-navigation-gap`: localised, decorative Skeleton section
+  template without consumer page geometry or loading lifecycle.
+- `skeleton-section-frame`, `skeleton-cue-stack`, `skeleton-section-compact`:
+  static principal frames, logical internal cue rhythm and opt-in compact
+  visual density for consumer-owned mobile rules.
 - `drop-target-overlay`: drag/drop compatible target feedback.
 - `tooltip-surface`: hover-only help bubbles.
 

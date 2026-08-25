@@ -29,6 +29,25 @@ frame and cue primitives unchanged from immutable UI Kit snapshot
 `c9277a82fb471018f4cc07b24dd336d2adfa310d`; Navigation destinations, Guide
 content, lifecycle timing and geometry remain outside that snapshot boundary.
 
+## 2026-08-25 Kit 41 section parity (`EED-CCB-2026-0006`)
+
+CCB now consumes the visual Skeleton section primitives from immutable UI Kit
+snapshot `41e86979dc8138dd026438039143f2ba94c0531e`. The two Slideshow
+administration-card placeholders use `skeleton-section-frame` with the public
+`--easyedu-primary` accent: their frame and logical top border are static,
+while only the title, preview text, rows and action cues retain the shimmer.
+The primitive supplies forced-colors `CanvasText`; reduced motion therefore
+never animates either principal frame or its internal cues.
+
+The live Course and Site icons retain the shared Kit header alignment; CCB no
+longer overrides it. The localised plugin name (`pluginname`) replaces the
+former EasyStud eyebrow, and the identity owns a token-based gap before the
+unchanged shared Navigation. At narrow widths the CCB-owned cards still stack
+in one column and apply the Kit compact Skeleton density. Logical properties
+preserve the same border placement and cue rhythm in RTL. The Skeleton remains
+decorative (`aria-hidden`) and contains no focusable element; its no-script and
+normal ready-state handoff are unchanged.
+
 ## Lifecycle
 
 The PHP response starts in `loading`, before interactive JavaScript: the

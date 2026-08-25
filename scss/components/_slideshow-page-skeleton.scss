@@ -39,6 +39,7 @@ $loading-reveal-duration: var(--easyedu-loading-reveal-duration);
     display: grid;
     gap: 0.55rem;
     max-inline-size: 42rem;
+    margin-block-end: var(--easyedu-loading-section-navigation-gap);
     min-width: 0;
 }
 
@@ -190,11 +191,12 @@ $loading-reveal-duration: var(--easyedu-loading-reveal-duration);
 }
 
 .local-course-banner-builder-slideshow-page-skeleton__card {
-    background: #f9fbfd;
-    border: 1px solid $loading-border;
-    border-radius: 1rem;
     padding: 1rem;
 
+    @include easyedu.skeleton-section-frame(
+        $radius: 1rem,
+        $accent: var(--easyedu-primary)
+    );
     @include easyedu.skeleton-stack(1rem);
 }
 
@@ -261,6 +263,8 @@ $loading-reveal-duration: var(--easyedu-loading-reveal-duration);
 
     .local-course-banner-builder-slideshow-page-skeleton__cards {
         grid-template-columns: 1fr;
+
+        @include easyedu.skeleton-section-compact;
     }
 }
 

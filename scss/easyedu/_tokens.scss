@@ -127,6 +127,18 @@
   --easyedu-loading-stack-gap: 0.9rem;
   --easyedu-loading-shimmer-duration: 2s;
   --easyedu-loading-reveal-duration: 180ms;
+  --easyedu-loading-section-accent: var(--easyedu-primary);
+  --easyedu-loading-section-border-width: 0.1875rem;
+  --easyedu-loading-section-surface: var(--easyedu-loading-surface);
+  --easyedu-loading-section-border: var(--easyedu-loading-border);
+  --easyedu-loading-section-radius: var(--easyedu-loading-radius);
+  --easyedu-loading-section-stack-gap: var(--easyedu-loading-stack-gap);
+  --easyedu-loading-section-icon-slot-size: 1.5rem;
+  --easyedu-loading-section-heading-gap: var(--easyedu-action-icon-gap);
+  --easyedu-loading-section-navigation-gap: 1rem;
+  --easyedu-loading-section-compact-icon-slot-size: 1.25rem;
+  --easyedu-loading-section-compact-heading-gap: 0.5rem;
+  --easyedu-loading-section-compact-navigation-gap: 0.75rem;
   --easyedu-filter-border: #dce7f1;
   --easyedu-modal-border: #cfe0ef;
   --easyedu-modal-radius: 1rem;

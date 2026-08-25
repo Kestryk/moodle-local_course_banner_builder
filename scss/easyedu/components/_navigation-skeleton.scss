@@ -1,8 +1,8 @@
 // Navigation Skeleton primitives.
 //
-// Synchronized from the immutable EasyEdu UI Kit snapshot
-// c9277a82fb471018f4cc07b24dd336d2adfa310d. The outer frame remains
-// static; consumers animate decorative cues only.
+// The outer frame is deliberately static. Consumers apply the animated cue
+// mixins only to decorative descendants, so a large navigation-shaped surface
+// never repaints its complete area while loading.
 
 @use "loading";
 
@@ -11,7 +11,7 @@
     $border: var(--easyedu-loading-border),
     $radius: var(--easyedu-loading-radius)
 ) {
-    @include loading.skeleton-surface($surface, $border, $radius);
+    @include loading.skeleton-section-frame($surface, $border, $radius);
 }
 
 @mixin navigation-skeleton-cue(
@@ -82,11 +82,5 @@
 }
 
 @mixin navigation-skeleton-cue-stack($gap: var(--easyedu-loading-stack-gap)) {
-    & {
-        align-content: start;
-        display: grid;
-        gap: $gap;
-        justify-items: start;
-        min-inline-size: 0;
-    }
+    @include loading.skeleton-cue-stack($gap);
 }

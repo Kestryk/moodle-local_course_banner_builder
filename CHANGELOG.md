@@ -8,6 +8,25 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0006 - 2026-08-25
+
+#### Changed
+
+- Synced the embedded Loading and Navigation Skeleton primitives from UI Kit
+  `41e86979dc8138dd026438039143f2ba94c0531e`. Slideshow's two decorative
+  Skeleton cards now have static, token-based primary top borders while only
+  their internal cues shimmer.
+- Restored identical Course/Site header-icon alignment, replaced the EasyStud
+  eyebrow with the localised Course Banner Builder plugin name and added a
+  token-based identity-to-Navigation gap. The English product name is now
+  capitalised consistently.
+
+#### Validation
+
+- Extended LOAD-03's static scenario contract for the primary Skeleton border,
+  cue-only animation, localised identity and matched icon centres. Browser and
+  human review remain separately authorised.
+
 ### EED-CCB-2026-0041 - 2026-08-23
 
 #### Changed

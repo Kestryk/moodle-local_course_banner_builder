@@ -8016,6 +8016,18 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
   --easyedu-loading-stack-gap: 0.9rem;
   --easyedu-loading-shimmer-duration: 2s;
   --easyedu-loading-reveal-duration: 180ms;
+  --easyedu-loading-section-accent: var(--easyedu-primary);
+  --easyedu-loading-section-border-width: 0.1875rem;
+  --easyedu-loading-section-surface: var(--easyedu-loading-surface);
+  --easyedu-loading-section-border: var(--easyedu-loading-border);
+  --easyedu-loading-section-radius: var(--easyedu-loading-radius);
+  --easyedu-loading-section-stack-gap: var(--easyedu-loading-stack-gap);
+  --easyedu-loading-section-icon-slot-size: 1.5rem;
+  --easyedu-loading-section-heading-gap: var(--easyedu-action-icon-gap);
+  --easyedu-loading-section-navigation-gap: 1rem;
+  --easyedu-loading-section-compact-icon-slot-size: 1.25rem;
+  --easyedu-loading-section-compact-heading-gap: 0.5rem;
+  --easyedu-loading-section-compact-navigation-gap: 0.75rem;
   --easyedu-filter-border: #dce7f1;
   --easyedu-modal-border: #cfe0ef;
   --easyedu-modal-radius: 1rem;
@@ -8136,6 +8148,7 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
   display: grid;
   gap: 0.55rem;
   max-inline-size: 42rem;
+  margin-block-end: var(--easyedu-loading-section-navigation-gap);
   min-width: 0;
 }
 
@@ -8263,6 +8276,17 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
     background: Canvas;
     border-color: CanvasText;
   }
+}
+.local-course-banner-builder-slideshow-page-skeleton__navigation {
+  border-block-start: var(--easyedu-loading-section-border-width) solid var(--easyedu-loading-section-accent);
+}
+@media (forced-colors: active) {
+  .local-course-banner-builder-slideshow-page-skeleton__navigation {
+    border-block-start-color: CanvasText;
+  }
+}
+.local-course-banner-builder-slideshow-page-skeleton__navigation {
+  animation: none;
 }
 
 .local-course-banner-builder-slideshow-page-skeleton__navigation-mark {
@@ -8492,10 +8516,33 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 }
 
 .local-course-banner-builder-slideshow-page-skeleton__card {
-  background: #f9fbfd;
-  border: 1px solid var(--easyedu-loading-border);
-  border-radius: 1rem;
   padding: 1rem;
+}
+.local-course-banner-builder-slideshow-page-skeleton__card {
+  background: var(--easyedu-loading-section-surface);
+  border: 0.0625rem solid var(--easyedu-loading-section-border);
+  border-radius: 1rem;
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+}
+@media (forced-colors: active) {
+  .local-course-banner-builder-slideshow-page-skeleton__card {
+    background: Canvas;
+    border-color: CanvasText;
+  }
+}
+.local-course-banner-builder-slideshow-page-skeleton__card {
+  border-block-start: var(--easyedu-loading-section-border-width) solid var(--easyedu-primary);
+}
+@media (forced-colors: active) {
+  .local-course-banner-builder-slideshow-page-skeleton__card {
+    border-block-start-color: CanvasText;
+  }
+}
+.local-course-banner-builder-slideshow-page-skeleton__card {
+  animation: none;
 }
 .local-course-banner-builder-slideshow-page-skeleton__card {
   align-content: start;
@@ -8694,6 +8741,11 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
   }
   .local-course-banner-builder-slideshow-page-skeleton__cards {
     grid-template-columns: 1fr;
+  }
+  .local-course-banner-builder-slideshow-page-skeleton__cards {
+    --easyedu-loading-section-icon-slot-size: var(--easyedu-loading-section-compact-icon-slot-size);
+    --easyedu-loading-section-heading-gap: var(--easyedu-loading-section-compact-heading-gap);
+    --easyedu-loading-section-navigation-gap: var(--easyedu-loading-section-compact-navigation-gap);
   }
 }
 @media (forced-colors: active) {
@@ -12834,6 +12886,18 @@ span[data-flexitour=container].orphan .modal-dialog {
   --easyedu-loading-stack-gap: 0.9rem;
   --easyedu-loading-shimmer-duration: 2s;
   --easyedu-loading-reveal-duration: 180ms;
+  --easyedu-loading-section-accent: var(--easyedu-primary);
+  --easyedu-loading-section-border-width: 0.1875rem;
+  --easyedu-loading-section-surface: var(--easyedu-loading-surface);
+  --easyedu-loading-section-border: var(--easyedu-loading-border);
+  --easyedu-loading-section-radius: var(--easyedu-loading-radius);
+  --easyedu-loading-section-stack-gap: var(--easyedu-loading-stack-gap);
+  --easyedu-loading-section-icon-slot-size: 1.5rem;
+  --easyedu-loading-section-heading-gap: var(--easyedu-action-icon-gap);
+  --easyedu-loading-section-navigation-gap: 1rem;
+  --easyedu-loading-section-compact-icon-slot-size: 1.25rem;
+  --easyedu-loading-section-compact-heading-gap: 0.5rem;
+  --easyedu-loading-section-compact-navigation-gap: 0.75rem;
   --easyedu-filter-border: #dce7f1;
   --easyedu-modal-border: #cfe0ef;
   --easyedu-modal-radius: 1rem;
@@ -15049,7 +15113,6 @@ span[data-flexitour=container].orphan .modal-dialog {
   gap: 0.7rem;
   min-height: 3.5rem;
   padding: 0.78rem 0.9rem;
-  align-items: flex-start;
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-slideshow-card-header > .fa,
 .local-course-banner-builder-admin--native .local-course-banner-builder-slideshow-card-header > [aria-hidden=true] {

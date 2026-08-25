@@ -113,6 +113,17 @@ test.describe('CCB admin Slideshow page skeleton', () => {
         expect(headerOrder.liveIdentityBeforeNavigation).toBe(true);
         expect(headerOrder.skeletonIdentityBeforeNavigation).toBe(true);
 
+        const identityContract = await shell.locator(
+            '.local-course-banner-builder-slideshow-page-identity'
+        ).evaluate((identity) => ({
+            eyebrow: identity.querySelector(
+                '.local-course-banner-builder-slideshow-page-identity__eyebrow'
+            ).textContent.trim(),
+            navigationGap: parseFloat(window.getComputedStyle(identity).marginBlockEnd),
+        }));
+        expect(identityContract.eyebrow).toBe('Course Banner Builder');
+        expect(identityContract.navigationGap).toBeGreaterThan(0);
+
         const visualContract = await skeleton.locator(
             '.local-course-banner-builder-slideshow-page-skeleton__title'
         ).evaluate((surface) => {
@@ -157,6 +168,37 @@ test.describe('CCB admin Slideshow page skeleton', () => {
         }));
         expect(navigationMotion.frame).toBe('none');
         expect(navigationMotion.cue).toContain('easyedu-skeleton-shimmer');
+
+        const cardContracts = await skeleton.locator(
+            '.local-course-banner-builder-slideshow-page-skeleton__card'
+        ).evaluateAll((cards) => cards.map((card) => ({
+            borderColor: window.getComputedStyle(card).borderBlockStartColor,
+            borderWidth: window.getComputedStyle(card).borderBlockStartWidth,
+            frameAnimation: window.getComputedStyle(card, '::after').animationName,
+            cueAnimation: window.getComputedStyle(
+                card.querySelector('.local-course-banner-builder-slideshow-page-skeleton__card-title'),
+                '::after'
+            ).animationName,
+        })));
+        expect(cardContracts).toHaveLength(2);
+        cardContracts.forEach((card) => {
+            expect(card.borderColor).toBe('rgb(15, 108, 191)');
+            expect(card.borderWidth).toBe('3px');
+            expect(card.frameAnimation).toBe('none');
+            expect(card.cueAnimation).toContain('easyedu-skeleton-shimmer');
+        });
+
+        const iconAlignment = await live.locator(
+            '.local-course-banner-builder-slideshow-card-header > .fa'
+        ).evaluateAll((icons) => icons.map((icon) => {
+            const iconBox = icon.getBoundingClientRect();
+            const headerBox = icon.parentElement.getBoundingClientRect();
+            return Math.abs(
+                (iconBox.top + (iconBox.height / 2)) - (headerBox.top + (headerBox.height / 2))
+            );
+        }));
+        expect(iconAlignment).toHaveLength(2);
+        iconAlignment.forEach((offset) => expect(offset).toBeLessThanOrEqual(1));
 
         const timeline = await page.evaluate(() => window.__ccbSlideshowSkeletonTimeline);
         expect(timeline[0].state).toBe('loading');

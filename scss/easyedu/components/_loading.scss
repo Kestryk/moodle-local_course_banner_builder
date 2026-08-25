@@ -4,6 +4,8 @@
 // The kit owns only the visual surface, shimmer, bounded stack rhythm and
 // opacity handoff used by proven EasyEdu loading states.
 
+@use "typography";
+
 @mixin skeleton-surface(
   $surface: var(--easyedu-loading-surface),
   $border: var(--easyedu-loading-border),
@@ -22,6 +24,116 @@
   @media (forced-colors: active) {
     background: Canvas;
     border-color: CanvasText;
+  }
+}
+
+// Compose with skeleton-surface for the top accent of each main skeleton
+// section. Logical properties retain the same reading order in RTL.
+@mixin skeleton-section-top-border(
+  $color: var(--easyedu-loading-section-accent),
+  $width: var(--easyedu-loading-section-border-width)
+) {
+  & {
+    border-block-start: $width solid $color;
+  }
+
+  @media (forced-colors: active) {
+    & {
+      border-block-start-color: CanvasText;
+    }
+  }
+}
+
+// A principal Skeleton frame is static by contract. Consumers select it under
+// their own breakpoint and layout selectors; it supplies no page geometry.
+@mixin skeleton-section-frame(
+  $surface: var(--easyedu-loading-section-surface),
+  $border: var(--easyedu-loading-section-border),
+  $radius: var(--easyedu-loading-section-radius),
+  $accent: var(--easyedu-loading-section-accent),
+  $accent-width: var(--easyedu-loading-section-border-width)
+) {
+  @include skeleton-surface($surface, $border, $radius);
+  @include skeleton-section-top-border($accent, $accent-width);
+
+  & {
+    animation: none;
+  }
+}
+
+// Structural heading slots stay outside the decorative skeleton body so their
+// localised title remains available to assistive technology.
+@mixin skeleton-section-heading {
+  & {
+    align-items: center;
+    column-gap: var(--easyedu-loading-section-heading-gap);
+    display: grid;
+    grid-template-columns: var(--easyedu-loading-section-icon-slot-size) minmax(0, 1fr);
+    min-inline-size: 0;
+  }
+}
+
+@mixin skeleton-section-icon-slot {
+  & {
+    align-items: center;
+    color: var(--easyedu-loading-section-accent);
+    display: grid;
+    inline-size: var(--easyedu-loading-section-icon-slot-size);
+    justify-content: center;
+  }
+
+  @media (forced-colors: active) {
+    & {
+      color: CanvasText;
+    }
+  }
+}
+
+@mixin skeleton-section-title {
+  @include typography.type-section-title;
+
+  & {
+    color: var(--easyedu-loading-section-accent);
+    margin-block: 0;
+    min-inline-size: 0;
+  }
+
+  @media (forced-colors: active) {
+    & {
+      color: CanvasText;
+    }
+  }
+}
+
+// Apply to the non-interactive navigation-shaped skeleton block, not to page
+// layout or a product's real navigation control.
+@mixin skeleton-section-navigation-gap(
+  $gap: var(--easyedu-loading-section-navigation-gap)
+) {
+  & {
+    margin-block-start: $gap;
+  }
+}
+
+// Use for a product-owned group of decorative cues. Logical alignment mirrors
+// automatically in RTL; individual cues may opt into a shimmer primitive.
+@mixin skeleton-cue-stack($gap: var(--easyedu-loading-section-stack-gap)) {
+  & {
+    align-content: start;
+    display: grid;
+    gap: $gap;
+    justify-items: start;
+    min-inline-size: 0;
+  }
+}
+
+// Consumers apply this only in their own narrow-width rule. It changes the
+// reusable visual density, never page widths, offsets or loading lifecycle.
+@mixin skeleton-section-compact {
+  & {
+    --easyedu-loading-section-icon-slot-size: var(--easyedu-loading-section-compact-icon-slot-size);
+    --easyedu-loading-section-heading-gap: var(--easyedu-loading-section-compact-heading-gap);
+    --easyedu-loading-section-navigation-gap: var(--easyedu-loading-section-compact-navigation-gap);
   }
 }
 
