@@ -9045,14 +9045,17 @@ function localCourseBannerBuilderSyncDraftPreviewSelectors(form, files) {
         if (!file.item || file.item.hidden || file.item.getAttribute('aria-hidden') === 'true') {
             return;
         }
-        var thumbnail = file.item.querySelector('.fp-thumbnail') || file.item;
-        var control = thumbnail.querySelector('[data-draft-preview-select="1"]');
+        var control = file.item.querySelector('[data-draft-preview-select="1"]');
         if (!control) {
             control = document.createElement('button');
             control.type = 'button';
             control.className = 'local-course-banner-builder-draft-preview-select';
             control.setAttribute('data-draft-preview-select', '1');
-            thumbnail.appendChild(control);
+            file.item.appendChild(control);
+        } else if (control.parentNode !== file.item) {
+            // Moodle's thumbnail lives inside its file activation link. Keep the
+            // CCB selector beside that link so interactive controls never nest.
+            file.item.appendChild(control);
         }
         control.setAttribute('data-draft-index', String(file.index));
         control.setAttribute('aria-label', localCourseBannerBuilderGetDraftPreviewSelectLabel(position));

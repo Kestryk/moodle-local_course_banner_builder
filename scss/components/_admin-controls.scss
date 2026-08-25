@@ -1070,11 +1070,11 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
     cursor: default;
 }
 
-#fitem_id_bannerimage_filemanager .fp-file .fp-thumbnail {
+#fitem_id_bannerimage_filemanager .fp-file {
     position: relative;
 }
 
-#fitem_id_bannerimage_filemanager [data-draft-preview-select="1"] {
+#fitem_id_bannerimage_filemanager .fp-file > [data-draft-preview-select="1"] {
     position: absolute;
     inset: 0;
     z-index: 1;
