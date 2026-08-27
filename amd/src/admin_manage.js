@@ -9065,9 +9065,14 @@ function localCourseBannerBuilderSyncDraftPreviewSelectors(form, files) {
             controlLabel.setAttribute('data-draft-preview-select-label', '1');
             control.appendChild(controlLabel);
         }
+        if (!controlLabel.id) {
+            controlLabel.id = (file.item.id || 'local-course-banner-builder-draft-preview-select-' + String(file.index)) +
+                '-label';
+        }
         controlLabel.textContent = selectLabel;
         control.setAttribute('data-draft-index', String(file.index));
         control.setAttribute('aria-label', selectLabel);
+        control.setAttribute('aria-labelledby', controlLabel.id);
         control.setAttribute('aria-pressed', String(file.index) === activeIndex ? 'true' : 'false');
     });
 }
