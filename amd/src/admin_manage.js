@@ -17919,6 +17919,75 @@ function localCourseBannerBuilderShowModal(modal) {
     return true;
 }
 
+var localCourseBannerBuilderAddLayerModalPortal = null;
+
+/**
+ * Move the create-layer modal outside the Bootstrap-hidden page wrapper.
+ *
+ * @param {HTMLElement} modal The create-layer modal.
+ * @returns {void}
+ */
+function localCourseBannerBuilderPortalAddLayerModal(modal) {
+    if (!modal || modal.id !== 'local-course-banner-builder-add-layer-modal' || modal.parentNode === document.body) {
+        return;
+    }
+    var parent = modal.parentNode;
+    var placeholder = document.createComment('local-course-banner-builder-add-layer-modal-origin');
+    parent.insertBefore(placeholder, modal);
+    localCourseBannerBuilderAddLayerModalPortal = {
+        modal: modal,
+        parent: parent,
+        placeholder: placeholder,
+        returnFocus: document.activeElement instanceof HTMLElement ? document.activeElement : null
+    };
+    document.body.appendChild(modal);
+}
+
+/**
+ * Restore the create-layer modal to its exact server-rendered position.
+ *
+ * @param {HTMLElement} modal The create-layer modal.
+ * @returns {void}
+ */
+function localCourseBannerBuilderRestoreAddLayerModalPortal(modal) {
+    var portal = localCourseBannerBuilderAddLayerModalPortal;
+    if (!portal || portal.modal !== modal) {
+        return;
+    }
+    if (portal.placeholder.parentNode) {
+        portal.placeholder.parentNode.replaceChild(modal, portal.placeholder);
+    } else if (portal.parent && portal.parent.isConnected) {
+        portal.parent.appendChild(modal);
+    }
+    localCourseBannerBuilderAddLayerModalPortal = null;
+    if (portal.returnFocus && document.contains(portal.returnFocus)) {
+        window.setTimeout(function () {
+            portal.returnFocus.focus();
+        }, 0);
+    }
+}
+
+/**
+ * Bind one restoration handler for every supported modal close path.
+ *
+ * @param {HTMLElement} modal The create-layer modal.
+ * @returns {void}
+ */
+function localCourseBannerBuilderBindAddLayerModalPortal(modal) {
+    if (!modal || modal.id !== 'local-course-banner-builder-add-layer-modal' || modal.dataset.modalPortalBound === '1') {
+        return;
+    }
+    modal.dataset.modalPortalBound = '1';
+    modal.addEventListener('hidden.bs.modal', function () {
+        localCourseBannerBuilderRestoreAddLayerModalPortal(modal);
+    });
+    if (typeof window.jQuery !== 'undefined') {
+        window.jQuery(modal).on('hidden.bs.modal', function () {
+            localCourseBannerBuilderRestoreAddLayerModalPortal(modal);
+        });
+    }
+}
+
 function localCourseBannerBuilderIsNativeAdmin() {
     return !!document.querySelector('.local-course-banner-builder-admin--native');
 }
@@ -17951,6 +18020,7 @@ function localCourseBannerBuilderForceHideModal(modal) {
             backdrop.remove();
         });
     }
+    localCourseBannerBuilderRestoreAddLayerModalPortal(modal);
 }
 
 function localCourseBannerBuilderHideModal(modal) {
@@ -18382,6 +18452,8 @@ function localCourseBannerBuilderLoadCreateLayerModal() {
         return false;
     }
     localCourseBannerBuilderRestoreCreateLayerModal();
+    localCourseBannerBuilderBindAddLayerModalPortal(modal);
+    localCourseBannerBuilderPortalAddLayerModal(modal);
     var opened = localCourseBannerBuilderShowModal(modal);
     if (opened && typeof window.jQuery !== 'undefined') {
         window.jQuery(modal).one('shown.bs.modal', function () {
