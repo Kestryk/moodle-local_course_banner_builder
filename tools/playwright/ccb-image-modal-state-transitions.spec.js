@@ -132,6 +132,127 @@ const selectDraft = async(form, index, label) => {
     await expect(selector, label + ': selected draft must expose aria-pressed').toHaveAttribute('aria-pressed', 'true');
 };
 
+const readDraftSelectorDom = (form, indexes) => form.evaluate((currentForm, draftIndexes) => {
+    const describe = element => {
+        if (!element) {
+            return null;
+        }
+        const style = window.getComputedStyle(element);
+        const attributes = {};
+        Array.from(element.attributes).forEach(attribute => {
+            attributes[attribute.name] = attribute.value;
+        });
+        return {
+            attributes,
+            className: element.className || '',
+            hidden: element.hidden,
+            id: element.id || '',
+            inert: element.inert,
+            tagName: element.tagName,
+            computed: {
+                display: style.display,
+                visibility: style.visibility,
+            },
+        };
+    };
+    const ancestry = element => {
+        const result = [];
+        let current = element;
+        while (current) {
+            result.push(describe(current));
+            current = current.parentElement;
+        }
+        return result;
+    };
+    return draftIndexes.map(index => {
+        const control = currentForm.querySelector(
+            '[data-draft-preview-select="1"][data-draft-index="' + index + '"]'
+        );
+        const labelledby = (control?.getAttribute('aria-labelledby') || '').trim().split(/\s+/).filter(Boolean);
+        return {
+            index: String(index),
+            control: describe(control),
+            ancestors: ancestry(control),
+            labelledby: labelledby.map(id => ({
+                id,
+                target: describe(document.getElementById(id)),
+                text: document.getElementById(id)?.textContent?.trim() || '',
+            })),
+        };
+    });
+}, indexes);
+
+const simplifyAxNode = node => ({
+    backendDOMNodeId: node.backendDOMNodeId || null,
+    childIds: node.childIds || [],
+    description: node.description?.value || '',
+    ignored: !!node.ignored,
+    ignoredReasons: node.ignoredReasons || [],
+    name: node.name?.value || '',
+    nodeId: node.nodeId,
+    parentId: node.parentId || null,
+    properties: node.properties || [],
+    role: node.role?.value || '',
+});
+
+const axAncestors = (node, nodesById) => {
+    const ancestors = [];
+    let current = node;
+    while (current) {
+        ancestors.push(simplifyAxNode(current));
+        current = current.parentId ? nodesById.get(current.parentId) : null;
+    }
+    return ancestors;
+};
+
+const captureDraftSelectorAccessibilityAudit = async(page, context, form, indexes, stage, artifactRoot) => {
+    const dom = await readDraftSelectorDom(form, indexes);
+    const cdp = await context.newCDPSession(page);
+    try {
+        await cdp.send('Accessibility.enable');
+        const documentRoot = await cdp.send('DOM.getDocument', {depth: 1, pierce: true});
+        const fullTree = await cdp.send('Accessibility.getFullAXTree');
+        const nodesById = new Map((fullTree.nodes || []).map(node => [node.nodeId, node]));
+        const controls = [];
+        for (const entry of dom) {
+            const selector = '#local-course-banner-builder-add-layer-modal ' +
+                '[data-draft-preview-select="1"][data-draft-index="' + entry.index + '"]';
+            const node = await cdp.send('DOM.querySelector', {
+                nodeId: documentRoot.root.nodeId,
+                selector,
+            });
+            const described = node.nodeId ? await cdp.send('DOM.describeNode', {
+                nodeId: node.nodeId,
+                depth: 0,
+                pierce: true,
+            }) : {node: null};
+            const backendNodeId = described.node?.backendNodeId || null;
+            const partialTree = backendNodeId ? await cdp.send('Accessibility.getPartialAXTree', {
+                backendNodeId,
+                fetchRelatives: true,
+            }) : {nodes: []};
+            const axNode = backendNodeId ? (fullTree.nodes || []).find(candidate =>
+                candidate.backendDOMNodeId === backendNodeId
+            ) : null;
+            controls.push({
+                axAncestors: axNode ? axAncestors(axNode, nodesById) : [],
+                axNode: axNode ? simplifyAxNode(axNode) : null,
+                backendNodeId,
+                domNodeId: node.nodeId || null,
+                index: entry.index,
+                partialTree: partialTree.nodes || [],
+            });
+        }
+        const screenshot = await cdp.send('Page.captureScreenshot', {
+            format: 'png', fromSurface: true, captureBeyondViewport: false,
+        });
+        fs.writeFileSync(path.join(artifactRoot, 'img-07-ax-' + stage + '.png'), screenshot.data, 'base64');
+        return {controls, dom, fullTree: fullTree.nodes || [], stage};
+    } finally {
+        await cdp.detach().catch(() => {});
+    }
+};
+
 const uploadDraft = async(page, form, imagePath, expectedCount, label) => {
     const addFile = form.locator(
         '#fitem_id_bannerimage_filemanager .fp-btn-add a, ' +
@@ -262,6 +383,7 @@ test('IMG-07 image-modal draft state transitions preserve Crop across Fill, A/B,
     const consoleErrors = [];
     const pageErrors = [];
     const evidence = {consoleErrors, gestureMilliseconds: {}, pageErrors};
+    const axAuditOnly = process.env.EASYEDU_CCB_IMG07_AX_AUDIT === '1';
     const browser = await chromium.launch({headless: true});
     const context = await browser.newContext({ignoreHTTPSErrors: true, viewport: {width: 1440, height: 900}});
     await context.tracing.start({screenshots: true, snapshots: true, sources: true});
@@ -346,9 +468,28 @@ test('IMG-07 image-modal draft state transitions preserve Crop across Fill, A/B,
         ensure(draftB, 'Upload B must expose a visual draft index distinct from A.');
         evidence.draftIndexes = draftIndexes;
         await expectSelectedDraftButton(form, [draftA, draftB], draftA, 'after draft B upload');
+        if (axAuditOnly) {
+            evidence.axBeforeB = await captureDraftSelectorAccessibilityAudit(
+                page, context, form, [draftA, draftB], 'before-b', env.artifactRoot
+            );
+        }
         const selectBStarted = Date.now();
         await selectDraft(form, draftB, 'select B through its accessible selector');
         evidence.gestureMilliseconds.selectB = Date.now() - selectBStarted;
+        if (axAuditOnly) {
+            evidence.axAfterB = await captureDraftSelectorAccessibilityAudit(
+                page, context, form, [draftA, draftB], 'after-b', env.artifactRoot
+            );
+            evidence.axAuditComparison = {
+                activeDraftIndexAfterB: await form.getAttribute('data-active-draft-index'),
+                beforeNames: evidence.axBeforeB.controls.map(control => control.axNode?.name || ''),
+                afterNames: evidence.axAfterB.controls.map(control => control.axNode?.name || ''),
+            };
+            writeJson(path.join(env.artifactRoot, 'img-07-ax-audit.json'), evidence);
+            expect(consoleErrors, 'Browser console errors during AX audit').toEqual([]);
+            expect(pageErrors, 'Uncaught page errors during AX audit').toEqual([]);
+            return;
+        }
         await expectSelectedDraftButton(form, [draftA, draftB], draftB, 'after explicit accessible B selection');
         evidence.draftB = await readDraft(form, draftB);
         await modal.screenshot({path: path.join(env.artifactRoot, 'img-07-b-selected.png')});
