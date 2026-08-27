@@ -205,7 +205,7 @@ const axAncestors = (node, nodesById) => {
     return ancestors;
 };
 
-const captureDraftSelectorAccessibilityAudit = async(page, context, form, indexes, stage, artifactRoot) => {
+const captureDraftSelectorAccessibilityAudit = async(page, context, form, indexes, stage, artifactRoot, captureScreenshot = true) => {
     const dom = await readDraftSelectorDom(form, indexes);
     const cdp = await context.newCDPSession(page);
     try {
@@ -243,15 +243,48 @@ const captureDraftSelectorAccessibilityAudit = async(page, context, form, indexe
                 partialTree: partialTree.nodes || [],
             });
         }
-        const screenshot = await cdp.send('Page.captureScreenshot', {
-            format: 'png', fromSurface: true, captureBeyondViewport: false,
-        });
-        fs.writeFileSync(path.join(artifactRoot, 'img-07-ax-' + stage + '.png'), screenshot.data, 'base64');
+        if (captureScreenshot) {
+            const screenshot = await cdp.send('Page.captureScreenshot', {
+                format: 'png', fromSurface: true, captureBeyondViewport: false,
+            });
+            fs.writeFileSync(path.join(artifactRoot, 'img-07-ax-' + stage + '.png'), screenshot.data, 'base64');
+        }
         return {controls, dom, fullTree: fullTree.nodes || [], stage};
     } finally {
         await cdp.detach().catch(() => {});
     }
 };
+
+const capturePlaywrightDraftSelectorAccessibility = async(form, indexes) => {
+    const controls = [];
+    for (const index of indexes) {
+        const selector = draftSelectButton(form, index);
+        const result = {index: String(index)};
+        try {
+            await expect(selector).toHaveAccessibleName(/^Select image \d+$/, {timeout: 1000});
+            result.toHaveAccessibleName = {passed: true};
+        } catch (error) {
+            result.toHaveAccessibleName = {passed: false, error: String(error && error.message || error)};
+        }
+        try {
+            result.ariaSnapshot = await selector.ariaSnapshot();
+        } catch (error) {
+            result.ariaSnapshotError = String(error && error.message || error);
+        }
+        controls.push(result);
+    }
+    return controls;
+};
+
+const capturePageAndFrameState = page => ({
+    frames: page.frames().map(frame => ({
+        isMainFrame: frame === page.mainFrame(),
+        name: frame.name(),
+        url: frame.url(),
+    })),
+    mainFrameUrl: page.mainFrame().url(),
+    pageUrl: page.url(),
+});
 
 const uploadDraft = async(page, form, imagePath, expectedCount, label) => {
     const addFile = form.locator(
@@ -384,6 +417,7 @@ test('IMG-07 image-modal draft state transitions preserve Crop across Fill, A/B,
     const pageErrors = [];
     const evidence = {consoleErrors, gestureMilliseconds: {}, pageErrors};
     const axAuditOnly = process.env.EASYEDU_CCB_IMG07_AX_AUDIT === '1';
+    const rf3eQaDiagnostic = process.env.EASYEDU_CCB_IMG07_RF3E_QA_DIAGNOSTIC === '1';
     const browser = await chromium.launch({headless: true});
     const context = await browser.newContext({ignoreHTTPSErrors: true, viewport: {width: 1440, height: 900}});
     await context.tracing.start({screenshots: true, snapshots: true, sources: true});
@@ -476,6 +510,33 @@ test('IMG-07 image-modal draft state transitions preserve Crop across Fill, A/B,
         const selectBStarted = Date.now();
         await selectDraft(form, draftB, 'select B through its accessible selector');
         evidence.gestureMilliseconds.selectB = Date.now() - selectBStarted;
+        if (rf3eQaDiagnostic) {
+            const playwright = await capturePlaywrightDraftSelectorAccessibility(form, [draftA, draftB]);
+            const cdp = await captureDraftSelectorAccessibilityAudit(
+                page, context, form, [draftA, draftB], 'rf3e-after-b', env.artifactRoot, false
+            );
+            const comparison = [draftA, draftB].map((index, position) => ({
+                cdpName: cdp.controls[position].axNode?.name || '',
+                cdpIgnored: cdp.controls[position].axNode?.ignored || false,
+                draftIndex: String(index),
+                playwrightAccessibleNamePassed: playwright[position].toHaveAccessibleName.passed,
+                playwrightAriaSnapshot: playwright[position].ariaSnapshot || '',
+            }));
+            evidence.rf3eAccessibilityDiagnostic = {
+                cdp,
+                comparison,
+                page: capturePageAndFrameState(page),
+                playwright,
+                versions: {
+                    browser: browser.version(),
+                    playwright: require('@playwright/test/package.json').version,
+                },
+            };
+            writeJson(path.join(env.artifactRoot, 'img-07-rf3e-accessibility-diagnostic.json'), evidence);
+            expect(consoleErrors, 'Browser console errors during RF3-E QA diagnostic').toEqual([]);
+            expect(pageErrors, 'Uncaught page errors during RF3-E QA diagnostic').toEqual([]);
+            return;
+        }
         if (axAuditOnly) {
             evidence.axAfterB = await captureDraftSelectorAccessibilityAudit(
                 page, context, form, [draftA, draftB], 'after-b', env.artifactRoot
