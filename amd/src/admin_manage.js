@@ -779,6 +779,10 @@ document.addEventListener('click', function (e) {
     var draftSelectionControl = e.target.closest('[data-draft-preview-select="1"]');
     if (draftSelectionControl) {
         e.preventDefault();
+        e.stopPropagation();
+        if (typeof e.stopImmediatePropagation === 'function') {
+            e.stopImmediatePropagation();
+        }
         localCourseBannerBuilderActivateDraftPreviewSelection(draftSelectionControl);
         return;
     }
