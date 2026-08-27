@@ -109,13 +109,25 @@ const draftSelectButton = (form, index) => form.locator(
     '[data-draft-preview-select="1"][data-draft-index="' + index + '"]'
 ).first();
 
-const expectSelectedDraftButton = async(form, indexes, selectedIndex, label) => {
+const expectSelectedDraftButton = async(form, indexes, selectedIndex, label, cdpAssertion = null) => {
     const buttons = form.locator('[data-draft-preview-select="1"]');
     await expect(buttons, label + ': both draft selectors must be available').toHaveCount(2, {timeout: 30000});
+    const cdpControls = cdpAssertion ? await captureDraftSelectorAccessibilityAudit(
+        cdpAssertion.page, cdpAssertion.context, form, indexes, 'assertion', '', false
+    ) : null;
     for (const index of indexes) {
         const selector = draftSelectButton(form, index);
         await expect(selector, label + ': draft selector accessible name').toBeVisible();
-        await expect(selector, label + ': localized accessible selector name').toHaveAccessibleName(/^Select image \d+$/);
+        if (cdpControls) {
+            const control = cdpControls.controls.find(candidate => String(candidate.index) === String(index));
+            const focusable = control?.axNode?.properties?.find(property => property.name === 'focusable');
+            expect(control?.axNode?.role, label + ': CDP selector role').toBe('button');
+            expect(control?.axNode?.name, label + ': CDP localized selector name').toMatch(/^Select image \d+$/);
+            expect(control?.axNode?.ignored, label + ': CDP selector must not be ignored').toBe(false);
+            expect(focusable?.value?.value, label + ': CDP selector must be focusable').toBe(true);
+        } else {
+            await expect(selector, label + ': localized accessible selector name').toHaveAccessibleName(/^Select image \d+$/);
+        }
         await expect(selector, label + ': draft selector pressed state').toHaveAttribute(
             'aria-pressed', String(index) === String(selectedIndex) ? 'true' : 'false'
         );
@@ -502,6 +514,7 @@ test('IMG-07 image-modal draft state transitions preserve Crop across Fill, A/B,
         ensure(draftB, 'Upload B must expose a visual draft index distinct from A.');
         evidence.draftIndexes = draftIndexes;
         await expectSelectedDraftButton(form, [draftA, draftB], draftA, 'after draft B upload');
+        const cdpDraftSelectorAssertion = {context, page};
         if (axAuditOnly) {
             evidence.axBeforeB = await captureDraftSelectorAccessibilityAudit(
                 page, context, form, [draftA, draftB], 'before-b', env.artifactRoot
@@ -551,7 +564,8 @@ test('IMG-07 image-modal draft state transitions preserve Crop across Fill, A/B,
             expect(pageErrors, 'Uncaught page errors during AX audit').toEqual([]);
             return;
         }
-        await expectSelectedDraftButton(form, [draftA, draftB], draftB, 'after explicit accessible B selection');
+        await expectSelectedDraftButton(form, [draftA, draftB], draftB,
+            'after explicit accessible B selection', cdpDraftSelectorAssertion);
         evidence.draftB = await readDraft(form, draftB);
         await modal.screenshot({path: path.join(env.artifactRoot, 'img-07-b-selected.png')});
 
@@ -559,17 +573,20 @@ test('IMG-07 image-modal draft state transitions preserve Crop across Fill, A/B,
         await selectDraft(form, draftA, 'switch B to A');
         evidence.gestureMilliseconds.switchBToA = Date.now() - selectAStarted;
         await waitForFrames(page);
-        await expectSelectedDraftButton(form, [draftA, draftB], draftA, 'after B to A selection');
+        await expectSelectedDraftButton(form, [draftA, draftB], draftA,
+            'after B to A selection', cdpDraftSelectorAssertion);
         const selectBFromAStarted = Date.now();
         await selectDraft(form, draftB, 'switch A to B');
         evidence.gestureMilliseconds.switchAToB = Date.now() - selectBFromAStarted;
         await waitForFrames(page);
-        await expectSelectedDraftButton(form, [draftA, draftB], draftB, 'after A to B selection');
+        await expectSelectedDraftButton(form, [draftA, draftB], draftB,
+            'after A to B selection', cdpDraftSelectorAssertion);
         const selectAFromBStarted = Date.now();
         await selectDraft(form, draftA, 'switch B to A again');
         evidence.gestureMilliseconds.switchBToAAgain = Date.now() - selectAFromBStarted;
         await waitForFrames(page);
-        await expectSelectedDraftButton(form, [draftA, draftB], draftA, 'after B to A selection again');
+        await expectSelectedDraftButton(form, [draftA, draftB], draftA,
+            'after B to A selection again', cdpDraftSelectorAssertion);
         evidence.afterSwitchBackA = await readDraft(form, draftA);
         expectCrop(evidence.afterSwitchBackA, appliedCrop, 'Switch B to A must restore all Crop A values');
         await modal.screenshot({path: path.join(env.artifactRoot, 'img-07-a-restored.png')});
