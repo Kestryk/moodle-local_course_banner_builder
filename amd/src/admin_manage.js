@@ -9057,8 +9057,17 @@ function localCourseBannerBuilderSyncDraftPreviewSelectors(form, files) {
             // CCB selector beside that link so interactive controls never nest.
             file.item.appendChild(control);
         }
+        var selectLabel = localCourseBannerBuilderGetDraftPreviewSelectLabel(position);
+        var controlLabel = control.querySelector('[data-draft-preview-select-label="1"]');
+        if (!controlLabel) {
+            controlLabel = document.createElement('span');
+            controlLabel.className = 'sr-only';
+            controlLabel.setAttribute('data-draft-preview-select-label', '1');
+            control.appendChild(controlLabel);
+        }
+        controlLabel.textContent = selectLabel;
         control.setAttribute('data-draft-index', String(file.index));
-        control.setAttribute('aria-label', localCourseBannerBuilderGetDraftPreviewSelectLabel(position));
+        control.setAttribute('aria-label', selectLabel);
         control.setAttribute('aria-pressed', String(file.index) === activeIndex ? 'true' : 'false');
     });
 }
