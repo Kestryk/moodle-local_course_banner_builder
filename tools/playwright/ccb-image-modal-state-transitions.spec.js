@@ -139,8 +139,11 @@ const uploadDraft = async(page, form, imagePath, expectedCount, label) => {
     ).first();
     await expect(addFile, label + ': Moodle file-manager add action must be available').toBeVisible({timeout: 60000});
     await addFile.click();
-    const picker = page.locator('.file-picker:visible').last();
-    await expect(picker, label + ': Moodle file picker must open').toBeVisible({timeout: 30000});
+    const visiblePicker = page.locator('.file-picker:visible').last();
+    await expect(visiblePicker, label + ': Moodle file picker must open').toBeVisible({timeout: 30000});
+    const pickerId = await visiblePicker.getAttribute('id');
+    ensure(pickerId, label + ': Moodle file picker must expose a stable id.');
+    const picker = page.locator('#' + pickerId);
     let upload = picker.locator('input[name="repo_upload_file"]:visible').first();
     if (await upload.count() === 0) {
         const uploadRepository = picker.locator('.fp-repo-name', {hasText: /upload/i}).first();
@@ -150,10 +153,21 @@ const uploadDraft = async(page, form, imagePath, expectedCount, label) => {
     }
     await expect(upload, label + ': upload input must be visible and ready').toBeVisible({timeout: 30000});
     await upload.setInputFiles(imagePath);
-    const name = path.basename(imagePath).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const expectedName = path.basename(imagePath);
+    const selectedFiles = await upload.evaluate(input => Array.from(input.files || []).map(file => file.name));
+    ensure(selectedFiles.length === 1 && selectedFiles[0].toLowerCase() === expectedName.toLowerCase(),
+        label + ': repo_upload_file must contain the selected file; files=' + JSON.stringify(selectedFiles) +
+        '; value=' + JSON.stringify(await upload.inputValue()));
+    const name = expectedName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     await expect(upload, label + ': selected image must remain in the file field').toHaveValue(
         new RegExp(name + '$', 'i'), {timeout: 30000}
     );
+    const uploadRequest = page.waitForRequest(request => {
+        const url = new URL(request.url());
+        return request.method() === 'POST' &&
+            url.pathname === '/repository/repository_ajax.php' &&
+            url.searchParams.get('action') === 'upload';
+    }, {timeout: 45000});
     const uploadResponse = page.waitForResponse(response => {
         const url = new URL(response.url());
         return response.request().method() === 'POST' &&
@@ -163,16 +177,34 @@ const uploadDraft = async(page, form, imagePath, expectedCount, label) => {
     const submit = picker.locator('.fp-upload-btn').first();
     await expect(submit, label + ': upload confirmation must be available').toBeVisible();
     await submit.click();
-    await uploadResponse;
+    try {
+        await uploadRequest;
+    } catch (error) {
+        throw new Error(label + ': repository upload POST was not emitted; selected file=' +
+            JSON.stringify(selectedFiles) + '; ' + error.message);
+    }
+    try {
+        await uploadResponse;
+    } catch (error) {
+        throw new Error(label + ': repository upload POST was emitted but did not return HTTP 200; ' + error.message);
+    }
     await expect(picker, label + ': picker must close after upload').toBeHidden({timeout: 45000});
     await expect.poll(() => form.locator('[data-preview-draft-visual-layer="1"]').count(), {
         message: label + ': uploaded draft visual must render', timeout: 45000,
     }).toBe(expectedCount);
-    await expect.poll(async() => form.locator(
+    const currentLayer = form.locator('[data-preview-current-image="1"][data-preview-draft-layer="1"]').first();
+    await expect.poll(() => form.locator(
         '[data-preview-current-image="1"][data-preview-draft-layer="1"]'
     ).count(), {
         message: label + ': active draft shell must be available', timeout: 45000,
     }).toBe(1);
+    await expect.poll(() => currentLayer.getAttribute('data-preview-current-url'), {
+        message: label + ': uploaded draft must expose a draftfile.php URL', timeout: 45000,
+    }).toMatch(/\/draftfile\.php\//);
+    const currentImage = currentLayer.locator('[data-preview-image-tag="1"]').first();
+    await expect.poll(async() => currentImage.evaluate(image => image.complete ? image.naturalWidth : 0), {
+        message: label + ': uploaded draft image must finish loading', timeout: 45000,
+    }).toBeGreaterThan(0);
 };
 
 const applyCrop = async(page, form, label, evidence) => {
