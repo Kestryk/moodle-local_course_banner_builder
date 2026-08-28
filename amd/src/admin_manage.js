@@ -179,6 +179,25 @@ document.addEventListener('click', function (e) {
     }
 }, true);
 
+/*
+ * Moodle binds file activation to the surrounding .fp-file node. Intercept the
+ * CCB-only selector during capture so that activation cannot reach that owner.
+ */
+document.addEventListener('click', function (e) {
+    var draftSelectionControl = e.target && e.target.closest ?
+        e.target.closest('[data-draft-preview-select="1"]') :
+        null;
+    if (!draftSelectionControl) {
+        return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    if (typeof e.stopImmediatePropagation === 'function') {
+        e.stopImmediatePropagation();
+    }
+    localCourseBannerBuilderActivateDraftPreviewSelection(draftSelectionControl);
+}, true);
+
 document.addEventListener('click', function (e) {
     var aspectLockButton = e.target.closest('[data-action="local-course-banner-builder-toggle-preview-aspect-lock"]');
     if (aspectLockButton) {
@@ -774,17 +793,6 @@ document.addEventListener('click', function (e) {
         if (sourceLayer) {
             localCourseBannerBuilderSelectSourcePreviewLayer(sourcePreviewRoot, sourceLayer);
         }
-    }
-
-    var draftSelectionControl = e.target.closest('[data-draft-preview-select="1"]');
-    if (draftSelectionControl) {
-        e.preventDefault();
-        e.stopPropagation();
-        if (typeof e.stopImmediatePropagation === 'function') {
-            e.stopImmediatePropagation();
-        }
-        localCourseBannerBuilderActivateDraftPreviewSelection(draftSelectionControl);
-        return;
     }
 
     var clickedDraftLayer = e.target.closest('[data-preview-draft-layer="1"]');
