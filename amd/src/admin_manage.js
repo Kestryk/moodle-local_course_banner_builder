@@ -3853,17 +3853,27 @@ function localCourseBannerBuilderRefreshCropEditor(layer) {
     var boxBottom = boxTop + boxHeight;
     var centerLeft = boxLeft + (boxWidth / 2) - (actionWidth / 2);
     var centerTop = boxTop + (boxHeight / 2) - (actionHeight / 2);
-    var overlapArea = function (candidateLeft, candidateTop) {
+    var intersectionArea = function (candidateLeft, candidateTop, rect) {
+        if (!rect) {
+            return 0;
+        }
         var overlapWidth = Math.max(
             0,
-            Math.min(candidateLeft + actionWidth, boxRight) - Math.max(candidateLeft, boxLeft)
+            Math.min(candidateLeft + actionWidth, rect.right) - Math.max(candidateLeft, rect.left)
         );
         var overlapHeight = Math.max(
             0,
-            Math.min(candidateTop + actionHeight, boxBottom) - Math.max(candidateTop, boxTop)
+            Math.min(candidateTop + actionHeight, rect.bottom) - Math.max(candidateTop, rect.top)
         );
         return overlapWidth * overlapHeight;
     };
+    var layerForm = layer.closest('form');
+    var actionRail = layerForm ? layerForm.querySelector('[data-modal-preview-action-list="1"]') : null;
+    var actionRailStyle = actionRail && window.getComputedStyle ? window.getComputedStyle(actionRail) : null;
+    var actionRailRect = actionRail && !actionRail.hidden && actionRail.getClientRects().length &&
+        (!actionRailStyle || (actionRailStyle.display !== 'none' && actionRailStyle.visibility !== 'hidden'))
+        ? actionRail.getBoundingClientRect()
+        : null;
     var clamp = function (value, min, max) {
         if (min > max) {
             return value;
@@ -3917,11 +3927,15 @@ function localCourseBannerBuilderRefreshCropEditor(layer) {
         return {
             left: nextLeft,
             top: nextTop,
-            overlap: overlapArea(nextLeft, nextTop),
+            overlap: intersectionArea(nextLeft, nextTop, boxRect),
+            railOverlap: intersectionArea(nextLeft, nextTop, actionRailRect),
             priority: candidate.priority
         };
     });
     candidates.sort(function (a, b) {
+        if (a.railOverlap !== b.railOverlap) {
+            return a.railOverlap - b.railOverlap;
+        }
         if (a.overlap !== b.overlap) {
             return a.overlap - b.overlap;
         }

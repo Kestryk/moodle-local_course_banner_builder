@@ -8,6 +8,21 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0023-RF2-B - 2026-08-28
+
+#### Fixed
+
+- Crop and Recrop action placement now measures the visible modal action rail
+  and ranks every candidate that intersects it behind non-intersecting
+  positions. The rail remains fixed and visible, and the existing Crop,
+  Cancel, Undo and Redo transactions are unchanged.
+
+#### Validation
+
+- Rebuilt the Moodle AMD bundle and source map from the updated source. Static
+  syntax, image-modal transform contract, exact allowlist and diff checks pass;
+  the focused Recrop visual review remains separately authorised.
+
 ### EED-CCB-2026-0041 - 2026-08-23
 
 #### Changed
