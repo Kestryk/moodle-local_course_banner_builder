@@ -104,12 +104,13 @@ if ($importdata = $importform->get_data()) {
 echo $OUTPUT->header();
 echo html_writer::start_div('local-course-banner-builder-admin local-course-banner-builder-admin--native');
 $navigationcontext = \local_course_banner_builder\output\navigation::context('transfer');
+echo $OUTPUT->render_from_template('local_course_banner_builder/admin_page_identity', [
+    'brand' => get_string('pluginname', 'local_course_banner_builder'),
+    'title' => get_string('exportimport', 'local_course_banner_builder'),
+    'description' => get_string('transferconfig_desc', 'local_course_banner_builder'),
+    'variant' => 'transfer',
+]);
 echo $OUTPUT->render_from_template('local_course_banner_builder/easyedu_navigation', $navigationcontext);
-echo html_writer::tag(
-    'p',
-    get_string('exportconfigdesc', 'local_course_banner_builder'),
-    ['class' => 'local-course-banner-builder-transfer-intro']
-);
 echo html_writer::start_div('local-course-banner-builder-transfer-grid');
 echo html_writer::start_tag('section', ['class' => 'local-course-banner-builder-transfer-panel']);
 echo html_writer::div(

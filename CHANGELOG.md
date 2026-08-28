@@ -8,6 +8,21 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0015-B - 2026-08-28
+
+#### Changed
+
+- Added one localised CCB page identity before the existing Navigation on the
+  Course banners, Site banner and Transfer administration pages. The header
+  uses the established CCB blue and embedded UI Kit typography roles; it does
+  not alter Navigation, Guide or Slideshow.
+
+#### Validation
+
+- Added the focused read-only `ccb-admin-page-identity` regression contract
+  for Course, Site and Transfer. Browser execution remains a separate
+  lease-gated approval.
+
 ### EED-CCB-2026-0006 - 2026-08-28
 
 #### Changed

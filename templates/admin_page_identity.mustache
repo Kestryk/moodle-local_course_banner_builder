@@ -1,0 +1,16 @@
+{{!
+    @template local_course_banner_builder/admin_page_identity
+
+    Shared page identity for the Course, Site and Transfer administration
+    surfaces. The page owns its copy and placement; the shared Navigation stays
+    a separate sibling rendered immediately after this header.
+}}
+<header
+    class="local-course-banner-builder-page-identity"
+    data-region="local-course-banner-builder-page-identity"
+    data-page-identity-variant="{{variant}}"
+>
+    <span class="local-course-banner-builder-page-identity__brand">{{brand}}</span>
+    <h2 class="local-course-banner-builder-page-identity__title">{{title}}</h2>
+    <p class="local-course-banner-builder-page-identity__description">{{description}}</p>
+</header>
