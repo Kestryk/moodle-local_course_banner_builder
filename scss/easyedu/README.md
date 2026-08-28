@@ -32,6 +32,8 @@ scss/easyedu/
     _forms.scss                Dropdown/menu surfaces.
     _modals.scss               Modal shell surfaces.
     _feedback.scss             Tokens, count badges, empty states.
+    _loading.scss              Skeleton surfaces, shimmer, frames and handoff.
+    _navigation-skeleton.scss  One-line decorative Navigation Skeleton.
     _overlays.scss             Drag/drop overlays and hover help surfaces.
 ```
 
@@ -99,6 +101,13 @@ Prefer generic `--easyedu-*` variables. Plugin-specific aliases such as
 - `token-pill`: semantic labels.
 - `count-badge`: small quantity badges.
 - `empty-state`: empty or no-result placeholders.
+- `skeleton-section-frame`: static internal-card frame with logical inline accent.
+- `skeleton-structural-container-frame`: static large-region frame with block-start accent.
+- `skeleton-cue-stack`, `skeleton-section-compact`: decorative cue rhythm and opt-in density.
+- `navigation-skeleton-compact-frame`, `navigation-skeleton-guide-start-cue`,
+  `navigation-skeleton-single-line`, `navigation-skeleton-compact-cue`: the K3.1
+  one-line Navigation placeholder with its decorative Guide circle.
+- `loading-opacity-transition`, `loading-opacity-hidden`: ordered loading handoff.
 - `drop-target-overlay`: drag/drop compatible target feedback.
 - `tooltip-surface`: hover-only help bubbles.
 

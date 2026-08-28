@@ -113,6 +113,17 @@ test.describe('CCB admin Slideshow page skeleton', () => {
         expect(headerOrder.liveIdentityBeforeNavigation).toBe(true);
         expect(headerOrder.skeletonIdentityBeforeNavigation).toBe(true);
 
+        const identityContract = await shell.locator(
+            '.local-course-banner-builder-slideshow-page-identity'
+        ).evaluate((identity) => ({
+            eyebrow: identity.querySelector(
+                '.local-course-banner-builder-slideshow-page-identity__eyebrow'
+            ).textContent.trim(),
+            navigationGap: parseFloat(window.getComputedStyle(identity).marginBlockEnd),
+        }));
+        expect(identityContract.eyebrow).toBe('Course Banner Builder');
+        expect(identityContract.navigationGap).toBeGreaterThan(0);
+
         const visualContract = await skeleton.locator(
             '.local-course-banner-builder-slideshow-page-skeleton__title'
         ).evaluate((surface) => {
@@ -157,6 +168,55 @@ test.describe('CCB admin Slideshow page skeleton', () => {
         }));
         expect(navigationMotion.frame).toBe('none');
         expect(navigationMotion.cue).toContain('easyedu-skeleton-shimmer');
+
+        const navigationContract = await skeleton.locator(
+            '.local-course-banner-builder-slideshow-page-skeleton__navigation'
+        ).evaluate((navigation) => ({
+            minBlockSize: parseFloat(window.getComputedStyle(navigation).minBlockSize),
+            guideIsCircle: window.getComputedStyle(
+                navigation.querySelector('.local-course-banner-builder-slideshow-page-skeleton__navigation-mark')
+            ).borderRadius === '50%',
+            cueCount: navigation.querySelectorAll(
+                '.local-course-banner-builder-slideshow-page-skeleton__navigation-item'
+            ).length,
+        }));
+        expect(navigationContract.minBlockSize).toBeLessThanOrEqual(64);
+        expect(navigationContract.guideIsCircle).toBe(true);
+        expect(navigationContract.cueCount).toBe(1);
+        await expect(skeleton.locator(
+            'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )).toHaveCount(0);
+
+        const structuralContracts = await skeleton.locator(
+            '.local-course-banner-builder-slideshow-page-skeleton__card'
+        ).evaluateAll((cards) => cards.map((card) => ({
+            blockAccentWidth: parseFloat(window.getComputedStyle(card).borderBlockStartWidth),
+            frameAnimation: window.getComputedStyle(card, '::after').animationName,
+            inlineAccentWidth: parseFloat(window.getComputedStyle(card).borderInlineStartWidth),
+            cueAnimation: window.getComputedStyle(
+                card.querySelector('.local-course-banner-builder-slideshow-page-skeleton__card-title'),
+                '::after'
+            ).animationName,
+        })));
+        expect(structuralContracts).toHaveLength(2);
+        structuralContracts.forEach((card) => {
+            expect(card.blockAccentWidth).toBeGreaterThan(1);
+            expect(card.inlineAccentWidth).toBeLessThan(card.blockAccentWidth);
+            expect(card.frameAnimation).toBe('none');
+            expect(card.cueAnimation).toContain('easyedu-skeleton-shimmer');
+        });
+
+        const iconAlignment = await live.locator(
+            '.local-course-banner-builder-slideshow-card-header > .fa'
+        ).evaluateAll((icons) => icons.map((icon) => {
+            const iconBox = icon.getBoundingClientRect();
+            const headerBox = icon.parentElement.getBoundingClientRect();
+            return Math.abs(
+                (iconBox.top + (iconBox.height / 2)) - (headerBox.top + (headerBox.height / 2))
+            );
+        }));
+        expect(iconAlignment).toHaveLength(2);
+        iconAlignment.forEach((offset) => expect(offset).toBeLessThanOrEqual(1));
 
         const timeline = await page.evaluate(() => window.__ccbSlideshowSkeletonTimeline);
         expect(timeline[0].state).toBe('loading');

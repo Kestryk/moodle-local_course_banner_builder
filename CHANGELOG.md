@@ -8,6 +8,25 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0006 - 2026-08-28
+
+#### Changed
+
+- Reintegrated the Slideshow page Skeleton on the current CCB base using the
+  embedded UI Kit K3.1 contract from `7043fe5c2fc9440201cbb5b7d25e41a8a9bf54b4`.
+  Navigation now reserves one compact decorative line and keeps its Guide
+  circle; Course and Site remain static structural frames with a logical top
+  accent while only their internal cues shimmer.
+- Replaced the EasyStud eyebrow with the localised Course Banner Builder name,
+  aligned the Course/Site header icons and restored the identity-to-Navigation
+  gap without changing the real Navigation, Guide or Slideshow engine.
+
+#### Validation
+
+- Rebuilt `styles.css` from the complete SCSS entry point and extended LOAD-03
+  for the K3.1 frame, cue, identity, RTL, reduced-motion, forced-colors and
+  focus contracts. Runtime and human visual review remain separate.
+
 ### EED-CCB-2026-0041 - 2026-08-23
 
 #### Changed
