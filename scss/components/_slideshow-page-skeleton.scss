@@ -243,6 +243,12 @@ $loading-reveal-duration: var(--easyedu-loading-reveal-duration);
 }
 
 @media (max-width: 48rem) {
+    .local-course-banner-builder-slideshow-page-identity {
+        // The compact Navigation handle is fixed to the logical viewport edge.
+        // Reserve its touch target so it cannot cover the page identity.
+        padding-inline-start: calc(var(--easyedu-touch-target-min) + 0.5rem);
+    }
+
     .local-course-banner-builder-slideshow-page-skeleton__navigation {
         @include navigation.navigation-skeleton-compact-mobile;
     }
