@@ -149,15 +149,18 @@ test.describe('CCB admin Slideshow page skeleton', () => {
 
         const previewMotion = await skeleton.locator(
             '.local-course-banner-builder-slideshow-page-skeleton__preview'
-        ).evaluate((preview) => ({
+        ).evaluateAll((previews) => previews.map((preview) => ({
             frame: window.getComputedStyle(preview, '::after').animationName,
             cue: window.getComputedStyle(
                 preview.querySelector('.local-course-banner-builder-slideshow-page-skeleton__preview-line'),
                 '::after'
             ).animationName,
-        }));
-        expect(previewMotion.frame).toBe('none');
-        expect(previewMotion.cue).toContain('easyedu-skeleton-shimmer');
+        })));
+        expect(previewMotion).toHaveLength(2);
+        previewMotion.forEach((preview) => {
+            expect(preview.frame).toBe('none');
+            expect(preview.cue).toContain('easyedu-skeleton-shimmer');
+        });
 
         const navigationMotion = await skeleton.locator(
             '.local-course-banner-builder-slideshow-page-skeleton__navigation'
