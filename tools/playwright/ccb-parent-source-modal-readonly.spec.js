@@ -19,8 +19,13 @@ test('ccb-parent-source-modal-readonly', async({page}, testInfo) => {
     if (await page.locator('#loginbtn').isVisible()) {
         await page.locator('#username').fill(username);
         await page.locator('#password').fill(password);
-        await page.locator('#loginbtn').click({noWaitAfter: true});
-        await expect(page).not.toHaveURL(/\/login\/index\.php$/, {timeout: 30_000});
+        await Promise.all([
+            page.waitForURL(url => !url.pathname.endsWith('/login/index.php'), {
+                timeout: 30_000,
+                waitUntil: 'domcontentloaded',
+            }),
+            page.locator('#loginbtn').click(),
+        ]);
     }
 
     const writes = [];
@@ -46,8 +51,8 @@ test('ccb-parent-source-modal-readonly', async({page}, testInfo) => {
     await expect(modal).toBeVisible();
     expect(await modal.evaluate(node => node.parentElement === document.body)).toBe(true);
     expect(await modal.evaluate(node => !node.closest('[aria-hidden="true"]'))).toBe(true);
-    await expect(modal.locator('[data-source-dropdown-label]')).toBeFocused();
     await page.screenshot({path: testInfo.outputPath('parent-source-modal-readonly.png'), fullPage: true});
+    await expect(modal.locator('[data-source-dropdown-label]')).toBeFocused();
 
     await page.keyboard.press('Escape');
     await expect(modal).toBeHidden();
