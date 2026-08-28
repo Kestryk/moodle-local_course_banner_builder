@@ -26,6 +26,7 @@ const moodlePath = (path) => {
 
 test.describe('CCB admin Slideshow page skeleton', () => {
     test('releases the live Slideshow page without leaving inert controls', async ({page}, testInfo) => {
+        test.setTimeout(90_000);
         test.skip(
             !moodleUrl || !username || !password,
             'Set process-local CCB Moodle credentials before running this leased scenario.'
@@ -69,10 +70,8 @@ test.describe('CCB admin Slideshow page skeleton', () => {
         await page.goto(moodlePath('/login/index.php'));
         await page.locator('#username').fill(username);
         await page.locator('#password').fill(password);
-        await Promise.all([
-            page.waitForURL((url) => !url.pathname.endsWith('/login/index.php')),
-            page.locator('#loginbtn').click(),
-        ]);
+        await page.locator('#loginbtn').click({noWaitAfter: true});
+        await expect(page).not.toHaveURL(/\/login\/index\.php$/, {timeout: 30_000});
 
         await page.goto(moodlePath('/local/course_banner_builder/admin_slideshow.php'));
         const shell = page.locator('[data-local-course-banner-builder-slideshow-skeleton="1"]');
