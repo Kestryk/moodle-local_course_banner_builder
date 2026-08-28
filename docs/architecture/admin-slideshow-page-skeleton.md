@@ -29,6 +29,31 @@ frame and cue primitives unchanged from immutable UI Kit snapshot
 `c9277a82fb471018f4cc07b24dd336d2adfa310d`; Navigation destinations, Guide
 content, lifecycle timing and geometry remain outside that snapshot boundary.
 
+## 2026-08-28 K3.1 current-base integration (`EED-CCB-2026-0006`)
+
+The current-base consumer is pinned to immutable UI Kit K3.1 commit
+`7043fe5c2fc9440201cbb5b7d25e41a8a9bf54b4`. The decorative Navigation
+placeholder is one compact line: its outer frame is static, its circular cue
+continues to represent the existing Guide launcher, and one internal cue
+shimmers. It has no role, action, accessible name or focusable descendant.
+
+The Course and Site placeholders represent the two large structural regions
+of this page, so they use K3.1 `skeleton-structural-container-frame` and its
+logical `border-block-start` accent. This exception is not a card primitive:
+an internal Skeleton card would use `skeleton-section-frame` and
+`border-inline-start`, while a view toggle would receive no Skeleton frame.
+All principal frames remain unanimated; only title, preview, row, action and
+Navigation cues shimmer.
+
+The live identity now uses the localised `pluginname` (English: `Course Banner
+Builder`) before the unchanged title and description. CCB owns a token-based
+gap from that description to the real Navigation. Removing the old local
+`align-items: flex-start` override restores the shared vertical centring of the
+Course and Site header icons. K3.1 logical properties handle RTL; reduced
+motion stops cue animation and forced-colors exposes system-visible frames and
+accents. The Slideshow lifecycle, no-script fail-open, AMD, Guide, real
+Navigation, Crop and sticky behavior are unchanged.
+
 ## Lifecycle
 
 The PHP response starts in `loading`, before interactive JavaScript: the
@@ -72,7 +97,7 @@ the same shared treatment:
 
 - stable `#dce7f0` surface and `#cfdee9` border;
 - 108-degree overlay sweep rather than a moving full-surface gradient;
-- `rgba(255, 255, 255, 0.16)` soft edges and `0.5` centre highlight;
+- `rgba(255, 255, 255, 0.16)` soft edges and the K3.1 `0.52` centre highlight;
 - two-second linear travel from `-110%` to `110%`, reversed in RTL;
 - static surfaces for reduced motion and forced colours.
 
@@ -83,13 +108,9 @@ preview text/action cues use the animated Loading primitive. The outer preview
 dimensions are unchanged. This prevents expensive full-panel repaints and
 makes the two-second loop retain the same perceived cadence on both products.
 
-The audit found that UI Kit commit
-`f5aa5f72df80d8ae2a2b00c9628fcffadc5e7f56` documents the overlay as the
-default integration example, but its shared keyframe travels in the opposite
-direction and its centre token is `0.52` rather than EasyStud's `0.5`. The CCB
-embedded Loading primitive is aligned to the proven product reference pending
-a separately owned UI Kit canonical correction. Future consumers must import
-that corrected primitive instead of recreating shimmer values locally.
+The former consumer-local `0.5` highlight has been removed. K3.1 is now the
+single source for the `0.52` centre token and the logical RTL reversal; future
+consumer changes must not recreate these values locally.
 
 The audit compared the active EasyStud runtime commit
 `986b23e229cec2cf325656e506b59a761bc75d46` with the published UI Kit. The Kit

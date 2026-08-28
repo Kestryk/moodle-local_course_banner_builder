@@ -8,6 +8,40 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0006 - 2026-08-28
+
+#### Changed
+
+- Reintegrated the Slideshow page Skeleton on the current CCB base using the
+  embedded UI Kit K3.1 contract from `7043fe5c2fc9440201cbb5b7d25e41a8a9bf54b4`.
+  Navigation now reserves one compact decorative line and keeps its Guide
+  circle; Course and Site remain static structural frames with a logical top
+  accent while only their internal cues shimmer.
+- Replaced the EasyStud eyebrow with the localised Course Banner Builder name,
+  aligned the Course/Site header icons and restored the identity-to-Navigation
+  gap without changing the real Navigation, Guide or Slideshow engine.
+
+#### Validation
+
+- Rebuilt `styles.css` from the complete SCSS entry point and extended LOAD-03
+  for the K3.1 frame, cue, identity, RTL, reduced-motion, forced-colors and
+  focus contracts. Runtime and human visual review remain separate.
+
+### EED-CCB-2026-0023-RF2-B - 2026-08-28
+
+#### Fixed
+
+- Crop and Recrop action placement now measures the visible modal action rail
+  and ranks every candidate that intersects it behind non-intersecting
+  positions. The rail remains fixed and visible, and the existing Crop,
+  Cancel, Undo and Redo transactions are unchanged.
+
+#### Validation
+
+- Rebuilt the Moodle AMD bundle and source map from the updated source. Static
+  syntax, image-modal transform contract, exact allowlist and diff checks pass;
+  the focused Recrop visual review remains separately authorised.
+
 ### EED-CCB-2026-0041 - 2026-08-23
 
 #### Changed
@@ -41,6 +75,32 @@ many small sections.
   authorised.
 - Extended IMG-06 static coverage for the modal transaction, deferred draft
   serialization and coalesced file-manager refreshes.
+
+### EED-CCB-2026-0035-B - 2026-08-22
+
+#### Changed
+
+- Made the configured-source `Parent source` column informational and moved its
+  edit action into a CCB-local modal. The modal offers only configured,
+  cycle-safe sources or the root choice, keeps Cancel request-free,
+  resynchronises the changed source and its explicit children, refreshes the
+  complete source table after confirmation, announces the result and restores
+  focus to the edited source action.
+  The modal is portalled to `document.body` while open so Bootstrap cannot
+  hide it with the page wrapper, then restored to its server-rendered position.
+- Added server-side source-chain validation for the modal and the existing
+  source-settings picker, so a forged self or descendant parent is rejected
+  instead of creating an inheritance cycle.
+
+#### Validation
+
+- Added the candidate `ccb-parent-source-modal` scenario. Its future leased
+  execution needs a disposable three-source chain fixture. The scenario also
+  verifies the body-level portal, absence of an `aria-hidden` ancestor and
+  initial dropdown focus, plus Escape/backdrop/Cancel closure, backdrop cleanup,
+  DOM restoration and focus return. It prepares external before/modal/options/
+  after captures for supervised visual approval; this source-only batch does
+  not alter or run a fixture, preview or browser.
 
 ### EED-CCB-2026-0031-RF5 - 2026-08-22
 

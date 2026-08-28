@@ -38,6 +38,7 @@ $loading-reveal-duration: var(--easyedu-loading-reveal-duration);
 .local-course-banner-builder-slideshow-page-identity {
     display: grid;
     gap: 0.55rem;
+    margin-block-end: var(--easyedu-loading-section-navigation-gap);
     max-inline-size: 42rem;
     min-width: 0;
 }
@@ -121,14 +122,9 @@ $loading-reveal-duration: var(--easyedu-loading-reveal-duration);
 }
 
 .local-course-banner-builder-slideshow-page-skeleton__navigation {
-    grid-template-columns: auto minmax(0, 1fr);
-    gap: 0.9rem;
-    align-items: center;
-    min-height: 5.4rem;
-    padding: 0.9rem;
     box-shadow: 0 0.38rem 0.8rem rgba(31, 68, 104, 0.08);
 
-    @include navigation.navigation-skeleton-frame(
+    @include navigation.navigation-skeleton-compact-frame(
         $surface: #f4f8fb,
         $border: $loading-border,
         $radius: 1.15rem
@@ -136,22 +132,15 @@ $loading-reveal-duration: var(--easyedu-loading-reveal-duration);
 }
 
 .local-course-banner-builder-slideshow-page-skeleton__navigation-mark {
-    width: 3.2rem;
-    min-height: 3.2rem;
-
-    @include navigation.navigation-skeleton-cue-overlay($radius: 50%);
+    @include navigation.navigation-skeleton-guide-start-cue;
 }
 
 .local-course-banner-builder-slideshow-page-skeleton__navigation-items {
-    grid-template-columns: repeat(3, minmax(5rem, 1fr));
-
-    @include navigation.navigation-skeleton-cue-stack(0.65rem);
+    @include navigation.navigation-skeleton-single-line;
 }
 
 .local-course-banner-builder-slideshow-page-skeleton__navigation-item {
-    min-height: 2.35rem;
-
-    @include navigation.navigation-skeleton-cue-overlay;
+    @include navigation.navigation-skeleton-compact-cue;
 }
 
 .local-course-banner-builder-slideshow-page-skeleton__heading {
@@ -190,11 +179,14 @@ $loading-reveal-duration: var(--easyedu-loading-reveal-duration);
 }
 
 .local-course-banner-builder-slideshow-page-skeleton__card {
-    background: #f9fbfd;
-    border: 1px solid $loading-border;
-    border-radius: 1rem;
     padding: 1rem;
 
+    // Course and Site are the two page-level structural regions. K3.1 reserves
+    // the block-start accent for these large containers, never inner cards.
+    @include easyedu.skeleton-structural-container-frame(
+        $radius: 1rem,
+        $accent: var(--easyedu-primary)
+    );
     @include easyedu.skeleton-stack(1rem);
 }
 
@@ -251,12 +243,8 @@ $loading-reveal-duration: var(--easyedu-loading-reveal-duration);
 }
 
 @media (max-width: 48rem) {
-    .local-course-banner-builder-slideshow-page-skeleton__navigation-items {
-        grid-template-columns: 1fr;
-    }
-
     .local-course-banner-builder-slideshow-page-skeleton__navigation {
-        align-items: start;
+        @include navigation.navigation-skeleton-compact-mobile;
     }
 
     .local-course-banner-builder-slideshow-page-skeleton__cards {

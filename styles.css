@@ -5327,11 +5327,11 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
   cursor: default;
 }
 
-#fitem_id_bannerimage_filemanager .fp-file .fp-thumbnail {
+#fitem_id_bannerimage_filemanager .fp-file {
   position: relative;
 }
 
-#fitem_id_bannerimage_filemanager [data-draft-preview-select="1"] {
+#fitem_id_bannerimage_filemanager .fp-file > [data-draft-preview-select="1"] {
   position: absolute;
   inset: 0;
   z-index: 1;
@@ -8011,11 +8011,40 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
   --easyedu-loading-highlight: #edf3f7;
   --easyedu-loading-border: #cfdee9;
   --easyedu-loading-shimmer-soft: rgba(255, 255, 255, 0.16);
-  --easyedu-loading-shimmer-highlight: rgba(255, 255, 255, 0.5);
+  --easyedu-loading-shimmer-highlight: rgba(255, 255, 255, 0.52);
   --easyedu-loading-radius: 0.72rem;
   --easyedu-loading-stack-gap: 0.9rem;
   --easyedu-loading-shimmer-duration: 2s;
   --easyedu-loading-reveal-duration: 180ms;
+  --easyedu-loading-section-accent: var(--easyedu-primary);
+  --easyedu-loading-section-border-width: 0.1875rem;
+  --easyedu-loading-section-surface: var(--easyedu-loading-surface);
+  --easyedu-loading-section-border: var(--easyedu-loading-border);
+  --easyedu-loading-section-radius: var(--easyedu-loading-radius);
+  --easyedu-loading-section-stack-gap: var(--easyedu-loading-stack-gap);
+  --easyedu-loading-section-icon-slot-size: 1.5rem;
+  --easyedu-loading-section-heading-gap: var(--easyedu-action-icon-gap);
+  --easyedu-loading-section-navigation-gap: 1rem;
+  --easyedu-loading-section-compact-icon-slot-size: 1.25rem;
+  --easyedu-loading-section-compact-heading-gap: 0.5rem;
+  --easyedu-loading-section-compact-navigation-gap: 0.75rem;
+  --easyedu-loading-container-accent: var(--easyedu-loading-section-accent);
+  --easyedu-loading-container-border-width: var(--easyedu-loading-section-border-width);
+  --easyedu-loading-container-surface: var(--easyedu-loading-section-surface);
+  --easyedu-loading-container-border: var(--easyedu-loading-section-border);
+  --easyedu-loading-container-radius: var(--easyedu-loading-section-radius);
+  --easyedu-navigation-skeleton-compact-min-block-size: 4rem;
+  --easyedu-navigation-skeleton-compact-padding: 0.65rem;
+  --easyedu-navigation-skeleton-compact-guide-cue-size: 2.5rem;
+  --easyedu-navigation-skeleton-compact-guide-cue-gap: 0.65rem;
+  --easyedu-navigation-skeleton-compact-cue-gap: 0.5rem;
+  --easyedu-navigation-skeleton-compact-line-inline-size: min(18rem, 72%);
+  --easyedu-navigation-skeleton-compact-cue-min-block-size: 1.75rem;
+  --easyedu-navigation-skeleton-compact-mobile-min-block-size: 3.5rem;
+  --easyedu-navigation-skeleton-compact-mobile-padding: 0.5rem;
+  --easyedu-navigation-skeleton-compact-mobile-guide-cue-size: 2.25rem;
+  --easyedu-navigation-skeleton-compact-mobile-guide-cue-gap: 0.5rem;
+  --easyedu-navigation-skeleton-compact-mobile-cue-min-block-size: 1.5rem;
   --easyedu-filter-border: #dce7f1;
   --easyedu-modal-border: #cfe0ef;
   --easyedu-modal-radius: 1rem;
@@ -8135,6 +8164,7 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 .local-course-banner-builder-slideshow-page-identity {
   display: grid;
   gap: 0.55rem;
+  margin-block-end: var(--easyedu-loading-section-navigation-gap);
   max-inline-size: 42rem;
   min-width: 0;
 }
@@ -8242,11 +8272,6 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 }
 
 .local-course-banner-builder-slideshow-page-skeleton__navigation {
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 0.9rem;
-  align-items: center;
-  min-height: 5.4rem;
-  padding: 0.9rem;
   box-shadow: 0 0.38rem 0.8rem rgba(31, 68, 104, 0.08);
 }
 .local-course-banner-builder-slideshow-page-skeleton__navigation {
@@ -8264,10 +8289,30 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
     border-color: CanvasText;
   }
 }
+.local-course-banner-builder-slideshow-page-skeleton__navigation {
+  border-inline-start: var(--easyedu-loading-section-border-width) solid var(--easyedu-loading-section-accent);
+}
+@media (forced-colors: active) {
+  .local-course-banner-builder-slideshow-page-skeleton__navigation {
+    border-inline-start-color: CanvasText;
+  }
+}
+.local-course-banner-builder-slideshow-page-skeleton__navigation {
+  animation: none;
+}
+.local-course-banner-builder-slideshow-page-skeleton__navigation {
+  align-items: center;
+  column-gap: var(--easyedu-navigation-skeleton-compact-guide-cue-gap);
+  display: grid;
+  grid-template-columns: var(--easyedu-navigation-skeleton-compact-guide-cue-size) minmax(0, 1fr);
+  min-block-size: var(--easyedu-navigation-skeleton-compact-min-block-size);
+  padding: var(--easyedu-navigation-skeleton-compact-padding);
+}
 
 .local-course-banner-builder-slideshow-page-skeleton__navigation-mark {
-  width: 3.2rem;
-  min-height: 3.2rem;
+  block-size: var(--easyedu-navigation-skeleton-compact-guide-cue-size);
+  flex: none;
+  inline-size: var(--easyedu-navigation-skeleton-compact-guide-cue-size);
 }
 .local-course-banner-builder-slideshow-page-skeleton__navigation-mark {
   background: var(--easyedu-loading-surface);
@@ -8308,18 +8353,14 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 }
 
 .local-course-banner-builder-slideshow-page-skeleton__navigation-items {
-  grid-template-columns: repeat(3, minmax(5rem, 1fr));
-}
-.local-course-banner-builder-slideshow-page-skeleton__navigation-items {
-  align-content: start;
-  display: grid;
-  gap: 0.65rem;
-  justify-items: start;
-  min-inline-size: 0;
+  display: block;
+  inline-size: var(--easyedu-navigation-skeleton-compact-line-inline-size);
+  max-inline-size: 100%;
+  min-block-size: var(--easyedu-navigation-skeleton-compact-cue-min-block-size);
 }
 
 .local-course-banner-builder-slideshow-page-skeleton__navigation-item {
-  min-height: 2.35rem;
+  min-block-size: var(--easyedu-navigation-skeleton-compact-cue-min-block-size);
 }
 .local-course-banner-builder-slideshow-page-skeleton__navigation-item {
   background: var(--easyedu-loading-surface);
@@ -8492,10 +8533,33 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 }
 
 .local-course-banner-builder-slideshow-page-skeleton__card {
-  background: #f9fbfd;
-  border: 1px solid var(--easyedu-loading-border);
-  border-radius: 1rem;
   padding: 1rem;
+}
+.local-course-banner-builder-slideshow-page-skeleton__card {
+  background: var(--easyedu-loading-container-surface);
+  border: 0.0625rem solid var(--easyedu-loading-container-border);
+  border-radius: 1rem;
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+}
+@media (forced-colors: active) {
+  .local-course-banner-builder-slideshow-page-skeleton__card {
+    background: Canvas;
+    border-color: CanvasText;
+  }
+}
+.local-course-banner-builder-slideshow-page-skeleton__card {
+  border-block-start: var(--easyedu-loading-container-border-width) solid var(--easyedu-primary);
+}
+@media (forced-colors: active) {
+  .local-course-banner-builder-slideshow-page-skeleton__card {
+    border-block-start-color: CanvasText;
+  }
+}
+.local-course-banner-builder-slideshow-page-skeleton__card {
+  animation: none;
 }
 .local-course-banner-builder-slideshow-page-skeleton__card {
   align-content: start;
@@ -8686,11 +8750,12 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 }
 
 @media (max-width: 48rem) {
-  .local-course-banner-builder-slideshow-page-skeleton__navigation-items {
-    grid-template-columns: 1fr;
-  }
   .local-course-banner-builder-slideshow-page-skeleton__navigation {
-    align-items: start;
+    --easyedu-navigation-skeleton-compact-min-block-size: var(--easyedu-navigation-skeleton-compact-mobile-min-block-size);
+    --easyedu-navigation-skeleton-compact-padding: var(--easyedu-navigation-skeleton-compact-mobile-padding);
+    --easyedu-navigation-skeleton-compact-guide-cue-size: var(--easyedu-navigation-skeleton-compact-mobile-guide-cue-size);
+    --easyedu-navigation-skeleton-compact-guide-cue-gap: var(--easyedu-navigation-skeleton-compact-mobile-guide-cue-gap);
+    --easyedu-navigation-skeleton-compact-cue-min-block-size: var(--easyedu-navigation-skeleton-compact-mobile-cue-min-block-size);
   }
   .local-course-banner-builder-slideshow-page-skeleton__cards {
     grid-template-columns: 1fr;
@@ -12829,11 +12894,40 @@ span[data-flexitour=container].orphan .modal-dialog {
   --easyedu-loading-highlight: #edf3f7;
   --easyedu-loading-border: #cfdee9;
   --easyedu-loading-shimmer-soft: rgba(255, 255, 255, 0.16);
-  --easyedu-loading-shimmer-highlight: rgba(255, 255, 255, 0.5);
+  --easyedu-loading-shimmer-highlight: rgba(255, 255, 255, 0.52);
   --easyedu-loading-radius: 0.72rem;
   --easyedu-loading-stack-gap: 0.9rem;
   --easyedu-loading-shimmer-duration: 2s;
   --easyedu-loading-reveal-duration: 180ms;
+  --easyedu-loading-section-accent: var(--easyedu-primary);
+  --easyedu-loading-section-border-width: 0.1875rem;
+  --easyedu-loading-section-surface: var(--easyedu-loading-surface);
+  --easyedu-loading-section-border: var(--easyedu-loading-border);
+  --easyedu-loading-section-radius: var(--easyedu-loading-radius);
+  --easyedu-loading-section-stack-gap: var(--easyedu-loading-stack-gap);
+  --easyedu-loading-section-icon-slot-size: 1.5rem;
+  --easyedu-loading-section-heading-gap: var(--easyedu-action-icon-gap);
+  --easyedu-loading-section-navigation-gap: 1rem;
+  --easyedu-loading-section-compact-icon-slot-size: 1.25rem;
+  --easyedu-loading-section-compact-heading-gap: 0.5rem;
+  --easyedu-loading-section-compact-navigation-gap: 0.75rem;
+  --easyedu-loading-container-accent: var(--easyedu-loading-section-accent);
+  --easyedu-loading-container-border-width: var(--easyedu-loading-section-border-width);
+  --easyedu-loading-container-surface: var(--easyedu-loading-section-surface);
+  --easyedu-loading-container-border: var(--easyedu-loading-section-border);
+  --easyedu-loading-container-radius: var(--easyedu-loading-section-radius);
+  --easyedu-navigation-skeleton-compact-min-block-size: 4rem;
+  --easyedu-navigation-skeleton-compact-padding: 0.65rem;
+  --easyedu-navigation-skeleton-compact-guide-cue-size: 2.5rem;
+  --easyedu-navigation-skeleton-compact-guide-cue-gap: 0.65rem;
+  --easyedu-navigation-skeleton-compact-cue-gap: 0.5rem;
+  --easyedu-navigation-skeleton-compact-line-inline-size: min(18rem, 72%);
+  --easyedu-navigation-skeleton-compact-cue-min-block-size: 1.75rem;
+  --easyedu-navigation-skeleton-compact-mobile-min-block-size: 3.5rem;
+  --easyedu-navigation-skeleton-compact-mobile-padding: 0.5rem;
+  --easyedu-navigation-skeleton-compact-mobile-guide-cue-size: 2.25rem;
+  --easyedu-navigation-skeleton-compact-mobile-guide-cue-gap: 0.5rem;
+  --easyedu-navigation-skeleton-compact-mobile-cue-min-block-size: 1.5rem;
   --easyedu-filter-border: #dce7f1;
   --easyedu-modal-border: #cfe0ef;
   --easyedu-modal-radius: 1rem;
@@ -15049,7 +15143,6 @@ span[data-flexitour=container].orphan .modal-dialog {
   gap: 0.7rem;
   min-height: 3.5rem;
   padding: 0.78rem 0.9rem;
-  align-items: flex-start;
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-slideshow-card-header > .fa,
 .local-course-banner-builder-admin--native .local-course-banner-builder-slideshow-card-header > [aria-hidden=true] {
