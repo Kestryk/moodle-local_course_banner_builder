@@ -42,6 +42,32 @@ many small sections.
 - Extended IMG-06 static coverage for the modal transaction, deferred draft
   serialization and coalesced file-manager refreshes.
 
+### EED-CCB-2026-0035-B - 2026-08-22
+
+#### Changed
+
+- Made the configured-source `Parent source` column informational and moved its
+  edit action into a CCB-local modal. The modal offers only configured,
+  cycle-safe sources or the root choice, keeps Cancel request-free,
+  resynchronises the changed source and its explicit children, refreshes the
+  complete source table after confirmation, announces the result and restores
+  focus to the edited source action.
+  The modal is portalled to `document.body` while open so Bootstrap cannot
+  hide it with the page wrapper, then restored to its server-rendered position.
+- Added server-side source-chain validation for the modal and the existing
+  source-settings picker, so a forged self or descendant parent is rejected
+  instead of creating an inheritance cycle.
+
+#### Validation
+
+- Added the candidate `ccb-parent-source-modal` scenario. Its future leased
+  execution needs a disposable three-source chain fixture. The scenario also
+  verifies the body-level portal, absence of an `aria-hidden` ancestor and
+  initial dropdown focus, plus Escape/backdrop/Cancel closure, backdrop cleanup,
+  DOM restoration and focus return. It prepares external before/modal/options/
+  after captures for supervised visual approval; this source-only batch does
+  not alter or run a fixture, preview or browser.
+
 ### EED-CCB-2026-0031-RF5 - 2026-08-22
 
 #### Changed

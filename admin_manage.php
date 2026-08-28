@@ -2655,23 +2655,83 @@ if ($updatepreviewlayers && confirm_sesskey() && $selectedsource) {
 if ($updatesourcesettingfield && confirm_sesskey() && $selectedsource) {
     $fieldname = required_param('fieldname', PARAM_ALPHAEXT);
     $fieldvalue = required_param('fieldvalue', PARAM_TEXT);
-    \local_course_banner_builder\manager::update_source_setting_field($selectedsource, $fieldname, $fieldvalue);
+    $parentoptions = $fieldname === 'sourceparentkey'
+        ? \local_course_banner_builder\manager::get_configured_source_parent_options_for_source($selectedsource)
+        : [];
+    $updated = $fieldname !== 'sourceparentkey' || array_key_exists($fieldvalue, $parentoptions)
+        ? \local_course_banner_builder\manager::update_source_setting_field($selectedsource, $fieldname, $fieldvalue)
+        : false;
     redirect(
         new moodle_url($adminpagepath, $selectedsourceparams),
-        get_string('changessaved')
+        $updated ? get_string('changessaved') : get_string('invalidsourceparent', 'local_course_banner_builder'),
+        null,
+        $updated ? \core\output\notification::NOTIFY_SUCCESS : \core\output\notification::NOTIFY_ERROR
     );
 }
 
-if ($updatesourceparentfield && confirm_sesskey()) {
-    $targetsourcekey = required_param('sourcekey', PARAM_TEXT);
-    $fieldvalue = required_param('fieldvalue', PARAM_TEXT);
-    $targetsource = \local_course_banner_builder\manager::resolve_source($targetsourcekey);
-    if ($targetsource) {
-        \local_course_banner_builder\manager::update_source_setting_field($targetsource, 'sourceparentkey', $fieldvalue);
+if ($updatesourceparentfield && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $parentchangevalid = confirm_sesskey();
+    $targetsourcekey = optional_param('sourcekey', '', PARAM_TEXT);
+    $fieldvalue = optional_param('fieldvalue', '', PARAM_TEXT);
+    $targetsource = $parentchangevalid
+        ? \local_course_banner_builder\manager::resolve_source($targetsourcekey)
+        : null;
+    $parentoptions = $targetsource
+        ? \local_course_banner_builder\manager::get_configured_source_parent_options_for_source($targetsource)
+        : [];
+    $parentchangevalid = $parentchangevalid && $targetsource && array_key_exists($fieldvalue, $parentoptions);
+
+    if (!$parentchangevalid) {
+        $message = get_string('invalidsourceparent', 'local_course_banner_builder');
+        if ($isxmlhttprequest) {
+            http_response_code(422);
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode([
+                'ok' => false,
+                'message' => $message,
+            ]);
+            exit;
+        }
+        redirect(
+            new moodle_url($adminpagepath, $selectedsourceparams),
+            $message,
+            null,
+            \core\output\notification::NOTIFY_ERROR
+        );
+    }
+
+    $updated = \local_course_banner_builder\manager::update_source_setting_field(
+        $targetsource,
+        'sourceparentkey',
+        $fieldvalue
+    );
+    if ($isxmlhttprequest) {
+        if (!$updated) {
+            http_response_code(422);
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode([
+                'ok' => false,
+                'message' => get_string('invalidsourceparent', 'local_course_banner_builder'),
+            ]);
+            exit;
+        }
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            'ok' => true,
+            'message' => get_string('sourceparentchanged', 'local_course_banner_builder'),
+            'tablehtml' => $OUTPUT->render_from_template(
+                'local_course_banner_builder/admin_manage',
+                \local_course_banner_builder\manager::export_configured_categories($selectedsourcekey)
+            ),
+            'sourcekeyhash' => md5((string)$targetsource->sourcekey),
+        ]);
+        exit;
     }
     redirect(
         new moodle_url($adminpagepath, $selectedsourceparams),
-        get_string('changessaved')
+        $updated ? get_string('changessaved') : get_string('invalidsourceparent', 'local_course_banner_builder'),
+        null,
+        $updated ? \core\output\notification::NOTIFY_SUCCESS : \core\output\notification::NOTIFY_ERROR
     );
 }
 
@@ -4183,9 +4243,7 @@ if ($selectedsource) {
 
     if (!\local_course_banner_builder\manager::is_site_source($selectedsource)) {
         echo html_writer::start_div('mb-3 local-course-banner-builder-source-settings-field');
-        $sourceparentoptions = \local_course_banner_builder\manager::get_configured_source_parent_options(
-            (string)$selectedsource->sourcekey
-        );
+        $sourceparentoptions = \local_course_banner_builder\manager::get_configured_source_parent_options_for_source($selectedsource);
         $hassourceparentoptions = count($sourceparentoptions) > 1;
         $selectedparentkey = (string)($categorysettings->sourceparentkey ?? '');
         if ($selectedparentkey !== '' && !array_key_exists($selectedparentkey, $sourceparentoptions)) {

@@ -53,7 +53,7 @@ document.addEventListener('change', function (e) {
     }
 });
 
-document.addEventListener('click', function (e) {
+document.addEventListener('click', function(e) {
     var dismissButton = e.target && e.target.closest ?
         e.target.closest('[data-source-preview-orientation-dismiss="1"]') :
         null;
@@ -805,7 +805,11 @@ document.addEventListener('click', function (e) {
     var toggle = e.target.closest('[data-action="local-course-banner-builder-toggle-selection"]');
     if (!toggle) {
         if (localCourseBannerBuilderIsNativeAdmin() && e.target.classList && e.target.classList.contains('modal')) {
-            localCourseBannerBuilderHideModal(e.target);
+            if (e.target.matches('#local-course-banner-builder-change-source-parent-modal')) {
+                localCourseBannerBuilderCloseParentSourceChange(true);
+            } else {
+                localCourseBannerBuilderHideModal(e.target);
+            }
         }
         return;
     }
@@ -844,7 +848,11 @@ document.addEventListener('keydown', function (e) {
     if (typeof e.stopImmediatePropagation === 'function') {
         e.stopImmediatePropagation();
     }
-    localCourseBannerBuilderHideModal(modal);
+    if (modal.matches('#local-course-banner-builder-change-source-parent-modal')) {
+        localCourseBannerBuilderCloseParentSourceChange(true);
+    } else {
+        localCourseBannerBuilderHideModal(modal);
+    }
 }, true);
 
 document.addEventListener('shown.bs.modal', function (e) {
@@ -889,6 +897,12 @@ document.addEventListener('dblclick', function (e) {
     if (draftLayer) {
         e.preventDefault();
         localCourseBannerBuilderActivateDraftPreviewSelection(draftLayer);
+    }
+});
+
+document.addEventListener('hidden.bs.modal', function(e) {
+    if (e.target && e.target.matches('#local-course-banner-builder-change-source-parent-modal')) {
+        localCourseBannerBuilderRestoreParentSourceChangeFocus();
     }
 });
 
@@ -958,7 +972,11 @@ document.addEventListener('keydown', function (e) {
             var modal = localCourseBannerBuilderGetOpenModal();
             if (modal) {
                 e.preventDefault();
-                localCourseBannerBuilderHideModal(modal);
+                if (modal.matches('#local-course-banner-builder-change-source-parent-modal')) {
+                    localCourseBannerBuilderCloseParentSourceChange(true);
+                } else {
+                    localCourseBannerBuilderHideModal(modal);
+                }
             }
         }
         return;
@@ -979,6 +997,19 @@ document.addEventListener('keydown', function (e) {
         }
     }
 });
+
+document.addEventListener('submit', function(e) {
+    var form = e.target && e.target.closest ? e.target.closest('[data-parent-source-change-form]') : null;
+    if (!form) {
+        return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    if (typeof e.stopImmediatePropagation === 'function') {
+        e.stopImmediatePropagation();
+    }
+    localCourseBannerBuilderSubmitParentSourceChange(form);
+}, true);
 
 document.addEventListener('submit', function (e) {
     var form = e.target && e.target.closest ? e.target.closest('form') : null;
@@ -1181,7 +1212,7 @@ document.addEventListener('input', function (e) {
     }
 });
 
-document.addEventListener('click', function (e) {
+document.addEventListener('click', function(e) {
     if (e.target.closest('.local-course-banner-builder-source-dropdown-search')) {
         e.stopPropagation();
         return;
@@ -1221,6 +1252,21 @@ document.addEventListener('click', function (e) {
     Array.prototype.slice.call(dropdown.querySelectorAll('[data-source-option]')).forEach(function (item) {
         item.classList.toggle('active', item === option);
     });
+});
+
+document.addEventListener('click', function(e) {
+    var opener = e.target.closest('[data-action="local-course-banner-builder-change-source-parent"]');
+    if (opener) {
+        e.preventDefault();
+        localCourseBannerBuilderOpenParentSourceChange(opener);
+        return;
+    }
+
+    var cancel = e.target.closest('[data-action="local-course-banner-builder-cancel-source-parent-change"]');
+    if (cancel) {
+        e.preventDefault();
+        localCourseBannerBuilderCloseParentSourceChange(true);
+    }
 });
 
 function localCourseBannerBuilderSyncSourceDropdownButton(dropdown) {
@@ -17919,6 +17965,306 @@ function localCourseBannerBuilderToggleInlineSetting(row, editing) {
     }
 }
 
+var localCourseBannerBuilderParentSourceChangeOpener = null;
+var localCourseBannerBuilderParentSourceModalPortal = null;
+
+/**
+ * Move the parent-source modal outside the Bootstrap-hidden page wrapper.
+ *
+ * @param {HTMLElement|null} modal Parent-source modal.
+ * @return {void}
+ */
+function localCourseBannerBuilderPortalParentSourceChangeModal(modal) {
+    if (!modal || modal.id !== 'local-course-banner-builder-change-source-parent-modal' ||
+            modal.parentNode === document.body) {
+        return;
+    }
+    var parent = modal.parentNode;
+    var placeholder = document.createComment('local-course-banner-builder-change-source-parent-modal-origin');
+    parent.insertBefore(placeholder, modal);
+    localCourseBannerBuilderParentSourceModalPortal = {
+        modal: modal,
+        parent: parent,
+        placeholder: placeholder
+    };
+    document.body.appendChild(modal);
+}
+
+/**
+ * Restore the parent-source modal to its server-rendered position.
+ *
+ * @param {HTMLElement|null} modal Parent-source modal.
+ * @return {void}
+ */
+function localCourseBannerBuilderRestoreParentSourceChangeModalPortal(modal) {
+    var portal = localCourseBannerBuilderParentSourceModalPortal;
+    if (!portal || portal.modal !== modal) {
+        return;
+    }
+    if (portal.placeholder.parentNode) {
+        portal.placeholder.parentNode.replaceChild(modal, portal.placeholder);
+    } else if (portal.parent && portal.parent.isConnected) {
+        portal.parent.appendChild(modal);
+    }
+    localCourseBannerBuilderParentSourceModalPortal = null;
+}
+
+/**
+ * Bind restoration for Bootstrap 4, Bootstrap 5 and fallback close paths.
+ *
+ * @param {HTMLElement|null} modal Parent-source modal.
+ * @return {void}
+ */
+function localCourseBannerBuilderBindParentSourceChangeModalPortal(modal) {
+    if (!modal || modal.id !== 'local-course-banner-builder-change-source-parent-modal' ||
+            modal.dataset.modalPortalBound === '1') {
+        return;
+    }
+    modal.dataset.modalPortalBound = '1';
+    modal.addEventListener('hidden.bs.modal', function() {
+        localCourseBannerBuilderRestoreParentSourceChangeModalPortal(modal);
+    });
+    if (typeof window.jQuery !== 'undefined') {
+        window.jQuery(modal).on('hidden.bs.modal', function() {
+            localCourseBannerBuilderRestoreParentSourceChangeModalPortal(modal);
+        });
+    }
+}
+
+/**
+ * Return the shared configured-source parent-change modal.
+ *
+ * @return {HTMLElement|null} The modal when the configured source list is present.
+ */
+function localCourseBannerBuilderGetParentSourceChangeModal() {
+    return document.getElementById('local-course-banner-builder-change-source-parent-modal');
+}
+
+/**
+ * Disable or restore the controls while the parent-change request is pending.
+ *
+ * @param {HTMLElement|null} modal Parent-change modal.
+ * @param {boolean} busy Whether the request is active.
+ * @return {void}
+ */
+function localCourseBannerBuilderSetParentSourceChangeBusy(modal, busy) {
+    if (!modal) {
+        return;
+    }
+    modal.setAttribute('aria-busy', busy ? 'true' : 'false');
+    Array.prototype.slice.call(modal.querySelectorAll(
+        '[data-source-dropdown-label], [data-parent-source-change-submit], ' +
+        '[data-action="local-course-banner-builder-cancel-source-parent-change"]'
+    )).forEach(function(control) {
+        control.disabled = !!busy;
+        control.classList.toggle('disabled', !!busy);
+        control.setAttribute('aria-disabled', busy ? 'true' : 'false');
+    });
+}
+
+/**
+ * Show the local validation error while keeping the parent-change modal open.
+ *
+ * @param {HTMLElement|null} modal Parent-change modal.
+ * @param {string} message Server or transport error.
+ * @return {void}
+ */
+function localCourseBannerBuilderShowParentSourceChangeError(modal, message) {
+    var error = modal ? modal.querySelector('[data-parent-source-change-error]') : null;
+    if (!error) {
+        return;
+    }
+    error.textContent = message || localCourseBannerBuilderGetJsString(
+        'invalidsourceparent',
+        'The selected parent source is no longer valid.'
+    );
+    error.hidden = false;
+}
+
+/**
+ * Return focus to the opening row action when it is still usable.
+ *
+ * @return {void}
+ */
+function localCourseBannerBuilderRestoreParentSourceChangeFocus() {
+    var opener = localCourseBannerBuilderParentSourceChangeOpener;
+    localCourseBannerBuilderParentSourceChangeOpener = null;
+    if (!opener || !opener.isConnected || opener.disabled || opener.hidden) {
+        return;
+    }
+    window.setTimeout(function() {
+        if (opener.isConnected && !opener.disabled && !opener.hidden) {
+            opener.focus({preventScroll: true});
+        }
+    }, 260);
+}
+
+/**
+ * Hide the parent-change modal and optionally restore its trigger focus.
+ *
+ * @param {boolean} restorefocus Whether the trigger should regain focus.
+ * @return {void}
+ */
+function localCourseBannerBuilderCloseParentSourceChange(restorefocus) {
+    var modal = localCourseBannerBuilderGetParentSourceChangeModal();
+    if (!modal) {
+        return;
+    }
+    localCourseBannerBuilderHideModal(modal);
+    if (restorefocus) {
+        localCourseBannerBuilderRestoreParentSourceChangeFocus();
+    }
+}
+
+/**
+ * Populate and open the shared parent-change modal from one source action.
+ *
+ * @param {HTMLElement} opener Source-row action.
+ * @return {void}
+ */
+function localCourseBannerBuilderOpenParentSourceChange(opener) {
+    var modal = localCourseBannerBuilderGetParentSourceChangeModal();
+    var templateid = opener ? opener.getAttribute('data-source-options-template') : '';
+    var template = templateid ? document.getElementById(templateid) : null;
+    if (!modal || !template) {
+        return;
+    }
+    var form = modal.querySelector('[data-parent-source-change-form]');
+    var options = modal.querySelector('[data-parent-source-change-options]');
+    var value = modal.querySelector('[data-parent-source-change-value]');
+    var label = modal.querySelector('[data-source-dropdown-label]');
+    var description = modal.querySelector('[data-parent-source-change-description]');
+    var sourcekey = modal.querySelector('[data-parent-source-change-key]');
+    var sesskey = modal.querySelector('[data-parent-source-change-sesskey]');
+    if (!form || !options || !value || !label || !description || !sourcekey || !sesskey) {
+        return;
+    }
+
+    localCourseBannerBuilderParentSourceChangeOpener = opener;
+    options.replaceChildren(template.content.cloneNode(true));
+    value.value = opener.getAttribute('data-source-parent-value') || '';
+    sourcekey.value = opener.getAttribute('data-source-key') || '';
+    sesskey.value = opener.getAttribute('data-source-sesskey') || '';
+    description.textContent = opener.getAttribute('data-source-label') || '';
+    label.textContent = opener.getAttribute('data-source-parent-label') || '';
+    modal.querySelector('[data-parent-source-change-error]').hidden = true;
+    localCourseBannerBuilderSetParentSourceChangeBusy(modal, false);
+    Array.prototype.slice.call(options.querySelectorAll('[data-source-option]')).forEach(function(option) {
+        option.classList.toggle('active', option.getAttribute('data-value') === value.value);
+    });
+    localCourseBannerBuilderSyncSourceDropdownButton(modal.querySelector('[data-source-dropdown="parent-change"]'));
+    localCourseBannerBuilderBindParentSourceChangeModalPortal(modal);
+    localCourseBannerBuilderPortalParentSourceChangeModal(modal);
+    if (localCourseBannerBuilderShowModal(modal)) {
+        window.setTimeout(function() {
+            var dropdown = modal.querySelector('[data-source-dropdown-label]');
+            if (dropdown) {
+                dropdown.focus({preventScroll: true});
+            }
+        }, 80);
+    }
+}
+
+/**
+ * Replace only the configured-source table from the server-rendered fragment.
+ *
+ * @param {string} html Rendered configured-source template.
+ * @return {HTMLElement} Replacement table region.
+ */
+function localCourseBannerBuilderReplaceConfiguredSourcesTable(html) {
+    var documentfragment = new window.DOMParser().parseFromString(html, 'text/html');
+    var replacement = documentfragment.querySelector('[data-region="local-course-banner-builder-configured-sources"]');
+    var current = document.querySelector('[data-region="local-course-banner-builder-configured-sources"]');
+    if (!replacement || !current) {
+        throw new Error('The configured source table could not be refreshed.');
+    }
+    current.replaceWith(replacement);
+    return replacement;
+}
+
+/**
+ * Decode one parent-source response while preserving its HTTP state.
+ *
+ * @param {Response} response Fetch response.
+ * @return {Promise<Object>} Response state and decoded body.
+ */
+function localCourseBannerBuilderParseParentSourceChangeResponse(response) {
+    return response.json().then(function(data) {
+        return {
+            responseok: response.ok,
+            data: data
+        };
+    });
+}
+
+/**
+ * Validate one decoded parent-source response.
+ *
+ * @param {Object} result HTTP state and decoded response body.
+ * @return {Object} Validated response body.
+ * @throws {Error} When the server rejects the requested parent.
+ */
+function localCourseBannerBuilderValidateParentSourceChangeResponse(result) {
+    var data = result.data || {};
+    if (!result.responseok || !data.ok) {
+        throw new Error(data.message || 'The parent source could not be changed.');
+    }
+    return data;
+}
+
+/**
+ * Persist the modal selection, refresh the complete table and restore focus.
+ *
+ * @param {HTMLFormElement} form Parent-change form.
+ * @return {void}
+ */
+function localCourseBannerBuilderSubmitParentSourceChange(form) {
+    var modal = form ? form.closest('.modal') : null;
+    if (!modal || modal.getAttribute('aria-busy') === 'true') {
+        return;
+    }
+    var error = modal.querySelector('[data-parent-source-change-error]');
+    if (error) {
+        error.hidden = true;
+        error.textContent = '';
+    }
+    localCourseBannerBuilderSetParentSourceChangeBusy(modal, true);
+    fetch(form.getAttribute('action') || window.location.href, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: new window.FormData(form)
+    }).then(localCourseBannerBuilderParseParentSourceChangeResponse)
+        .then(localCourseBannerBuilderValidateParentSourceChangeResponse).then(function(data) {
+        localCourseBannerBuilderReplaceConfiguredSourcesTable(data.tablehtml || '');
+        localCourseBannerBuilderHideModal(modal);
+        localCourseBannerBuilderParentSourceChangeOpener = null;
+        localCourseBannerBuilderNotifyAsyncAction(
+            data.message || localCourseBannerBuilderGetJsString('sourceparentchanged', 'Parent source changed.'),
+            'success'
+        );
+        var sourcekeyhash = data.sourcekeyhash || '';
+        window.setTimeout(function() {
+            var escapedhash = window.CSS && CSS.escape ? CSS.escape(sourcekeyhash) :
+                sourcekeyhash.replace(/"/g, '\\"');
+            var target = document.querySelector(
+                '[data-action="local-course-banner-builder-change-source-parent"]' +
+                '[data-source-key-hash="' + escapedhash + '"]'
+            );
+            if (target && !target.disabled) {
+                target.focus({preventScroll: true});
+            }
+        }, 260);
+        return data;
+    }).catch(function(error) {
+        localCourseBannerBuilderShowParentSourceChangeError(modal, error.message);
+        localCourseBannerBuilderSetParentSourceChangeBusy(modal, false);
+    });
+}
+
 function localCourseBannerBuilderShowModal(modal) {
     if (!modal) {
         return false;
@@ -18047,6 +18393,7 @@ function localCourseBannerBuilderForceHideModal(modal) {
         });
     }
     localCourseBannerBuilderRestoreAddLayerModalPortal(modal);
+    localCourseBannerBuilderRestoreParentSourceChangeModalPortal(modal);
 }
 
 function localCourseBannerBuilderHideModal(modal) {

@@ -30,6 +30,7 @@
         ]
     }
 }}
+<div data-region="local-course-banner-builder-configured-sources">
 {{#hasitems}}
     {{#haschains}}
         <div class="local-course-banner-builder-configured-source-tools">
@@ -134,63 +135,7 @@
                                     <i class="icon fa fa-arrow-down fa-fw" aria-hidden="true"></i>
                                 </span>
                             {{/hasparentconnector}}
-                            <div class="local-course-banner-builder-summary-meta-row" data-inline-setting-row="1">
-                                <form method="post" class="local-course-banner-builder-summary-inline-form">
-                                    <input type="hidden" name="sesskey" value="{{sesskey}}">
-                                    <input type="hidden" name="updatesourceparentfield" value="1">
-                                    <input type="hidden" name="sourcekey" value="{{sourcekey}}">
-                                    <div class="local-course-banner-builder-summary-inline-view">
-                                        <span class="local-course-banner-builder-summary-inline-value">{{parentdisplayvalue}}</span>
-                                        <button type="button" class="btn btn-link p-0 icon-no-margin local-course-banner-builder-summary-inline-trigger" data-action="local-course-banner-builder-inline-edit" aria-label="{{#str}}edit{{/str}}">
-                                            <i class="icon fa fa-pen fa-fw" aria-hidden="true"></i>
-                                        </button>
-                                    </div>
-                                    <div class="local-course-banner-builder-summary-inline-edit">
-                                        <label class="sr-only" for="local-course-banner-builder-parent-field-{{sourcekeyhash}}">{{#str}}sourceparentkey, local_course_banner_builder{{/str}}</label>
-                                        <input type="hidden" id="local-course-banner-builder-parent-field-{{sourcekeyhash}}" name="fieldvalue" value="{{parentselectedvalue}}" data-inline-setting-select="1" data-initial-value="{{parentselectedvalue}}" disabled>
-                                        <div class="dropdown local-course-banner-builder-source-dropdown local-course-banner-builder-summary-source-dropdown"
-                                             data-source-dropdown="configured-parent"
-                                             data-input="#local-course-banner-builder-parent-field-{{sourcekeyhash}}">
-                                            <button type="button"
-                                                class="btn btn-outline-primary btn-sm dropdown-toggle local-course-banner-builder-source-dropdown-toggle"
-                                                data-toggle="dropdown"
-                                                data-bs-toggle="dropdown"
-                                                aria-haspopup="true"
-                                                aria-expanded="false"
-                                                data-source-dropdown-label="1">
-                                                {{parentdisplayvalue}}
-                                            </button>
-                                            <div class="dropdown-menu local-course-banner-builder-source-dropdown-menu">
-                                                <div class="local-course-banner-builder-source-dropdown-search">
-                                                    <input type="search"
-                                                        class="form-control form-control-sm"
-                                                        placeholder="{{#str}}searchsourcesplaceholder, local_course_banner_builder{{/str}}"
-                                                        data-action="local-course-banner-builder-filter-sources"
-                                                        data-target="#local-course-banner-builder-parent-options-{{sourcekeyhash}}">
-                                                </div>
-                                                <div class="local-course-banner-builder-source-dropdown-options" id="local-course-banner-builder-parent-options-{{sourcekeyhash}}">
-                                                    {{#parentoptions}}
-                                                        <button type="button"
-                                                            class="dropdown-item local-course-banner-builder-source-option {{#selected}}active{{/selected}}"
-                                                            data-source-option="configured-parent"
-                                                            data-value="{{value}}"
-                                                            data-label="{{label}}"
-                                                            data-search="{{label}}">
-                                                            <span class="local-course-banner-builder-source-option-label">{{label}}</span>
-                                                        </button>
-                                                    {{/parentoptions}}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <button type="submit" class="btn btn-link p-0 icon-no-margin local-course-banner-builder-summary-inline-submit" aria-label="{{#str}}savechanges{{/str}}">
-                                            <i class="icon fa fa-check fa-fw" aria-hidden="true"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-link p-0 icon-no-margin local-course-banner-builder-summary-inline-cancel" data-action="local-course-banner-builder-inline-cancel" aria-label="{{#str}}cancel{{/str}}">
-                                            <i class="icon fa fa-xmark fa-fw" aria-hidden="true"></i>
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
+                            <span class="local-course-banner-builder-summary-inline-value">{{parentdisplayvalue}}</span>
                         </td>
                         <td>
                             <a href="{{categoryadminurl}}">{{categoryname}}</a>
@@ -325,6 +270,31 @@
                         <td class="local-course-banner-builder-source-actions-cell">
                             <div class="local-course-banner-builder-action-list">
                                 <button type="button"
+                                    class="btn btn-outline-primary btn-sm"
+                                    data-action="local-course-banner-builder-change-source-parent"
+                                    data-source-key="{{sourcekey}}"
+                                    data-source-key-hash="{{sourcekeyhash}}"
+                                    data-source-label="{{categoryname}}"
+                                    data-source-parent-label="{{parentdisplayvalue}}"
+                                    data-source-parent-value="{{parentselectedvalue}}"
+                                    data-source-sesskey="{{sesskey}}"
+                                    data-source-options-template="local-course-banner-builder-parent-options-{{sourcekeyhash}}">
+                                    <i class="icon fa fa-code-branch fa-fw" aria-hidden="true"></i>
+                                    <span class="local-course-banner-builder-action-label">{{#str}}changesourceparent, local_course_banner_builder{{/str}}</span>
+                                </button>
+                                <template id="local-course-banner-builder-parent-options-{{sourcekeyhash}}">
+                                    {{#parentoptions}}
+                                        <button type="button"
+                                            class="dropdown-item local-course-banner-builder-source-option {{#selected}}active{{/selected}}"
+                                            data-source-option="parent-change"
+                                            data-value="{{value}}"
+                                            data-label="{{label}}"
+                                            data-search="{{label}}">
+                                            <span class="local-course-banner-builder-source-option-label">{{label}}</span>
+                                        </button>
+                                    {{/parentoptions}}
+                                </template>
+                                <button type="button"
                                     class="btn btn-outline-secondary btn-sm"
                                     data-action="local-course-banner-builder-show-source-chain-preview"
                                     data-preview-url="{{previewurl}}"
@@ -382,3 +352,48 @@
         {{#str}}noconfiguredcategories, local_course_banner_builder{{/str}}
     </p>
 {{/hasitems}}
+</div>
+
+<div class="modal fade" id="local-course-banner-builder-change-source-parent-modal" tabindex="-1" role="dialog"
+    aria-labelledby="local-course-banner-builder-change-source-parent-title" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <form method="post" class="modal-content" data-parent-source-change-form="1">
+            <div class="modal-header">
+                <h2 class="modal-title" id="local-course-banner-builder-change-source-parent-title">{{#str}}changesourceparent, local_course_banner_builder{{/str}}</h2>
+                <button type="button" class="close" data-action="local-course-banner-builder-cancel-source-parent-change" aria-label="{{#str}}closebuttontitle{{/str}}">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>{{#str}}changesourceparenthelp, local_course_banner_builder{{/str}} <strong data-parent-source-change-description="1"></strong></p>
+                <p class="alert alert-danger" data-parent-source-change-error="1" hidden></p>
+                <input type="hidden" name="sesskey" data-parent-source-change-sesskey="1">
+                <input type="hidden" name="updatesourceparentfield" value="1">
+                <input type="hidden" name="sourcekey" data-parent-source-change-key="1">
+                <label for="local-course-banner-builder-change-source-parent-value">{{#str}}sourceparentkey, local_course_banner_builder{{/str}}</label>
+                <input type="hidden" id="local-course-banner-builder-change-source-parent-value" name="fieldvalue" data-parent-source-change-value="1">
+                <div class="dropdown local-course-banner-builder-source-dropdown local-course-banner-builder-summary-source-dropdown"
+                    data-source-dropdown="parent-change"
+                    data-input="#local-course-banner-builder-change-source-parent-value">
+                    <button type="button" class="btn btn-outline-primary dropdown-toggle local-course-banner-builder-source-dropdown-toggle"
+                        data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                        data-source-dropdown-label="1"></button>
+                    <div class="dropdown-menu local-course-banner-builder-source-dropdown-menu">
+                        <div class="local-course-banner-builder-source-dropdown-search">
+                            <input type="search" class="form-control form-control-sm"
+                                placeholder="{{#str}}searchsourcesplaceholder, local_course_banner_builder{{/str}}"
+                                data-action="local-course-banner-builder-filter-sources"
+                                data-target="#local-course-banner-builder-change-source-parent-options">
+                        </div>
+                        <div class="local-course-banner-builder-source-dropdown-options" id="local-course-banner-builder-change-source-parent-options"
+                            data-parent-source-change-options="1"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-action="local-course-banner-builder-cancel-source-parent-change">{{#str}}cancel{{/str}}</button>
+                <button type="submit" class="btn btn-primary" data-parent-source-change-submit="1">{{#str}}savechanges{{/str}}</button>
+            </div>
+        </form>
+    </div>
+</div>
