@@ -8799,6 +8799,9 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 }
 
 @media (max-width: 48rem) {
+  .local-course-banner-builder-slideshow-page-identity {
+    padding-inline-start: calc(var(--easyedu-touch-target-min) + 0.5rem);
+  }
   .local-course-banner-builder-slideshow-page-skeleton__navigation {
     --easyedu-navigation-skeleton-compact-min-block-size: var(--easyedu-navigation-skeleton-compact-mobile-min-block-size);
     --easyedu-navigation-skeleton-compact-padding: var(--easyedu-navigation-skeleton-compact-mobile-padding);
