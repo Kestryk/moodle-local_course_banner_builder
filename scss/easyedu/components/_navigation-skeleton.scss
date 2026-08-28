@@ -1,92 +1,167 @@
 // Navigation Skeleton primitives.
 //
-// Synchronized from the immutable EasyEdu UI Kit snapshot
-// c9277a82fb471018f4cc07b24dd336d2adfa310d. The outer frame remains
-// static; consumers animate decorative cues only.
+// The outer frame is deliberately static. Consumers apply the animated cue
+// mixins only to decorative descendants, so a large navigation-shaped surface
+// never repaints its complete area while loading.
+// Synchronized from immutable UI Kit K3.1 snapshot
+// 7043fe5c2fc9440201cbb5b7d25e41a8a9bf54b4.
 
 @use "loading";
 
 @mixin navigation-skeleton-frame(
-    $surface: var(--easyedu-loading-surface),
-    $border: var(--easyedu-loading-border),
-    $radius: var(--easyedu-loading-radius)
+  $surface: var(--easyedu-loading-surface),
+  $border: var(--easyedu-loading-border),
+  $radius: var(--easyedu-loading-radius)
 ) {
-    @include loading.skeleton-surface($surface, $border, $radius);
+  @include loading.skeleton-section-frame($surface, $border, $radius);
+}
+
+@mixin navigation-skeleton-compact-frame(
+  $surface: var(--easyedu-loading-section-surface),
+  $border: var(--easyedu-loading-section-border),
+  $radius: var(--easyedu-loading-section-radius)
+) {
+  @include navigation-skeleton-frame($surface, $border, $radius);
+
+  & {
+    align-items: center;
+    column-gap: var(--easyedu-navigation-skeleton-compact-guide-cue-gap);
+    display: grid;
+    grid-template-columns: var(--easyedu-navigation-skeleton-compact-guide-cue-size) minmax(0, 1fr);
+    min-block-size: var(--easyedu-navigation-skeleton-compact-min-block-size);
+    padding: var(--easyedu-navigation-skeleton-compact-padding);
+  }
+}
+
+@mixin navigation-skeleton-guide-start-cue(
+  $surface: var(--easyedu-loading-surface),
+  $soft: var(--easyedu-loading-shimmer-soft),
+  $highlight: var(--easyedu-loading-shimmer-highlight)
+) {
+  & {
+    block-size: var(--easyedu-navigation-skeleton-compact-guide-cue-size);
+    flex: none;
+    inline-size: var(--easyedu-navigation-skeleton-compact-guide-cue-size);
+  }
+
+  @include navigation-skeleton-cue-overlay(
+    $surface: $surface,
+    $soft: $soft,
+    $highlight: $highlight,
+    $radius: 50%
+  );
 }
 
 @mixin navigation-skeleton-cue(
-    $surface: var(--easyedu-loading-surface),
-    $highlight: var(--easyedu-loading-highlight),
-    $radius: var(--easyedu-loading-radius)
+  $surface: var(--easyedu-loading-surface),
+  $highlight: var(--easyedu-loading-highlight),
+  $radius: var(--easyedu-loading-radius)
 ) {
+  & {
+    border-radius: $radius;
+    display: block;
+    max-inline-size: 100%;
+    min-inline-size: 0;
+  }
+
+  @include loading.skeleton-shimmer-direct(
+    $surface: $surface,
+    $highlight: $highlight
+  );
+
+  &:dir(rtl),
+  [dir="rtl"] & {
+    animation-direction: reverse;
+  }
+
+  @media (forced-colors: active) {
     & {
-        border-radius: $radius;
-        display: block;
-        max-inline-size: 100%;
-        min-inline-size: 0;
+      background: CanvasText;
+      border: 0.0625rem solid CanvasText;
     }
-
-    @include loading.skeleton-shimmer-direct(
-        $surface: $surface,
-        $highlight: $highlight
-    );
-
-    &:dir(rtl),
-    [dir="rtl"] & {
-        animation-direction: reverse;
-    }
-
-    @media (forced-colors: active) {
-        & {
-            background: CanvasText;
-            border: 0.0625rem solid CanvasText;
-        }
-    }
+  }
 }
 
 @mixin navigation-skeleton-cue-overlay(
-    $surface: var(--easyedu-loading-surface),
-    $soft: var(--easyedu-loading-shimmer-soft),
-    $highlight: var(--easyedu-loading-shimmer-highlight),
-    $radius: var(--easyedu-loading-radius)
+  $surface: var(--easyedu-loading-surface),
+  $soft: var(--easyedu-loading-shimmer-soft),
+  $highlight: var(--easyedu-loading-shimmer-highlight),
+  $radius: var(--easyedu-loading-radius)
 ) {
+  & {
+    background: $surface;
+    border-radius: $radius;
+    display: block;
+    max-inline-size: 100%;
+    min-inline-size: 0;
+    position: relative;
+  }
+
+  @include loading.skeleton-shimmer-overlay(
+    $soft: $soft,
+    $highlight: $highlight
+  );
+
+  &:dir(rtl)::after,
+  [dir="rtl"] &::after {
+    animation-direction: reverse;
+  }
+
+  @media (forced-colors: active) {
     & {
-        background: $surface;
-        border-radius: $radius;
-        display: block;
-        max-inline-size: 100%;
-        min-inline-size: 0;
-        position: relative;
+      background: CanvasText;
+      border: 0.0625rem solid CanvasText;
     }
 
-    @include loading.skeleton-shimmer-overlay(
-        $soft: $soft,
-        $highlight: $highlight
-    );
-
-    &:dir(rtl)::after,
-    [dir="rtl"] &::after {
-        animation-direction: reverse;
+    &::after {
+      background-image: none;
     }
-
-    @media (forced-colors: active) {
-        & {
-            background: CanvasText;
-            border: 0.0625rem solid CanvasText;
-        }
-
-        &::after {
-            background-image: none;
-        }
-    }
+  }
 }
 
-@mixin navigation-skeleton-cue-stack($gap: var(--easyedu-loading-stack-gap)) {
-    & {
-        align-content: start;
-        display: grid;
-        gap: $gap;
-        justify-items: start;
-        min-inline-size: 0;
-    }
+@mixin navigation-skeleton-single-line {
+  & {
+    display: block;
+    inline-size: var(--easyedu-navigation-skeleton-compact-line-inline-size);
+    max-inline-size: 100%;
+    min-block-size: var(--easyedu-navigation-skeleton-compact-cue-min-block-size);
+  }
+}
+
+@mixin navigation-skeleton-cue-stack(
+  $gap: var(--easyedu-navigation-skeleton-compact-cue-gap)
+) {
+  & {
+    align-items: center;
+    display: flex;
+    flex-flow: row nowrap;
+    gap: $gap;
+    justify-content: start;
+    max-inline-size: 100%;
+    min-inline-size: 0;
+    overflow: hidden;
+  }
+}
+
+@mixin navigation-skeleton-compact-cue(
+  $surface: var(--easyedu-loading-surface),
+  $soft: var(--easyedu-loading-shimmer-soft),
+  $highlight: var(--easyedu-loading-shimmer-highlight),
+  $radius: var(--easyedu-loading-radius)
+) {
+  & {
+    min-block-size: var(--easyedu-navigation-skeleton-compact-cue-min-block-size);
+  }
+
+  @include navigation-skeleton-cue-overlay($surface, $soft, $highlight, $radius);
+}
+
+@mixin navigation-skeleton-compact-mobile {
+  & {
+    --easyedu-navigation-skeleton-compact-min-block-size: var(--easyedu-navigation-skeleton-compact-mobile-min-block-size);
+    --easyedu-navigation-skeleton-compact-padding: var(--easyedu-navigation-skeleton-compact-mobile-padding);
+    --easyedu-navigation-skeleton-compact-guide-cue-size: var(--easyedu-navigation-skeleton-compact-mobile-guide-cue-size);
+    --easyedu-navigation-skeleton-compact-guide-cue-gap: var(--easyedu-navigation-skeleton-compact-mobile-guide-cue-gap);
+    --easyedu-navigation-skeleton-compact-cue-min-block-size: var(--easyedu-navigation-skeleton-compact-mobile-cue-min-block-size);
+  }
 }

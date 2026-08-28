@@ -976,6 +976,74 @@ class manager {
     }
 
     /**
+     * Check whether a source can safely inherit from one candidate parent.
+     *
+     * This is deliberately independent from the current picker contents: callers
+     * must use it again on the server before persisting a submitted key.
+     *
+     * @param \stdClass $source
+     * @param string $parentkey
+     * @return bool
+     */
+    public static function can_set_source_parent(\stdClass $source, string $parentkey): bool {
+        $parentkey = trim($parentkey);
+        if ($parentkey === '') {
+            return true;
+        }
+
+        $sourcekey = trim((string)($source->sourcekey ?? ''));
+        if ($sourcekey === '' || self::is_site_source($source) || $parentkey === $sourcekey) {
+            return false;
+        }
+
+        $current = self::resolve_source($parentkey);
+        $visited = [];
+        while ($current) {
+            $currentkey = trim((string)($current->sourcekey ?? ''));
+            if ($currentkey === '' || $currentkey === $sourcekey || !empty($visited[$currentkey])) {
+                return false;
+            }
+            $visited[$currentkey] = true;
+
+            $settings = self::get_source_settings($current);
+            if (!empty($settings->sourceisroot)) {
+                return true;
+            }
+            $nextparentkey = trim((string)($settings->sourceparentkey ?? ''));
+            if ($nextparentkey === '') {
+                return true;
+            }
+            $current = self::resolve_source($nextparentkey);
+        }
+
+        return false;
+    }
+
+    /**
+     * Return configured, cycle-safe parent options for one source.
+     *
+     * @param \stdClass $source
+     * @return array
+     */
+    public static function get_configured_source_parent_options_for_source(\stdClass $source): array {
+        $options = ['' => get_string('sourcechain:none', 'local_course_banner_builder')];
+        $keys = array_keys(self::get_used_source_keys());
+        sort($keys, SORT_NATURAL);
+
+        foreach ($keys as $key) {
+            if ($key === self::SITE_SOURCE_KEY || !self::can_set_source_parent($source, (string)$key)) {
+                continue;
+            }
+            $candidate = self::resolve_source((string)$key);
+            if ($candidate) {
+                $options[(string)$key] = (string)($candidate->label ?? $key);
+            }
+        }
+
+        return $options;
+    }
+
+    /**
      * Return selectable values for one enabled custom field.
      *
      * @param \stdClass $field
@@ -3220,6 +3288,7 @@ class manager {
         global $DB;
 
         $record = self::get_or_create_source_settings($source);
+        $previoussourceparentkey = trim((string)($record->sourceparentkey ?? ''));
         $modes = array_keys(self::get_composition_mode_options());
         if (!in_array($compositionmode, $modes, true)) {
             $compositionmode = self::MODE_CUMULATIVE;
@@ -3238,7 +3307,7 @@ class manager {
             $customfieldpriority = self::CUSTOMFIELD_PRIORITY_CATEGORY;
         }
         $sourceparentkey = trim($sourceparentkey);
-        if ($sourceparentkey === $source->sourcekey || !self::resolve_source($sourceparentkey)) {
+        if (!self::can_set_source_parent($source, $sourceparentkey)) {
             $sourceparentkey = '';
         }
         if ($sourceisroot) {
@@ -3279,7 +3348,11 @@ class manager {
         $DB->update_record('local_course_banner_builder_order', $record);
 
         if ($sync) {
-            self::sync_courses_for_source($source);
+            if ($previoussourceparentkey !== $sourceparentkey) {
+                self::sync_courses_for_source_chain($source);
+            } else {
+                self::sync_courses_for_source($source);
+            }
         }
     }
 
@@ -3289,9 +3362,9 @@ class manager {
      * @param \stdClass $source
      * @param string $fieldname
      * @param string $value
-     * @return void
+     * @return bool Whether the requested field was accepted and saved.
      */
-    public static function update_source_setting_field(\stdClass $source, string $fieldname, string $value): void {
+    public static function update_source_setting_field(\stdClass $source, string $fieldname, string $value): bool {
         $settings = self::get_source_settings($source);
         $compositionmode = $settings->compositionmode ?? self::MODE_CUMULATIVE;
         $fitmode = $settings->fitmode ?? self::FIT_MODE_BANNER;
@@ -3309,6 +3382,9 @@ class manager {
                 $fitmode = $value;
                 break;
             case 'sourceparentkey':
+                if (!self::can_set_source_parent($source, $value)) {
+                    return false;
+                }
                 $sourceparentkey = $value;
                 $sourceisroot = trim($value) === '';
                 break;
@@ -3316,7 +3392,7 @@ class manager {
                 $customfieldpriority = $value;
                 break;
             default:
-                return;
+                return false;
         }
 
         self::save_source_settings(
@@ -3329,6 +3405,8 @@ class manager {
             $sourceisroot,
             false
         );
+
+        return true;
     }
 
     /**
@@ -6168,6 +6246,10 @@ class manager {
             if (!$category) {
                 continue;
             }
+            $categorysource = self::resolve_source(self::get_category_source_key((int)$categoryid));
+            if (!$categorysource) {
+                continue;
+            }
 
             $pathids = array_filter(array_map('intval', explode('/', trim((string)$category->path, '/'))));
             $pathsort = implode('/', array_map(static function (int $pathid): string {
@@ -6205,7 +6287,7 @@ class manager {
                 'parentdisplayvalue' => $parentdisplayvalue,
                 'parentselectedvalue' => $isroot ? '' : $parentkey,
                 'parentoptions' => self::export_inline_setting_options(
-                    self::get_source_parent_options(self::get_category_source_key((int)$categoryid)),
+                    self::get_configured_source_parent_options_for_source($categorysource),
                     $isroot ? '' : $parentkey
                 ),
                 'isisolated' => false,
@@ -6311,7 +6393,7 @@ class manager {
                     'parentdisplayvalue' => $parentdisplayvalue,
                     'parentselectedvalue' => $isroot ? '' : $parentkey,
                     'parentoptions' => self::export_inline_setting_options(
-                        self::get_source_parent_options($source->sourcekey),
+                        self::get_configured_source_parent_options_for_source($source),
                         $isroot ? '' : $parentkey
                     ),
                     'isisolated' => false,
@@ -7064,6 +7146,19 @@ class manager {
         }
 
         self::sync_all_courses_from_category_banners();
+    }
+
+    /**
+     * Sync a source and every explicit child that inherits its changed chain.
+     *
+     * @param \stdClass $source
+     * @return void
+     */
+    public static function sync_courses_for_source_chain(\stdClass $source): void {
+        self::sync_courses_for_source($source);
+        foreach (self::get_explicit_source_descendants($source) as $descendant) {
+            self::sync_courses_for_source($descendant);
+        }
     }
 
     /**
@@ -7844,7 +7939,7 @@ class manager {
         if (!self::is_site_source($source)) {
             $parentkey = (string)($settings->sourceparentkey ?? '');
             $parentsource = $parentkey !== '' ? self::resolve_source($parentkey) : null;
-            $parentoptions = self::get_configured_source_parent_options($source->sourcekey);
+            $parentoptions = self::get_configured_source_parent_options_for_source($source);
             if ($parentkey !== '' && !array_key_exists($parentkey, $parentoptions)) {
                 $parentkey = '';
                 $parentsource = null;

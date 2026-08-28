@@ -2461,8 +2461,6 @@ $slideshowpageskeleton .= html_writer::start_div(
     'local-course-banner-builder-slideshow-page-skeleton__navigation-items'
 );
 $slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slideshow-page-skeleton__navigation-item');
-$slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slideshow-page-skeleton__navigation-item');
-$slideshowpageskeleton .= html_writer::div('', 'local-course-banner-builder-slideshow-page-skeleton__navigation-item');
 $slideshowpageskeleton .= html_writer::end_div();
 $slideshowpageskeleton .= html_writer::end_div();
 $slideshowpageskeleton .= html_writer::start_div('local-course-banner-builder-slideshow-page-skeleton__cards');
@@ -2738,7 +2736,7 @@ $guidecontext['initialprogress'] = $guidecontext['slidecount'] > 0 ? round(100 /
 $guidehtml = $OUTPUT->render_from_template('local_course_banner_builder/easyedu_guide', $guidecontext);
 $slideshowpageidentity = html_writer::div(
     html_writer::span(
-        get_string('easystudlabel', 'local_course_banner_builder'),
+        get_string('pluginname', 'local_course_banner_builder'),
         'local-course-banner-builder-slideshow-page-identity__eyebrow'
     ) .
     html_writer::tag('h2', get_string('manageslideshow', 'local_course_banner_builder'), [

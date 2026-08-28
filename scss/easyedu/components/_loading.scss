@@ -3,6 +3,10 @@
 // Consumers own their DOM selectors, page geometry and readiness lifecycle.
 // The kit owns only the visual surface, shimmer, bounded stack rhythm and
 // opacity handoff used by proven EasyEdu loading states.
+// Skeleton section and structural-frame primitives are synchronized from the
+// immutable UI Kit K3.1 snapshot 7043fe5c2fc9440201cbb5b7d25e41a8a9bf54b4.
+
+@use "typography";
 
 @mixin skeleton-surface(
   $surface: var(--easyedu-loading-surface),
@@ -22,6 +26,143 @@
   @media (forced-colors: active) {
     background: Canvas;
     border-color: CanvasText;
+  }
+}
+
+@mixin skeleton-section-inline-accent(
+  $color: var(--easyedu-loading-section-accent),
+  $width: var(--easyedu-loading-section-border-width)
+) {
+  & {
+    border-inline-start: $width solid $color;
+  }
+
+  @media (forced-colors: active) {
+    & {
+      border-inline-start-color: CanvasText;
+    }
+  }
+}
+
+@mixin skeleton-structural-container-block-accent(
+  $color: var(--easyedu-loading-container-accent),
+  $width: var(--easyedu-loading-container-border-width)
+) {
+  & {
+    border-block-start: $width solid $color;
+  }
+
+  @media (forced-colors: active) {
+    & {
+      border-block-start-color: CanvasText;
+    }
+  }
+}
+
+// Deprecated name retained for source compatibility. K3.1 paints the logical
+// inline-start accent rather than a top border on internal cards.
+@mixin skeleton-section-top-border(
+  $color: var(--easyedu-loading-section-accent),
+  $width: var(--easyedu-loading-section-border-width)
+) {
+  @include skeleton-section-inline-accent($color, $width);
+}
+
+@mixin skeleton-section-frame(
+  $surface: var(--easyedu-loading-section-surface),
+  $border: var(--easyedu-loading-section-border),
+  $radius: var(--easyedu-loading-section-radius),
+  $accent: var(--easyedu-loading-section-accent),
+  $accent-width: var(--easyedu-loading-section-border-width)
+) {
+  @include skeleton-surface($surface, $border, $radius);
+  @include skeleton-section-inline-accent($accent, $accent-width);
+
+  & {
+    animation: none;
+  }
+}
+
+@mixin skeleton-structural-container-frame(
+  $surface: var(--easyedu-loading-container-surface),
+  $border: var(--easyedu-loading-container-border),
+  $radius: var(--easyedu-loading-container-radius),
+  $accent: var(--easyedu-loading-container-accent),
+  $accent-width: var(--easyedu-loading-container-border-width)
+) {
+  @include skeleton-surface($surface, $border, $radius);
+  @include skeleton-structural-container-block-accent($accent, $accent-width);
+
+  & {
+    animation: none;
+  }
+}
+
+@mixin skeleton-section-heading {
+  & {
+    align-items: center;
+    column-gap: var(--easyedu-loading-section-heading-gap);
+    display: grid;
+    grid-template-columns: var(--easyedu-loading-section-icon-slot-size) minmax(0, 1fr);
+    min-inline-size: 0;
+  }
+}
+
+@mixin skeleton-section-icon-slot {
+  & {
+    align-items: center;
+    color: var(--easyedu-loading-section-accent);
+    display: grid;
+    inline-size: var(--easyedu-loading-section-icon-slot-size);
+    justify-content: center;
+  }
+
+  @media (forced-colors: active) {
+    & {
+      color: CanvasText;
+    }
+  }
+}
+
+@mixin skeleton-section-title {
+  @include typography.type-section-title;
+
+  & {
+    color: var(--easyedu-loading-section-accent);
+    margin-block: 0;
+    min-inline-size: 0;
+  }
+
+  @media (forced-colors: active) {
+    & {
+      color: CanvasText;
+    }
+  }
+}
+
+@mixin skeleton-section-navigation-gap(
+  $gap: var(--easyedu-loading-section-navigation-gap)
+) {
+  & {
+    margin-block-start: $gap;
+  }
+}
+
+@mixin skeleton-cue-stack($gap: var(--easyedu-loading-section-stack-gap)) {
+  & {
+    align-content: start;
+    display: grid;
+    gap: $gap;
+    justify-items: start;
+    min-inline-size: 0;
+  }
+}
+
+@mixin skeleton-section-compact {
+  & {
+    --easyedu-loading-section-icon-slot-size: var(--easyedu-loading-section-compact-icon-slot-size);
+    --easyedu-loading-section-heading-gap: var(--easyedu-loading-section-compact-heading-gap);
+    --easyedu-loading-section-navigation-gap: var(--easyedu-loading-section-compact-navigation-gap);
   }
 }
 

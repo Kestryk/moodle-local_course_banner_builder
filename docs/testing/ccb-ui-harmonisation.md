@@ -63,6 +63,20 @@ layer, `multilayerdraftsettings` and `previewcropstate` payload all return to
 the uncropped `false, 0, 0, 100, 100` state before save; the persisted layer is
 also uncropped after reload.
 
+### Recrop action-rail avoidance (`EED-CCB-2026-0023-RF2-B`) - 2026-08-28
+
+When Crop or Recrop is active, the floating Crop and Cancel actions retain the
+existing eight placement candidates. Candidate scoring now measures both the
+Crop box and the visible modal action rail, and always prefers a candidate with
+less rail intersection before considering Crop-box overlap and the established
+priority order. This leaves the action rail in place and preserves the existing
+Crop, Cancel, Undo and Redo transactions.
+
+Static validation covers the AMD source, generated bundle and source map, plus
+the existing image-modal transform contract. Runtime validation must capture
+Recrop before Cancel, the restored state after Cancel, and the final Redo state;
+it remains a separately authorised visual step.
+
 ## Selected-source sticky H.1 — 2026-08-04
 
 The Selected source tray has one JavaScript positioning authority once AMD is
