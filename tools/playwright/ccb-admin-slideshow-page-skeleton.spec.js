@@ -230,6 +230,23 @@ test.describe('CCB admin Slideshow page skeleton', () => {
             path: testInfo.outputPath('slideshow-ready-mobile-390.png'),
             fullPage: true,
         });
+        const mobileOverlap = await page.locator(
+            '.local-course-banner-builder-slideshow-page-identity'
+        ).evaluate((identity) => {
+            const trigger = document.querySelector('[data-easyedu-navigation-open]');
+            const identityRect = identity.getBoundingClientRect();
+            const triggerRect = trigger?.getBoundingClientRect();
+            return Boolean(triggerRect) && !(
+                triggerRect.right <= identityRect.left ||
+                triggerRect.left >= identityRect.right ||
+                triggerRect.bottom <= identityRect.top ||
+                triggerRect.top >= identityRect.bottom
+            );
+        });
+        expect(mobileOverlap).toBe(false);
+        await shell.evaluate(node => {
+            node.setAttribute('data-local-course-banner-builder-slideshow-skeleton-state', 'loading');
+        });
         await live.evaluate(node => {
             node.hidden = true;
         });
@@ -245,6 +262,9 @@ test.describe('CCB admin Slideshow page skeleton', () => {
         });
         await live.evaluate(node => {
             node.hidden = false;
+        });
+        await shell.evaluate(node => {
+            node.setAttribute('data-local-course-banner-builder-slideshow-skeleton-state', 'ready');
         });
 
         const timeline = await page.evaluate(() => window.__ccbSlideshowSkeletonTimeline);
