@@ -84,7 +84,11 @@ test('ccb-admin-page-identity', async ({page}, testInfo) => {
 
             expect(geometry.identityBeforeNavigation).toBe(true);
             expect(geometry.overflowsViewport).toBe(false);
-            await expect(navigation).toBeVisible();
+            if (viewport.width >= 768) {
+                await expect(navigation.locator('[data-easyedu-navigation-desktop]')).toBeVisible();
+            } else {
+                await expect(page.locator('[data-easyedu-navigation-open]')).toBeVisible();
+            }
             await page.screenshot({
                 path: testInfo.outputPath(`page-identity-${target.variant}-${viewport.name}.png`),
                 fullPage: true,
