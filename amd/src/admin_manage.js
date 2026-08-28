@@ -18169,13 +18169,22 @@ function localCourseBannerBuilderOpenParentSourceChange(opener) {
     localCourseBannerBuilderSyncSourceDropdownButton(modal.querySelector('[data-source-dropdown="parent-change"]'));
     localCourseBannerBuilderBindParentSourceChangeModalPortal(modal);
     localCourseBannerBuilderPortalParentSourceChangeModal(modal);
+    var focusParentSourceDropdown = function() {
+        var dropdown = modal.querySelector('[data-source-dropdown-label]');
+        var active = document.activeElement;
+        if (dropdown && (active === document.body || active === modal || active === opener ||
+                !modal.contains(active))) {
+            dropdown.focus({preventScroll: true});
+        }
+    };
+    modal.addEventListener('shown.bs.modal', focusParentSourceDropdown, {once: true});
+    if (typeof window.jQuery !== 'undefined') {
+        window.jQuery(modal).one('shown.bs.modal', focusParentSourceDropdown);
+    }
     if (localCourseBannerBuilderShowModal(modal)) {
         window.setTimeout(function() {
-            var dropdown = modal.querySelector('[data-source-dropdown-label]');
-            if (dropdown) {
-                dropdown.focus({preventScroll: true});
-            }
-        }, 80);
+            focusParentSourceDropdown();
+        }, 300);
     }
 }
 
