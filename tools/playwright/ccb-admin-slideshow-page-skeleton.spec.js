@@ -233,14 +233,21 @@ test.describe('CCB admin Slideshow page skeleton', () => {
             '.local-course-banner-builder-slideshow-page-identity'
         ).evaluate((identity) => {
             const trigger = document.querySelector('[data-easyedu-navigation-open]');
-            const identityRect = identity.getBoundingClientRect();
             const triggerRect = trigger?.getBoundingClientRect();
-            return Boolean(triggerRect) && !(
-                triggerRect.right <= identityRect.left ||
-                triggerRect.left >= identityRect.right ||
-                triggerRect.bottom <= identityRect.top ||
-                triggerRect.top >= identityRect.bottom
+            const content = identity.querySelectorAll(
+                '.local-course-banner-builder-slideshow-page-identity__eyebrow, ' +
+                '.local-course-banner-builder-slideshow-page-identity__title, ' +
+                '.local-course-banner-builder-slideshow-page-identity__description'
             );
+            return Boolean(triggerRect) && Array.from(content).some((element) => {
+                const contentRect = element.getBoundingClientRect();
+                return !(
+                    triggerRect.right <= contentRect.left ||
+                    triggerRect.left >= contentRect.right ||
+                    triggerRect.bottom <= contentRect.top ||
+                    triggerRect.top >= contentRect.bottom
+                );
+            });
         });
         expect(mobileOverlap).toBe(false);
         await shell.evaluate(node => {
