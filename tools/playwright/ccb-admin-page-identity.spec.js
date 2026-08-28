@@ -16,7 +16,7 @@ const moodlePath = (path) => {
     return new URL(path.replace(/^\//, ''), base).toString();
 };
 
-test('ccb-admin-page-identity', async ({page}) => {
+test('ccb-admin-page-identity', async ({page}, testInfo) => {
     test.setTimeout(90_000);
     test.skip(
         !moodleUrl || !username || !password,
@@ -37,7 +37,6 @@ test('ccb-admin-page-identity', async ({page}) => {
         }
     });
 
-    await page.setViewportSize({width: 390, height: 844});
     await page.goto(moodlePath('/login/index.php'));
     if (await page.locator('#loginbtn').isVisible()) {
         await page.locator('#username').fill(username);
@@ -54,31 +53,43 @@ test('ccb-admin-page-identity', async ({page}) => {
         {path: '/local/course_banner_builder/admin_transfer.php', variant: 'transfer'},
     ];
 
-    for (const target of pages) {
-        await page.goto(moodlePath(target.path));
-        const identity = page.locator('[data-region="local-course-banner-builder-page-identity"]');
-        const navigation = page.locator('[data-easyedu-navigation]');
+    const viewports = [
+        {name: 'desktop', width: 1440, height: 1000},
+        {name: 'mobile-390', width: 390, height: 844},
+    ];
 
-        await expect(identity).toBeVisible();
-        await expect(identity).toHaveAttribute('data-page-identity-variant', target.variant);
-        await expect(identity.locator('.local-course-banner-builder-page-identity__brand')).not.toBeEmpty();
-        await expect(identity.locator('.local-course-banner-builder-page-identity__title')).not.toBeEmpty();
-        await expect(identity.locator('.local-course-banner-builder-page-identity__description')).not.toBeEmpty();
+    for (const viewport of viewports) {
+        await page.setViewportSize({width: viewport.width, height: viewport.height});
+        for (const target of pages) {
+            await page.goto(moodlePath(target.path));
+            const identity = page.locator('[data-region="local-course-banner-builder-page-identity"]');
+            const navigation = page.locator('[data-easyedu-navigation]');
 
-        const geometry = await identity.evaluate((header) => {
-            const navigationElement = document.querySelector('[data-easyedu-navigation]');
-            const headerRect = header.getBoundingClientRect();
-            return {
-                identityBeforeNavigation: Boolean(navigationElement) && Boolean(
-                    header.compareDocumentPosition(navigationElement) & Node.DOCUMENT_POSITION_FOLLOWING
-                ),
-                overflowsViewport: headerRect.left < 0 || headerRect.right > window.innerWidth,
-            };
-        });
+            await expect(identity).toBeVisible();
+            await expect(identity).toHaveAttribute('data-page-identity-variant', target.variant);
+            await expect(identity.locator('.local-course-banner-builder-page-identity__brand')).not.toBeEmpty();
+            await expect(identity.locator('.local-course-banner-builder-page-identity__title')).not.toBeEmpty();
+            await expect(identity.locator('.local-course-banner-builder-page-identity__description')).not.toBeEmpty();
 
-        expect(geometry.identityBeforeNavigation).toBe(true);
-        expect(geometry.overflowsViewport).toBe(false);
-        await expect(navigation).toBeVisible();
+            const geometry = await identity.evaluate((header) => {
+                const navigationElement = document.querySelector('[data-easyedu-navigation]');
+                const headerRect = header.getBoundingClientRect();
+                return {
+                    identityBeforeNavigation: Boolean(navigationElement) && Boolean(
+                        header.compareDocumentPosition(navigationElement) & Node.DOCUMENT_POSITION_FOLLOWING
+                    ),
+                    overflowsViewport: headerRect.left < 0 || headerRect.right > window.innerWidth,
+                };
+            });
+
+            expect(geometry.identityBeforeNavigation).toBe(true);
+            expect(geometry.overflowsViewport).toBe(false);
+            await expect(navigation).toBeVisible();
+            await page.screenshot({
+                path: testInfo.outputPath(`page-identity-${target.variant}-${viewport.name}.png`),
+                fullPage: true,
+            });
+        }
     }
 
     expect(writeRequests).toEqual([]);

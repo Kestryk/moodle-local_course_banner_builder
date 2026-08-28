@@ -25,7 +25,7 @@ const moodlePath = (path) => {
 };
 
 test.describe('CCB admin Slideshow page skeleton', () => {
-    test('releases the live Slideshow page without leaving inert controls', async ({page}) => {
+    test('releases the live Slideshow page without leaving inert controls', async ({page}, testInfo) => {
         test.skip(
             !moodleUrl || !username || !password,
             'Set process-local CCB Moodle credentials before running this leased scenario.'
@@ -90,6 +90,10 @@ test.describe('CCB admin Slideshow page skeleton', () => {
         await expect(live).not.toHaveAttribute('inert');
         await expect(skeleton).toBeHidden();
         await expect(status).toBeHidden();
+        await page.screenshot({
+            path: testInfo.outputPath('slideshow-ready-desktop.png'),
+            fullPage: true,
+        });
 
         const headerOrder = await shell.evaluate((pageShell) => {
             const identity = pageShell.querySelector(
@@ -217,6 +221,28 @@ test.describe('CCB admin Slideshow page skeleton', () => {
         }));
         expect(iconAlignment).toHaveLength(2);
         iconAlignment.forEach((offset) => expect(offset).toBeLessThanOrEqual(1));
+
+        await page.setViewportSize({width: 390, height: 844});
+        await page.screenshot({
+            path: testInfo.outputPath('slideshow-ready-mobile-390.png'),
+            fullPage: true,
+        });
+        await live.evaluate(node => {
+            node.hidden = true;
+        });
+        await skeleton.evaluate(node => {
+            node.hidden = false;
+        });
+        await page.screenshot({
+            path: testInfo.outputPath('slideshow-skeleton-mobile-390.png'),
+            fullPage: true,
+        });
+        await skeleton.evaluate(node => {
+            node.hidden = true;
+        });
+        await live.evaluate(node => {
+            node.hidden = false;
+        });
 
         const timeline = await page.evaluate(() => window.__ccbSlideshowSkeletonTimeline);
         expect(timeline[0].state).toBe('loading');
