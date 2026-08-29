@@ -17,6 +17,11 @@ image too. This made Crop shrink the whole visible image.
 
 ## Correction
 
+RF4 follows the QA3-5 evidence: dynamically fetched Moodle forms may expose
+canonical Crop names under generated ids. Draft restoration now uses the same
+id-or-name resolver as Crop commit/read, preventing stale submit fields after
+an image round trip. No geometry, Kit or modal markup changes.
+
 Both add-image modal render paths now calculate the outer box from natural
 image dimensions. Existing `localCourseBannerBuilderApplyCropToImageStyles()`
 continues to enlarge and translate only the image inside that unchanged box.
