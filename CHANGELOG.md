@@ -8,6 +8,22 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0043 - 2026-08-29
+
+#### Fixed
+
+- Applying a changed Crop or committing it while switching image drafts now
+  preserves the image layer's existing modal placement. The crop rectangle is
+  persisted independently and no longer derives a smaller custom size or new
+  offsets from the crop box.
+
+#### Validation
+
+- Rebuilt the official AMD bundle and source map from `admin_manage.js`; AMD
+  syntax, the focused geometry-spec syntax, exact allowlist and diff checks
+  pass. The new IMG-08 browser scenario is source-ready only: no runtime,
+  preview, cache, lease or browser execution was performed.
+
 ### EED-CCB-2026-0015-RF1 / 0035-RF2 / 0042 / 0023-RF3 - 2026-08-29
 
 #### Fixed

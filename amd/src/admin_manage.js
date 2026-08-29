@@ -4112,13 +4112,14 @@ function localCourseBannerBuilderGetCropControlLayer(control, sourceMode) {
     return localCourseBannerBuilderGetLayerFormPreviewImage(form);
 }
 
-function localCourseBannerBuilderGetCropSelectionCustomState(layer) {
+function localCourseBannerBuilderGetCropSelectionCustomState(layer, preserveSessionPlacement) {
     var sessionPlacement = localCourseBannerBuilderGetCropSessionPlacementState(layer);
     var initialCropState = localCourseBannerBuilderGetCropSessionInitialCropState(layer);
     var currentCropState = localCourseBannerBuilderGetPreviewCropState(layer);
-    if (sessionPlacement && initialCropState &&
+    var keepSessionPlacement = preserveSessionPlacement || (initialCropState &&
             (!localCourseBannerBuilderIsCropSessionDirty(layer) ||
-            localCourseBannerBuilderCropStatesMatch(currentCropState, initialCropState))) {
+            localCourseBannerBuilderCropStatesMatch(currentCropState, initialCropState)));
+    if (sessionPlacement && keepSessionPlacement) {
         return Object.assign({}, sessionPlacement);
     }
     var box = layer ? layer.querySelector('[data-preview-crop-box="1"]') : null;
@@ -4291,7 +4292,10 @@ function localCourseBannerBuilderApplyCropEditor(control, sourceMode) {
         return;
     }
     var crop = localCourseBannerBuilderGetPreviewCropState(layer);
-    var cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState(layer);
+    // A modal crop changes the visible source rectangle, never its placement.
+    // Keep the session placement even after a real crop gesture; source-editor
+    // callers deliberately retain their existing box-derived behaviour.
+    var cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState(layer, !sourceMode);
     localCourseBannerBuilderSetPreviewCropState(layer, {
         imagecropenabled: crop.enabled,
         imagecropleftpercent: crop.left,
@@ -9534,7 +9538,9 @@ function localCourseBannerBuilderCommitActiveDraftCropBeforeSwitch(form) {
         return false;
     }
     var crop = localCourseBannerBuilderGetPreviewCropState(activeLayer);
-    var cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState(activeLayer);
+    // Draft switching commits crop fields, but must not turn a changed crop box
+    // into a new custom placement before the next draft is selected.
+    var cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState(activeLayer, true);
     var settings = localCourseBannerBuilderGetDraftPreviewSettings(form);
     var existingState = settings[draftIndex] || {};
     var state = Object.assign(

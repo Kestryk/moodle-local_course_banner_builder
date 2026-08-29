@@ -102,6 +102,24 @@ layer, `multilayerdraftsettings` and `previewcropstate` payload all return to
 the uncropped `false, 0, 0, 100, 100` state before save; the persisted layer is
 also uncropped after reload.
 
+### Modal and draft placement preservation (`EED-CCB-2026-0043`) - 2026-08-29
+
+Crop coordinates are source-relative data. In the add/edit image modal, a crop
+gesture must therefore change only `imagecropenabled`,
+`imagecropleftpercent`, `imagecroptoppercent`, `imagecropwidthpercent` and
+`imagecropheightpercent`. It must not derive a new `fitmodeoverride`, custom
+width/height or offsets from the crop-box DOM rect. The same invariant applies
+when an active draft crop is committed before the user switches image drafts.
+
+`tools/playwright/ccb-image-modal-crop-geometry.spec.js` is the focused
+IMG-08 scenario. Its future authorised run records current/visual layer
+rectangles, placement fields and `multilayerdraftsettings` before initial crop,
+after Apply, after draft-switch commit, after Recrop and after Undo/Redo. At
+desktop and narrow modal widths, placement values and rectangles must remain
+stable while the five crop fields change; an untouched Crop/Apply retains both
+placement and crop payload exactly. Browser execution, fixture creation, cache
+work and lease acquisition are intentionally outside this source-ready record.
+
 ### Recrop action-rail avoidance (`EED-CCB-2026-0023-RF2-B`) - 2026-08-28
 
 When Crop or Recrop is active, the floating Crop and Cancel actions retain the
