@@ -96,6 +96,7 @@ Prefer generic `--easyedu-*` variables. Plugin-specific aliases such as
 - `identity-rail`: coloured left rail with a masked icon.
 - `icon-button`: compact square icon buttons.
 - `action-button`: toolbar/action buttons.
+- `action-row-button`: shared geometry for neighbouring Save/Cancel actions.
 - `dropdown-menu`: custom dropdown or overflow menus.
 - `modal-surface`: modal dialog shell.
 - `token-pill`: semantic labels.
