@@ -5,6 +5,7 @@ and `Pending historical confirmation` are intentional states, not omissions.
 
 | Batch or evolution | Title | Area | Status | First known date | Latest validation date | Detail | Release / commit reference | Successor or dependency |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| EED-CCB-2026-0043-RF5 | Crop pointer-completion isolation | Image modal / Crop | Implemented - source validation pending | 2026-08-30 | QA7 pointer diagnostic 2026-08-29 | [0043-RF5](batches/eed-ccb-2026-0043-rf5-crop-pointer-isolation.md) | Worktree candidate pending commit | AMD build then one scoped Crop diagnostic |
 | EED-CCB-2026-0043-RF3 | Crop outer-geometry preservation | Image modal / Crop | Implemented - browser validation pending | 2026-08-29 | QA2 product failure 2026-08-29 | [0043-RF3](batches/eed-ccb-2026-0043-rf3-crop-outer-geometry.md) | Source branch pending commit | Run QA2 unchanged against the promoted candidate |
 | EED-CCB-2026-0050 | Configured-source disclosure and preview modal Kit parity | Sources / accessibility | Implemented â€” validation pending | 2026-08-29 | Unknown from available evidence | [0050](batches/eed-ccb-2026-0050-source-preview.md) | Source branch pending commit | Official AMD/Sass static builds; authorized preview is separate |
 | Batch 2F-A | Public title accessibility gate | Public semantics | Partially validated | 2026-07-22 | 2026-07-26 (2F-A.1 cell only) | [2F-A](batches/batch-2f-a.md) | `c5f33c8` adds the focused scenario | 2F-B and the remaining accessibility review |

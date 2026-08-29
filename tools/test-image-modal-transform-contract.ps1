@@ -32,6 +32,10 @@ $checks = [ordered]@{
         ($source -match '(?s)function localCourseBannerBuilderCommitModalImagePreviewState\(form, patch, options\).*?localCourseBannerBuilderApplyLayerFormPreviewState\(form, nextState, \{deferDom: true\}\).*?localCourseBannerBuilderWriteActiveDraftPreviewState\(form, nextState\).*?localCourseBannerBuilderSyncCurrentLayerDataFromForm\(form\).*?localCourseBannerBuilderSyncStandalonePreviewLayer');
     'Draft selection restores generated Crop fields through the shared resolver' =
         ($source -match "(?s)function localCourseBannerBuilderApplyLayerFormPreviewState\(form, state, options\).*?localCourseBannerBuilderGetCropInput\(form, 'imagecropenabled'\).*?localCourseBannerBuilderGetCropInput\(form, 'imagecropheightpercent'\)");
+    'Crop pointer completion is isolated from generic preview commits' =
+        (($source -match '(?s)function localCourseBannerBuilderStopCropPointerInteraction\(event\).*?localCourseBannerBuilderCropInteraction.*?event\.stopImmediatePropagation\(\).*?localCourseBannerBuilderStopCropInteraction\(\)') -and
+        ($source -match "document\.addEventListener\('pointerup', localCourseBannerBuilderStopCropPointerInteraction, true\)") -and
+        ($source -match "document\.addEventListener\('pointercancel', localCourseBannerBuilderStopCropPointerInteraction, true\)"));
     'Create draft handles use the dedicated resize state' =
         ($source -match '(?s)function localCourseBannerBuilderHandleLayerModalPreviewPointerDown\(form, event\).*?if \(resizeHandle\).*?data-preview-draft-selection-overlay.*?localCourseBannerBuilderStartModalResizeInteraction\(event, resizeHandle\).*?return true;.*?localCourseBannerBuilderStartPreviewInteraction');
     'Generic preview sync avoids redundant pre-render draft serialization' =
