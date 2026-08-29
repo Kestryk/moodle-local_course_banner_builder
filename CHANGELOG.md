@@ -8,6 +8,25 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0044 - 2026-08-29
+
+#### Changed
+
+- Added a policy-aware, fade-only transition for the public Desktop/Mobile
+  source-preview simulation. Filmstrip and action controls remain stationary.
+- Reused the embedded EasyEdu Motion runtime for controlled scrolling and left
+  Slideshow side-panel geometry solely to its measured disclosure controller.
+- Replaced the native layer-row drag ghost with the accepted opaque, lifted
+  EasyEdu preview; the original row retains its space and valid insertion
+  targets are visible. Locked rows remain non-draggable.
+
+#### Validation
+
+- Added a source contract and a lease-gated Playwright scenario for motion
+  policy, reduced motion, Layer infos & overrides, and one complete drag cycle.
+  No runtime, preview, cache, lease or browser execution belongs to this
+  source-ready change.
+
 ### EED-CCB-2026-0043 - 2026-08-29
 
 #### Fixed

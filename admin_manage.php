@@ -3060,6 +3060,7 @@ $PAGE->requires->js_call_amd('local_course_banner_builder/easyedu_guide_adapter'
 echo $OUTPUT->header();
 echo html_writer::start_div(implode(' ', $adminclasses), [
     'aria-busy' => 'false',
+    'data-easyedu-motion-policy' => 'enabled',
     'data-easyedu-action-busy-label' => get_string('actioninprogress', 'local_course_banner_builder'),
 ]);
 

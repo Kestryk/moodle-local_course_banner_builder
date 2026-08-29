@@ -7414,10 +7414,6 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
   box-shadow: var(--local-course-banner-builder-slideshow-label-shadow-x, 0) var(--local-course-banner-builder-slideshow-label-shadow-y, 0) var(--local-course-banner-builder-slideshow-label-shadow-blur, 8px) rgba(var(--local-course-banner-builder-slideshow-label-shadow-rgb, 0, 0, 0), var(--local-course-banner-builder-slideshow-label-shadow-opacity, 0.16));
 }
 
-.local-course-banner-builder-slideshow-side-panel {
-  transition: max-height 280ms ease, opacity 240ms ease, transform 240ms ease, margin 240ms ease, padding 240ms ease, border-width 240ms ease;
-}
-
 .local-course-banner-builder-slideshow-modal-settings {
   margin-top: 1rem;
 }
@@ -18802,15 +18798,59 @@ span[data-flexitour=container].orphan .modal-dialog {
 .local-course-banner-builder-admin .local-course-banner-builder-layer-row-dragging,
 [data-source-visual-editor="1"] .local-course-banner-builder-layer-row-dragging {
   cursor: grabbing;
+  opacity: 0 !important;
+  visibility: hidden;
+}
+.local-course-banner-builder-admin .local-course-banner-builder-layer-row-drop-before > :is(th, td),
+.local-course-banner-builder-admin .local-course-banner-builder-layer-row-drop-after > :is(th, td),
+[data-source-visual-editor="1"] .local-course-banner-builder-layer-row-drop-before > :is(th, td),
+[data-source-visual-editor="1"] .local-course-banner-builder-layer-row-drop-after > :is(th, td) {
+  background-color: color-mix(in srgb, var(--local-course-banner-builder-layer-row-rail) 10%, #fff);
+}
+.local-course-banner-builder-admin .local-course-banner-builder-layer-row-drop-before > :is(th, td),
+[data-source-visual-editor="1"] .local-course-banner-builder-layer-row-drop-before > :is(th, td) {
+  box-shadow: inset 0 0.22rem 0 var(--local-course-banner-builder-layer-row-rail);
+}
+.local-course-banner-builder-admin .local-course-banner-builder-layer-row-drop-after > :is(th, td),
+[data-source-visual-editor="1"] .local-course-banner-builder-layer-row-drop-after > :is(th, td) {
+  box-shadow: inset 0 -0.22rem 0 var(--local-course-banner-builder-layer-row-rail);
+}
+.local-course-banner-builder-admin .local-course-banner-builder-layer-drag-preview,
+[data-source-visual-editor="1"] .local-course-banner-builder-layer-drag-preview {
+  filter: drop-shadow(0 0.8rem 1.1rem rgba(31, 42, 55, 0.18));
+  left: 0;
   opacity: 1;
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  transform: rotate(-1deg);
+  z-index: 9999;
+  transform: translate(-140vw, -140vh) rotate(-1deg);
+  width: min(28rem, 100vw - 2rem);
 }
-.local-course-banner-builder-admin .local-course-banner-builder-layer-row-dragging > :is(th, td),
-[data-source-visual-editor="1"] .local-course-banner-builder-layer-row-dragging > :is(th, td) {
-  background-color: color-mix(in srgb, var(--local-course-banner-builder-layer-row-rail) 12%, #fff);
+.local-course-banner-builder-admin .local-course-banner-builder-layer-drag-preview-card,
+[data-source-visual-editor="1"] .local-course-banner-builder-layer-drag-preview-card {
+  box-shadow: 0 0.65rem 1.25rem rgba(31, 42, 55, 0.16);
+  margin: 0;
+  opacity: 1 !important;
+  pointer-events: none;
+  transform: none !important;
+  width: 100%;
+  background: var(--easyedu-surface);
+  border: 1px solid color-mix(in srgb, var(--local-course-banner-builder-layer-row-rail, var(--easyedu-primary)) 24%, #fff 76%);
+  border-left: 0.42rem solid var(--local-course-banner-builder-layer-row-rail, var(--easyedu-primary));
+  border-radius: var(--easyedu-card-radius);
+  box-shadow: 0 0.8rem 1.1rem rgba(31, 42, 55, 0.18);
+  color: var(--easyedu-text);
+  opacity: 1;
+  padding: 0.62rem 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.local-course-banner-builder-admin .local-course-banner-builder-layer-row-dragging > :first-child,
-[data-source-visual-editor="1"] .local-course-banner-builder-layer-row-dragging > :first-child {
-  box-shadow: inset var(--local-course-banner-builder-layer-row-rail-width) 0 0 var(--local-course-banner-builder-layer-row-rail);
+.local-course-banner-builder-admin .local-course-banner-builder-layer-drag-preview-card *,
+[data-source-visual-editor="1"] .local-course-banner-builder-layer-drag-preview-card * {
+  opacity: 1 !important;
 }
 .local-course-banner-builder-admin .local-course-banner-builder-layer-row--order-locked,
 [data-source-visual-editor="1"] .local-course-banner-builder-layer-row--order-locked {

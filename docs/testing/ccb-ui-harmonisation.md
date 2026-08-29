@@ -16,6 +16,28 @@ menus.
 - configured-source actions must keep icons and labels leading-aligned;
 - no preview, document or modal horizontal overflow is allowed.
 
+## EED-CCB-2026-0044 - motion and draggable-layer parity - 2026-08-29
+
+The source-preview root publishes `data-easyedu-motion-policy="enabled"` before
+first paint. Desktop/Mobile changes use the vendored cancellable Motion runtime
+on the canvas surface only: the filmstrip, visibility row and action controls
+remain stationary. Reduced motion resolves immediately and shared scrolling is
+never forced smooth.
+
+`Layer infos & overrides` retains its existing semantic `details` disclosure;
+the Motion runtime alone owns its measured opening and closing geometry.
+Slideshow side panels no longer combine CSS geometry transitions with that same
+controller.
+
+Layer reordering remains an enhancement over the existing keyboard/button
+alternatives. A movable row receives a Kit-style opaque lifted preview, its
+source remains an in-flow placeholder, and valid before/after insertion targets
+are explicit. Border, Overlay and inherited locked rows remain non-draggable.
+
+The lease-gated `tools/playwright/ccb-motion-drag.spec.js` covers normal and
+reduced motion, repeated disclosure state and a complete drag cycle. It is
+source-ready only; no browser or runtime evidence is claimed here.
+
 ## Cumulative visual correction wave (`0015-RF1`, `0035-RF2`, `0042`, `0023-RF3`) - 2026-08-29
 
 The cumulative preview must prove the following visible contracts without
