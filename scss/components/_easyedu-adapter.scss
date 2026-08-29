@@ -1256,6 +1256,10 @@
 // the CCB admin root so its surface never becomes transparent.
 #local-course-banner-builder-change-source-parent-modal {
     @include easyedu.token-defaults;
+
+    // Once portalled beside the Bootstrap backdrop, keep the dialog in the
+    // modal layer instead of allowing the later backdrop to veil its surface.
+    z-index: 1095;
 }
 
 .modal[id^="local-course-banner-builder-"] {
