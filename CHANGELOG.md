@@ -8,6 +8,20 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0043-RF4 - 2026-08-29
+
+#### Fixed
+
+- Switching image drafts after Recrop now restores the active draft's Crop
+  values into Moodle's generated hidden fields as well as the draft JSON.
+  Saving can no longer submit the previous draft's stale Crop values.
+
+#### Validation
+
+- Focused QA proved the mismatch (`1.3%` in draft JSON versus `1%` in the
+  form) after an image round trip. RF4 changes only the shared Crop field
+  resolver used during draft restoration.
+
 ### EED-CCB-2026-0043-RF3 - 2026-08-29
 
 #### Fixed

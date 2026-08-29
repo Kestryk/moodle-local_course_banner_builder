@@ -8362,11 +8362,13 @@ function localCourseBannerBuilderReadLayerFormPreviewState(form) {
     var aboveInheritedInput = form.querySelector('#id_imageaboveinheritedenabled');
     var centerFixedInput = form.querySelector('#id_imagecenterfixed');
     var imageOpacityInput = form.querySelector('#id_imageopacity');
-    var cropEnabledInput = form.querySelector('#id_imagecropenabled');
-    var cropLeftInput = form.querySelector('#id_imagecropleftpercent');
-    var cropTopInput = form.querySelector('#id_imagecroptoppercent');
-    var cropWidthInput = form.querySelector('#id_imagecropwidthpercent');
-    var cropHeightInput = form.querySelector('#id_imagecropheightpercent');
+    // Dynamically fetched Moodle forms may generate scoped ids while keeping
+    // the canonical field names. Read those fields through the shared resolver.
+    var cropEnabledInput = localCourseBannerBuilderGetCropInput(form, 'imagecropenabled');
+    var cropLeftInput = localCourseBannerBuilderGetCropInput(form, 'imagecropleftpercent');
+    var cropTopInput = localCourseBannerBuilderGetCropInput(form, 'imagecroptoppercent');
+    var cropWidthInput = localCourseBannerBuilderGetCropInput(form, 'imagecropwidthpercent');
+    var cropHeightInput = localCourseBannerBuilderGetCropInput(form, 'imagecropheightpercent');
     if (imageOpacityInput && imageOpacityInput.value === '') {
         imageOpacityInput.value = '100';
     }
@@ -8554,11 +8556,13 @@ function localCourseBannerBuilderApplyLayerFormPreviewState(form, state, options
     var aboveInheritedInput = form.querySelector('#id_imageaboveinheritedenabled');
     var centerFixedInput = form.querySelector('#id_imagecenterfixed');
     var imageOpacityInput = form.querySelector('#id_imageopacity');
-    var cropEnabledInput = form.querySelector('#id_imagecropenabled');
-    var cropLeftInput = form.querySelector('#id_imagecropleftpercent');
-    var cropTopInput = form.querySelector('#id_imagecroptoppercent');
-    var cropWidthInput = form.querySelector('#id_imagecropwidthpercent');
-    var cropHeightInput = form.querySelector('#id_imagecropheightpercent');
+    // Draft switching must restore Moodle's generated submit fields as well
+    // as the preview JSON, even when the form ids are scoped dynamically.
+    var cropEnabledInput = localCourseBannerBuilderGetCropInput(form, 'imagecropenabled');
+    var cropLeftInput = localCourseBannerBuilderGetCropInput(form, 'imagecropleftpercent');
+    var cropTopInput = localCourseBannerBuilderGetCropInput(form, 'imagecroptoppercent');
+    var cropWidthInput = localCourseBannerBuilderGetCropInput(form, 'imagecropwidthpercent');
+    var cropHeightInput = localCourseBannerBuilderGetCropInput(form, 'imagecropheightpercent');
     var offsetTopInput = form.querySelector('#id_offsettoppercent');
     var offsetRightInput = form.querySelector('#id_offsetrightpercent');
     var offsetBottomInput = form.querySelector('#id_offsetbottompercent');
