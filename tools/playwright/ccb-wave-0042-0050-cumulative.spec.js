@@ -86,10 +86,15 @@ const sourceUrl = env => {
 
 const loginAndOpen = async(page, env, source = true) => {
     await page.goto(env.baseUrl + '/login/index.php', {waitUntil: 'domcontentloaded', timeout: 60000});
-    await page.locator('#username').fill(env.username);
-    await page.locator('#password').fill(env.password);
-    await page.locator('#loginbtn').click({noWaitAfter: true});
-    await expect(page).not.toHaveURL(/\/login\//, {timeout: 60000});
+    const username = page.locator('#username');
+    if (await username.isVisible()) {
+        await username.fill(env.username);
+        await page.locator('#password').fill(env.password);
+        await page.locator('#loginbtn').click({noWaitAfter: true});
+        await expect(page).not.toHaveURL(/\/login\//, {timeout: 60000});
+    } else {
+        await expect(page, 'Moodle session must be active when the login form is absent').not.toHaveURL(/\/login\//);
+    }
     await page.goto(source ? sourceUrl(env) :
         env.baseUrl + '/local/course_banner_builder/admin_manage.php', {waitUntil: 'domcontentloaded', timeout: 60000});
 };
@@ -115,23 +120,25 @@ const assertTitleColourDialog = async(page, env, context, captureName, narrow) =
         await page.setViewportSize({width: 1440, height: 900});
     }
     const modal = page.locator('#local-course-banner-builder-title-settings-' + context + '-modal');
-    await expect(page.locator('[data-bs-target="#local-course-banner-builder-title-settings-' + context + '-modal"], ' +
-        '[data-target="#local-course-banner-builder-title-settings-' + context + '-modal"]'),
+    await expect(page.locator('[data-bs-target="#local-course-banner-builder-title-settings-' + context + '-modal"]:visible, ' +
+        '[data-target="#local-course-banner-builder-title-settings-' + context + '-modal"]:visible'),
         context + ' title trigger').toHaveCount(1);
-    const trigger = page.locator('[data-bs-target="#local-course-banner-builder-title-settings-' + context + '-modal"], ' +
-        '[data-target="#local-course-banner-builder-title-settings-' + context + '-modal"]').first();
+    const trigger = page.locator('[data-bs-target="#local-course-banner-builder-title-settings-' + context + '-modal"]:visible, ' +
+        '[data-target="#local-course-banner-builder-title-settings-' + context + '-modal"]:visible').first();
     if (await modal.isHidden()) {
         await trigger.click();
     }
     await expect(modal, context + ' title editor').toBeVisible({timeout: 30000});
     const form = modal.locator('form[data-banner-title-editor][data-title-current-context="' + context + '"]');
     await expect(form, context + ' title form').toHaveCount(1);
+    await expect(form, context + ' title form').toBeVisible();
     await expect(form.locator('input[type="color"]'), context + ' title editor has no native picker').toHaveCount(0);
-    const swatch = form.locator('[data-action="local-course-banner-builder-open-title-colour-dialog"]').first();
+    const swatch = form.locator('[data-action="local-course-banner-builder-open-title-colour-dialog"]:visible').first();
+    await expect(swatch, context + ' title colour trigger').toBeVisible();
     const persisted = form.locator('[data-title-color-text-for]').first();
     const before = await persisted.inputValue();
     await swatch.click();
-    const dialog = page.locator('[data-title-colour-dialog="1"]');
+    const dialog = page.locator('[data-title-colour-dialog="1"]:visible').first();
     await expect(dialog, context + ' title colour dialog').toBeVisible();
     await captureHuman(page, env, captureName, dialog);
     const input = dialog.locator('input[type="text"]').first();
@@ -166,22 +173,25 @@ const assertTitleColourDialog = async(page, env, context, captureName, narrow) =
 const assertImageCropFlow = async(page, env, viewportName, edit) => {
     const editor = ownedSourceEditor(page, env);
     await expect(editor, 'IMG-08 owned source editor').toHaveCount(1);
+    await expect(editor, 'IMG-08 owned source editor').toBeVisible();
     const trigger = edit ?
-        editor.locator('[data-edit-layer-url][data-edit-layer-modal="local-course-banner-builder-edit-image-layer-modal"]').first() :
-        editor.locator('[data-target="#local-course-banner-builder-add-layer-modal"], ' +
-            '[data-bs-target="#local-course-banner-builder-add-layer-modal"]').first();
+        editor.locator('[data-edit-layer-url][data-edit-layer-modal="local-course-banner-builder-edit-image-layer-modal"]:visible').first() :
+        editor.locator('[data-target="#local-course-banner-builder-add-layer-modal"]:visible, ' +
+            '[data-bs-target="#local-course-banner-builder-add-layer-modal"]:visible').first();
     await expect(trigger, 'IMG-08 image modal trigger').toBeVisible({timeout: 30000});
     await trigger.click();
     const modal = page.locator(edit ? '#local-course-banner-builder-edit-image-layer-modal:visible' :
         '#local-course-banner-builder-add-layer-modal:visible').first();
     await expect(modal, 'IMG-08 image modal').toBeVisible({timeout: 30000});
     const form = modal.locator('form.mform').first();
+    await expect(form, 'IMG-08 image modal form').toBeVisible();
     if (!edit) {
-        const add = form.locator('#fitem_id_bannerimage_filemanager .fp-btn-add a, ' +
-            '#fitem_id_bannerimage_filemanager input.fp-btn-choose').first();
+        const add = form.locator('#fitem_id_bannerimage_filemanager .fp-btn-add a:visible, ' +
+            '#fitem_id_bannerimage_filemanager input.fp-btn-choose:visible').first();
+        await expect(add, 'IMG-08 file picker trigger').toBeVisible();
         await add.click();
-        const picker = page.locator('.file-picker:visible').last();
-        await expect(picker).toBeVisible({timeout: 30000});
+        const picker = page.locator('.file-picker:visible');
+        await expect(picker, 'IMG-08 file picker').toHaveCount(1, {timeout: 30000});
         const upload = picker.locator('input[name="repo_upload_file"]').first();
         await upload.setInputFiles(env.imageFixture);
         await picker.locator('.fp-upload-btn').first().click();
@@ -239,7 +249,8 @@ const assertSourceTreeAndPreview = async(page, env, evidence) => {
     await toggles.nth(1).click();
     await expect(rows.nth(2)).toBeHidden();
     await toggles.nth(1).click();
-    const collapseAll = page.locator('[data-action="local-course-banner-builder-toggle-all-source-chains"]');
+    const collapseAll = page.locator('[data-action="local-course-banner-builder-toggle-all-source-chains"]:visible');
+    await expect(collapseAll, '0050 visible Collapse all control').toHaveCount(1);
     await collapseAll.click();
     await expect(rows.nth(1)).toBeHidden();
     await expect(rows.nth(2)).toBeHidden();
@@ -253,8 +264,9 @@ const assertSourceTreeAndPreview = async(page, env, evidence) => {
     await page.emulateMedia({reducedMotion: 'no-preference'});
 
     const previewTrigger = ownedSourceChainRow(page, env.sourceKey).locator(
-        '[data-action="local-course-banner-builder-show-source-chain-preview"]'
+        '[data-action="local-course-banner-builder-show-source-chain-preview"]:visible'
     ).first();
+    await expect(previewTrigger, '0050 descendant Preview control').toBeVisible();
     await previewTrigger.click();
     const previewModal = page.locator('#local-course-banner-builder-source-chain-preview-modal');
     const body = previewModal.locator('[data-source-chain-preview-modal-body="1"]');
@@ -264,20 +276,25 @@ const assertSourceTreeAndPreview = async(page, env, evidence) => {
     await captureHuman(page, env, '09-0050-preview-loading-before-sensitive', previewModal);
     evidence.captures.push('09-0050-preview-loading-before-sensitive.png');
     await expect(body).toHaveAttribute('aria-busy', 'false', {timeout: 45000});
-    const previewRoot = body.locator('[data-source-visual-editor="1"]');
+    const previewRoot = body.locator('[data-source-visual-editor="1"]:visible');
     await expect(previewRoot).toBeVisible();
-    const footer = previewModal.locator('[data-source-chain-preview-modal-footer="1"]');
+    const footer = previewModal.locator('[data-source-chain-preview-modal-footer="1"]:visible');
+    await expect(footer, '0050 Preview footer').toBeVisible();
     await expect(footer.locator('a.local-course-banner-builder-source-preview-button')).toHaveCount(1);
     await expect(body.locator('.local-course-banner-builder-source-chain-preview-actions')).toHaveCount(0);
     await captureHuman(page, env, '10-0050-preview-ready-before-sensitive', previewModal);
     evidence.captures.push('10-0050-preview-ready-before-sensitive.png');
-    const canvas = previewRoot.locator('[data-source-preview-canvas="1"], .local-course-banner-builder-source-preview-canvas').first();
+    const canvas = previewRoot.locator('[data-source-preview-canvas="1"]:visible, ' +
+        '.local-course-banner-builder-source-preview-canvas:visible').first();
     const footerBefore = await footer.boundingBox();
+    ensure(footerBefore, '0050 Preview footer has no layout box before mode changes.');
     await previewRoot.locator('[data-source-preview-mode-value="mobile"]').click();
     await expect(previewRoot).toHaveAttribute('data-source-preview-mode', 'mobile');
     await previewRoot.locator('[data-source-preview-mode-value="desktop"]').click();
     await expect(previewRoot).toHaveAttribute('data-source-preview-mode', 'desktop');
-    expect(await footer.boundingBox(), '0050 Desktop/Mobile only changes the preview canvas').toEqual(footerBefore);
+    const footerAfter = await footer.boundingBox();
+    ensure(footerAfter, '0050 Preview footer has no layout box after mode changes.');
+    expect(footerAfter, '0050 Desktop/Mobile only changes the preview canvas').toEqual(footerBefore);
     await expect(canvas).toBeVisible();
     await closeModal(previewModal);
     await expect(previewTrigger).toBeFocused();
@@ -314,6 +331,7 @@ test('EED-CCB-2026-0042-0050 cumulative visual and interaction wave', async() =>
         await expect(parentPencils).toHaveCount(2);
         const parentModal = page.locator('#local-course-banner-builder-change-source-parent-modal');
         const parentPencil = parentPencils.first();
+        await expect(parentPencil, '0042 fixture Parent pencil').toBeVisible();
         await parentPencil.click();
         await expect(parentModal).toBeVisible();
         await captureHuman(page, env, '02-0042-parent-modal-before-sensitive', parentModal);
@@ -358,24 +376,30 @@ test('EED-CCB-2026-0042-0050 cumulative visual and interaction wave', async() =>
         await loginAndOpen(page, env);
         const root = ownedSourceEditor(page, env);
         await expect(root, '0044 owned source editor').toHaveCount(1);
+        await expect(root, '0044 owned source editor').toBeVisible();
         await captureHuman(page, env, '04-0044-motion-drag-before-sensitive', root);
         evidence.captures.push('04-0044-motion-drag-before-sensitive.png');
-        const filmstrip = root.locator('[data-source-preview-filmstrip="1"], .local-course-banner-builder-source-filmstrip').first();
+        const filmstrip = root.locator('[data-source-preview-filmstrip="1"]:visible, ' +
+            '.local-course-banner-builder-source-filmstrip:visible').first();
+        await expect(filmstrip, '0044 active source filmstrip').toBeVisible();
         const filmstripBefore = await filmstrip.boundingBox();
+        ensure(filmstripBefore, '0044 active source filmstrip has no layout box before mode changes.');
         await root.locator('[data-source-preview-mode-value="mobile"]').click();
         await root.locator('[data-source-preview-mode-value="desktop"]').click();
-        expect(await filmstrip.boundingBox(), '0044 leaves filmstrip stationary').toEqual(filmstripBefore);
+        const filmstripAfter = await filmstrip.boundingBox();
+        ensure(filmstripAfter, '0044 active source filmstrip has no layout box after mode changes.');
+        expect(filmstripAfter, '0044 leaves filmstrip stationary').toEqual(filmstripBefore);
         await page.emulateMedia({reducedMotion: 'reduce'});
         await root.locator('[data-source-preview-mode-value="mobile"]').click();
         await expect(root).toHaveAttribute('data-source-preview-mode', 'mobile');
         await page.emulateMedia({reducedMotion: 'no-preference'});
-        const disclosure = root.locator('.local-course-banner-builder-layer-details-accordion').first();
+        const disclosure = root.locator('.local-course-banner-builder-layer-details-accordion:visible').first();
         await expect(disclosure).toBeVisible();
         await disclosure.locator('summary').click();
         await expect(disclosure).toHaveAttribute('open', '');
         await disclosure.locator('summary').click();
         await expect(disclosure).not.toHaveAttribute('open', '');
-        const layerTable = page.locator('tbody[data-layer-sortable-sourcekey="' + env.sourceKey + '"]');
+        const layerTable = page.locator('tbody[data-layer-sortable-sourcekey="' + env.sourceKey + '"]:visible');
         await expect(layerTable, '0044 owned source layer table').toHaveCount(1);
         const movable = layerTable.locator('.local-course-banner-builder-layer-row[draggable="true"]');
         const locked = layerTable.locator('.local-course-banner-builder-layer-row--order-locked');
