@@ -121,8 +121,10 @@ const login = async(page, env) => {
     await expect(page).not.toHaveURL(/\/login\//, {timeout: 60000});
 };
 
-const completeUpload = async(page, picker) => {
-    await picker.locator('.fp-upload-btn').first().click();
+const completeUpload = async(page, picker, upload) => {
+    const uploadButton = upload.locator('xpath=ancestor::form[1]').locator('.fp-upload-btn').first();
+    await expect(uploadButton, 'Moodle file picker upload action for the attached file').toBeEnabled({timeout: 30000});
+    await uploadButton.click();
     const rename = page.getByRole('button', {name: /^Rename to /i}).last();
     const uploadError = page.locator('.file-picker.fp-msg-error:visible').last();
     const outcome = await Promise.race([
@@ -150,14 +152,18 @@ const uploadImage = async(page, form, imageFixture, manifest) => {
     await addFile.click();
     const picker = page.locator('.file-picker:not(.fp-msg):visible').last();
     await expect(picker, 'Moodle file picker').toBeVisible({timeout: 30000});
-    let upload = picker.locator('input[name="repo_upload_file"]').first();
+    let upload = picker.locator('.fp-content:visible .fp-file input[name="repo_upload_file"]').last();
     if (await upload.count() === 0) {
         await picker.locator('.fp-repo-name', {hasText: /upload/i}).first().click();
-        upload = picker.locator('input[name="repo_upload_file"]').first();
+        upload = picker.locator('.fp-content:visible .fp-file input[name="repo_upload_file"]').last();
     }
-    await expect(upload).toBeAttached({timeout: 30000});
+    await expect(upload, 'Moodle file picker current upload field').toBeVisible({timeout: 30000});
     await upload.setInputFiles(imageFixture);
-    await completeUpload(page, picker);
+    await expect.poll(() => upload.evaluate(input => input.files ? input.files.length : 0), {
+        message: 'Moodle file picker must receive the selected fixture before upload',
+        timeout: 10000,
+    }).toBe(1);
+    await completeUpload(page, picker, upload);
 };
 
 const waitForStableBox = async(locator, name) => {
