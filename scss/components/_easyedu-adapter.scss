@@ -1079,6 +1079,32 @@
         }
     }
 
+    .local-course-banner-builder-source-parent-view {
+        align-items: center;
+        gap: 0.42rem;
+        justify-content: center;
+    }
+
+    .local-course-banner-builder-source-parent-trigger {
+        @include easyedu.action-button(small);
+
+        & {
+            flex: 0 0 2rem;
+            width: 2rem;
+            min-width: 2rem;
+            min-height: 2rem;
+            padding: 0;
+            border: 1px solid color-mix(in srgb, var(--easyedu-primary) 20%, var(--easyedu-control-border) 80%);
+            border-radius: 0.5rem;
+            background: var(--easyedu-surface);
+            color: var(--easyedu-primary);
+        }
+
+        .icon {
+            margin: 0 !important;
+        }
+    }
+
     .local-course-banner-builder-table-shell {
         @include easyedu.table-scroll-shell;
 
@@ -1182,6 +1208,16 @@
         white-space: normal;
     }
 
+    .local-course-banner-builder-inherited-layer-action-cell {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .local-course-banner-builder-inherited-layer-action {
+        width: min(100%, 13.5rem);
+        margin-inline: auto;
+    }
+
     .local-course-banner-builder-source-actions-cell,
     .local-course-banner-builder-layer-actions-cell {
         min-width: 9.75rem;
@@ -1260,6 +1296,10 @@
     // Once portalled beside the Bootstrap backdrop, keep the dialog in the
     // modal layer instead of allowing the later backdrop to veil its surface.
     z-index: 1095;
+
+    .local-course-banner-builder-parent-source-save {
+        @include easyedu.action-button(small);
+    }
 }
 
 .modal[id^="local-course-banner-builder-"] {

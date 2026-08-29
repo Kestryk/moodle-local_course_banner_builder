@@ -822,6 +822,10 @@ html[data-local-course-banner-builder-sticky-runtime="1"]
     max-width: 100%;
     margin-left: auto;
     margin-right: auto;
+    padding: 0.72rem;
+    border: 1px solid var(--easyedu-card-border, var(--bs-border-color, #dee2e6)) !important;
+    background: var(--easyedu-surface, var(--bs-body-bg, #fff));
+    box-shadow: 0 0.35rem 1rem rgba(31, 68, 104, 0.08);
 }
 
 .modal[id^="local-course-banner-builder-"] .local-course-banner-builder-banner-preview-panel > .local-course-banner-builder-border-preview {

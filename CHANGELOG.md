@@ -8,6 +8,30 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0015-RF1 / 0035-RF2 / 0042 / 0023-RF3 - 2026-08-29
+
+#### Fixed
+
+- Aligned the Slideshow Course Banner Builder page title with the blue brand
+  colour already used by the other CCB administration identities.
+- Restored compact pencil triggers for changing a source parent in both the
+  configured-source table and Selected source summary. Both triggers use the
+  same accessible parent modal, whose Save action now follows the compact Kit
+  button geometry; a successful change also rehydrates the Selected source
+  fragment when it is the edited source.
+- Brought inherited Border and Overlay chain rows onto the same locked-row
+  rail, background, layer-information disclosure, lock indicator and compact
+  action contract as the current source layer rows. Collapse all continues to
+  share the exact secondary-action class used by Select all.
+- Restored a bounded surface, border and shadow around the add/edit layer
+  preview panel without changing preview geometry or interaction hooks.
+
+#### Validation
+
+- Rebuilt the complete CSS and AMD assets. Runtime visual review remains
+  grouped in one cumulative preview wave. Crop/Recrop geometry remains a
+  separate diagnostic gate and is not claimed fixed by these visual changes.
+
 ### EED-CCB-2026-0015-B - 2026-08-28
 
 #### Changed

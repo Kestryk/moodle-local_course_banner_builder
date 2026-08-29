@@ -65,6 +65,7 @@ test('Change parent modal keeps the table informative and rejects a descendant',
         '.local-course-banner-builder-source-parent-cell'
     );
     await expect(childAction).toBeVisible();
+    await expect(childAction.locator('.fa-pen')).toHaveCount(1);
     await expect(parentCell.locator('form')).toHaveCount(0);
     await page.screenshot({
         path: artifact(environment, 'configured-sources-before.png'),
@@ -79,6 +80,9 @@ test('Change parent modal keeps the table informative and rejects a descendant',
     expect(await modal.evaluate(node => node.parentElement === document.body)).toBe(true);
     expect(await modal.evaluate(node => !node.closest('[aria-hidden="true"]'))).toBe(true);
     await expect(modal.locator('[data-source-dropdown-label]')).toBeFocused();
+    const saveButton = modal.locator('[data-parent-source-change-submit="1"]');
+    await expect(saveButton).toHaveClass(/btn-sm/);
+    expect(await saveButton.evaluate(button => button.getBoundingClientRect().height)).toBeLessThanOrEqual(38);
     await expect(modal.locator('[data-source-option][data-value="' + environment.validKey + '"]')).toHaveCount(1);
     await expect(modal.locator('[data-source-option][data-value="' + environment.descendantKey + '"]')).toHaveCount(0);
     await page.screenshot({
@@ -165,4 +169,26 @@ test('Change parent modal keeps the table informative and rejects a descendant',
         path: artifact(environment, 'configured-sources-after.png'),
         fullPage: true,
     });
+
+    await page.goto(
+        environment.baseUrl + '/local/course_banner_builder/admin_manage.php?sourcekey=' +
+            encodeURIComponent(environment.childKey),
+        {waitUntil: 'networkidle'}
+    );
+    const selectedTrigger = page.locator(
+        '[data-selected-source-content="1"] ' +
+        '[data-action="local-course-banner-builder-change-source-parent"][data-source-key="' +
+            environment.childKey + '"]'
+    );
+    await expect(selectedTrigger).toBeVisible();
+    await expect(selectedTrigger.locator('.fa-pen')).toHaveCount(1);
+    await selectedTrigger.click();
+    await expect(modal).toBeVisible();
+    await page.screenshot({
+        path: artifact(environment, 'selected-source-parent-modal-open.png'),
+        fullPage: true,
+    });
+    await page.keyboard.press('Escape');
+    await expect(modal).toBeHidden();
+    await expect(selectedTrigger).toBeFocused();
 });

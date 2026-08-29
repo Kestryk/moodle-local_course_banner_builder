@@ -2716,6 +2716,13 @@ if ($updatesourceparentfield && $_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
         header('Content-Type: application/json; charset=utf-8');
+        $selectedhtml = '';
+        if ($selectedsource && (string)$selectedsource->sourcekey === (string)$targetsource->sourcekey) {
+            $selectedhtml = $OUTPUT->render_from_template(
+                'local_course_banner_builder/admin_selected',
+                \local_course_banner_builder\manager::export_selected_source($targetsource)
+            );
+        }
         echo json_encode([
             'ok' => true,
             'message' => get_string('sourceparentchanged', 'local_course_banner_builder'),
@@ -2723,6 +2730,7 @@ if ($updatesourceparentfield && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 'local_course_banner_builder/admin_manage',
                 \local_course_banner_builder\manager::export_configured_categories($selectedsourcekey)
             ),
+            'selectedhtml' => $selectedhtml,
             'sourcekeyhash' => md5((string)$targetsource->sourcekey),
         ]);
         exit;

@@ -16,6 +16,30 @@ menus.
 - configured-source actions must keep icons and labels leading-aligned;
 - no preview, document or modal horizontal overflow is allowed.
 
+## Cumulative visual correction wave (`0015-RF1`, `0035-RF2`, `0042`, `0023-RF3`) - 2026-08-29
+
+The cumulative preview must prove the following visible contracts without
+changing the Slideshow engine, source persistence or modal Crop transaction:
+
+- the Slideshow page identity title uses `--easyedu-primary`, while its
+  description and Navigation placement remain unchanged;
+- the Parent column and Selected source parent summary each expose one compact
+  pencil with an accessible source-specific label and open the same modal;
+- the modal Save action is compact, a successful Selected source change
+  refreshes both its summary and the configured-source table, and focus returns
+  to the corresponding pencil;
+- inherited Border and Overlay rows use the established semantic rail,
+  low-contrast locked background, type and lock indicators, Layer overrides
+  disclosure and compact source-edit action;
+- Collapse all and Select all retain the same secondary-action contract;
+- the add/edit layer preview has a visible surface boundary while its frame,
+  action rail and image geometry do not move.
+
+The image Crop/Recrop report is intentionally excluded from this visual patch.
+A focused geometry probe must first compare the image layer rectangle before,
+during and after Crop/Recrop; no product correction is allowed until that probe
+demonstrates which rectangle changes unexpectedly.
+
 ## Primary accordion and inline Deselect polish (`EED-CCB-2026-0031-RF4`) - 2026-08-22
 
 Selected source, Configured sources and Course Banner options retain their

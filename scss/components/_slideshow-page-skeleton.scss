@@ -52,6 +52,7 @@ $loading-reveal-duration: var(--easyedu-loading-reveal-duration);
 .local-course-banner-builder-slideshow-page-identity__title {
     @include easyedu.type-page-title;
 
+    color: var(--easyedu-primary);
     margin: 0;
 }
 

@@ -7955,6 +7955,15 @@ class manager {
                 'helptext' => get_string('sourceparentkey_help', 'local_course_banner_builder'),
                 'selectedvalue' => $parentkey,
                 'usesourcedropdown' => true,
+                'usesourcemodal' => true,
+                'sourcekey' => $source->sourcekey,
+                'sourcekeyhash' => md5($source->sourcekey),
+                'sourcelabel' => $source->label,
+                'sourceparentlabel' => !empty($settings->sourceisroot)
+                    ? get_string('sourceisroot', 'local_course_banner_builder')
+                    : ($parentsource->label ?? get_string('sourcechain:none', 'local_course_banner_builder')),
+                'sourceparentvalue' => $parentkey,
+                'sourcesesskey' => sesskey(),
                 'isreadonly' => count($parentoptions) <= 1,
                 'options' => self::export_inline_setting_options(
                     $parentoptions,
@@ -8045,8 +8054,13 @@ class manager {
         $layerpreviewhtml = self::render_admin_layer_visual_preview($borderrecord);
 
         return [
-            'rowclass' => 'local-course-banner-builder-layer-row--border local-course-banner-builder-layer-row--chain-border',
+            'rowclass' => 'local-course-banner-builder-layer-row local-course-banner-builder-layer-row--border ' .
+                'local-course-banner-builder-layer-row--order-locked local-course-banner-builder-layer-row--chain-border',
             'actionlabel' => get_string('chainborderexistinglabel', 'local_course_banner_builder'),
+            'orderlocklabel' => get_string('borderlayerlockedorderlabel', 'local_course_banner_builder'),
+            'orderlockpopovercontent' => '<div class="no-overflow"><p>' .
+                get_string('borderlayerlockedorderhelp', 'local_course_banner_builder') .
+                '</p></div>',
             'name' => $borderrecord->name ?: get_string('bannerimage', 'local_course_banner_builder') . ' #' . $borderrecord->id,
             'sourcelabel' => $bordersource->label ?? $bordersource->sourcekey,
             'enabledlabel' => $borderrecord->isenabled ? get_string('yes') : get_string('no'),
@@ -8079,7 +8093,8 @@ class manager {
         $layerpreviewhtml = self::render_admin_layer_visual_preview($overlayrecord);
 
         return [
-            'rowclass' => 'local-course-banner-builder-layer-row--border local-course-banner-builder-layer-row--overlay ' .
+            'rowclass' => 'local-course-banner-builder-layer-row local-course-banner-builder-layer-row--border ' .
+                'local-course-banner-builder-layer-row--overlay local-course-banner-builder-layer-row--order-locked ' .
                 'local-course-banner-builder-layer-row--chain-border',
             'actionlabel' => get_string('chainoverlayexistinglabel', 'local_course_banner_builder'),
             'orderlocklabel' => get_string('overlaylayerlockedorderlabel', 'local_course_banner_builder'),
