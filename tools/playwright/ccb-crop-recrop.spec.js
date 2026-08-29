@@ -122,7 +122,10 @@ const login = async(page, env) => {
 };
 
 const completeUpload = async(page, picker, upload) => {
-    const uploadButton = upload.locator('xpath=ancestor::form[1]').locator('.fp-upload-btn').first();
+    // Moodle's upload template renders the form and its action as siblings.
+    // Scope both to the active content panel; an ancestor-form lookup would
+    // never find the button even though the selected file is attached.
+    const uploadButton = picker.locator('.fp-content:visible .fp-upload-btn').first();
     await expect(uploadButton, 'Moodle file picker upload action for the attached file').toBeEnabled({timeout: 30000});
     await uploadButton.click();
     const rename = page.getByRole('button', {name: /^Rename to /i}).last();
