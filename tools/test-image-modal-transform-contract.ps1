@@ -36,6 +36,9 @@ $checks = [ordered]@{
         (($source -match '(?s)function localCourseBannerBuilderStopCropPointerInteraction\(event\).*?localCourseBannerBuilderCropInteraction.*?event\.stopImmediatePropagation\(\).*?localCourseBannerBuilderStopCropInteraction\(\)') -and
         ($source -match "document\.addEventListener\('pointerup', localCourseBannerBuilderStopCropPointerInteraction, true\)") -and
         ($source -match "document\.addEventListener\('pointercancel', localCourseBannerBuilderStopCropPointerInteraction, true\)"));
+    'Cancelling Recrop discards only its duplicate history snapshot' =
+        (($source -match '(?s)function localCourseBannerBuilderCancelCropEditor\(control, sourceMode\).*?localCourseBannerBuilderDiscardModalPreviewHistorySnapshot\(form\)') -and
+        ($source -match '(?s)function localCourseBannerBuilderDiscardModalPreviewHistorySnapshot\(form\).*?undoStack\[undoStack\.length - 1\] === currentSnapshot.*?undoStack\.pop\(\)'));
     'Create draft handles use the dedicated resize state' =
         ($source -match '(?s)function localCourseBannerBuilderHandleLayerModalPreviewPointerDown\(form, event\).*?if \(resizeHandle\).*?data-preview-draft-selection-overlay.*?localCourseBannerBuilderStartModalResizeInteraction\(event, resizeHandle\).*?return true;.*?localCourseBannerBuilderStartPreviewInteraction');
     'Generic preview sync avoids redundant pre-render draft serialization' =
