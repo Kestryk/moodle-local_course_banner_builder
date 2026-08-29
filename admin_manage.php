@@ -1835,6 +1835,7 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
 
 $categoryid = optional_param('categoryid', 0, PARAM_INT);
 $sourcekey = optional_param('sourcekey', '', PARAM_TEXT);
+$opensourcesettings = optional_param('opensourcesettings', 0, PARAM_BOOL);
 $elementid = optional_param('elementid', 0, PARAM_INT);
 $deleteelementid = optional_param('deleteelementid', 0, PARAM_INT);
 $deletecategorycontent = optional_param('deletecategorycontent', 0, PARAM_INT);
@@ -3059,6 +3060,7 @@ $PAGE->requires->js_call_amd('local_course_banner_builder/easyedu_guide_adapter'
 echo $OUTPUT->header();
 echo html_writer::start_div(implode(' ', $adminclasses), [
     'aria-busy' => 'false',
+    'data-easyedu-motion-policy' => 'enabled',
     'data-easyedu-action-busy-label' => get_string('actioninprogress', 'local_course_banner_builder'),
 ]);
 
@@ -4187,7 +4189,7 @@ if ($selectedsource) {
             'role' => 'dialog',
             'aria-labelledby' => 'local-course-banner-builder-source-settings-modal-title',
             'aria-hidden' => 'true',
-            'data-auto-open-source-settings' => empty($categorysettings->id) && !$issitebanneradmin ? '1' : '0',
+            'data-auto-open-source-settings' => ($opensourcesettings || empty($categorysettings->id)) && !$issitebanneradmin ? '1' : '0',
         ]);
         echo html_writer::start_div('modal-dialog modal-lg', ['role' => 'document']);
         echo html_writer::start_div('modal-content');

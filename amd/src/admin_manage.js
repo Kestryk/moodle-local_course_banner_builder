@@ -24,6 +24,7 @@ define(['local_course_banner_builder/motion', 'core/notification'], function (Mo
 
 var localCourseBannerBuilderSourcePreviewModes = {};
 var localCourseBannerBuilderSourcePreviewOrientationMediaQuery = null;
+var localCourseBannerBuilderLayerDragState = null;
 
 var localCourseBannerBuilderOnReady = function (callback) {
     if (document.readyState === 'loading') {
@@ -1113,25 +1114,74 @@ document.addEventListener('pointerdown', function (e) {
     localCourseBannerBuilderStartCropInteraction(e);
 }, true);
 
+function localCourseBannerBuilderClearLayerDragState() {
+    document.querySelectorAll(
+        '.local-course-banner-builder-layer-row-dragging, ' +
+        '.local-course-banner-builder-layer-row-drop-before, ' +
+        '.local-course-banner-builder-layer-row-drop-after'
+    ).forEach(function(row) {
+        row.classList.remove(
+            'local-course-banner-builder-layer-row-dragging',
+            'local-course-banner-builder-layer-row-drop-before',
+            'local-course-banner-builder-layer-row-drop-after'
+        );
+    });
+    if (localCourseBannerBuilderLayerDragState && localCourseBannerBuilderLayerDragState.preview) {
+        localCourseBannerBuilderLayerDragState.preview.remove();
+    }
+    localCourseBannerBuilderLayerDragState = null;
+}
+
+function localCourseBannerBuilderCreateLayerDragPreview(row) {
+    var preview = document.createElement('div');
+    var card = document.createElement('div');
+    var host = row.closest('.local-course-banner-builder-admin, [data-source-visual-editor="1"]') || document.body;
+    preview.className = 'local-course-banner-builder-layer-drag-preview ' +
+        'local-course-banner-builder-layer-drag-preview--captured';
+    card.className = 'local-course-banner-builder-layer-drag-preview-card';
+    card.textContent = (row.innerText || row.textContent || '').replace(/\s+/g, ' ').trim();
+    preview.appendChild(card);
+    host.appendChild(preview);
+    return preview;
+}
+
+function localCourseBannerBuilderSetLayerDropState(target, insertAfter) {
+    document.querySelectorAll(
+        '.local-course-banner-builder-layer-row-drop-before, ' +
+        '.local-course-banner-builder-layer-row-drop-after'
+    ).forEach(function(row) {
+        row.classList.remove(
+            'local-course-banner-builder-layer-row-drop-before',
+            'local-course-banner-builder-layer-row-drop-after'
+        );
+    });
+    if (!target) {
+        return;
+    }
+    target.classList.add(insertAfter ?
+        'local-course-banner-builder-layer-row-drop-after' :
+        'local-course-banner-builder-layer-row-drop-before');
+}
+
 document.addEventListener('dragstart', function (e) {
     var row = e.target.closest('.local-course-banner-builder-layer-row[draggable="true"]');
     if (!row) {
         e.preventDefault();
         return;
     }
+    localCourseBannerBuilderClearLayerDragState();
+    var preview = localCourseBannerBuilderCreateLayerDragPreview(row);
+    localCourseBannerBuilderLayerDragState = {preview: preview, row: row};
     row.classList.add('local-course-banner-builder-layer-row-dragging');
     if (e.dataTransfer) {
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('text/plain', 'layer-row');
-        e.dataTransfer.setDragImage(row, 24, 24);
+        e.dataTransfer.setDragImage(preview, 24, 20);
     }
 });
 
 document.addEventListener('dragend', function (e) {
-    var row = e.target.closest('.local-course-banner-builder-layer-row');
-    if (row) {
-        row.classList.remove('local-course-banner-builder-layer-row-dragging');
-    }
+    localCourseBannerBuilderClearLayerDragState();
     localCourseBannerBuilderSyncLayerSortOrders();
 });
 
@@ -1146,11 +1196,13 @@ document.addEventListener('dragover', function (e) {
     }
     e.preventDefault();
     var target = e.target.closest('.local-course-banner-builder-layer-row');
-    if (!target || target === dragging) {
+    if (!target || target === dragging || localCourseBannerBuilderIsLayerRowOrderLocked(target)) {
+        localCourseBannerBuilderSetLayerDropState(null);
         return;
     }
     var rect = target.getBoundingClientRect();
     var insertAfter = e.clientY > rect.top + (rect.height / 2);
+    localCourseBannerBuilderSetLayerDropState(target, insertAfter);
     tbody.insertBefore(dragging, insertAfter ? target.nextSibling : target);
     localCourseBannerBuilderEnforceLockedLayerOrder(tbody);
     localCourseBannerBuilderSyncLayerSortOrders();
@@ -1163,12 +1215,17 @@ document.addEventListener('drop', function (e) {
         return;
     }
     e.preventDefault();
-    Array.prototype.slice.call(tbody.querySelectorAll('.local-course-banner-builder-layer-row-dragging')).forEach(function (row) {
-        row.classList.remove('local-course-banner-builder-layer-row-dragging');
-    });
+    localCourseBannerBuilderClearLayerDragState();
     localCourseBannerBuilderEnforceLockedLayerOrder(tbody);
     localCourseBannerBuilderSyncLayerSortOrders();
     localCourseBannerBuilderSyncLayerSortablePreviewOrder(tbody);
+});
+
+document.addEventListener('dragleave', function (e) {
+    var tbody = e.target.closest('.local-course-banner-builder-layer-sortable[data-layer-sortable="1"]');
+    if (tbody && (!e.relatedTarget || !tbody.contains(e.relatedTarget))) {
+        localCourseBannerBuilderSetLayerDropState(null);
+    }
 });
 
 document.addEventListener('input', function (e) {
@@ -4112,13 +4169,14 @@ function localCourseBannerBuilderGetCropControlLayer(control, sourceMode) {
     return localCourseBannerBuilderGetLayerFormPreviewImage(form);
 }
 
-function localCourseBannerBuilderGetCropSelectionCustomState(layer) {
+function localCourseBannerBuilderGetCropSelectionCustomState(layer, preserveSessionPlacement) {
     var sessionPlacement = localCourseBannerBuilderGetCropSessionPlacementState(layer);
     var initialCropState = localCourseBannerBuilderGetCropSessionInitialCropState(layer);
     var currentCropState = localCourseBannerBuilderGetPreviewCropState(layer);
-    if (sessionPlacement && initialCropState &&
+    var keepSessionPlacement = preserveSessionPlacement || (initialCropState &&
             (!localCourseBannerBuilderIsCropSessionDirty(layer) ||
-            localCourseBannerBuilderCropStatesMatch(currentCropState, initialCropState))) {
+            localCourseBannerBuilderCropStatesMatch(currentCropState, initialCropState)));
+    if (sessionPlacement && keepSessionPlacement) {
         return Object.assign({}, sessionPlacement);
     }
     var box = layer ? layer.querySelector('[data-preview-crop-box="1"]') : null;
@@ -4291,7 +4349,10 @@ function localCourseBannerBuilderApplyCropEditor(control, sourceMode) {
         return;
     }
     var crop = localCourseBannerBuilderGetPreviewCropState(layer);
-    var cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState(layer);
+    // A modal crop changes the visible source rectangle, never its placement.
+    // Keep the session placement even after a real crop gesture; source-editor
+    // callers deliberately retain their existing box-derived behaviour.
+    var cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState(layer, !sourceMode);
     localCourseBannerBuilderSetPreviewCropState(layer, {
         imagecropenabled: crop.enabled,
         imagecropleftpercent: crop.left,
@@ -7710,7 +7771,7 @@ function localCourseBannerBuilderUpdateSourcePreviewThumbnailSelection(root) {
         }
     });
     if (activeButton && activeButton.scrollIntoView) {
-        activeButton.scrollIntoView({behavior: 'smooth', inline: 'center', block: 'nearest'});
+        Motion.scroll(activeButton, {inline: 'center', block: 'nearest'});
     }
     localCourseBannerBuilderUpdateSourcePreviewFilmstripNav(filmstrip);
     localCourseBannerBuilderUpdateSourcePreviewVisibilityToggle(root);
@@ -8017,7 +8078,7 @@ function localCourseBannerBuilderSyncSourcePreviewThumbnails(root) {
     window.requestAnimationFrame(function () {
         var active = track.querySelector('.local-course-banner-builder-source-preview-thumbnail.is-active');
         if (active && active.scrollIntoView) {
-            active.scrollIntoView({behavior: 'smooth', inline: 'center', block: 'nearest'});
+            Motion.scroll(active, {inline: 'center', block: 'nearest'});
         }
         localCourseBannerBuilderUpdateSourcePreviewFilmstripNav(filmstrip);
     });
@@ -9534,7 +9595,9 @@ function localCourseBannerBuilderCommitActiveDraftCropBeforeSwitch(form) {
         return false;
     }
     var crop = localCourseBannerBuilderGetPreviewCropState(activeLayer);
-    var cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState(activeLayer);
+    // Draft switching commits crop fields, but must not turn a changed crop box
+    // into a new custom placement before the next draft is selected.
+    var cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState(activeLayer, true);
     var settings = localCourseBannerBuilderGetDraftPreviewSettings(form);
     var existingState = settings[draftIndex] || {};
     var state = Object.assign(
@@ -13914,22 +13977,44 @@ function localCourseBannerBuilderClearSourcePreviewSelection(root) {
  * @param {HTMLElement} root Source visual editor root.
  * @param {string} mode Requested preview mode.
  */
-function localCourseBannerBuilderSetSourcePreviewMode(root, mode) {
+function localCourseBannerBuilderSetSourcePreviewMode(root, mode, animate) {
     if (!root || !root.querySelector('[data-source-preview-mode-control="1"]')) {
-        return;
+        return Promise.resolve(false);
     }
     mode = mode === 'mobile' ? 'mobile' : 'desktop';
-    root.setAttribute('data-source-preview-mode', mode);
-    var sourcekey = root.getAttribute('data-sourcekey') || '';
-    if (sourcekey) {
-        localCourseBannerBuilderSourcePreviewModes[sourcekey] = mode;
+    var apply = function() {
+        root.setAttribute('data-source-preview-mode', mode);
+        var sourcekey = root.getAttribute('data-sourcekey') || '';
+        if (sourcekey) {
+            localCourseBannerBuilderSourcePreviewModes[sourcekey] = mode;
+        }
+        Array.prototype.slice.call(root.querySelectorAll('[data-source-preview-mode-value]')).forEach(function(button) {
+            var selected = button.getAttribute('data-source-preview-mode-value') === mode;
+            button.setAttribute('aria-pressed', selected ? 'true' : 'false');
+            button.classList.toggle('is-active', selected);
+            button.classList.toggle('btn-primary', selected);
+            button.classList.toggle('btn-outline-secondary', !selected);
+        });
+    };
+    if (animate !== false && root.getAttribute('data-source-preview-mode') === mode) {
+        apply();
+        return Promise.resolve(true);
     }
-    Array.prototype.slice.call(root.querySelectorAll('[data-source-preview-mode-value]')).forEach(function(button) {
-        var selected = button.getAttribute('data-source-preview-mode-value') === mode;
-        button.setAttribute('aria-pressed', selected ? 'true' : 'false');
-        button.classList.toggle('is-active', selected);
-        button.classList.toggle('btn-primary', selected);
-        button.classList.toggle('btn-outline-secondary', !selected);
+    if (animate === false) {
+        apply();
+        return Promise.resolve(true);
+    }
+    var surface = root.querySelector('.local-course-banner-builder-source-preview-surface');
+    if (!surface) {
+        apply();
+        return Promise.resolve(true);
+    }
+    return Motion.swap(surface, apply, {
+        exit: false,
+        resize: false,
+        distance: '0px',
+        enterDuration: Motion.timing.normal,
+        swapOpacity: 0.72,
     });
 }
 
@@ -13945,14 +14030,19 @@ function localCourseBannerBuilderInitSourcePreviewMode(root) {
     }
     var buttons = Array.prototype.slice.call(control.querySelectorAll('[data-source-preview-mode-value]'));
     var sourcekey = root.getAttribute('data-sourcekey') || '';
+    var motionRoot = root.closest('[data-easyedu-motion-policy]') || root;
+    if (!motionRoot.dataset.easyeduMotionInitialised) {
+        Motion.init(motionRoot);
+        motionRoot.dataset.easyeduMotionInitialised = '1';
+    }
     localCourseBannerBuilderSetSourcePreviewMode(root, sourcekey && localCourseBannerBuilderSourcePreviewModes[sourcekey] ?
-        localCourseBannerBuilderSourcePreviewModes[sourcekey] : root.getAttribute('data-source-preview-mode'));
+        localCourseBannerBuilderSourcePreviewModes[sourcekey] : root.getAttribute('data-source-preview-mode'), false);
     buttons.forEach(function(button, index) {
         if (button.dataset.sourcePreviewModeBound) {
             return;
         }
         button.addEventListener('click', function() {
-            localCourseBannerBuilderSetSourcePreviewMode(root, button.getAttribute('data-source-preview-mode-value'));
+            localCourseBannerBuilderSetSourcePreviewMode(root, button.getAttribute('data-source-preview-mode-value'), true);
         });
         button.addEventListener('keydown', function(event) {
             var targetindex = null;
@@ -19973,7 +20063,7 @@ localCourseBannerBuilderOnReady(function () {
     var settings = document.getElementById('local-course-banner-builder-source-settings');
     if (settings && (params.get('sourcekey') || parseInt(params.get('categoryid') || '0', 10) > 0)) {
         window.setTimeout(function () {
-            settings.scrollIntoView({behavior: 'smooth', block: 'start'});
+            Motion.scroll(settings, {block: 'start'});
         }, 120);
     }
     var autoSettingsModal = document.querySelector('[data-auto-open-source-settings="1"]');

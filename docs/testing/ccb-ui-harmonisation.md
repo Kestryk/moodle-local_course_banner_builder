@@ -16,6 +16,50 @@ menus.
 - configured-source actions must keep icons and labels leading-aligned;
 - no preview, document or modal horizontal overflow is allowed.
 
+## EED-CCB-2026-0042/0043/0044 cumulative supervised scenario - 2026-08-29
+
+`tools/playwright/ccb-wave-0042-0044-cumulative.spec.js` is the single
+`local-supervised` scenario for this cumulative QA candidate. It requires the
+approved CCB runtime lease, authenticated Moodle credentials, one prepared
+inherited-source category, an external artifact root and an image fixture. It
+does not create a fixture, purge cache or switch the runtime.
+
+Before sensitive assertions it records these named human captures outside Git:
+
+- `01-0042-parent-list-before-sensitive.png`;
+- `02-0042-parent-modal-before-sensitive.png`;
+- `03-img08-<desktop|narrow>-<add|edit>-before-geometry.png`;
+- `04-0044-motion-drag-before-sensitive.png`.
+
+The sequential flow covers the 0042 parent modal/list below/search/close/Save
+icon/pencils/checkerboard/inherited rows/Edit source/Collapse all contract; the
+IMG-08 add/edit crop geometry through Apply, Undo, Redo, reopen and draft
+switch at desktop and narrow widths; and the 0044 canvas-only Desktop/Mobile
+motion, reduced-motion, disclosure, drag ghost/placeholder/drop cleanup and
+locked-row alternative.
+
+## EED-CCB-2026-0044 - motion and draggable-layer parity - 2026-08-29
+
+The source-preview root publishes `data-easyedu-motion-policy="enabled"` before
+first paint. Desktop/Mobile changes use the vendored cancellable Motion runtime
+on the canvas surface only: the filmstrip, visibility row and action controls
+remain stationary. Reduced motion resolves immediately and shared scrolling is
+never forced smooth.
+
+`Layer infos & overrides` retains its existing semantic `details` disclosure;
+the Motion runtime alone owns its measured opening and closing geometry.
+Slideshow side panels no longer combine CSS geometry transitions with that same
+controller.
+
+Layer reordering remains an enhancement over the existing keyboard/button
+alternatives. A movable row receives a Kit-style opaque lifted preview, its
+source remains an in-flow placeholder, and valid before/after insertion targets
+are explicit. Border, Overlay and inherited locked rows remain non-draggable.
+
+The cumulative supervised scenario above covers normal and reduced motion,
+repeated disclosure state and a complete drag cycle. It is source-ready only;
+no browser or runtime evidence is claimed here.
+
 ## Cumulative visual correction wave (`0015-RF1`, `0035-RF2`, `0042`, `0023-RF3`) - 2026-08-29
 
 The cumulative preview must prove the following visible contracts without
@@ -25,6 +69,9 @@ changing the Slideshow engine, source persistence or modal Crop transaction:
   description and Navigation placement remain unchanged;
 - the Parent column and Selected source parent summary each expose one compact
   pencil with an accessible source-specific label and open the same modal;
+- each Source composition mode pencil opens the source-settings modal: directly
+  from Selected source and, from a configured-source row, after that source is
+  selected;
 - the modal Save action is compact, a successful Selected source change
   refreshes both its summary and the configured-source table, and focus returns
   to the corresponding pencil;
@@ -32,8 +79,19 @@ changing the Slideshow engine, source persistence or modal Crop transaction:
   low-contrast locked background, type and lock indicators, Layer overrides
   disclosure and compact source-edit action;
 - Collapse all and Select all retain the same secondary-action contract;
-- the add/edit layer preview has a visible surface boundary while its frame,
-  action rail and image geometry do not move.
+- the add/edit layer preview uses one checkerboard surface without a competing
+  outer frame; its frame, action rail and image geometry do not move.
+
+CCB semantically adopts the published `EED-KIT-2026-0001` visual foundations
+from UI Kit commit `6dec8785262d9b006feeb21ea313949ef8fac01c`: its neutral
+checkerboard, exact modal-close, Save and edit-pencil primitives. No other Kit
+source is copied into this consumer.
+
+Static evidence for this consumer revision: Sass 1.89.2 rebuild, PHP lint of
+the plugin, module-mode AMD parsing and `git diff --check`.
+There is no AMD source change; the Moodle Grunt toolchain is unavailable in
+this checkout, so existing generated AMD files remain untouched. No runtime,
+preview, cache, lease or browser check is part of this evidence.
 
 The image Crop/Recrop report is intentionally excluded from this visual patch.
 A focused geometry probe must first compare the image layer rectangle before,
@@ -86,6 +144,23 @@ the layer. The restored active preview, canonical crop fields, visual draft
 layer, `multilayerdraftsettings` and `previewcropstate` payload all return to
 the uncropped `false, 0, 0, 100, 100` state before save; the persisted layer is
 also uncropped after reload.
+
+### Modal and draft placement preservation (`EED-CCB-2026-0043`) - 2026-08-29
+
+Crop coordinates are source-relative data. In the add/edit image modal, a crop
+gesture must therefore change only `imagecropenabled`,
+`imagecropleftpercent`, `imagecroptoppercent`, `imagecropwidthpercent` and
+`imagecropheightpercent`. It must not derive a new `fitmodeoverride`, custom
+width/height or offsets from the crop-box DOM rect. The same invariant applies
+when an active draft crop is committed before the user switches image drafts.
+
+The cumulative supervised scenario above is the focused IMG-08 scenario. Its
+future authorised run records current/visual layer rectangles and placement
+fields before initial crop, after Apply, after draft-switch commit, after
+Recrop and after Undo/Redo. At desktop and narrow modal widths, placement
+values and rectangles must remain stable while the five crop fields change.
+Browser execution, fixture creation, cache work and lease acquisition are
+intentionally outside this source-ready record.
 
 ### Recrop action-rail avoidance (`EED-CCB-2026-0023-RF2-B`) - 2026-08-28
 

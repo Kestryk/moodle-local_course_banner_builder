@@ -8,6 +8,41 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0044 - 2026-08-29
+
+#### Changed
+
+- Added a policy-aware, fade-only transition for the public Desktop/Mobile
+  source-preview simulation. Filmstrip and action controls remain stationary.
+- Reused the embedded EasyEdu Motion runtime for controlled scrolling and left
+  Slideshow side-panel geometry solely to its measured disclosure controller.
+- Replaced the native layer-row drag ghost with the accepted opaque, lifted
+  EasyEdu preview; the original row retains its space and valid insertion
+  targets are visible. Locked rows remain non-draggable.
+
+#### Validation
+
+- One cumulative, lease-gated Playwright scenario now covers this motion/drag
+  family together with 0042 and IMG-08. It records named human captures before
+  sensitive assertions. No runtime, preview, cache, lease or browser execution
+  belongs to this source-ready change.
+
+### EED-CCB-2026-0043 - 2026-08-29
+
+#### Fixed
+
+- Applying a changed Crop or committing it while switching image drafts now
+  preserves the image layer's existing modal placement. The crop rectangle is
+  persisted independently and no longer derives a smaller custom size or new
+  offsets from the crop box.
+
+#### Validation
+
+- Rebuilt the official AMD bundle and source map from `admin_manage.js`. The
+  one cumulative browser scenario covers IMG-08 geometry at desktop and narrow
+  widths without duplicating the 0042/0044 flows; it is source-ready only. No
+  runtime, preview, cache, lease or browser execution was performed.
+
 ### EED-CCB-2026-0015-RF1 / 0035-RF2 / 0042 / 0023-RF3 - 2026-08-29
 
 #### Fixed
@@ -23,18 +58,28 @@ many small sections.
   same accessible parent modal, whose Save action now follows the compact Kit
   button geometry; a successful change also rehydrates the Selected source
   fragment when it is the edited source.
+- Made the Source composition mode pencils open the source-settings modal:
+  directly from Selected source and, from a configured-source row, after
+  selecting that source. The old inline editor is no longer exposed for that
+  field.
 - Brought inherited Border and Overlay chain rows onto the same locked-row
   rail, background, layer-information disclosure, lock indicator and compact
   action contract as the current source layer rows. Collapse all continues to
   share the exact secondary-action class used by Select all.
-- Restored a bounded surface, border and shadow around the add/edit layer
-  preview panel without changing preview geometry or interaction hooks.
+- Kept the add/edit layer preview on one checkerboard surface without a
+  competing outer frame, while preserving its geometry and interaction hooks.
+- Semantically adopted only the published UI Kit `6dec8785262d9b006feeb21ea313949ef8fac01c`
+  foundations required by this CCB lot: neutral checkerboard, exact close,
+  Save and edit-pencil primitives.
 
 #### Validation
 
-- Rebuilt the complete CSS and AMD assets. Runtime visual review remains
-  grouped in one cumulative preview wave. Crop/Recrop geometry remains a
-  separate diagnostic gate and is not claimed fixed by these visual changes.
+- Rebuilt `styles.css` with the official Sass 1.89.2 entry point; targeted PHP
+  and AMD syntax checks plus `git diff --check` pass. No AMD source changed,
+  so its existing generated bundle is preserved; the Moodle Grunt toolchain is
+  not installed in this checkout. Runtime visual review remains grouped in one
+  cumulative preview wave. Crop/Recrop geometry remains a separate diagnostic
+  gate and is not claimed fixed by these visual changes.
 
 ### EED-CCB-2026-0015-B - 2026-08-28
 

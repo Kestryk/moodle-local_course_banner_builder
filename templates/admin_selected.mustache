@@ -34,6 +34,18 @@
                                     <input type="hidden" name="sourcekey" value="{{sourcekey}}">
                                     <div class="local-course-banner-builder-summary-inline-view">
                                         <span class="local-course-banner-builder-summary-inline-value">{{displayvalue}}</span>
+                                        {{#usesettingsmodal}}
+                                        <button type="button"
+                                            class="btn btn-link p-0 icon-no-margin local-course-banner-builder-summary-inline-trigger local-course-banner-builder-summary-edit-trigger local-course-banner-builder-source-settings-trigger"
+                                            data-toggle="modal"
+                                            data-target="#local-course-banner-builder-source-settings-modal"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#local-course-banner-builder-source-settings-modal"
+                                            aria-label="{{#str}}edit{{/str}}: {{label}}">
+                                            <i class="icon fa fa-pen fa-fw" aria-hidden="true"></i>
+                                        </button>
+                                        {{/usesettingsmodal}}
+                                        {{^usesettingsmodal}}
                                         {{#usesourcemodal}}
                                         {{^isreadonly}}
                                         <button type="button"
@@ -58,7 +70,9 @@
                                         </button>
                                         {{/isreadonly}}
                                         {{/usesourcemodal}}
+                                        {{/usesettingsmodal}}
                                     </div>
+                                    {{^usesettingsmodal}}
                                     {{^usesourcemodal}}
                                     {{^isreadonly}}
                                     <div class="local-course-banner-builder-summary-inline-edit">
@@ -115,6 +129,7 @@
                                     </div>
                                     {{/isreadonly}}
                                     {{/usesourcemodal}}
+                                    {{/usesettingsmodal}}
                                 </form>
                             </dd>
                         </div>

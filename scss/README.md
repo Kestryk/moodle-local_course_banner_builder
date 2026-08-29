@@ -15,7 +15,10 @@ script writes to `styles.css`, which is the file Moodle loads.
 
 Embedded EasyEdu UI kit:
 
-- Version: `v0.4.38`
+- Base version: `v0.4.38`; CCB also semantically adopts only the visual
+  foundations needed by `EED-CCB-2026-0042` from UI Kit `v0.4.48` commit
+  `6dec8785262d9b006feeb21ea313949ef8fac01c` (neutral checkerboard, modal
+  close, Save and edit-pencil mixins). It is not a wholesale Kit sync.
 - Source: `git@github.com:Kestryk/easyedu-ui-kit.git`
 - Synced folders:
   - `scss/easyedu/`: shared SCSS tokens and opt-in component mixins.
