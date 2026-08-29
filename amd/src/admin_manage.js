@@ -806,7 +806,12 @@ document.addEventListener('click', function (e) {
     if (!toggle) {
         if (localCourseBannerBuilderIsNativeAdmin() && e.target.classList && e.target.classList.contains('modal')) {
             if (e.target.matches('#local-course-banner-builder-change-source-parent-modal')) {
-                localCourseBannerBuilderCloseParentSourceChange(true);
+                var jqueryOwnsModal = typeof window.jQuery !== 'undefined' &&
+                    typeof window.jQuery(e.target).modal === 'function';
+                var bootstrapOwnsModal = !!(window.bootstrap && window.bootstrap.Modal);
+                if (!jqueryOwnsModal && !bootstrapOwnsModal) {
+                    localCourseBannerBuilderCloseParentSourceChange(true);
+                }
             } else {
                 localCourseBannerBuilderHideModal(e.target);
             }
