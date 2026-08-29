@@ -373,7 +373,7 @@ const uploadDraft = async(page, form, imagePath, expectedCount, label) => {
     }).toBeGreaterThan(0);
 };
 
-const applyCrop = async(page, form, label, evidence) => {
+const applyCrop = async(page, form, label, evidence, expand = false) => {
     const layer = form.locator('[data-preview-current-image="1"][data-preview-draft-layer="1"]').first();
     const cropToggle = form.locator('[data-action="local-course-banner-builder-toggle-modal-preview-crop"]').first();
     await expect(cropToggle, label + ': Crop must be enabled').toBeEnabled({timeout: 30000});
@@ -384,15 +384,16 @@ const applyCrop = async(page, form, label, evidence) => {
     await expect(handle, label + ': southeast crop handle must be visible').toBeVisible();
     const box = await handle.boundingBox();
     ensure(box, label + ': crop handle has no layout box');
+    const cropWidthBeforeGesture = await layer.getAttribute('data-preview-crop-width');
     const started = Date.now();
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await page.mouse.down();
-    await page.mouse.move(box.x - 70, box.y - 30, {steps: 8});
+    await page.mouse.move(box.x + (expand ? 70 : -70), box.y + (expand ? 30 : -30), {steps: 8});
     await page.mouse.up();
     evidence.gestureMilliseconds[label] = Date.now() - started;
     await expect.poll(() => layer.getAttribute('data-preview-crop-width'), {
         message: label + ': crop resize must change the draft width', timeout: 15000,
-    }).not.toBe('100');
+    }).not.toBe(cropWidthBeforeGesture);
     const apply = layer.locator('[data-action="local-course-banner-builder-apply-preview-crop"]').first();
     await expect(apply, label + ': Apply must be available').toBeVisible();
     await apply.click();
@@ -597,7 +598,7 @@ test('IMG-07 image-modal draft state transitions preserve Crop across Fill, A/B,
         expectCrop(evidence.afterRecropCancel, appliedCrop, 'Recrop A Cancel must retain the applied Crop');
         await modal.screenshot({path: path.join(env.artifactRoot, 'img-07-a-recrop-cancel.png')});
 
-        await applyCrop(page, form, 'recrop A Apply', evidence);
+        await applyCrop(page, form, 'recrop A Apply', evidence, true);
         await waitForFrames(page);
         evidence.recropAApplied = await readDraft(form, draftA);
         const recropValues = cropValues(evidence.recropAApplied);
