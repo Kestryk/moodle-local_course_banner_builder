@@ -8231,6 +8231,7 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
   font-weight: var(--easyedu-font-weight-strong);
   line-height: 1.3;
   text-transform: uppercase;
+  color: var(--easyedu-primary);
   margin: 0;
 }
 
@@ -8242,7 +8243,6 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
   font-size: var(--easyedu-font-size-page-title);
   font-weight: var(--easyedu-font-weight-strong);
   line-height: var(--easyedu-line-height-title);
-  color: var(--easyedu-primary);
   margin: 0;
 }
 
