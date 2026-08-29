@@ -16,6 +16,7 @@ $checks = [ordered]@{
     'Draft/image switching is covered' = (($spec -match 'afterDraftSwitch') -and ($spec -match 'data-preview-draft-visual-layer'));
     'Placement and geometry are asserted independently from Crop fields' = (($spec -match 'assertPlacement') -and ($spec -match 'expect\(.*\.crop\)'));
     'Early and state-change captures are retained' = (($spec -match 'crop-recrop-.*-before\.png') -and ($spec -match 'after-initial') -and ($spec -match 'after-cancel'));
+    'Second upload preserves a distinct draft through Moodle Rename confirmation' = (($spec -match 'const completeUpload') -and ($spec -match 'Rename to') -and ($spec -notmatch 'Overwrite'));
     'Supervisor discovers exactly one test before credentials or fixture work' = (($runner -match 'playwright-discovery') -and ($runner -match 'Total:\\s\+1\\s\+test') -and ($runner -match 'if \(\$DiscoveryOnly\)'));
     'Supervisor uses the safe category and draft cleanup fixture' = (($runner -match 'ccb-image-modal-transform-fixture\.php') -and ($fixture -match 'delete_area_files') -and ($fixture -match 'categoryRemoved'));
     'Supervisor clears credentials and releases the lease' = (($runner.Contains('Remove-Item -LiteralPath (''Env:'' + $name)')) -and ($runner -match 'Release-EasyEduResourceLease'));

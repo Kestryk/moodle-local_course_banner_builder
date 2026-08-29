@@ -20,6 +20,9 @@ many small sections.
 - This is QA-only. No CCB product source, AMD build, Kit surface, runtime,
   preview, cache, fixture database, credential file or browser was changed or
   launched while preparing it.
+- QA2 handles Moodle's normal duplicate-file confirmation by choosing its
+  Rename action, preserving two distinct images for the required draft-switch
+  assertion instead of masking the condition through overwrite.
 
 ### EED-CCB-2026-0043 - 2026-08-29
 

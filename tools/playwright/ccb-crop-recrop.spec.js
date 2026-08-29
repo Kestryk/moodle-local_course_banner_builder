@@ -102,6 +102,19 @@ const login = async(page, env) => {
     await expect(page).not.toHaveURL(/\/login\//, {timeout: 60000});
 };
 
+const completeUpload = async(page, picker) => {
+    await picker.locator('.fp-upload-btn').first().click();
+    const rename = page.getByRole('button', {name: /^Rename to /i}).last();
+    const outcome = await Promise.race([
+        picker.waitFor({state: 'hidden', timeout: 45000}).then(() => 'closed'),
+        rename.waitFor({state: 'visible', timeout: 45000}).then(() => 'rename'),
+    ]);
+    if (outcome === 'rename') {
+        await rename.click();
+        await expect(picker, 'Moodle file picker must close after naming the second draft').toBeHidden({timeout: 45000});
+    }
+};
+
 const uploadImage = async(page, form, imageFixture, manifest) => {
     const draftItemId = await form.locator('#id_bannerimage_filemanager').inputValue();
     ensure(/^\d+$/.test(draftItemId), 'Draft item id must be numeric before upload.');
@@ -120,8 +133,7 @@ const uploadImage = async(page, form, imageFixture, manifest) => {
     }
     await expect(upload).toBeAttached({timeout: 30000});
     await upload.setInputFiles(imageFixture);
-    await picker.locator('.fp-upload-btn').first().click();
-    await expect(picker).toBeHidden({timeout: 45000});
+    await completeUpload(page, picker);
 };
 
 const changeCrop = async(page, form, direction) => {

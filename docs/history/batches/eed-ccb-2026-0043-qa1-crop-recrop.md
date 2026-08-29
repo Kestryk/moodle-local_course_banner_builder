@@ -20,6 +20,10 @@ and 760 px: initial Crop, Cancelled Recrop, Undo/Redo and an in-progress crop
 committed by switching draft/image. Crop payload may change; current/visual
 placement payloads and measured geometry may not shrink or move.
 
+The second upload deliberately accepts Moodle's `Rename to …` confirmation
+rather than overwriting the first image. This is essential: the draft/image
+switch must exercise two independent images, not two names for one file.
+
 ## Supervision and cleanup
 
 `Invoke-CCBCropRecropValidation.ps1` proves that exactly one test is selected
