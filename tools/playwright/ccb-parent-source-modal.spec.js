@@ -146,10 +146,9 @@ test('Change parent modal keeps the table informative and rejects a descendant',
     page.off('request', countCancelRequest);
 
     await childAction.click();
-    await modal.locator('[data-source-option][data-value="' + environment.validKey + '"]').click();
-    await modal.locator('[data-source-dropdown-label]').click();
     const parentDropdownToggle = modal.locator('[data-source-dropdown-label]');
     const parentDropdownMenu = modal.locator('.local-course-banner-builder-source-dropdown-menu');
+    await parentDropdownToggle.click();
     await expect(parentDropdownMenu).toBeVisible();
     const dropdownGeometry = await Promise.all([
         parentDropdownToggle.boundingBox(),
@@ -164,7 +163,7 @@ test('Change parent modal keeps the table informative and rejects a descendant',
         path: artifact(environment, 'parent-source-modal-options.png'),
         fullPage: true,
     });
-    await modal.locator('[data-source-dropdown-label]').click();
+    await modal.locator('[data-source-option][data-value="' + environment.validKey + '"]').click();
     const response = page.waitForResponse(response =>
         response.url().includes('/local/course_banner_builder/admin_manage.php') && response.request().method() === 'POST'
     );
