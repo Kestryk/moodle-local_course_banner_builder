@@ -10,6 +10,12 @@ feature, validation protocol or reusable UI change must update the appropriate
 technical docs, changelog and AI contract, or explicitly explain why one is
 not applicable.
 
+Before starting or resuming any planned EasyEdu UI lot, also read
+`docs/history/easyedu-active-lot-registry.md`. This registry assigns the stable
+lot identifier, owner, dependency order, current state and required human
+visual review. Do not implement an unregistered request: add it to the registry
+first, without silently replacing or deleting an older item.
+
 ## Multi-machine development contract
 
 Every AI agent working in this repository must follow the canonical EasyEdu
