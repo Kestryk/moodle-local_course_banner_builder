@@ -313,10 +313,10 @@ test('EED-CCB-2026-0042-0050 cumulative visual and interaction wave', async() =>
         await expect(parentModal).toBeVisible();
         await captureHuman(page, env, '02-0042-parent-modal-before-sensitive', parentModal);
         evidence.captures.push('02-0042-parent-modal-before-sensitive.png');
-        const search = parentModal.locator('[data-action="local-course-banner-builder-filter-sources"]');
-        await expect(search).toBeVisible();
         const parentToggle = parentModal.locator('[data-source-dropdown="parent-change"] .local-course-banner-builder-source-dropdown-toggle');
         await parentToggle.click();
+        const search = parentModal.locator('[data-action="local-course-banner-builder-filter-sources"]');
+        await expect(search).toBeVisible();
         const parentList = parentModal.locator('[data-parent-source-change-options="1"]');
         await expect(parentList).toBeVisible();
         const [toggleBox, listBox] = await Promise.all([parentToggle.boundingBox(), parentList.boundingBox()]);
