@@ -31,14 +31,14 @@ SHA, owner and next action instead.
 
 | Order | Lot | Owner | State | Depends on | Outcome |
 | --- | --- | --- | --- | --- | --- |
-| 0 | `EED-OPS-2026-0012` | Platform | blocked | clean handoff of the dirty Platform planning checkout | Mirror this registry into Platform and make it discoverable from every repository AGENTS contract |
+| 0 | `EED-OPS-2026-0016` | Platform | blocked | clean handoff of the dirty Platform planning checkout | Mirror this registry into Platform and make it discoverable from every repository AGENTS contract |
 | 1 | `EED-KIT-2026-0001` | EasyEdu UI Kit | planned | none | Canonical modal, action, preview-surface and pagination primitives |
 | 2A | `EED-CCB-2026-0042` | CCB | planned | Kit audit; consume published primitives when reusable | CCB modal and source-hierarchy visual parity |
-| 2B | `EED-UI-2026-0029` | EasyStud | planned | Kit audit; consume published primitives when reusable | Global EasyStud controls, block layout and pagination parity |
+| 2B | `EED-UI-2026-0030` | EasyStud | planned | Kit audit; consume published primitives when reusable | Global EasyStud controls, block layout and pagination parity |
 | 2C | `EED-CCB-2026-0043` | CCB | planned | stable CCB current base | Image-modal Crop/Recrop geometry stability |
 | 3 | `EED-CCB-2026-0044` | CCB | planned | 0042 and 0043 | Motion and draggable-layer visual parity |
-| 4A | `EED-UI-2026-0030` | EasyStud | planned | 0029 and canonical Skeleton Kit | Skeleton coverage for every eligible EasyStud view |
-| 4B | `EED-CCB-2026-0045` | CCB | planned | 0042, 0044 and 0030 findings | Skeleton reconciliation for every eligible CCB view |
+| 4A | `EED-UI-2026-0031` | EasyStud | planned | 0030 and canonical Skeleton Kit | Skeleton coverage for every eligible EasyStud view |
+| 4B | `EED-CCB-2026-0045` | CCB | planned | 0042, 0044 and 0031 findings | Skeleton reconciliation for every eligible CCB view |
 | 5 | `EED-CCB-2026-0036` | CCB | blocked | clean integrated CCB HEAD after the active visual/behaviour wave | Saved-baseline and unsaved-changes indicator |
 | 6 | `EED-CCB-2026-0009-D-H` | CCB | planned | stable CCB integration base | Course-thumbnail end-to-end programme |
 | 7 | `EED-CCB-2026-0002-D` | CCB | planned | current-base source audit | Public Slideshow labels and geometry recurrence |
@@ -48,7 +48,7 @@ Orders `2A`, `2B` and the read-only phase of `2C` may run in parallel in
 separate worktrees. Product integration into a shared runtime remains
 sequential. A shared Kit change is published before either consumer copies it.
 
-## EED-OPS-2026-0012 - Platform registry synchronisation
+## EED-OPS-2026-0016 - Platform registry synchronisation
 
 ### Current evidence
 
@@ -142,7 +142,7 @@ sequential. A shared Kit change is published before either consumer copies it.
 - Human review of Parent modal, Selected source, inherited Border/Overlay
   rows, layer modal preview and every changed close/Save control.
 
-## EED-UI-2026-0029 - EasyStud global control and pagination parity
+## EED-UI-2026-0030 - EasyStud global control and pagination parity
 
 ### Scope
 
@@ -199,7 +199,7 @@ sequential. A shared Kit change is published before either consumer copies it.
 - Motion and drag tests remain separate from modal/Crop assertions.
 - Human review of mode switching, Layer & Overrides and a complete drag cycle.
 
-## EED-UI-2026-0030 - complete EasyStud Skeleton coverage
+## EED-UI-2026-0031 - complete EasyStud Skeleton coverage
 
 - Inventory every EasyStud view with real navigation or asynchronous loading.
 - Apply the canonical static frames, compact Navigation Skeleton and Guide cue.
