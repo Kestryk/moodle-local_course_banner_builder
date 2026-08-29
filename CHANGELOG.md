@@ -8,6 +8,19 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0043-QA1 - 2026-08-29
+
+#### Validation
+
+- Added the single supervised Crop/Recrop evidence scenario. It proves, at
+  desktop and narrow widths, initial Crop, Cancelled Recrop, Undo/Redo and
+  draft/image switching without conflating changed crop fields with image
+  placement. The runner uses the established disposable category/draft cleanup
+  fixture, captures early states, releases its lease and performs no retry.
+- This is QA-only. No CCB product source, AMD build, Kit surface, runtime,
+  preview, cache, fixture database, credential file or browser was changed or
+  launched while preparing it.
+
 ### EED-CCB-2026-0043 - 2026-08-29
 
 #### Fixed

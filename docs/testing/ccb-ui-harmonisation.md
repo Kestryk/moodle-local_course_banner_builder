@@ -120,6 +120,21 @@ stable while the five crop fields change; an untouched Crop/Apply retains both
 placement and crop payload exactly. Browser execution, fixture creation, cache
 work and lease acquisition are intentionally outside this source-ready record.
 
+### Supervised Crop/Recrop matrix (`EED-CCB-2026-0043-QA1`) - 2026-08-29
+
+The original IMG-08 probe did not cover both modal widths, Cancel restoration
+or a safe runtime supervisor. `ccb-crop-recrop.spec.js` now owns exactly one
+scenario for 1440 and 760 px. It retains captures before crop, after initial
+crop, after Cancel and after draft/image switching. Assertions compare the
+current and visual layer's placement payload and measured rectangle separately
+from the five crop fields, so a crop cannot silently become a resize.
+
+`Invoke-CCBCropRecropValidation.ps1` is the only approved runner. It performs
+one-test discovery before credentials/fixture activity; when later authorised,
+it uses the established disposable category/draft cleanup fixture, one browser
+worker and zero retries. It is source-ready only and does not itself grant
+preview, browser, cache or lease authority.
+
 ### Recrop action-rail avoidance (`EED-CCB-2026-0023-RF2-B`) - 2026-08-28
 
 When Crop or Recrop is active, the floating Crop and Cancel actions retain the

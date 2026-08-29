@@ -35,7 +35,7 @@ SHA, owner and next action instead.
 | 1 | `EED-KIT-2026-0001` | EasyEdu UI Kit | planned | none | Canonical modal, action, preview-surface and pagination primitives |
 | 2A | `EED-CCB-2026-0042` | CCB | planned | Kit audit; consume published primitives when reusable | CCB modal and source-hierarchy visual parity |
 | 2B | `EED-UI-2026-0030` | EasyStud | planned | Kit audit; consume published primitives when reusable | Global EasyStud controls, block layout and pagination parity |
-| 2C | `EED-CCB-2026-0043` | CCB | planned | stable CCB current base | Image-modal Crop/Recrop geometry stability |
+| 2C | `EED-CCB-2026-0043` | CCB | implementing | stable CCB current base | Image-modal Crop/Recrop geometry stability; QA1 evidence harness is source-ready after validation |
 | 3 | `EED-CCB-2026-0044` | CCB | planned | 0042 and 0043 | Motion and draggable-layer visual parity |
 | 4A | `EED-UI-2026-0031` | EasyStud | planned | 0030 and canonical Skeleton Kit | Skeleton coverage for every eligible EasyStud view |
 | 4B | `EED-CCB-2026-0045` | CCB | planned | 0042, 0044 and 0031 findings | Skeleton reconciliation for every eligible CCB view |
@@ -181,6 +181,15 @@ sequential. A shared Kit change is published before either consumer copies it.
 
 - One focused scenario with before/after geometry and persisted payload proof.
 - Mandatory human visual review of initial crop, recrop and restored preview.
+
+### QA1 evidence harness
+
+- `EED-CCB-2026-0043-QA1` has one source-owned Crop/Recrop scenario and one
+  supervised runner. It is independent from the cumulative wave spec and does
+  not authorise a browser run.
+- The later Platform allowlist must contain only the seven paths listed in
+  `docs/history/batches/eed-ccb-2026-0043-qa1-crop-recrop.md`; it must not
+  permit product, AMD or Kit paths from this QA-only branch.
 
 ## EED-CCB-2026-0044 - motion and draggable-layer parity
 
