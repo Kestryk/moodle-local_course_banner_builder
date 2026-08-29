@@ -83,8 +83,12 @@ test('Change parent modal keeps the table informative and rejects a descendant',
     expect(await modal.evaluate(node => !node.closest('[aria-hidden="true"]'))).toBe(true);
     await expect(modal.locator('[data-source-dropdown-label]')).toBeFocused();
     const saveButton = modal.locator('[data-parent-source-change-submit="1"]');
-    await expect(saveButton).toHaveClass(/btn-sm/);
-    expect(await saveButton.evaluate(button => button.getBoundingClientRect().height)).toBeLessThanOrEqual(38);
+    const cancelButton = modal.locator('[data-action="local-course-banner-builder-cancel-source-parent-change"]').last();
+    const actionHeights = await Promise.all([
+        saveButton.evaluate(button => button.getBoundingClientRect().height),
+        cancelButton.evaluate(button => button.getBoundingClientRect().height),
+    ]);
+    expect(Math.abs(actionHeights[0] - actionHeights[1])).toBeLessThanOrEqual(1);
     await expect(modal.locator('[data-source-option][data-value="' + environment.validKey + '"]')).toHaveCount(1);
     await expect(modal.locator('[data-source-option][data-value="' + environment.descendantKey + '"]')).toHaveCount(0);
     await page.screenshot({
@@ -152,7 +156,18 @@ test('Change parent modal keeps the table informative and rejects a descendant',
     await childAction.click();
     await modal.locator('[data-source-option][data-value="' + environment.validKey + '"]').click();
     await modal.locator('[data-source-dropdown-label]').click();
-    await expect(modal.locator('.local-course-banner-builder-source-dropdown-menu')).toBeVisible();
+    const parentDropdownToggle = modal.locator('[data-source-dropdown-label]');
+    const parentDropdownMenu = modal.locator('.local-course-banner-builder-source-dropdown-menu');
+    await expect(parentDropdownMenu).toBeVisible();
+    const dropdownGeometry = await Promise.all([
+        parentDropdownToggle.boundingBox(),
+        parentDropdownMenu.boundingBox(),
+    ]);
+    expect(dropdownGeometry[0]).not.toBeNull();
+    expect(dropdownGeometry[1]).not.toBeNull();
+    expect(dropdownGeometry[1].y).toBeGreaterThanOrEqual(
+        dropdownGeometry[0].y + dropdownGeometry[0].height - 1
+    );
     await page.screenshot({
         path: artifact(environment, 'parent-source-modal-options.png'),
         fullPage: true,
