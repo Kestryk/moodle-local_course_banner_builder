@@ -26,6 +26,9 @@ many small sections.
 - QA3 reads generated hidden Crop inputs by their stable field name as well as
   their optional Moodle id, and compares them with the active draft payload.
   This fixes the evidence collector, not Crop persistence or its assertions.
+- QA4 switches drafts through the real file-manager `Select image` buttons.
+  It no longer clicks a preview layer hidden beneath active Crop handles; the
+  Crop commit, placement and binding assertions remain unchanged.
 
 ### EED-CCB-2026-0043 - 2026-08-29
 

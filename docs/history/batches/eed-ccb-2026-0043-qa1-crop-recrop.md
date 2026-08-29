@@ -30,6 +30,13 @@ It also verifies those field values against the active draft payload. This
 retains the Crop-change assertion while distinguishing a test selector error
 from a product persistence failure.
 
+QA4 follows the control contract already proven by CCB 0041: draft switching
+uses the visible `[data-draft-preview-select="1"]` file-manager buttons and
+waits for `data-active-draft-index`. The previous direct click targeted a
+preview layer underneath the active Crop handles, so pointer interception was
+a QA gesture error. Crop commit, binding and placement assertions are
+unchanged.
+
 ## Supervision and cleanup
 
 `Invoke-CCBCropRecropValidation.ps1` proves that exactly one test is selected

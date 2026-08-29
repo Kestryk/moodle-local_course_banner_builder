@@ -109,6 +109,10 @@ const assertCropBinding = (snapshot, name) => {
     });
 };
 
+const draftSelectButton = (form, index) => form.locator(
+    '[data-draft-preview-select="1"][data-draft-index="' + index + '"]'
+).first();
+
 const login = async(page, env) => {
     await page.goto(env.baseUrl + '/login/index.php', {waitUntil: 'domcontentloaded', timeout: 60000});
     await page.locator('#username').fill(env.username);
@@ -227,10 +231,23 @@ test('EED-CCB-2026-0043-QA1 Crop and Recrop preserve image placement across widt
             expect(evidence.widths[key].afterRedo.crop).toEqual(evidence.widths[key].afterInitialCrop.crop);
 
             await changeCrop(page, form, {x: -18, y: -12});
-            await form.locator('[data-preview-draft-visual-layer="1"]').nth(1).click();
+            const originalIndex = evidence.widths[key].afterRedo.activeIndex;
+            const draftIndexes = await form.locator('[data-draft-preview-select="1"]').evaluateAll(buttons =>
+                buttons.map(button => String(button.dataset.draftIndex || '')).filter(Boolean)
+            );
+            ensure(draftIndexes.length === 2, width + ': exactly two user-facing draft selectors are required.');
+            const alternateIndex = draftIndexes.find(index => index !== originalIndex);
+            ensure(alternateIndex, width + ': alternate draft selector is unavailable.');
+            await draftSelectButton(form, alternateIndex).click();
             await waitForFrames(page);
-            await form.locator('[data-preview-draft-visual-layer="1"]').nth(0).click();
+            await expect.poll(() => form.getAttribute('data-active-draft-index'), {
+                message: width + ': alternate draft selection must settle',
+            }).toBe(alternateIndex);
+            await draftSelectButton(form, originalIndex).click();
             await waitForFrames(page);
+            await expect.poll(() => form.getAttribute('data-active-draft-index'), {
+                message: width + ': original draft selection must settle',
+            }).toBe(originalIndex);
             evidence.widths[key].afterDraftSwitch = await cropSnapshot(form);
             assertPlacement(evidence.widths[key].afterRedo, evidence.widths[key].afterDraftSwitch, width + ' draft/image switch');
             assertCropBinding(evidence.widths[key].afterDraftSwitch, width + ' draft/image switch');
