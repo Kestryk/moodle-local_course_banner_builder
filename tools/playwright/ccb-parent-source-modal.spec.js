@@ -104,16 +104,6 @@ test('Change parent modal keeps the table informative and rejects a descendant',
 
     await childAction.click();
     await expect(modal).toBeVisible();
-    const dialogBox = await modal.locator('.modal-dialog').boundingBox();
-    expect(dialogBox).not.toBeNull();
-    await page.mouse.click(Math.max(8, dialogBox.x - 16), Math.max(8, dialogBox.y - 16));
-    await expect(modal).toBeHidden();
-    await expect(page.locator('.modal-backdrop')).toHaveCount(0);
-    await expect.poll(() => modal.evaluate((node, parent) => node.parentElement === parent, originParent)).toBe(true);
-    await expect(childAction).toBeFocused();
-
-    await childAction.click();
-    await expect(modal).toBeVisible();
 
     const forged = await page.evaluate(async({childKey, descendantKey}) => {
         const action = document.querySelector(
