@@ -59,6 +59,10 @@ const ownedSourceEditor = (page, env) => page.locator(
     '[data-source-visual-editor="1"][data-sourcekey="' + env.sourceKey + '"]'
 );
 
+const ownedVisibleSourcePreviewFrame = (page, env) => ownedSourceEditor(page, env).locator(
+    '[data-source-preview-frame="1"]:visible'
+).first();
+
 const captureHuman = async(page, env, name, locator = null) => {
     const file = path.join(env.artifactRoot, name + '.png');
     fs.mkdirSync(env.artifactRoot, {recursive: true});
@@ -309,7 +313,8 @@ test('EED-CCB-2026-0042-0050 cumulative visual and interaction wave', async() =>
         );
         await expect(parentPencils).toHaveCount(2);
         const parentModal = page.locator('#local-course-banner-builder-change-source-parent-modal');
-        await parentPencils.first().click();
+        const parentPencil = parentPencils.first();
+        await parentPencil.click();
         await expect(parentModal).toBeVisible();
         await captureHuman(page, env, '02-0042-parent-modal-before-sensitive', parentModal);
         evidence.captures.push('02-0042-parent-modal-before-sensitive.png');
@@ -335,8 +340,8 @@ test('EED-CCB-2026-0042-0050 cumulative visual and interaction wave', async() =>
         await expect(parentModal.locator('[data-parent-source-change-submit="1"] .fa-save')).toHaveCount(1);
         await parentModal.locator('[data-action="local-course-banner-builder-cancel-source-parent-change"]').first().click();
         await expect(parentModal).toBeHidden();
-        await expect(page.locator('.local-course-banner-builder-banner-preview-frame, ' +
-            '.local-course-banner-builder-border-preview-frame').first()).toBeVisible();
+        await expect(parentPencil).toBeFocused();
+        await expect(ownedVisibleSourcePreviewFrame(page, env), '0042 active source preview after Parent close').toBeVisible();
 
         await assertImageCropFlow(page, env, 'desktop', false);
         await page.setViewportSize({width: 390, height: 844});
