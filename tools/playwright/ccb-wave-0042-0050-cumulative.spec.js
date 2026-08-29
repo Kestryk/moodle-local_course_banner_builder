@@ -85,18 +85,35 @@ const sourceUrl = env => {
 };
 
 const loginAndOpen = async(page, env, source = true) => {
-    await page.goto(env.baseUrl + '/login/index.php', {waitUntil: 'domcontentloaded', timeout: 60000});
+    const targetUrl = new URL(source ? sourceUrl(env) :
+        '/local/course_banner_builder/admin_manage.php', env.baseUrl);
+    const loginUrl = new URL('/login/index.php', env.baseUrl);
+    const isTargetUrl = current => current.origin === targetUrl.origin &&
+        current.pathname === targetUrl.pathname &&
+        (!source || current.searchParams.get('sourcekey') === targetUrl.searchParams.get('sourcekey'));
+    await page.goto(targetUrl.toString(), {waitUntil: 'domcontentloaded', timeout: 60000});
     const username = page.locator('#username');
-    if (await username.isVisible()) {
+    await expect.poll(async() => {
+        const current = new URL(page.url());
+        if (current.pathname === loginUrl.pathname && await username.isVisible()) {
+            return 'login';
+        }
+        return isTargetUrl(current) ? 'target' : 'pending';
+    }, {
+        message: 'CCB target must load or redirect to a visible Moodle login form',
+        timeout: 60000,
+    }).not.toBe('pending');
+    if ((new URL(page.url())).pathname === loginUrl.pathname && await username.isVisible()) {
         await username.fill(env.username);
         await page.locator('#password').fill(env.password);
         await page.locator('#loginbtn').click({noWaitAfter: true});
         await expect(page).not.toHaveURL(/\/login\//, {timeout: 60000});
-    } else {
-        await expect(page, 'Moodle session must be active when the login form is absent').not.toHaveURL(/\/login\//);
     }
-    await page.goto(source ? sourceUrl(env) :
-        env.baseUrl + '/local/course_banner_builder/admin_manage.php', {waitUntil: 'domcontentloaded', timeout: 60000});
+    await page.goto(targetUrl.toString(), {waitUntil: 'domcontentloaded', timeout: 60000});
+    await expect.poll(() => isTargetUrl(new URL(page.url())), {
+        message: 'Authenticated navigation must return to the requested CCB target',
+        timeout: 60000,
+    }).toBe(true);
 };
 
 const closeModal = async(modal) => {
