@@ -155,16 +155,67 @@ const uploadImage = async(page, form, imageFixture, manifest) => {
     await completeUpload(page, picker);
 };
 
-const changeCrop = async(page, form, direction) => {
+const waitForStableBox = async(locator, name) => {
+    let previous = null;
+    let stableReads = 0;
+    let settled = null;
+    await expect.poll(async() => {
+        const current = await locator.boundingBox();
+        if (!current) {
+            previous = null;
+            stableReads = 0;
+            return stableReads;
+        }
+        const isStable = previous && ['height', 'width', 'x', 'y'].every(key =>
+            Math.abs(current[key] - previous[key]) <= 0.5
+        );
+        stableReads = isStable ? stableReads + 1 : 0;
+        previous = current;
+        settled = current;
+        return stableReads;
+    }, {message: name + ' must settle before pointer input', timeout: 10000}).toBeGreaterThanOrEqual(2);
+    ensure(settled, name + ' has no stable layout box.');
+    return settled;
+};
+
+const changeCrop = async(page, form, scaleDelta) => {
     await form.locator('[data-action="local-course-banner-builder-toggle-modal-preview-crop"]').first().click();
-    const handle = form.locator('[data-preview-crop-handle="se"]').first();
-    await expect(handle, 'Crop southeast handle').toBeVisible();
-    const box = await handle.boundingBox();
-    ensure(box, 'Crop southeast handle has no layout box.');
+    const activeLayer = form.locator(
+        '[data-preview-current-image="1"][data-preview-draft-layer="1"]' +
+        '.local-course-banner-builder-preview-image-layer--crop-editing'
+    );
+    await expect(activeLayer, 'Active draft Crop layer').toBeVisible();
+    await expect(activeLayer, 'Exactly one active draft Crop layer').toHaveCount(1);
+    const handle = activeLayer.locator('[data-preview-crop-handle="se"]');
+    await expect(handle, 'Active Crop southeast handle').toBeVisible();
+    const box = await waitForStableBox(handle, 'Active Crop southeast handle');
+    const hitOwnsPointer = await handle.evaluate((node, point) => {
+        const hit = document.elementFromPoint(point.x, point.y);
+        return hit === node || node.contains(hit);
+    }, {x: box.x + box.width / 2, y: box.y + box.height / 2});
+    expect(hitOwnsPointer, 'Active Crop southeast handle must own its centre point').toBe(true);
+    const layerBox = await waitForStableBox(activeLayer, 'Active draft Crop layer');
+    const liveCropBefore = await activeLayer.evaluate(node => JSON.stringify({
+        height: node.getAttribute('data-preview-crop-height'),
+        left: node.getAttribute('data-preview-crop-left'),
+        top: node.getAttribute('data-preview-crop-top'),
+        width: node.getAttribute('data-preview-crop-width'),
+    }));
+    const moveX = Math.sign(scaleDelta) * Math.max(8, Math.min(48, layerBox.width * Math.abs(scaleDelta)));
+    const moveY = Math.sign(scaleDelta) * Math.max(6, Math.min(36, layerBox.height * Math.abs(scaleDelta)));
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await page.mouse.down();
-    await page.mouse.move(box.x + box.width / 2 + direction.x, box.y + box.height / 2 + direction.y, {steps: 8});
+    await page.mouse.move(box.x + box.width / 2 + moveX, box.y + box.height / 2 + moveY, {steps: 8});
     await page.mouse.up();
+    await expect.poll(() => activeLayer.evaluate(node => JSON.stringify({
+        height: node.getAttribute('data-preview-crop-height'),
+        left: node.getAttribute('data-preview-crop-left'),
+        top: node.getAttribute('data-preview-crop-top'),
+        width: node.getAttribute('data-preview-crop-width'),
+    })), {
+        message: 'Active Crop payload must change before Apply',
+        timeout: 10000,
+    }).not.toBe(liveCropBefore);
 };
 
 test('EED-CCB-2026-0043-QA1 Crop and Recrop preserve image placement across widths', async() => {
@@ -199,7 +250,7 @@ test('EED-CCB-2026-0043-QA1 Crop and Recrop preserve image placement across widt
             assertCropBinding(evidence.widths[key].before, width + ' before Crop');
             await modal.screenshot({path: path.join(env.artifactRoot, 'crop-recrop-' + width + '-before.png')});
 
-            await changeCrop(page, form, {x: -64, y: -36});
+            await changeCrop(page, form, -0.12);
             await form.locator('[data-action="local-course-banner-builder-apply-preview-crop"]').first().click();
             await waitForFrames(page);
             evidence.widths[key].afterInitialCrop = await cropSnapshot(form);
@@ -208,7 +259,7 @@ test('EED-CCB-2026-0043-QA1 Crop and Recrop preserve image placement across widt
             expect(evidence.widths[key].afterInitialCrop.crop).not.toEqual(evidence.widths[key].before.crop);
             await modal.screenshot({path: path.join(env.artifactRoot, 'crop-recrop-' + width + '-after-initial.png')});
 
-            await changeCrop(page, form, {x: -26, y: -18});
+            await changeCrop(page, form, -0.06);
             await form.locator('[data-action="local-course-banner-builder-cancel-preview-crop"]').first().click();
             await waitForFrames(page);
             evidence.widths[key].afterCancel = await cropSnapshot(form);
@@ -230,9 +281,9 @@ test('EED-CCB-2026-0043-QA1 Crop and Recrop preserve image placement across widt
             assertCropBinding(evidence.widths[key].afterRedo, width + ' Redo');
             expect(evidence.widths[key].afterRedo.crop).toEqual(evidence.widths[key].afterInitialCrop.crop);
 
-            // The initial gesture intentionally reaches the 1% minimum. Grow
-            // from that bound so draft switching must commit a real change.
-            await changeCrop(page, form, {x: 18, y: 12});
+            // Grow proportionally from the current Crop without reaching the
+            // opposite bound, so draft switching must commit a real change.
+            await changeCrop(page, form, 0.05);
             const originalIndex = evidence.widths[key].afterRedo.activeIndex;
             const draftIndexes = await form.locator('[data-draft-preview-select="1"]').evaluateAll(buttons =>
                 buttons.map(button => String(button.dataset.draftIndex || '')).filter(Boolean)

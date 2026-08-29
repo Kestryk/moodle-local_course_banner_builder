@@ -31,6 +31,10 @@ many small sections.
   Crop commit, placement and binding assertions remain unchanged.
 - QA5 grows the draft-switch Recrop away from the already reached one-percent
   minimum instead of requesting another impossible shrink at that bound.
+- QA6 scopes every pointer gesture to the stable southeast handle of the active
+  draft Crop layer, verifies that the handle owns its painted centre, uses a
+  proportional non-saturating movement and waits for a changed live Crop
+  payload before Apply. This is QA-only and changes no product interaction.
 
 ### EED-CCB-2026-0043 - 2026-08-29
 

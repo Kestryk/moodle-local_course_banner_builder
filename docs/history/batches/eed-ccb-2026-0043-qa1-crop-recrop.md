@@ -41,6 +41,13 @@ QA5 corrects the gesture boundary: the initial Crop reaches the product's 1%
 minimum, so the draft-switch Recrop grows from that bound. The earlier second
 shrink could not produce a different payload and was not a product failure.
 
+QA6 removes the remaining pointer ambiguity. Each gesture scopes the southeast
+handle to the single active draft Crop layer, waits for both layer and handle
+geometry to settle, and proves with `elementFromPoint` that the handle owns the
+pointer location. Movement is proportional to the active layer and deliberately
+kept away from the bounds. A bounded poll must observe a changed live Crop
+payload before the scenario may click Apply or switch drafts.
+
 ## Supervision and cleanup
 
 `Invoke-CCBCropRecropValidation.ps1` proves that exactly one test is selected
