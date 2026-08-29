@@ -212,6 +212,12 @@
   --easyedu-overlay-plus-color: #fff;
   --easyedu-image-preview-bg: #f7fbff;
   --easyedu-image-preview-border: #d5e5f1;
+  // Neutral transparency surface. These deliberately contain no product brand
+  // colour so image and layer previews read consistently in every consumer.
+  --easyedu-preview-checker-light: #f7f7f7;
+  --easyedu-preview-checker-dark: #e3e3e3;
+  --easyedu-preview-checker-border: #c9c9c9;
+  --easyedu-preview-checker-size: 0.8rem;
   --easyedu-motion-fast: 100ms;
   --easyedu-motion-normal: 160ms;
   --easyedu-motion-slow: 220ms;

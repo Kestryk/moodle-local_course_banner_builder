@@ -23,6 +23,7 @@
                 "sourcetype": "Category",
                 "layercount": "2",
                 "compositionmode": "Cumulative",
+                "sourcesettingsurl": "https://example.test/local/course_banner_builder/admin_manage.php?categoryid=1&opensourcesettings=1",
                 "fitmode": "Keep proportions",
                 "previewhtml": "",
                 "actions": []
@@ -71,6 +72,7 @@
             <tbody>
                 {{#items}}
                     <tr class="{{rowclass}}"
+                        id="local-course-banner-builder-source-chain-row-{{sourcekeyhash}}"
                         data-source-chain-row="1"
                         data-source-chain-key="{{sourcekeyhash}}"
                         data-source-chain-parent="{{parentkeyhash}}"
@@ -163,7 +165,16 @@
                         </td>
                         <td>{{sourcetypelabel}}</td>
                         <td>{{layercountdisplay}}</td>
-                        <td>{{compositionmodelabel}}</td>
+                        <td>
+                            <span class="local-course-banner-builder-summary-inline-view local-course-banner-builder-source-composition-view">
+                                <span class="local-course-banner-builder-summary-inline-value">{{compositionmodelabel}}</span>
+                                <a href="{{sourcesettingsurl}}"
+                                    class="btn btn-link p-0 icon-no-margin local-course-banner-builder-summary-inline-trigger local-course-banner-builder-summary-edit-trigger local-course-banner-builder-source-settings-trigger"
+                                    aria-label="{{#str}}edit{{/str}}: {{#str}}compositionmode, local_course_banner_builder{{/str}} — {{categoryname}}">
+                                    <i class="icon fa fa-pen fa-fw" aria-hidden="true"></i>
+                                </a>
+                            </span>
+                        </td>
                         <td>
                             <div class="local-course-banner-builder-thumb-list">
                                 {{#thumbnails}}
@@ -396,7 +407,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-action="local-course-banner-builder-cancel-source-parent-change">{{#str}}cancel{{/str}}</button>
                 <button type="submit" class="btn btn-primary local-course-banner-builder-parent-source-save"
-                    data-parent-source-change-submit="1">{{#str}}savechanges{{/str}}</button>
+                    data-parent-source-change-submit="1"><i class="fa fa-save me-2" aria-hidden="true"></i>{{#str}}savechanges{{/str}}</button>
             </div>
         </form>
     </div>

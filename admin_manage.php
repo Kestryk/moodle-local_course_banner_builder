@@ -404,13 +404,19 @@ function local_course_banner_builder_render_title_settings_modal(
         return $field($label, $control);
     };
     $color = function (string $name, string $label, string $value) use ($field): string {
+        $buttonlabel = get_string('bannertitlecolorchange', 'local_course_banner_builder', $label);
         $control = html_writer::div(
-            html_writer::empty_tag('input', [
-                'type' => 'color',
-                'name' => $name . '_picker',
-                'value' => $value,
-                'class' => 'form-control form-control-color local-course-banner-builder-color-input',
-                'data-title-color-picker-for' => $name,
+            html_writer::tag('button', html_writer::span('', 'local-course-banner-builder-title-color-swatch-chip', [
+                'aria-hidden' => 'true',
+            ]) . html_writer::span(strtoupper($value), 'local-course-banner-builder-title-color-swatch-value', [
+                'data-title-color-swatch-value-for' => $name,
+            ]), [
+                'type' => 'button',
+                'class' => 'btn local-course-banner-builder-title-color-swatch',
+                'data-action' => 'local-course-banner-builder-open-title-colour-dialog',
+                'data-title-color-swatch-for' => $name,
+                'aria-haspopup' => 'dialog',
+                'aria-label' => $buttonlabel,
             ]) .
             html_writer::empty_tag('input', [
                 'type' => 'text',
@@ -1835,6 +1841,7 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
 
 $categoryid = optional_param('categoryid', 0, PARAM_INT);
 $sourcekey = optional_param('sourcekey', '', PARAM_TEXT);
+$opensourcesettings = optional_param('opensourcesettings', 0, PARAM_BOOL);
 $elementid = optional_param('elementid', 0, PARAM_INT);
 $deleteelementid = optional_param('deleteelementid', 0, PARAM_INT);
 $deletecategorycontent = optional_param('deletecategorycontent', 0, PARAM_INT);
@@ -2036,6 +2043,9 @@ $PAGE->requires->strings_for_js([
     'bannertitlepreviewlines',
     'bannertitlepreviewlines:double',
     'bannertitlepreviewlines:single',
+    'bannertitlecolordialog',
+    'bannertitlecolorapply',
+    'bannertitlecolorchange',
     'bordersides:all',
     'childborderlayersdisableconfirm',
     'childoverlaylayersdisableconfirm',
@@ -3059,6 +3069,7 @@ $PAGE->requires->js_call_amd('local_course_banner_builder/easyedu_guide_adapter'
 echo $OUTPUT->header();
 echo html_writer::start_div(implode(' ', $adminclasses), [
     'aria-busy' => 'false',
+    'data-easyedu-motion-policy' => 'enabled',
     'data-easyedu-action-busy-label' => get_string('actioninprogress', 'local_course_banner_builder'),
 ]);
 
@@ -4187,7 +4198,7 @@ if ($selectedsource) {
             'role' => 'dialog',
             'aria-labelledby' => 'local-course-banner-builder-source-settings-modal-title',
             'aria-hidden' => 'true',
-            'data-auto-open-source-settings' => empty($categorysettings->id) && !$issitebanneradmin ? '1' : '0',
+            'data-auto-open-source-settings' => ($opensourcesettings || empty($categorysettings->id)) && !$issitebanneradmin ? '1' : '0',
         ]);
         echo html_writer::start_div('modal-dialog modal-lg', ['role' => 'document']);
         echo html_writer::start_div('modal-content');

@@ -5,6 +5,7 @@ and `Pending historical confirmation` are intentional states, not omissions.
 
 | Batch or evolution | Title | Area | Status | First known date | Latest validation date | Detail | Release / commit reference | Successor or dependency |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| EED-CCB-2026-0050 | Configured-source disclosure and preview modal Kit parity | Sources / accessibility | Implemented â€” validation pending | 2026-08-29 | Unknown from available evidence | [0050](batches/eed-ccb-2026-0050-source-preview.md) | Source branch pending commit | Official AMD/Sass static builds; authorized preview is separate |
 | Batch 2F-A | Public title accessibility gate | Public semantics | Partially validated | 2026-07-22 | 2026-07-26 (2F-A.1 cell only) | [2F-A](batches/batch-2f-a.md) | `c5f33c8` adds the focused scenario | 2F-B and the remaining accessibility review |
 | Batch 2F-A.1 | Activity `h1` and contextual `h2` at 100% | Public semantics | Validated | 2026-07-22 | 2026-07-27 | [2F-A.1](batches/batch-2f-a1.md) | `c5f33c8`; supervised artifact `ccb-2fa1-supervised-20260727T151314953Z-19692` | Batch 2F-B.1 genuine 200% gate |
 | Batch 2F-B | Narrow public title continuation | Accessibility / responsive | Validated | 2026-07-22 | 2026-07-27 | [2F-B](batches/batch-2f-b.md) | Batch 2F-B.1 passing headed-browser evidence | Controlled recovery commit |
