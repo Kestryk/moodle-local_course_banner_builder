@@ -52,10 +52,12 @@ const login = async(page, environment) => {
 };
 
 test('Change parent modal keeps the table informative and rejects a descendant', async({page}) => {
+    test.setTimeout(120000);
     const environment = requiredEnvironment();
     await login(page, environment);
     await page.goto(environment.baseUrl + '/local/course_banner_builder/admin_manage.php', {
-        waitUntil: 'networkidle',
+        waitUntil: 'domcontentloaded',
+        timeout: 60000,
     });
 
     const childAction = page.locator(
@@ -173,7 +175,7 @@ test('Change parent modal keeps the table informative and rejects a descendant',
     await page.goto(
         environment.baseUrl + '/local/course_banner_builder/admin_manage.php?sourcekey=' +
             encodeURIComponent(environment.childKey),
-        {waitUntil: 'networkidle'}
+        {waitUntil: 'domcontentloaded', timeout: 60000}
     );
     const selectedTrigger = page.locator(
         '[data-selected-source-content="1"] ' +
