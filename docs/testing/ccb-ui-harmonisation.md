@@ -34,6 +34,9 @@ deterministic, disposable three-category source chain: exactly three source
 rows, two expandable ancestors, two parent pencils, and two reorderable plus
 one dynamic locked image layer on the descendant source. It provides Moodle's
 official `mod/workshop/tests/fixtures/moodlelogo.png` for IMG-08.
+The fixture returns root, child and descendant source keys; QA selectors scope
+source rows, parent actions, the selected editor and layer counts to those keys,
+so pre-existing configured sources cannot affect the scenario.
 
 The watchdog is fixed to 900 seconds. The external run root receives the
 discovery output, phase log, fixture/restoration manifest, child logs, result

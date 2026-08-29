@@ -41,7 +41,9 @@ $environmentNames = @(
     'NODE_PATH', 'EASYEDU_PLAYWRIGHT_ARTIFACTS_ROOT', 'PLAYWRIGHT_PROFILE_DIR',
     'EASYEDU_PLAYWRIGHT_PROFILE_ROOT', 'EASYEDU_MOODLE_URL', 'EASYEDU_MOODLE_USERNAME',
     'EASYEDU_MOODLE_PASSWORD', 'CCB_MOODLE_URL', 'CCB_MOODLE_USERNAME', 'CCB_MOODLE_PASSWORD',
-    'EASYEDU_CCB_WAVE_SOURCE_CATEGORY_ID', 'EASYEDU_CCB_WAVE_ARTIFACT_ROOT',
+    'EASYEDU_CCB_WAVE_SOURCE_CATEGORY_ID', 'EASYEDU_CCB_WAVE_ROOT_SOURCE_KEY',
+    'EASYEDU_CCB_WAVE_CHILD_SOURCE_KEY', 'EASYEDU_CCB_WAVE_SOURCE_KEY',
+    'EASYEDU_CCB_WAVE_ARTIFACT_ROOT',
     'EASYEDU_CCB_WAVE_IMAGE_FIXTURE'
 )
 $savedEnvironment = @{}
@@ -116,15 +118,15 @@ module.exports = {...base, testDir: $(ConvertTo-Json $scriptDir), outputDir: $(C
     Import-Module -Name $orchestrationModule -Force -DisableNameChecking
     $lease = Acquire-ValidationLease; Write-Phase 'lease-acquire' 'complete' 'Single CCB fixture lease acquired without retry.'
     $fixture = Invoke-Fixture 'setup'
-    $manifest = [ordered]@{ runId = $runId; categoryid = [int]$fixture.categoryid; categoryids = @($fixture.categoryids); sourcekey = [string]$fixture.sourcekey; draftitemids = @($fixture.draftitemids) }
+    $manifest = [ordered]@{ runId = $runId; categoryid = [int]$fixture.categoryid; categoryids = @($fixture.categoryids); rootkey = [string]$fixture.rootkey; childkey = [string]$fixture.childkey; sourcekey = [string]$fixture.sourcekey; draftitemids = @($fixture.draftitemids) }
     Set-Content -LiteralPath $manifestFile -Encoding UTF8 -Value ($manifest | ConvertTo-Json -Depth 10); Write-Phase 'fixture-setup' 'complete' "Three-source fixture category $($fixture.categoryid) created."
     New-Item -ItemType Directory -Path $profileRoot -Force | Out-Null
     $env:PLAYWRIGHT_PROFILE_DIR = $profileRoot; $env:EASYEDU_PLAYWRIGHT_PROFILE_ROOT = $profileRoot
     $loadedEnvironment += @('PLAYWRIGHT_PROFILE_DIR', 'EASYEDU_PLAYWRIGHT_PROFILE_ROOT')
     $loadedEnvironment += @('EASYEDU_MOODLE_URL', 'EASYEDU_MOODLE_USERNAME', 'EASYEDU_MOODLE_PASSWORD', 'CCB_MOODLE_URL', 'CCB_MOODLE_USERNAME', 'CCB_MOODLE_PASSWORD')
     . $credentialLoader | Out-Null; $loadedEnvironment += @('EASYEDU_MOODLE_URL', 'EASYEDU_MOODLE_USERNAME', 'EASYEDU_MOODLE_PASSWORD', 'CCB_MOODLE_URL', 'CCB_MOODLE_USERNAME', 'CCB_MOODLE_PASSWORD')
-    $env:EASYEDU_CCB_WAVE_SOURCE_CATEGORY_ID = [string]$fixture.categoryid; $env:EASYEDU_CCB_WAVE_ARTIFACT_ROOT = $runRoot; $env:EASYEDU_CCB_WAVE_IMAGE_FIXTURE = $imageFixture
-    $loadedEnvironment += @('EASYEDU_CCB_WAVE_SOURCE_CATEGORY_ID', 'EASYEDU_CCB_WAVE_ARTIFACT_ROOT', 'EASYEDU_CCB_WAVE_IMAGE_FIXTURE')
+    $env:EASYEDU_CCB_WAVE_SOURCE_CATEGORY_ID = [string]$fixture.categoryid; $env:EASYEDU_CCB_WAVE_ROOT_SOURCE_KEY = [string]$fixture.rootkey; $env:EASYEDU_CCB_WAVE_CHILD_SOURCE_KEY = [string]$fixture.childkey; $env:EASYEDU_CCB_WAVE_SOURCE_KEY = [string]$fixture.sourcekey; $env:EASYEDU_CCB_WAVE_ARTIFACT_ROOT = $runRoot; $env:EASYEDU_CCB_WAVE_IMAGE_FIXTURE = $imageFixture
+    $loadedEnvironment += @('EASYEDU_CCB_WAVE_SOURCE_CATEGORY_ID', 'EASYEDU_CCB_WAVE_ROOT_SOURCE_KEY', 'EASYEDU_CCB_WAVE_CHILD_SOURCE_KEY', 'EASYEDU_CCB_WAVE_SOURCE_KEY', 'EASYEDU_CCB_WAVE_ARTIFACT_ROOT', 'EASYEDU_CCB_WAVE_IMAGE_FIXTURE')
     $child = Start-Node @($playwrightCli, 'test', (Split-Path -Leaf $playwrightSpec), ('--config=' + $tempConfig), '--workers=1', '--retries=0', '--reporter=line')
     $started = Get-Date; while (-not $child.HasExited) { if (((Get-Date) - $started).TotalSeconds -ge $WatchdogSeconds) { Stop-Child; $childExitCode = 124; break }; Start-Sleep -Seconds 1 }
     $child.WaitForExit(); $child.Refresh(); if ($null -eq $childExitCode) { $childExitCode = $child.ExitCode }

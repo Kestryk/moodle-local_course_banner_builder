@@ -14,6 +14,9 @@ const requireEnvironment = () => {
         'EASYEDU_MOODLE_USERNAME',
         'EASYEDU_MOODLE_PASSWORD',
         'EASYEDU_CCB_WAVE_SOURCE_CATEGORY_ID',
+        'EASYEDU_CCB_WAVE_ROOT_SOURCE_KEY',
+        'EASYEDU_CCB_WAVE_CHILD_SOURCE_KEY',
+        'EASYEDU_CCB_WAVE_SOURCE_KEY',
         'EASYEDU_CCB_WAVE_ARTIFACT_ROOT',
         'EASYEDU_CCB_WAVE_IMAGE_FIXTURE',
     ];
@@ -25,15 +28,36 @@ const requireEnvironment = () => {
         'The cumulative CCB source category must be numeric.');
     ensure(fs.existsSync(process.env.EASYEDU_CCB_WAVE_IMAGE_FIXTURE),
         'The cumulative CCB image fixture is unavailable.');
+    for (const name of ['EASYEDU_CCB_WAVE_ROOT_SOURCE_KEY', 'EASYEDU_CCB_WAVE_CHILD_SOURCE_KEY',
+        'EASYEDU_CCB_WAVE_SOURCE_KEY']) {
+        ensure(/^category:\d+$/.test(process.env[name]), 'The cumulative CCB source key must be category:numeric.');
+    }
     return {
         artifactRoot,
         baseUrl: process.env.EASYEDU_MOODLE_URL.replace(/\/$/, ''),
         categoryId: process.env.EASYEDU_CCB_WAVE_SOURCE_CATEGORY_ID,
+        rootKey: process.env.EASYEDU_CCB_WAVE_ROOT_SOURCE_KEY,
+        childKey: process.env.EASYEDU_CCB_WAVE_CHILD_SOURCE_KEY,
+        sourceKey: process.env.EASYEDU_CCB_WAVE_SOURCE_KEY,
         imageFixture: process.env.EASYEDU_CCB_WAVE_IMAGE_FIXTURE,
         password: process.env.EASYEDU_MOODLE_PASSWORD,
         username: process.env.EASYEDU_MOODLE_USERNAME,
     };
 };
+
+const sourceKeySelector = key => '[data-source-key="' + key + '"]';
+
+const ownedSourceChainRows = (page, env) => page.locator('[data-source-chain-row="1"]').filter({
+    has: page.locator([env.rootKey, env.childKey, env.sourceKey].map(sourceKeySelector).join(', ')),
+});
+
+const ownedSourceChainRow = (page, key) => page.locator('[data-source-chain-row="1"]').filter({
+    has: page.locator(sourceKeySelector(key)),
+});
+
+const ownedSourceEditor = (page, env) => page.locator(
+    '[data-source-visual-editor="1"][data-sourcekey="' + env.sourceKey + '"]'
+);
 
 const captureHuman = async(page, env, name, locator = null) => {
     const file = path.join(env.artifactRoot, name + '.png');
@@ -87,6 +111,9 @@ const assertTitleColourDialog = async(page, env, context, captureName, narrow) =
         await page.setViewportSize({width: 1440, height: 900});
     }
     const modal = page.locator('#local-course-banner-builder-title-settings-' + context + '-modal');
+    await expect(page.locator('[data-bs-target="#local-course-banner-builder-title-settings-' + context + '-modal"], ' +
+        '[data-target="#local-course-banner-builder-title-settings-' + context + '-modal"]'),
+        context + ' title trigger').toHaveCount(1);
     const trigger = page.locator('[data-bs-target="#local-course-banner-builder-title-settings-' + context + '-modal"], ' +
         '[data-target="#local-course-banner-builder-title-settings-' + context + '-modal"]').first();
     if (await modal.isHidden()) {
@@ -133,9 +160,11 @@ const assertTitleColourDialog = async(page, env, context, captureName, narrow) =
 };
 
 const assertImageCropFlow = async(page, env, viewportName, edit) => {
+    const editor = ownedSourceEditor(page, env);
+    await expect(editor, 'IMG-08 owned source editor').toHaveCount(1);
     const trigger = edit ?
-        page.locator('[data-edit-layer-url][data-edit-layer-modal="local-course-banner-builder-edit-image-layer-modal"]').first() :
-        page.locator('[data-target="#local-course-banner-builder-add-layer-modal"], ' +
+        editor.locator('[data-edit-layer-url][data-edit-layer-modal="local-course-banner-builder-edit-image-layer-modal"]').first() :
+        editor.locator('[data-target="#local-course-banner-builder-add-layer-modal"], ' +
             '[data-bs-target="#local-course-banner-builder-add-layer-modal"]').first();
     await expect(trigger, 'IMG-08 image modal trigger').toBeVisible({timeout: 30000});
     await trigger.click();
@@ -187,8 +216,11 @@ const assertImageCropFlow = async(page, env, viewportName, edit) => {
 const assertSourceTreeAndPreview = async(page, env, evidence) => {
     await page.setViewportSize({width: 1440, height: 900});
     await loginAndOpen(page, env);
-    const rows = page.locator('[data-source-chain-row="1"]');
-    const toggles = page.locator('[data-action="local-course-banner-builder-toggle-source-chain"]');
+    const rows = ownedSourceChainRows(page, env);
+    for (const key of [env.rootKey, env.childKey, env.sourceKey]) {
+        await expect(ownedSourceChainRow(page, key), '0050 fixture source row ' + key).toHaveCount(1);
+    }
+    const toggles = rows.locator('[data-action="local-course-banner-builder-toggle-source-chain"]');
     await expect(rows, '0050 requires a three-level source fixture').toHaveCount(3);
     await expect(toggles, '0050 requires two expandable ancestors').toHaveCount(2);
     await captureHuman(page, env, '08-0050-source-tree-before-sensitive');
@@ -216,7 +248,9 @@ const assertSourceTreeAndPreview = async(page, env, evidence) => {
     await expect(rows.nth(2)).toBeVisible();
     await page.emulateMedia({reducedMotion: 'no-preference'});
 
-    const previewTrigger = page.locator('[data-action="local-course-banner-builder-show-source-chain-preview"]').first();
+    const previewTrigger = ownedSourceChainRow(page, env.sourceKey).locator(
+        '[data-action="local-course-banner-builder-show-source-chain-preview"]'
+    ).first();
     await previewTrigger.click();
     const previewModal = page.locator('#local-course-banner-builder-source-chain-preview-modal');
     const body = previewModal.locator('[data-source-chain-preview-modal-body="1"]');
@@ -269,7 +303,10 @@ test('EED-CCB-2026-0042-0050 cumulative visual and interaction wave', async() =>
         await loginAndOpen(page, env);
         await captureHuman(page, env, '01-0042-parent-list-before-sensitive');
         evidence.captures.push('01-0042-parent-list-before-sensitive.png');
-        const parentPencils = page.locator('[data-action="local-course-banner-builder-change-source-parent"]');
+        const parentPencils = page.locator(
+            '[data-action="local-course-banner-builder-change-source-parent"]' + sourceKeySelector(env.childKey) + ', ' +
+            '[data-action="local-course-banner-builder-change-source-parent"]' + sourceKeySelector(env.sourceKey)
+        );
         await expect(parentPencils).toHaveCount(2);
         const parentModal = page.locator('#local-course-banner-builder-change-source-parent-modal');
         await parentPencils.first().click();
@@ -306,7 +343,8 @@ test('EED-CCB-2026-0042-0050 cumulative visual and interaction wave', async() =>
 
         await page.setViewportSize({width: 1440, height: 900});
         await loginAndOpen(page, env);
-        const root = page.locator('[data-source-visual-editor="1"]').first();
+        const root = ownedSourceEditor(page, env);
+        await expect(root, '0044 owned source editor').toHaveCount(1);
         await captureHuman(page, env, '04-0044-motion-drag-before-sensitive', root);
         evidence.captures.push('04-0044-motion-drag-before-sensitive.png');
         const filmstrip = root.locator('[data-source-preview-filmstrip="1"], .local-course-banner-builder-source-filmstrip').first();
@@ -318,20 +356,22 @@ test('EED-CCB-2026-0042-0050 cumulative visual and interaction wave', async() =>
         await root.locator('[data-source-preview-mode-value="mobile"]').click();
         await expect(root).toHaveAttribute('data-source-preview-mode', 'mobile');
         await page.emulateMedia({reducedMotion: 'no-preference'});
-        const disclosure = page.locator('.local-course-banner-builder-layer-details-accordion').first();
+        const disclosure = root.locator('.local-course-banner-builder-layer-details-accordion').first();
         await expect(disclosure).toBeVisible();
         await disclosure.locator('summary').click();
         await expect(disclosure).toHaveAttribute('open', '');
         await disclosure.locator('summary').click();
         await expect(disclosure).not.toHaveAttribute('open', '');
-        const movable = page.locator('.local-course-banner-builder-layer-row[draggable="true"]');
-        const locked = page.locator('.local-course-banner-builder-layer-row--order-locked');
+        const layerTable = page.locator('tbody[data-layer-sortable-sourcekey="' + env.sourceKey + '"]');
+        await expect(layerTable, '0044 owned source layer table').toHaveCount(1);
+        const movable = layerTable.locator('.local-course-banner-builder-layer-row[draggable="true"]');
+        const locked = layerTable.locator('.local-course-banner-builder-layer-row--order-locked');
         await expect(movable).toHaveCount(2);
         await expect(locked).toHaveCount(1);
         await movable.nth(0).dragTo(movable.nth(1));
-        await expect(page.locator('.local-course-banner-builder-layer-drag-preview')).toHaveCount(0);
-        await expect(page.locator('.local-course-banner-builder-layer-row-dragging')).toHaveCount(0);
-        await expect(page.locator('.local-course-banner-builder-layer-row-drop-before, ' +
+        await expect(root.locator('.local-course-banner-builder-layer-drag-preview')).toHaveCount(0);
+        await expect(root.locator('.local-course-banner-builder-layer-row-dragging')).toHaveCount(0);
+        await expect(root.locator('.local-course-banner-builder-layer-row-drop-before, ' +
             '.local-course-banner-builder-layer-row-drop-after')).toHaveCount(0);
 
         await assertTitleColourDialog(page, env, 'course', '05-0046-course-title-colour-dialog', false);
