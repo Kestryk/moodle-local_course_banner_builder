@@ -8,6 +8,22 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0043-RF3 - 2026-08-29
+
+#### Fixed
+
+- Crop and Recrop in the add-image modal no longer shrink the active image or
+  its draft-selection mirror. The Crop rectangle now changes only the image
+  inside its saved placement box; it no longer changes that box's dimensions
+  or offsets.
+
+#### Validation
+
+- The focused QA2 evidence proved the previous 18.75 px height loss at 1440
+  px before this correction. AMD source/build/source-map validation and the
+  targeted placement contract are required for this source-only candidate;
+  no preview, cache, lease, fixture or browser is run by this corrective lot.
+
 ### EED-CCB-2026-0050 - 2026-08-29
 
 #### Fixed
