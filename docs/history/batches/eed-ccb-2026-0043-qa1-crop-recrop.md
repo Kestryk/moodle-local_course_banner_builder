@@ -37,6 +37,10 @@ preview layer underneath the active Crop handles, so pointer interception was
 a QA gesture error. Crop commit, binding and placement assertions are
 unchanged.
 
+QA5 corrects the gesture boundary: the initial Crop reaches the product's 1%
+minimum, so the draft-switch Recrop grows from that bound. The earlier second
+shrink could not produce a different payload and was not a product failure.
+
 ## Supervision and cleanup
 
 `Invoke-CCBCropRecropValidation.ps1` proves that exactly one test is selected

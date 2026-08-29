@@ -29,6 +29,8 @@ many small sections.
 - QA4 switches drafts through the real file-manager `Select image` buttons.
   It no longer clicks a preview layer hidden beneath active Crop handles; the
   Crop commit, placement and binding assertions remain unchanged.
+- QA5 grows the draft-switch Recrop away from the already reached one-percent
+  minimum instead of requesting another impossible shrink at that bound.
 
 ### EED-CCB-2026-0043 - 2026-08-29
 

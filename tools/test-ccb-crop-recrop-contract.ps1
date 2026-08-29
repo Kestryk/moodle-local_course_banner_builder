@@ -14,6 +14,7 @@ $checks = [ordered]@{
     'Initial Crop and Recrop Cancel are covered' = (($spec -match 'afterInitialCrop') -and ($spec -match 'afterCancel') -and ($spec -match 'cancel-preview-crop'));
     'Undo and Redo are covered' = (($spec -match 'undo-modal-preview-change') -and ($spec -match 'redo-modal-preview-change'));
     'Draft/image switching uses the user-facing selector' = (($spec -match 'afterDraftSwitch') -and ($spec -match 'data-draft-preview-select') -and ($spec -match 'data-active-draft-index'));
+    'Draft-switch gesture grows away from the one-percent crop bound' = ($spec -match "changeCrop\(page, form, \{x: 18, y: 12\}\)");
     'Placement and geometry are asserted independently from Crop fields' = (($spec -match 'assertPlacement') -and ($spec -match 'expect\(.*\.crop\)'));
     'Crop fields resolve Moodle id or generated name and are bound to draft state' = (($spec -match 'const cropValue = name') -and ($spec -match "'#id_' \+ name") -and ($spec -match '\[name=') -and ($spec -match 'assertCropBinding'));
     'Early and state-change captures are retained' = (($spec -match 'crop-recrop-.*-before\.png') -and ($spec -match 'after-initial') -and ($spec -match 'after-cancel'));

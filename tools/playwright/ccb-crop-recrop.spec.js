@@ -230,7 +230,9 @@ test('EED-CCB-2026-0043-QA1 Crop and Recrop preserve image placement across widt
             assertCropBinding(evidence.widths[key].afterRedo, width + ' Redo');
             expect(evidence.widths[key].afterRedo.crop).toEqual(evidence.widths[key].afterInitialCrop.crop);
 
-            await changeCrop(page, form, {x: -18, y: -12});
+            // The initial gesture intentionally reaches the 1% minimum. Grow
+            // from that bound so draft switching must commit a real change.
+            await changeCrop(page, form, {x: 18, y: 12});
             const originalIndex = evidence.widths[key].afterRedo.activeIndex;
             const draftIndexes = await form.locator('[data-draft-preview-select="1"]').evaluateAll(buttons =>
                 buttons.map(button => String(button.dataset.draftIndex || '')).filter(Boolean)
