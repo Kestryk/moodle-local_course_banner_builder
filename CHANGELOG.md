@@ -8,6 +8,17 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0046 - 2026-08-29
+
+#### Changed
+
+- Replaced the Course, Site and Activity title editors' browser-native colour picker with a CCB/Kit swatch that opens one accessible colour dialog. The existing HEX value, live title preview and outer Save persistence contract remain unchanged.
+- The dialog keeps colour changes temporary until Apply; Cancel, Escape and backdrop dismissal leave the editor unchanged and return focus to its opening swatch. Its responsive palette and modal shell use the existing Kit surface, focus and compact-action tokens.
+
+#### Validation
+
+- Added the focused architecture and supervised-capture contract. Official Sass and AMD builds plus static syntax checks are required before handoff; no runtime, preview, cache, lease or browser validation belongs to this source-ready batch.
+
 ### EED-CCB-2026-0044 - 2026-08-29
 
 #### Changed

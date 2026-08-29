@@ -16,6 +16,12 @@ menus.
 - configured-source actions must keep icons and labels leading-aligned;
 - no preview, document or modal horizontal overflow is allowed.
 
+## EED-CCB-2026-0046 - title-colour dialog - 2026-08-29
+
+The Course, Site and Activity title editors use the same CCB-owned, Kit-shell colour dialog. Their visible swatch does not invoke the operating-system colour picker. The existing HEX input remains the persisted form control and the outer title-editor Save remains the sole persistence action.
+
+Future lease-gated supervised validation must record these named captures outside Git: `01-0046-course-title-colour-dialog.png`, `02-0046-site-title-colour-dialog.png` and `03-0046-activity-title-colour-dialog.png`. Each capture must show the dialog before Apply. The focused flow proves temporary palette/HEX editing, atomic Apply into the existing preview/input binding, Cancel and Escape without form mutation, focus return to the exact swatch, and a narrow/zoom no-overflow cell. Source work only: no runtime, browser, preview, cache or lease action was performed.
+
 ## EED-CCB-2026-0042/0043/0044 cumulative supervised scenario - 2026-08-29
 
 `tools/playwright/ccb-wave-0042-0044-cumulative.spec.js` is the single

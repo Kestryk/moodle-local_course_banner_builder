@@ -404,13 +404,19 @@ function local_course_banner_builder_render_title_settings_modal(
         return $field($label, $control);
     };
     $color = function (string $name, string $label, string $value) use ($field): string {
+        $buttonlabel = get_string('bannertitlecolorchange', 'local_course_banner_builder', $label);
         $control = html_writer::div(
-            html_writer::empty_tag('input', [
-                'type' => 'color',
-                'name' => $name . '_picker',
-                'value' => $value,
-                'class' => 'form-control form-control-color local-course-banner-builder-color-input',
-                'data-title-color-picker-for' => $name,
+            html_writer::tag('button', html_writer::span('', 'local-course-banner-builder-title-color-swatch-chip', [
+                'aria-hidden' => 'true',
+            ]) . html_writer::span(strtoupper($value), 'local-course-banner-builder-title-color-swatch-value', [
+                'data-title-color-swatch-value-for' => $name,
+            ]), [
+                'type' => 'button',
+                'class' => 'btn local-course-banner-builder-title-color-swatch',
+                'data-action' => 'local-course-banner-builder-open-title-colour-dialog',
+                'data-title-color-swatch-for' => $name,
+                'aria-haspopup' => 'dialog',
+                'aria-label' => $buttonlabel,
             ]) .
             html_writer::empty_tag('input', [
                 'type' => 'text',
@@ -2037,6 +2043,9 @@ $PAGE->requires->strings_for_js([
     'bannertitlepreviewlines',
     'bannertitlepreviewlines:double',
     'bannertitlepreviewlines:single',
+    'bannertitlecolordialog',
+    'bannertitlecolorapply',
+    'bannertitlecolorchange',
     'bordersides:all',
     'childborderlayersdisableconfirm',
     'childoverlaylayersdisableconfirm',

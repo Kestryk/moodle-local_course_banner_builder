@@ -10581,13 +10581,210 @@ function localCourseBannerBuilderSyncTitleSliderOutput(form, name, value) {
 }
 
 function localCourseBannerBuilderSyncTitleColorPickers(form) {
-    Array.prototype.slice.call(form.querySelectorAll('[data-title-color-picker-for]')).forEach(function (picker) {
-        var text = form.querySelector('[data-title-color-text-for="' +
-            picker.getAttribute('data-title-color-picker-for') + '"]');
-        if (text && /^#[0-9a-f]{6}$/i.test(text.value || '')) {
-            picker.value = text.value;
+    Array.prototype.slice.call(form.querySelectorAll('[data-title-color-swatch-for]')).forEach(function (swatch) {
+        var name = swatch.getAttribute('data-title-color-swatch-for');
+        var text = form.querySelector('[data-title-color-text-for="' + name + '"]');
+        localCourseBannerBuilderSyncTitleColorSwatch(swatch, text ? text.value : '');
+    });
+}
+
+/**
+ * Update the title-colour trigger without invoking a platform-native picker.
+ *
+ * @param {HTMLElement} swatch The colour-dialog trigger.
+ * @param {string} value The submitted hexadecimal colour value.
+ */
+function localCourseBannerBuilderSyncTitleColorSwatch(swatch, value) {
+    if (!swatch) {
+        return;
+    }
+    value = /^#[0-9a-f]{6}$/i.test(value || '') ? value.toUpperCase() : '#000000';
+    var chip = swatch.querySelector('.local-course-banner-builder-title-color-swatch-chip');
+    var label = swatch.querySelector('[data-title-color-swatch-value-for]');
+    swatch.style.setProperty('--local-course-banner-builder-title-colour', value);
+    if (chip) {
+        chip.style.backgroundColor = value;
+    }
+    if (label) {
+        label.textContent = value;
+    }
+}
+
+/**
+ * Open the transactional CCB title-colour dialog.
+ *
+ * The form remains unchanged until Apply. This avoids native OS picker UI and
+ * gives Course, Site and Activity title editors the same Kit modal contract.
+ *
+ * @param {HTMLFormElement} form Title editor form.
+ * @param {HTMLElement} opener Colour swatch trigger.
+ */
+function localCourseBannerBuilderOpenTitleColourDialog(form, opener) {
+    if (!form || !opener || document.querySelector('[data-title-colour-dialog="1"]')) {
+        return;
+    }
+    var name = opener.getAttribute('data-title-color-swatch-for');
+    var text = form.querySelector('[data-title-color-text-for="' + name + '"]');
+    if (!name || !text) {
+        return;
+    }
+    var draft = /^#[0-9a-f]{6}$/i.test(text.value || '') ? text.value.toUpperCase() : '#000000';
+    var dialog = document.createElement('div');
+    var shell = document.createElement('div');
+    var content = document.createElement('div');
+    var header = document.createElement('div');
+    var heading = document.createElement('h2');
+    var close = document.createElement('button');
+    var body = document.createElement('div');
+    var preview = document.createElement('div');
+    var previewValue = document.createElement('output');
+    var inputLabel = document.createElement('label');
+    var input = document.createElement('input');
+    var palette = document.createElement('div');
+    var footer = document.createElement('div');
+    var cancel = document.createElement('button');
+    var apply = document.createElement('button');
+    var dialogId = 'local-course-banner-builder-title-colour-dialog-' + Date.now();
+    var paletteValues = [
+        '#000000', '#FFFFFF', '#1F2937', '#475569', '#0F6CBF', '#0EA5E9',
+        '#0F766E', '#16A34A', '#CA8A04', '#EA580C', '#DC2626', '#BE123C',
+        '#9333EA', '#7C3AED', '#4F46E5', '#0891B2', '#64748B', '#A16207'
+    ];
+    var closeDialog = function() {
+        dialog.remove();
+        opener.focus({preventScroll: true});
+    };
+    var setDraft = function(value) {
+        draft = /^#[0-9a-f]{6}$/i.test(value || '') ? value.toUpperCase() : draft;
+        preview.style.backgroundColor = draft;
+        previewValue.value = draft;
+        previewValue.textContent = draft;
+        input.classList.toggle('is-invalid', !/^#[0-9a-f]{6}$/i.test(input.value || ''));
+        Array.prototype.slice.call(palette.querySelectorAll('[data-title-colour-value]')).forEach(function(button) {
+            button.setAttribute('aria-pressed', button.getAttribute('data-title-colour-value') === draft ? 'true' : 'false');
+        });
+    };
+
+    dialog.className = 'local-course-banner-builder-title-colour-dialog-backdrop';
+    dialog.setAttribute('data-title-colour-dialog', '1');
+    dialog.setAttribute('role', 'presentation');
+    shell.className = 'modal-dialog local-course-banner-builder-title-colour-dialog';
+    shell.setAttribute('role', 'dialog');
+    shell.setAttribute('aria-modal', 'true');
+    shell.setAttribute('aria-labelledby', dialogId + '-title');
+    content.className = 'modal-content local-course-banner-builder-layer-modal-content';
+    header.className = 'modal-header d-flex align-items-center';
+    heading.className = 'modal-title flex-grow-1';
+    heading.id = dialogId + '-title';
+    heading.textContent = localCourseBannerBuilderGetJsString('bannertitlecolordialog', 'Choose title colour');
+    close.type = 'button';
+    close.className = 'close ml-auto ms-auto';
+    close.setAttribute('aria-label', localCourseBannerBuilderGetJsString('closebuttontitle', 'Close'));
+    close.innerHTML = '<span aria-hidden="true">&times;</span>';
+    body.className = 'modal-body local-course-banner-builder-title-colour-dialog-body';
+    preview.className = 'local-course-banner-builder-title-colour-dialog-preview';
+    preview.setAttribute('aria-hidden', 'true');
+    previewValue.className = 'local-course-banner-builder-title-colour-dialog-value';
+    inputLabel.htmlFor = dialogId + '-hex';
+    inputLabel.textContent = 'HEX';
+    input.type = 'text';
+    input.id = dialogId + '-hex';
+    input.className = 'form-control';
+    input.pattern = '^#[0-9A-Fa-f]{6}$';
+    input.maxLength = 7;
+    input.autocomplete = 'off';
+    input.spellcheck = false;
+    palette.className = 'local-course-banner-builder-title-colour-dialog-palette';
+    palette.setAttribute('role', 'group');
+    palette.setAttribute('aria-label', localCourseBannerBuilderGetJsString('bannertitlecolordialog', 'Choose title colour'));
+    paletteValues.forEach(function(value) {
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'local-course-banner-builder-title-colour-option';
+        button.setAttribute('data-title-colour-value', value);
+        button.setAttribute('aria-label', value);
+        button.style.backgroundColor = value;
+        palette.appendChild(button);
+    });
+    footer.className = 'modal-footer local-course-banner-builder-title-colour-dialog-footer';
+    cancel.type = 'button';
+    cancel.className = 'btn btn-outline-secondary local-course-banner-builder-compact-save-button';
+    cancel.textContent = localCourseBannerBuilderGetJsString('cancel', 'Cancel');
+    apply.type = 'button';
+    apply.className = 'btn btn-primary local-course-banner-builder-compact-save-button';
+    apply.textContent = localCourseBannerBuilderGetJsString('bannertitlecolorapply', 'Apply colour');
+    header.appendChild(heading);
+    header.appendChild(close);
+    body.appendChild(preview);
+    body.appendChild(previewValue);
+    body.appendChild(inputLabel);
+    body.appendChild(input);
+    body.appendChild(palette);
+    footer.appendChild(cancel);
+    footer.appendChild(apply);
+    content.appendChild(header);
+    content.appendChild(body);
+    content.appendChild(footer);
+    shell.appendChild(content);
+    dialog.appendChild(shell);
+    document.body.appendChild(dialog);
+    input.value = draft;
+    setDraft(draft);
+    input.focus({preventScroll: true});
+    input.select();
+
+    input.addEventListener('input', function() {
+        setDraft(input.value);
+    });
+    palette.addEventListener('click', function(event) {
+        var button = event.target.closest('[data-title-colour-value]');
+        if (!button) {
+            return;
         }
-        localCourseBannerBuilderSyncColourInput(picker);
+        input.value = button.getAttribute('data-title-colour-value');
+        setDraft(input.value);
+        input.focus({preventScroll: true});
+    });
+    close.addEventListener('click', closeDialog);
+    cancel.addEventListener('click', closeDialog);
+    apply.addEventListener('click', function() {
+        if (!/^#[0-9a-f]{6}$/i.test(input.value || '')) {
+            input.focus({preventScroll: true});
+            return;
+        }
+        text.value = draft;
+        text.dispatchEvent(new Event('input', {bubbles: true}));
+        closeDialog();
+    });
+    dialog.addEventListener('mousedown', function(event) {
+        if (event.target === dialog) {
+            closeDialog();
+        }
+    });
+    dialog.addEventListener('keydown', function(event) {
+        var focusable;
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            closeDialog();
+            return;
+        }
+        if (event.key !== 'Tab') {
+            return;
+        }
+        focusable = Array.prototype.slice.call(shell.querySelectorAll(
+            'button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        ));
+        if (!focusable.length) {
+            event.preventDefault();
+            return;
+        }
+        if (event.shiftKey && document.activeElement === focusable[0]) {
+            event.preventDefault();
+            focusable[focusable.length - 1].focus();
+        } else if (!event.shiftKey && document.activeElement === focusable[focusable.length - 1]) {
+            event.preventDefault();
+            focusable[0].focus();
+        }
     });
 }
 
@@ -11467,21 +11664,13 @@ function localCourseBannerBuilderBindTitleEditor(form) {
             }
             localCourseBannerBuilderSyncTitleSliderOutput(form, numberName, target.value);
         }
-        if (target && target.matches('[data-title-color-picker-for]')) {
-            var text = form.querySelector('[data-title-color-text-for="' + target.getAttribute('data-title-color-picker-for') + '"]');
-            if (text) {
-                text.value = target.value.toUpperCase();
-            }
-            localCourseBannerBuilderSyncColourInput(target);
-        }
         if (target && target.matches('[data-title-color-text-for]')) {
-            var picker = form.querySelector('[data-title-color-picker-for="' + target.getAttribute('data-title-color-text-for') + '"]');
-            if (picker && /^#[0-9a-f]{6}$/i.test(target.value)) {
-                picker.value = target.value;
-                localCourseBannerBuilderSyncColourInput(picker);
+            var swatch = form.querySelector('[data-title-color-swatch-for="' + target.getAttribute('data-title-color-text-for') + '"]');
+            if (swatch && /^#[0-9a-f]{6}$/i.test(target.value)) {
+                localCourseBannerBuilderSyncTitleColorSwatch(swatch, target.value);
             }
         }
-        if (target && target.matches('[data-title-control], [data-title-range-for], [data-title-number-for], [data-title-color-picker-for], [data-title-color-text-for]') &&
+        if (target && target.matches('[data-title-control], [data-title-range-for], [data-title-number-for], [data-title-color-text-for]') &&
                 target.name !== 'stylemode') {
             localCourseBannerBuilderMarkTitleStyleCustom(form);
         }
@@ -11507,11 +11696,17 @@ function localCourseBannerBuilderBindTitleEditor(form) {
         var redoButton = event.target.closest('[data-action="local-course-banner-builder-title-preview-redo"]');
         var recenterButton = event.target.closest('[data-action="local-course-banner-builder-title-preview-recenter"]');
         var resetButton = event.target.closest('[data-action="local-course-banner-builder-reset-title-style"]');
+        var colourDialogButton = event.target.closest('[data-action="local-course-banner-builder-open-title-colour-dialog"]');
         var input;
         var stack;
         var redo;
         var state;
         var defaults;
+        if (colourDialogButton) {
+            event.preventDefault();
+            localCourseBannerBuilderOpenTitleColourDialog(form, colourDialogButton);
+            return;
+        }
         if (toggleButton) {
             event.preventDefault();
             if (toggleButton.disabled || toggleButton.getAttribute('aria-disabled') === 'true') {
