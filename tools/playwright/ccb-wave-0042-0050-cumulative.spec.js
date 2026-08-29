@@ -303,7 +303,7 @@ test('EED-CCB-2026-0042-0050 cumulative visual and interaction wave', async() =>
         await loginAndOpen(page, env);
         await captureHuman(page, env, '01-0042-parent-list-before-sensitive');
         evidence.captures.push('01-0042-parent-list-before-sensitive.png');
-        const parentPencils = page.locator(
+        const parentPencils = ownedSourceChainRows(page, env).locator(
             '[data-action="local-course-banner-builder-change-source-parent"]' + sourceKeySelector(env.childKey) + ', ' +
             '[data-action="local-course-banner-builder-change-source-parent"]' + sourceKeySelector(env.sourceKey)
         );
