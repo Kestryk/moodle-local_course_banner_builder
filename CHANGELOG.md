@@ -8,6 +8,20 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0043-RF5 - 2026-08-30
+
+#### Fixed
+
+- Completing a Crop gesture now isolates its pointer completion from the
+  general preview interaction handlers. They can no longer restore the stale
+  pre-Crop payload after a real Crop movement.
+
+#### Validation
+
+- QA7 showed the native handle move changing Crop from `100%` to `88%`, while
+  the direct Crop handler retained `88%`. RF5 confines the fix to active Crop
+  pointer completion; outer placement, Crop maths, Kit and markup are intact.
+
 ### EED-CCB-2026-0043-RF4 - 2026-08-29
 
 #### Fixed

@@ -4705,6 +4705,18 @@ function localCourseBannerBuilderStopCropInteraction() {
     localCourseBannerBuilderCropInteraction = null;
 }
 
+function localCourseBannerBuilderStopCropPointerInteraction(event) {
+    if (!localCourseBannerBuilderCropInteraction) {
+        return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    if (typeof event.stopImmediatePropagation === 'function') {
+        event.stopImmediatePropagation();
+    }
+    localCourseBannerBuilderStopCropInteraction();
+}
+
 function localCourseBannerBuilderSyncCustomSizeFields(scope) {
     var layerForm = localCourseBannerBuilderGetLayerScope(scope);
     var fitOverride = layerForm ? localCourseBannerBuilderGetLayerFitOverride(layerForm) : null;
@@ -14634,8 +14646,8 @@ document.addEventListener('pointermove', localCourseBannerBuilderHandleSourcePre
 document.addEventListener('pointerup', localCourseBannerBuilderStopSourcePreviewInteraction);
 document.addEventListener('pointercancel', localCourseBannerBuilderStopSourcePreviewInteraction);
 document.addEventListener('pointermove', localCourseBannerBuilderHandleCropPointerMove);
-document.addEventListener('pointerup', localCourseBannerBuilderStopCropInteraction);
-document.addEventListener('pointercancel', localCourseBannerBuilderStopCropInteraction);
+document.addEventListener('pointerup', localCourseBannerBuilderStopCropPointerInteraction, true);
+document.addEventListener('pointercancel', localCourseBannerBuilderStopCropPointerInteraction, true);
 
 function localCourseBannerBuilderSyncDetailsCollapseIcons(scope) {
     var root = scope || document;
