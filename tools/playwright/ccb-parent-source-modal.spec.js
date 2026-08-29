@@ -95,7 +95,7 @@ test('Change parent modal keeps the table informative and rejects a descendant',
     await page.keyboard.press('Escape');
     await expect(modal).toBeHidden();
     await expect(page.locator('.modal-backdrop')).toHaveCount(0);
-    expect(await modal.evaluate((node, parent) => node.parentElement === parent, originParent)).toBe(true);
+    await expect.poll(() => modal.evaluate((node, parent) => node.parentElement === parent, originParent)).toBe(true);
     await expect(childAction).toBeFocused();
 
     await childAction.click();
@@ -103,7 +103,7 @@ test('Change parent modal keeps the table informative and rejects a descendant',
     await modal.click({position: {x: 4, y: 4}});
     await expect(modal).toBeHidden();
     await expect(page.locator('.modal-backdrop')).toHaveCount(0);
-    expect(await modal.evaluate((node, parent) => node.parentElement === parent, originParent)).toBe(true);
+    await expect.poll(() => modal.evaluate((node, parent) => node.parentElement === parent, originParent)).toBe(true);
     await expect(childAction).toBeFocused();
 
     await childAction.click();
