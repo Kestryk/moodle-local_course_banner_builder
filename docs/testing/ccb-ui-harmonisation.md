@@ -25,6 +25,9 @@ changing the Slideshow engine, source persistence or modal Crop transaction:
   description and Navigation placement remain unchanged;
 - the Parent column and Selected source parent summary each expose one compact
   pencil with an accessible source-specific label and open the same modal;
+- each Source composition mode pencil opens the source-settings modal: directly
+  from Selected source and, from a configured-source row, after that source is
+  selected;
 - the modal Save action is compact, a successful Selected source change
   refreshes both its summary and the configured-source table, and focus returns
   to the corresponding pencil;
@@ -32,8 +35,20 @@ changing the Slideshow engine, source persistence or modal Crop transaction:
   low-contrast locked background, type and lock indicators, Layer overrides
   disclosure and compact source-edit action;
 - Collapse all and Select all retain the same secondary-action contract;
-- the add/edit layer preview has a visible surface boundary while its frame,
-  action rail and image geometry do not move.
+- the add/edit layer preview uses one checkerboard surface without a competing
+  outer frame; its frame, action rail and image geometry do not move.
+
+CCB semantically adopts the published `EED-KIT-2026-0001` visual foundations
+from UI Kit commit `6dec8785262d9b006feeb21ea313949ef8fac01c`: its neutral
+checkerboard, exact modal-close, Save and edit-pencil primitives. No other Kit
+source is copied into this consumer.
+
+Static evidence for this consumer revision: Sass 1.89.2 rebuild, PHP lint of
+the plugin, `node --check amd/src/admin_manage.js`,
+`tools/test-ccb-0042-visual-contract.ps1` and `git diff --check`.
+There is no AMD source change; the Moodle Grunt toolchain is unavailable in
+this checkout, so existing generated AMD files remain untouched. No runtime,
+preview, cache, lease or browser check is part of this evidence.
 
 The image Crop/Recrop report is intentionally excluded from this visual patch.
 A focused geometry probe must first compare the image layer rectangle before,

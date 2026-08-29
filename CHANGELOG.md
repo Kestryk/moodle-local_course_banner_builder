@@ -23,18 +23,28 @@ many small sections.
   same accessible parent modal, whose Save action now follows the compact Kit
   button geometry; a successful change also rehydrates the Selected source
   fragment when it is the edited source.
+- Made the Source composition mode pencils open the source-settings modal:
+  directly from Selected source and, from a configured-source row, after
+  selecting that source. The old inline editor is no longer exposed for that
+  field.
 - Brought inherited Border and Overlay chain rows onto the same locked-row
   rail, background, layer-information disclosure, lock indicator and compact
   action contract as the current source layer rows. Collapse all continues to
   share the exact secondary-action class used by Select all.
-- Restored a bounded surface, border and shadow around the add/edit layer
-  preview panel without changing preview geometry or interaction hooks.
+- Kept the add/edit layer preview on one checkerboard surface without a
+  competing outer frame, while preserving its geometry and interaction hooks.
+- Semantically adopted only the published UI Kit `6dec8785262d9b006feeb21ea313949ef8fac01c`
+  foundations required by this CCB lot: neutral checkerboard, exact close,
+  Save and edit-pencil primitives.
 
 #### Validation
 
-- Rebuilt the complete CSS and AMD assets. Runtime visual review remains
-  grouped in one cumulative preview wave. Crop/Recrop geometry remains a
-  separate diagnostic gate and is not claimed fixed by these visual changes.
+- Rebuilt `styles.css` with the official Sass 1.89.2 entry point; targeted PHP
+  and AMD syntax checks plus `git diff --check` pass. No AMD source changed,
+  so its existing generated bundle is preserved; the Moodle Grunt toolchain is
+  not installed in this checkout. Runtime visual review remains grouped in one
+  cumulative preview wave. Crop/Recrop geometry remains a separate diagnostic
+  gate and is not claimed fixed by these visual changes.
 
 ### EED-CCB-2026-0015-B - 2026-08-28
 
