@@ -124,10 +124,15 @@ const login = async(page, env) => {
 const completeUpload = async(page, picker) => {
     await picker.locator('.fp-upload-btn').first().click();
     const rename = page.getByRole('button', {name: /^Rename to /i}).last();
+    const uploadError = page.locator('.file-picker.fp-msg-error:visible').last();
     const outcome = await Promise.race([
         picker.waitFor({state: 'hidden', timeout: 45000}).then(() => 'closed'),
         rename.waitFor({state: 'visible', timeout: 45000}).then(() => 'rename'),
+        uploadError.waitFor({state: 'visible', timeout: 45000}).then(() => 'error'),
     ]);
+    if (outcome === 'error') {
+        throw new Error('Moodle file picker upload error: ' + (await uploadError.innerText()).trim());
+    }
     if (outcome === 'rename') {
         await rename.click();
         await expect(picker, 'Moodle file picker must close after naming the second draft').toBeHidden({timeout: 45000});
@@ -143,7 +148,7 @@ const uploadImage = async(page, form, imageFixture, manifest) => {
     const addFile = form.locator('#fitem_id_bannerimage_filemanager .fp-btn-add a, #fitem_id_bannerimage_filemanager input.fp-btn-choose').first();
     await expect(addFile, 'Moodle file-manager add action').toBeVisible({timeout: 60000});
     await addFile.click();
-    const picker = page.locator('.file-picker:visible').last();
+    const picker = page.locator('.file-picker:not(.fp-msg):visible').last();
     await expect(picker, 'Moodle file picker').toBeVisible({timeout: 30000});
     let upload = picker.locator('input[name="repo_upload_file"]').first();
     if (await upload.count() === 0) {

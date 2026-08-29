@@ -57,6 +57,10 @@ Crop handlers. Its evidence file is
 `ccb-crop-pointer-diagnostic.json`. The goal is to isolate whether the failed
 Crop movement is caused by pointer delivery or by the product handler.
 
+QA8 distinguishes the actual Filemanager picker from its `.fp-msg-error`
+alert. It reports a real upload error immediately instead of allowing that
+alert to replace the picker-root locator.
+
 ## Supervision and cleanup
 
 `Invoke-CCBCropRecropValidation.ps1` proves that exactly one test is selected

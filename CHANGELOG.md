@@ -40,6 +40,9 @@ many small sections.
   attribute mutations and compares the gesture with direct calls to the
   exported Crop handlers. This distinguishes a Playwright gesture issue from a
   product Crop-handler failure without changing product files.
+- QA8 excludes Filemanager error alerts from the picker-root locator and
+  reports their text immediately. It prevents a transient Moodle alert from
+  being mistaken for the picker itself; product upload behaviour is unchanged.
 
 ### EED-CCB-2026-0043 - 2026-08-29
 

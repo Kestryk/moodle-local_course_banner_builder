@@ -22,6 +22,7 @@ $checks = [ordered]@{
     'Crop fields resolve Moodle id or generated name and are bound to draft state' = (($spec -match 'const cropValue = name') -and ($spec -match "'#id_' \+ name") -and ($spec -match '\[name=') -and ($spec -match 'assertCropBinding'));
     'Early and state-change captures are retained' = (($spec -match 'crop-recrop-.*-before\.png') -and ($spec -match 'after-initial') -and ($spec -match 'after-cancel'));
     'Second upload preserves a distinct draft through Moodle Rename confirmation' = (($spec -match 'const completeUpload') -and ($spec -match 'Rename to') -and ($spec -notmatch 'Overwrite'));
+    'File-picker errors cannot replace the picker root locator' = (($spec -match 'file-picker:not\(\.fp-msg\)') -and ($spec -match 'file-picker\.fp-msg-error') -and ($spec -match 'Moodle file picker upload error'));
     'Supervisor discovers exactly one test before credentials or fixture work' = (($runner -match 'playwright-discovery') -and ($runner -match 'Total:\\s\+1\\s\+test') -and ($runner -match 'if \(\$DiscoveryOnly\)'));
     'Supervisor uses the safe category and draft cleanup fixture' = (($runner -match 'ccb-image-modal-transform-fixture\.php') -and ($fixture -match 'delete_area_files') -and ($fixture -match 'categoryRemoved'));
     'Supervisor clears credentials and releases the lease' = (($runner.Contains('Remove-Item -LiteralPath (''Env:'' + $name)')) -and ($runner -match 'Release-EasyEduResourceLease'));
