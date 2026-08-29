@@ -224,7 +224,9 @@
   @include button-size(regular);
 
   align-items: center;
+  box-sizing: border-box;
   display: inline-flex;
+  height: var(--easyedu-control-height);
   justify-content: center;
   line-height: 1.2;
 }
