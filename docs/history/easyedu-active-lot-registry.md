@@ -31,6 +31,7 @@ SHA, owner and next action instead.
 
 | Order | Lot | Owner | State | Depends on | Outcome |
 | --- | --- | --- | --- | --- | --- |
+| 0 | `EED-OPS-2026-0012` | Platform | blocked | clean handoff of the dirty Platform planning checkout | Mirror this registry into Platform and make it discoverable from every repository AGENTS contract |
 | 1 | `EED-KIT-2026-0001` | EasyEdu UI Kit | planned | none | Canonical modal, action, preview-surface and pagination primitives |
 | 2A | `EED-CCB-2026-0042` | CCB | planned | Kit audit; consume published primitives when reusable | CCB modal and source-hierarchy visual parity |
 | 2B | `EED-UI-2026-0029` | EasyStud | planned | Kit audit; consume published primitives when reusable | Global EasyStud controls, block layout and pagination parity |
@@ -46,6 +47,32 @@ SHA, owner and next action instead.
 Orders `2A`, `2B` and the read-only phase of `2C` may run in parallel in
 separate worktrees. Product integration into a shared runtime remains
 sequential. A shared Kit change is published before either consumer copies it.
+
+## EED-OPS-2026-0012 - Platform registry synchronisation
+
+### Current evidence
+
+- The working registry is versioned in this CCB branch and is mandatory for
+  CCB agents through the repository `AGENTS.md` contract.
+- The Platform planning checkout is dirty in `AGENTS.md`, development plans,
+  CCB/EasyStud roadmaps, orchestration documentation and tools.
+
+### Remaining work
+
+- Obtain a clean Platform ownership handoff without reset, stash, clean, merge
+  or overwrite of the current changes.
+- Merge this registry semantically into the Platform development plan and the
+  CCB, EasyStud and UI Kit roadmaps.
+- Add or update the repository agent pointers so a fresh agent in any of the
+  three repositories discovers the same canonical registry automatically.
+- Replace duplicated temporary registries with links to the canonical Platform
+  document once that document is published.
+
+### Acceptance
+
+- One canonical registry is reachable from every relevant `AGENTS.md`.
+- The Platform worktree is clean, pushed and records the registry commit.
+- No product source, runtime, cache, lease or browser is touched.
 
 ## EED-KIT-2026-0001 - shared visual foundations
 
