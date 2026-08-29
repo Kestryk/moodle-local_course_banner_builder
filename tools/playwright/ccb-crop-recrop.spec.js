@@ -381,7 +381,10 @@ test('EED-CCB-2026-0043-QA1 Crop and Recrop preserve image placement across widt
         url.searchParams.set('sourcekey', 'category:' + env.categoryId);
         await page.goto(url.toString(), {waitUntil: 'domcontentloaded', timeout: 60000});
         await page.locator('[data-target="#local-course-banner-builder-add-layer-modal"], [data-bs-target="#local-course-banner-builder-add-layer-modal"]').first().click();
-        const modal = page.locator('#local-course-banner-builder-add-layer-modal').first();
+        // Moodle can retain an earlier hidden Add layer dialog in the DOM. The
+        // trigger opens the later, visible instance, so scope every following
+        // interaction to that instance rather than DOM order.
+        const modal = page.locator('#local-course-banner-builder-add-layer-modal:visible').last();
         await expect(modal).toBeVisible({timeout: 30000});
         const form = modal.locator('form.mform').first();
         await uploadImage(page, form, env.imageFixture, env.manifest);
