@@ -24,11 +24,56 @@ Future lease-gated supervised validation must record these named captures outsid
 
 ## EED-CCB-2026-0042-0050 cumulative supervised scenario - 2026-08-29
 
-`tools/playwright/ccb-wave-0042-0050-cumulative.spec.js` is the single
-`local-supervised` scenario for this cumulative QA candidate. It requires the
-approved CCB runtime lease, authenticated Moodle credentials, one prepared
-inherited-source category, an external artifact root and an image fixture. It
-does not create a fixture, purge cache or switch the runtime.
+`tools/playwright/ccb-wave-0042-0050-cumulative.spec.js` is selected only by
+`tools/playwright/Invoke-CCBWave0042To0050Validation.ps1`. The supervisor
+performs exactly-one-test discovery before reading credentials or mutating a
+fixture. A non-discovery run then requires a clean managed `ccb-moodle51`
+preview, an `ExpectedAppliedCommit` listed by the preview status, and exactly
+one `moodle51-active-fixture-write` lease without retry. It creates a
+deterministic, disposable three-category source chain: exactly three source
+rows, two expandable ancestors, two parent pencils, and two reorderable plus
+one dynamic locked image layer on the descendant source. It provides Moodle's
+official `mod/workshop/tests/fixtures/moodlelogo.png` for IMG-08.
+
+The watchdog is fixed to 900 seconds. The external run root receives the
+discovery output, phase log, fixture/restoration manifest, child logs, result
+and cleanup report. Cleanup runs after success, failure or timeout and removes
+the exact three owned categories, their CCB elements, the three recorded user
+draft areas, the run profile directory, process-local environment variables and
+lease; the cleanup report records zero remaining categories/elements/drafts.
+The wrapper must not be invoked until the preview is separately authorised; it
+never purges caches or switches the runtime.
+
+`ccb-moodle51`'s scenario allowlist is an official but machine-local Platform
+profile at `%LOCALAPPDATA%\EasyEdu\orchestration\profiles\runtime-preview-profiles.json`;
+it is deliberately not committed in CCB or changed directly by this batch.
+Before a supervised run, apply this declarative addition through Platform's
+`Initialize-EasyEduRuntimePreviewProfile.ps1` procedure while retaining every
+existing allowed scenario:
+
+```diff
+ "allowedScenarios": [
+   "<existing approved scenario>",
++  "ccb-wave-0042-0050-cumulative"
+ ]
+```
+
+The exact commands are:
+
+```powershell
+Set-Location C:\dev\easyedu-platform
+.\tools\orchestration\Initialize-EasyEduRuntimePreviewProfile.ps1 `
+  -ProfileName ccb-moodle51 -ProjectNamespace ccb `
+  -RuntimeRepository '<runtime repository from the existing ccb-moodle51 profile>' `
+  -MoodleRoot '<moodleRoot from the existing ccb-moodle51 profile>' `
+  -PhpExecutable '<phpExecutable from the existing ccb-moodle51 profile>' `
+  -PreviewBranch '<previewBranch from the existing ccb-moodle51 profile>' `
+  -AllowedScenario '<each existing approved scenario>','ccb-wave-0042-0050-cumulative'
+
+Set-Location <candidate-plugin-worktree>\tools\playwright
+.\Invoke-CCBWave0042To0050Validation.ps1 -DiscoveryOnly
+.\Invoke-CCBWave0042To0050Validation.ps1 -ExpectedAppliedCommit <applied-sha>
+```
 
 Before sensitive assertions it records these named human captures outside Git:
 
