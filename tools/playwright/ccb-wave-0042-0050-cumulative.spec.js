@@ -319,11 +319,19 @@ test('EED-CCB-2026-0042-0050 cumulative visual and interaction wave', async() =>
         await expect(search).toBeVisible();
         const parentList = parentModal.locator('[data-parent-source-change-options="1"]');
         await expect(parentList).toBeVisible();
-        const [toggleBox, listBox] = await Promise.all([parentToggle.boundingBox(), parentList.boundingBox()]);
-        ensure(toggleBox && listBox && listBox.y >= toggleBox.y + toggleBox.height - 1,
-            '0042 parent list must open below its trigger.');
+        const [modalBox, toggleBox, listBox] = await Promise.all([
+            parentModal.boundingBox(), parentToggle.boundingBox(), parentList.boundingBox(),
+        ]);
+        ensure(modalBox && toggleBox && listBox &&
+            listBox.y >= toggleBox.y + toggleBox.height - 1 &&
+            listBox.x >= modalBox.x - 1 &&
+            listBox.x + listBox.width <= modalBox.x + modalBox.width + 1 &&
+            listBox.y + listBox.height <= modalBox.y + modalBox.height + 1,
+        '0042 parent list must open below its trigger and stay within its modal.');
         await search.fill('zzz-no-parent-match');
-        await expect(parentList).toBeVisible();
+        await expect(search).toHaveValue('zzz-no-parent-match');
+        // With no matching option, the product may hide the empty dropdown shell.
+        await expect(parentList.locator('[data-source-option]:visible')).toHaveCount(0);
         await expect(parentModal.locator('[data-parent-source-change-submit="1"] .fa-save')).toHaveCount(1);
         await parentModal.locator('[data-action="local-course-banner-builder-cancel-source-parent-change"]').first().click();
         await expect(parentModal).toBeHidden();
