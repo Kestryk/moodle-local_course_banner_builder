@@ -124,18 +124,40 @@
     }
 
     .local-course-banner-builder-layer-row-dragging {
-        // The native row remains the visible drag source and drag image.
-        cursor: grabbing;
-        opacity: 1;
+        // The custom Kit preview carries the item. Keep this native table row
+        // in flow so its origin remains a stable, visible placeholder gap.
+        @include easyedu.drag-source-placeholder;
+    }
 
+    .local-course-banner-builder-layer-row-drop-before,
+    .local-course-banner-builder-layer-row-drop-after {
         > :is(th, td) {
-            background-color: color-mix(in srgb, var(--local-course-banner-builder-layer-row-rail) 12%, #fff);
+            background-color: color-mix(in srgb, var(--local-course-banner-builder-layer-row-rail) 10%, #fff);
         }
+    }
 
-        > :first-child {
-            box-shadow: inset var(--local-course-banner-builder-layer-row-rail-width) 0 0
-                var(--local-course-banner-builder-layer-row-rail);
-        }
+    .local-course-banner-builder-layer-row-drop-before > :is(th, td) {
+        box-shadow: inset 0 0.22rem 0 var(--local-course-banner-builder-layer-row-rail);
+    }
+
+    .local-course-banner-builder-layer-row-drop-after > :is(th, td) {
+        box-shadow: inset 0 -0.22rem 0 var(--local-course-banner-builder-layer-row-rail);
+    }
+
+    .local-course-banner-builder-layer-drag-preview {
+        @include easyedu.drag-preview-container;
+        @include easyedu.drag-preview-captured;
+
+        width: min(28rem, calc(100vw - 2rem));
+    }
+
+    .local-course-banner-builder-layer-drag-preview-card {
+        @include easyedu.drag-preview-card;
+        @include easyedu.drag-preview-surface(var(--local-course-banner-builder-layer-row-rail, var(--easyedu-primary)));
+
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .local-course-banner-builder-layer-row--order-locked {

@@ -6311,6 +6311,10 @@ class manager {
                 'editurl' => (new \moodle_url('/local/course_banner_builder/admin_manage.php', [
                     'categoryid' => $categoryid,
                 ]))->out(false),
+                'sourcesettingsurl' => (new \moodle_url('/local/course_banner_builder/admin_manage.php', [
+                    'categoryid' => $categoryid,
+                    'opensourcesettings' => 1,
+                ]))->out(false),
                 'previewurl' => (new \moodle_url('/local/course_banner_builder/admin_manage.php', [
                     'categoryid' => $categoryid,
                     'sourcechainpreview' => 1,
@@ -6415,6 +6419,10 @@ class manager {
                     'sesskey' => sesskey(),
                     'editurl' => (new \moodle_url('/local/course_banner_builder/admin_manage.php', [
                         'sourcekey' => $source->sourcekey,
+                    ]))->out(false),
+                    'sourcesettingsurl' => (new \moodle_url('/local/course_banner_builder/admin_manage.php', [
+                        'sourcekey' => $source->sourcekey,
+                        'opensourcesettings' => 1,
                     ]))->out(false),
                     'previewurl' => (new \moodle_url('/local/course_banner_builder/admin_manage.php', [
                         'sourcekey' => $source->sourcekey,
@@ -7929,6 +7937,7 @@ class manager {
                 'label' => get_string('compositionmode', 'local_course_banner_builder'),
                 'displayvalue' => self::get_source_mode_label($source),
                 'helptext' => get_string('compositionmode_help', 'local_course_banner_builder'),
+                'usesettingsmodal' => true,
                 'options' => self::export_inline_setting_options(
                     self::get_composition_mode_options(),
                     $compositionmode

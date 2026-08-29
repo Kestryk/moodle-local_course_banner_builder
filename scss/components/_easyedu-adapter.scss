@@ -1079,7 +1079,8 @@
         }
     }
 
-    .local-course-banner-builder-source-parent-view {
+    .local-course-banner-builder-source-parent-view,
+    .local-course-banner-builder-source-composition-view {
         align-items: center;
         gap: 0.42rem;
         justify-content: center;
@@ -1087,7 +1088,7 @@
 
     .local-course-banner-builder-source-parent-trigger,
     .local-course-banner-builder-summary-edit-trigger {
-        @include easyedu.action-button(small);
+        @include easyedu.edit-pencil-action;
 
         & {
             flex: 0 0 2rem;
@@ -1095,21 +1096,13 @@
             min-width: 2rem;
             min-height: 2rem;
             padding: 0;
-            border: 1px solid color-mix(in srgb, var(--easyedu-primary) 20%, var(--easyedu-control-border) 80%);
             border-radius: 0.5rem;
-            background: var(--easyedu-surface);
-            color: var(--easyedu-primary);
         }
 
         .icon {
             margin: 0 !important;
         }
 
-        &:hover,
-        &:focus,
-        &:active {
-            text-decoration: none !important;
-        }
     }
 
     .local-course-banner-builder-table-shell {
@@ -1241,7 +1234,14 @@
     }
 
     .local-course-banner-builder-bulk-save-button {
-        @include easyedu.action-button;
+        @include easyedu.save-action-button;
+    }
+
+    .local-course-banner-builder-compact-save-button,
+    .local-course-banner-builder-parent-source-save,
+    .local-course-banner-builder-source-settings-submit,
+    .local-course-banner-builder-source-preview-button[data-source-preview-save-control="1"] {
+        @include easyedu.save-action-button;
     }
 
     .local-course-banner-builder-empty-layer-list,
@@ -1319,11 +1319,12 @@
     }
 }
 
-.modal[id^="local-course-banner-builder-"] {
+.modal[id^="local-course-banner-builder-"],
+.modal.local-course-banner-builder-confirm-action-modal {
     .modal-header > .close,
     .modal-header > button[data-dismiss="modal"],
     .modal-header > button[data-bs-dismiss="modal"] {
-        @include easyedu.close-button(small);
+        @include easyedu.modal-close-button(small);
 
         & {
             margin: 0 0 0 auto;
@@ -1427,6 +1428,28 @@
 
     .local-course-banner-builder-layer-modal-footer,
     .local-course-banner-builder-slideshow-modal-footer {
+        @include easyedu.preview-modal-footer-shell;
+    }
+}
+
+.local-course-banner-builder-source-chain-preview-modal {
+    @include easyedu.modal-runtime-animation(".modal-dialog");
+    @include easyedu.native-modal-loading(".loading-icon");
+
+    .modal-dialog {
+        @include easyedu.preview-modal-dialog-shell;
+    }
+
+    .local-course-banner-builder-source-chain-preview-modal-content {
+        @include easyedu.preview-modal-content-shell;
+        @include easyedu.preview-modal-inline-rhythm;
+    }
+
+    .local-course-banner-builder-source-chain-preview-modal-body {
+        @include easyedu.preview-modal-body-shell;
+    }
+
+    .local-course-banner-builder-source-chain-preview-modal-footer {
         @include easyedu.preview-modal-footer-shell;
     }
 }

@@ -237,6 +237,8 @@ Title controls include:
 
 - font and text size;
 - text color;
+- a CCB colour-dialog swatch with HEX entry and palette choices (the editor
+  does not open the platform-native colour picker);
 - text alignment;
 - bold, italic, underline, and strike-through;
 - all caps;

@@ -333,6 +333,26 @@
   }
 }
 
+// Canonical transparent-image/layer surface. It intentionally uses neutral
+// greys only: product colours belong to the preview content, never its canvas.
+@mixin preview-checkerboard {
+  background-color: var(--easyedu-preview-checker-light);
+  background-image: conic-gradient(
+    var(--easyedu-preview-checker-dark) 25%,
+    transparent 0 50%,
+    var(--easyedu-preview-checker-dark) 0 75%,
+    transparent 0
+  );
+  background-position: 0 0;
+  background-size: var(--easyedu-preview-checker-size) var(--easyedu-preview-checker-size);
+  border: 1px solid var(--easyedu-preview-checker-border);
+
+  @media (forced-colors: active) {
+    background: Canvas;
+    border-color: CanvasText;
+  }
+}
+
 @mixin image-preview-placeholder {
   align-items: center;
   color: var(--easyedu-text-muted);

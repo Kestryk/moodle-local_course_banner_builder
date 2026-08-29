@@ -99,7 +99,10 @@
   }
 }
 
-@mixin close-button($size: regular) {
+// This is the accepted EasyStud modal-close control. Keep the dimensions,
+// border, centring and state paint together so every consumer gets the exact
+// same control instead of recreating a local close variant.
+@mixin modal-close-button($size: regular) {
   @include icon-button($size);
 
   background: var(--easyedu-surface);
@@ -116,6 +119,52 @@
     background: var(--easyedu-danger-soft);
     border-color: color-mix(in srgb, var(--easyedu-danger) 22%, #fff 78%);
     color: var(--easyedu-danger);
+  }
+}
+
+// Backwards-compatible name for existing kit and consumer imports.
+@mixin close-button($size: regular) {
+  @include modal-close-button($size);
+}
+
+// Primary Save/Apply action for modal and form footers. The consumer retains
+// its Bootstrap semantic class and submit/action hook; this mixin owns only
+// the shared height, icon slot, alignment and interactive states.
+@mixin save-action-button {
+  @include action-button(regular);
+
+  min-height: var(--easyedu-control-height);
+  white-space: nowrap;
+
+  > .fa:is(.fa-save, .fa-floppy-o, .fa-floppy-disk) {
+    flex: 0 0 1em;
+  }
+}
+
+// Inline edit affordance for links or buttons. It preserves a stable pencil
+// slot while explicitly suppressing link underlines in every state.
+@mixin edit-pencil-action($size: small) {
+  @include action-button($size);
+
+  background: transparent;
+  border: 0;
+  color: var(--easyedu-primary-strong);
+  min-width: 0;
+  padding-inline: 0.24rem;
+  text-decoration: none;
+
+  &:link,
+  &:visited,
+  &:hover,
+  &:active,
+  &:focus-visible {
+    text-decoration: none;
+  }
+
+  &:hover,
+  &:focus-visible {
+    background: var(--easyedu-primary-soft);
+    color: var(--easyedu-primary-strong);
   }
 }
 

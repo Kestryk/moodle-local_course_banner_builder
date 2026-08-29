@@ -24,6 +24,7 @@ define(['local_course_banner_builder/motion', 'core/notification'], function (Mo
 
 var localCourseBannerBuilderSourcePreviewModes = {};
 var localCourseBannerBuilderSourcePreviewOrientationMediaQuery = null;
+var localCourseBannerBuilderLayerDragState = null;
 
 var localCourseBannerBuilderOnReady = function (callback) {
     if (document.readyState === 'loading') {
@@ -1113,25 +1114,74 @@ document.addEventListener('pointerdown', function (e) {
     localCourseBannerBuilderStartCropInteraction(e);
 }, true);
 
+function localCourseBannerBuilderClearLayerDragState() {
+    document.querySelectorAll(
+        '.local-course-banner-builder-layer-row-dragging, ' +
+        '.local-course-banner-builder-layer-row-drop-before, ' +
+        '.local-course-banner-builder-layer-row-drop-after'
+    ).forEach(function(row) {
+        row.classList.remove(
+            'local-course-banner-builder-layer-row-dragging',
+            'local-course-banner-builder-layer-row-drop-before',
+            'local-course-banner-builder-layer-row-drop-after'
+        );
+    });
+    if (localCourseBannerBuilderLayerDragState && localCourseBannerBuilderLayerDragState.preview) {
+        localCourseBannerBuilderLayerDragState.preview.remove();
+    }
+    localCourseBannerBuilderLayerDragState = null;
+}
+
+function localCourseBannerBuilderCreateLayerDragPreview(row) {
+    var preview = document.createElement('div');
+    var card = document.createElement('div');
+    var host = row.closest('.local-course-banner-builder-admin, [data-source-visual-editor="1"]') || document.body;
+    preview.className = 'local-course-banner-builder-layer-drag-preview ' +
+        'local-course-banner-builder-layer-drag-preview--captured';
+    card.className = 'local-course-banner-builder-layer-drag-preview-card';
+    card.textContent = (row.innerText || row.textContent || '').replace(/\s+/g, ' ').trim();
+    preview.appendChild(card);
+    host.appendChild(preview);
+    return preview;
+}
+
+function localCourseBannerBuilderSetLayerDropState(target, insertAfter) {
+    document.querySelectorAll(
+        '.local-course-banner-builder-layer-row-drop-before, ' +
+        '.local-course-banner-builder-layer-row-drop-after'
+    ).forEach(function(row) {
+        row.classList.remove(
+            'local-course-banner-builder-layer-row-drop-before',
+            'local-course-banner-builder-layer-row-drop-after'
+        );
+    });
+    if (!target) {
+        return;
+    }
+    target.classList.add(insertAfter ?
+        'local-course-banner-builder-layer-row-drop-after' :
+        'local-course-banner-builder-layer-row-drop-before');
+}
+
 document.addEventListener('dragstart', function (e) {
     var row = e.target.closest('.local-course-banner-builder-layer-row[draggable="true"]');
     if (!row) {
         e.preventDefault();
         return;
     }
+    localCourseBannerBuilderClearLayerDragState();
+    var preview = localCourseBannerBuilderCreateLayerDragPreview(row);
+    localCourseBannerBuilderLayerDragState = {preview: preview, row: row};
     row.classList.add('local-course-banner-builder-layer-row-dragging');
     if (e.dataTransfer) {
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('text/plain', 'layer-row');
-        e.dataTransfer.setDragImage(row, 24, 24);
+        e.dataTransfer.setDragImage(preview, 24, 20);
     }
 });
 
 document.addEventListener('dragend', function (e) {
-    var row = e.target.closest('.local-course-banner-builder-layer-row');
-    if (row) {
-        row.classList.remove('local-course-banner-builder-layer-row-dragging');
-    }
+    localCourseBannerBuilderClearLayerDragState();
     localCourseBannerBuilderSyncLayerSortOrders();
 });
 
@@ -1146,11 +1196,13 @@ document.addEventListener('dragover', function (e) {
     }
     e.preventDefault();
     var target = e.target.closest('.local-course-banner-builder-layer-row');
-    if (!target || target === dragging) {
+    if (!target || target === dragging || localCourseBannerBuilderIsLayerRowOrderLocked(target)) {
+        localCourseBannerBuilderSetLayerDropState(null);
         return;
     }
     var rect = target.getBoundingClientRect();
     var insertAfter = e.clientY > rect.top + (rect.height / 2);
+    localCourseBannerBuilderSetLayerDropState(target, insertAfter);
     tbody.insertBefore(dragging, insertAfter ? target.nextSibling : target);
     localCourseBannerBuilderEnforceLockedLayerOrder(tbody);
     localCourseBannerBuilderSyncLayerSortOrders();
@@ -1163,12 +1215,17 @@ document.addEventListener('drop', function (e) {
         return;
     }
     e.preventDefault();
-    Array.prototype.slice.call(tbody.querySelectorAll('.local-course-banner-builder-layer-row-dragging')).forEach(function (row) {
-        row.classList.remove('local-course-banner-builder-layer-row-dragging');
-    });
+    localCourseBannerBuilderClearLayerDragState();
     localCourseBannerBuilderEnforceLockedLayerOrder(tbody);
     localCourseBannerBuilderSyncLayerSortOrders();
     localCourseBannerBuilderSyncLayerSortablePreviewOrder(tbody);
+});
+
+document.addEventListener('dragleave', function (e) {
+    var tbody = e.target.closest('.local-course-banner-builder-layer-sortable[data-layer-sortable="1"]');
+    if (tbody && (!e.relatedTarget || !tbody.contains(e.relatedTarget))) {
+        localCourseBannerBuilderSetLayerDropState(null);
+    }
 });
 
 document.addEventListener('input', function (e) {
@@ -1351,11 +1408,17 @@ function localCourseBannerBuilderGetSourceChainRowsByKey() {
     return map;
 }
 
-function localCourseBannerBuilderSyncSourceChainRowVisibility() {
+/**
+ * Apply source-chain visibility using the shared cancellable Motion lifecycle.
+ *
+ * @param {boolean} animate Whether a state change should animate.
+ * @returns {void}
+ */
+function localCourseBannerBuilderSyncSourceChainRowVisibility(animate) {
     var rowsByKey = localCourseBannerBuilderGetSourceChainRowsByKey();
     Array.prototype.slice.call(document.querySelectorAll('[data-source-chain-row="1"]')).forEach(function (row) {
         var parentKey = row.getAttribute('data-source-chain-parent') || '';
-        var isHidden = false;
+        var isVisible = true;
 
         while (parentKey) {
             var parentRow = rowsByKey[parentKey];
@@ -1364,17 +1427,45 @@ function localCourseBannerBuilderSyncSourceChainRowVisibility() {
             }
             var parentToggle = parentRow.querySelector('[data-action="local-course-banner-builder-toggle-source-chain"]');
             if (parentToggle && parentToggle.getAttribute('aria-expanded') === 'false') {
-                isHidden = true;
+                isVisible = false;
                 break;
             }
             parentKey = parentRow.getAttribute('data-source-chain-parent') || '';
         }
 
-        row.hidden = isHidden;
+        var target = isVisible ? '1' : '0';
+        if (row.dataset.sourceChainVisibilityTarget === target) {
+            return;
+        }
+        row.dataset.sourceChainVisibilityTarget = target;
+        Motion.cancel(row);
+        if (isVisible) {
+            row.hidden = false;
+            if (animate !== false) {
+                Motion.enter(row, {distance: '0px'});
+            }
+            return;
+        }
+        if (row.hidden) {
+            return;
+        }
+        if (animate === false) {
+            row.hidden = true;
+            return;
+        }
+        Motion.exit(row, {distance: '0px', hide: true});
     });
 }
 
-function localCourseBannerBuilderToggleSourceChain(button, forceCollapsed) {
+/**
+ * Toggle one source chain and defer the shared visibility pass when requested.
+ *
+ * @param {HTMLElement} button Source-chain toggle.
+ * @param {boolean} forceCollapsed Forced collapsed state.
+ * @param {boolean} deferVisibilitySync Whether the caller owns the sync pass.
+ * @returns {void}
+ */
+function localCourseBannerBuilderToggleSourceChain(button, forceCollapsed, deferVisibilitySync) {
     var key = button ? (button.getAttribute('data-source-chain-toggle') || '') : '';
     if (!key) {
         return;
@@ -1382,30 +1473,43 @@ function localCourseBannerBuilderToggleSourceChain(button, forceCollapsed) {
     var currentlyExpanded = button.getAttribute('aria-expanded') !== 'false';
     var collapsed = typeof forceCollapsed === 'boolean' ? forceCollapsed : currentlyExpanded;
     button.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    var controls = localCourseBannerBuilderGetSourceChainDescendants(key).map(function(row) {
+        return row.id;
+    }).filter(function(id) {
+        return id;
+    });
+    if (controls.length) {
+        button.setAttribute('aria-controls', controls.join(' '));
+    } else {
+        button.removeAttribute('aria-controls');
+    }
     var icon = button.querySelector('.fa');
     if (icon) {
         icon.classList.toggle('fa-chevron-right', collapsed);
         icon.classList.toggle('fa-chevron-down', !collapsed);
     }
-    localCourseBannerBuilderSyncSourceChainRowVisibility();
+    if (!deferVisibilitySync) {
+        localCourseBannerBuilderSyncSourceChainRowVisibility(true);
+    }
 }
 
+/**
+ * Toggle all source chains through one shared visibility pass.
+ *
+ * @param {HTMLElement} button Collapse-all toggle.
+ * @returns {void}
+ */
 function localCourseBannerBuilderToggleAllSourceChains(button) {
-    var rows = Array.prototype.slice.call(document.querySelectorAll('[data-source-chain-row="1"]'));
     var anyExpanded = Array.prototype.slice.call(document.querySelectorAll(
         '[data-action="local-course-banner-builder-toggle-source-chain"][aria-expanded="true"]'
     )).length > 0;
     var collapse = anyExpanded;
-    Array.prototype.slice.call(document.querySelectorAll('[data-action="local-course-banner-builder-toggle-source-chain"]')).forEach(function (toggle) {
-        localCourseBannerBuilderToggleSourceChain(toggle, collapse);
+    Array.prototype.slice.call(document.querySelectorAll(
+        '[data-action="local-course-banner-builder-toggle-source-chain"]'
+    )).forEach(function (toggle) {
+        localCourseBannerBuilderToggleSourceChain(toggle, collapse, true);
     });
-    if (!collapse) {
-        rows.forEach(function (row) {
-            row.hidden = false;
-        });
-    } else {
-        localCourseBannerBuilderSyncSourceChainRowVisibility();
-    }
+    localCourseBannerBuilderSyncSourceChainRowVisibility(true);
     if (button) {
         var icon = button.querySelector('.fa');
         var label = button.querySelector('span');
@@ -1421,6 +1525,36 @@ function localCourseBannerBuilderToggleAllSourceChains(button) {
     }
 }
 
+/**
+ * Initialise source-chain disclosure semantics without entrance animation.
+ *
+ * @returns {void}
+ */
+function localCourseBannerBuilderInitSourceChainDisclosure() {
+    Array.prototype.slice.call(document.querySelectorAll(
+        '[data-action="local-course-banner-builder-toggle-source-chain"]'
+    )).forEach(function(button) {
+        var key = button.getAttribute('data-source-chain-toggle') || '';
+        if (!key) {
+            return;
+        }
+        var controls = localCourseBannerBuilderGetSourceChainDescendants(key).map(function(row) {
+            return row.id;
+        }).filter(function(id) {
+            return id;
+        });
+        if (controls.length) {
+            button.setAttribute('aria-controls', controls.join(' '));
+        }
+    });
+    localCourseBannerBuilderSyncSourceChainRowVisibility(false);
+}
+
+/**
+ * Create the source-chain preview modal when it is first requested.
+ *
+ * @returns {HTMLElement} Preview modal.
+ */
 function localCourseBannerBuilderEnsureSourceChainPreviewModal() {
     var modal = document.getElementById('local-course-banner-builder-source-chain-preview-modal');
     if (modal) {
@@ -1434,20 +1568,30 @@ function localCourseBannerBuilderEnsureSourceChainPreviewModal() {
     modal.setAttribute('aria-hidden', 'true');
     modal.innerHTML =
         '<div class="modal-dialog modal-xl" role="document">' +
-            '<div class="modal-content">' +
+            '<div class="modal-content local-course-banner-builder-source-chain-preview-modal-content">' +
                 '<div class="modal-header d-flex align-items-center">' +
                     '<h5 class="modal-title flex-grow-1">Source preview</h5>' +
-                    '<button type="button" class="close ml-auto ms-auto" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close">' +
+                    '<button type="button" class="close ml-auto ms-auto" data-dismiss="modal" ' +
+                        'data-bs-dismiss="modal" aria-label="Close">' +
                         '<span aria-hidden="true">&times;</span>' +
                     '</button>' +
                 '</div>' +
-                '<div class="modal-body" data-source-chain-preview-modal-body="1"></div>' +
+                '<div class="modal-body local-course-banner-builder-source-chain-preview-modal-body" ' +
+                    'data-source-chain-preview-modal-body="1" aria-busy="false"></div>' +
+                '<div class="modal-footer local-course-banner-builder-source-chain-preview-modal-footer" ' +
+                    'data-source-chain-preview-modal-footer="1"></div>' +
             '</div>' +
         '</div>';
     document.body.appendChild(modal);
     return modal;
 }
 
+/**
+ * Load a configured source into the readonly source-preview modal.
+ *
+ * @param {HTMLElement} button Preview trigger.
+ * @returns {void}
+ */
 function localCourseBannerBuilderShowSourceChainPreview(button) {
     var url = button ? button.getAttribute('data-preview-url') : '';
     var editUrl = button ? button.getAttribute('data-edit-url') : '';
@@ -1457,11 +1601,33 @@ function localCourseBannerBuilderShowSourceChainPreview(button) {
     }
     var modal = localCourseBannerBuilderEnsureSourceChainPreviewModal();
     var body = modal.querySelector('[data-source-chain-preview-modal-body="1"]');
+    var footer = modal.querySelector('[data-source-chain-preview-modal-footer="1"]');
+    modal.localCourseBannerBuilderSourceChainPreviewOpener = button;
+    var requestToken = String(Date.now()) + Math.random();
+    modal.dataset.sourceChainPreviewRequest = requestToken;
+    modal.dataset.sourceChainPreviewFocusReturn = '1';
+    if (!modal.dataset.sourceChainPreviewFocusBound) {
+        var restoreFocus = function() {
+            var opener = modal.localCourseBannerBuilderSourceChainPreviewOpener;
+            if (modal.dataset.sourceChainPreviewFocusReturn === '1' && opener && document.contains(opener)) {
+                opener.focus();
+            }
+        };
+        modal.addEventListener('hidden.bs.modal', restoreFocus);
+        if (typeof window.jQuery !== 'undefined') {
+            window.jQuery(modal).on('hidden.bs.modal', restoreFocus);
+        }
+        modal.dataset.sourceChainPreviewFocusBound = '1';
+    }
     if (body) {
-        body.innerHTML = '<div class="text-center p-4">' +
-            '<span class="loading-icon icon-no-margin">' +
-            '<i class="icon fa fa-spinner fa-spin fa-fw" aria-hidden="true"></i>' +
-            '</span></div>';
+        modal.classList.add('is-loading');
+        body.classList.add('is-loading');
+        body.setAttribute('aria-busy', 'true');
+        body.innerHTML = '<div class="loading-icon icon-no-margin" role="status">' +
+            '<span class="sr-only">' + localCourseBannerBuilderGetJsString('loading', 'Loading') + '</span></div>';
+    }
+    if (footer) {
+        footer.innerHTML = '';
     }
     localCourseBannerBuilderShowModal(modal);
     fetch(url, {
@@ -1476,12 +1642,18 @@ function localCourseBannerBuilderShowSourceChainPreview(button) {
         }
         return response.text();
     }).then(function (html) {
+        if (modal.dataset.sourceChainPreviewRequest !== requestToken) {
+            return;
+        }
         var parser = new DOMParser();
         var doc = parser.parseFromString(html, 'text/html');
         var panel = doc.querySelector('[data-source-visual-editor="1"]');
         if (!body) {
             return;
         }
+        modal.classList.remove('is-loading');
+        body.classList.remove('is-loading');
+        body.setAttribute('aria-busy', 'false');
         if (!panel) {
             body.innerHTML = '<p class="text-muted mb-0">' +
                 localCourseBannerBuilderGetJsString('previewunavailable', 'Preview unavailable.') +
@@ -1501,7 +1673,7 @@ function localCourseBannerBuilderShowSourceChainPreview(button) {
         panel.classList.add('local-course-banner-builder-source-preview-readonly');
         body.innerHTML = '';
         body.appendChild(document.importNode(panel, true));
-        if (editUrl) {
+        if (editUrl && footer) {
             var actionBar = document.createElement('div');
             actionBar.className = 'local-course-banner-builder-source-chain-preview-actions';
             var editButton = document.createElement('a');
@@ -1515,14 +1687,28 @@ function localCourseBannerBuilderShowSourceChainPreview(button) {
             editButton.appendChild(editIcon);
             editButton.appendChild(editText);
             actionBar.appendChild(editButton);
-            body.appendChild(actionBar);
+            footer.appendChild(actionBar);
         }
         localCourseBannerBuilderInitSourceVisualEditor(body);
         localCourseBannerBuilderInitPopovers(body);
     }).catch(function (error) {
+        if (modal.dataset.sourceChainPreviewRequest !== requestToken) {
+            return;
+        }
         if (body) {
-            body.innerHTML = '<p class="text-danger mb-0">' + (error.message ||
-                localCourseBannerBuilderGetJsString('unabletoloadsourcepreview', 'Unable to load source preview')) + '</p>';
+            modal.classList.remove('is-loading');
+            body.classList.remove('is-loading');
+            body.setAttribute('aria-busy', 'false');
+            body.innerHTML = '';
+            var errorMessage = document.createElement('p');
+            errorMessage.className = 'text-danger mb-0';
+            errorMessage.textContent = error.message || localCourseBannerBuilderGetJsString(
+                'unabletoloadsourcepreview',
+                'Unable to load source preview'
+            );
+            body.appendChild(errorMessage);
+            body.setAttribute('tabindex', '-1');
+            body.focus();
         }
     });
 }
@@ -4112,13 +4298,14 @@ function localCourseBannerBuilderGetCropControlLayer(control, sourceMode) {
     return localCourseBannerBuilderGetLayerFormPreviewImage(form);
 }
 
-function localCourseBannerBuilderGetCropSelectionCustomState(layer) {
+function localCourseBannerBuilderGetCropSelectionCustomState(layer, preserveSessionPlacement) {
     var sessionPlacement = localCourseBannerBuilderGetCropSessionPlacementState(layer);
     var initialCropState = localCourseBannerBuilderGetCropSessionInitialCropState(layer);
     var currentCropState = localCourseBannerBuilderGetPreviewCropState(layer);
-    if (sessionPlacement && initialCropState &&
+    var keepSessionPlacement = preserveSessionPlacement || (initialCropState &&
             (!localCourseBannerBuilderIsCropSessionDirty(layer) ||
-            localCourseBannerBuilderCropStatesMatch(currentCropState, initialCropState))) {
+            localCourseBannerBuilderCropStatesMatch(currentCropState, initialCropState)));
+    if (sessionPlacement && keepSessionPlacement) {
         return Object.assign({}, sessionPlacement);
     }
     var box = layer ? layer.querySelector('[data-preview-crop-box="1"]') : null;
@@ -4291,7 +4478,10 @@ function localCourseBannerBuilderApplyCropEditor(control, sourceMode) {
         return;
     }
     var crop = localCourseBannerBuilderGetPreviewCropState(layer);
-    var cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState(layer);
+    // A modal crop changes the visible source rectangle, never its placement.
+    // Keep the session placement even after a real crop gesture; source-editor
+    // callers deliberately retain their existing box-derived behaviour.
+    var cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState(layer, !sourceMode);
     localCourseBannerBuilderSetPreviewCropState(layer, {
         imagecropenabled: crop.enabled,
         imagecropleftpercent: crop.left,
@@ -7710,7 +7900,7 @@ function localCourseBannerBuilderUpdateSourcePreviewThumbnailSelection(root) {
         }
     });
     if (activeButton && activeButton.scrollIntoView) {
-        activeButton.scrollIntoView({behavior: 'smooth', inline: 'center', block: 'nearest'});
+        Motion.scroll(activeButton, {inline: 'center', block: 'nearest'});
     }
     localCourseBannerBuilderUpdateSourcePreviewFilmstripNav(filmstrip);
     localCourseBannerBuilderUpdateSourcePreviewVisibilityToggle(root);
@@ -8017,7 +8207,7 @@ function localCourseBannerBuilderSyncSourcePreviewThumbnails(root) {
     window.requestAnimationFrame(function () {
         var active = track.querySelector('.local-course-banner-builder-source-preview-thumbnail.is-active');
         if (active && active.scrollIntoView) {
-            active.scrollIntoView({behavior: 'smooth', inline: 'center', block: 'nearest'});
+            Motion.scroll(active, {inline: 'center', block: 'nearest'});
         }
         localCourseBannerBuilderUpdateSourcePreviewFilmstripNav(filmstrip);
     });
@@ -9534,7 +9724,9 @@ function localCourseBannerBuilderCommitActiveDraftCropBeforeSwitch(form) {
         return false;
     }
     var crop = localCourseBannerBuilderGetPreviewCropState(activeLayer);
-    var cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState(activeLayer);
+    // Draft switching commits crop fields, but must not turn a changed crop box
+    // into a new custom placement before the next draft is selected.
+    var cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState(activeLayer, true);
     var settings = localCourseBannerBuilderGetDraftPreviewSettings(form);
     var existingState = settings[draftIndex] || {};
     var state = Object.assign(
@@ -10518,13 +10710,210 @@ function localCourseBannerBuilderSyncTitleSliderOutput(form, name, value) {
 }
 
 function localCourseBannerBuilderSyncTitleColorPickers(form) {
-    Array.prototype.slice.call(form.querySelectorAll('[data-title-color-picker-for]')).forEach(function (picker) {
-        var text = form.querySelector('[data-title-color-text-for="' +
-            picker.getAttribute('data-title-color-picker-for') + '"]');
-        if (text && /^#[0-9a-f]{6}$/i.test(text.value || '')) {
-            picker.value = text.value;
+    Array.prototype.slice.call(form.querySelectorAll('[data-title-color-swatch-for]')).forEach(function (swatch) {
+        var name = swatch.getAttribute('data-title-color-swatch-for');
+        var text = form.querySelector('[data-title-color-text-for="' + name + '"]');
+        localCourseBannerBuilderSyncTitleColorSwatch(swatch, text ? text.value : '');
+    });
+}
+
+/**
+ * Update the title-colour trigger without invoking a platform-native picker.
+ *
+ * @param {HTMLElement} swatch The colour-dialog trigger.
+ * @param {string} value The submitted hexadecimal colour value.
+ */
+function localCourseBannerBuilderSyncTitleColorSwatch(swatch, value) {
+    if (!swatch) {
+        return;
+    }
+    value = /^#[0-9a-f]{6}$/i.test(value || '') ? value.toUpperCase() : '#000000';
+    var chip = swatch.querySelector('.local-course-banner-builder-title-color-swatch-chip');
+    var label = swatch.querySelector('[data-title-color-swatch-value-for]');
+    swatch.style.setProperty('--local-course-banner-builder-title-colour', value);
+    if (chip) {
+        chip.style.backgroundColor = value;
+    }
+    if (label) {
+        label.textContent = value;
+    }
+}
+
+/**
+ * Open the transactional CCB title-colour dialog.
+ *
+ * The form remains unchanged until Apply. This avoids native OS picker UI and
+ * gives Course, Site and Activity title editors the same Kit modal contract.
+ *
+ * @param {HTMLFormElement} form Title editor form.
+ * @param {HTMLElement} opener Colour swatch trigger.
+ */
+function localCourseBannerBuilderOpenTitleColourDialog(form, opener) {
+    if (!form || !opener || document.querySelector('[data-title-colour-dialog="1"]')) {
+        return;
+    }
+    var name = opener.getAttribute('data-title-color-swatch-for');
+    var text = form.querySelector('[data-title-color-text-for="' + name + '"]');
+    if (!name || !text) {
+        return;
+    }
+    var draft = /^#[0-9a-f]{6}$/i.test(text.value || '') ? text.value.toUpperCase() : '#000000';
+    var dialog = document.createElement('div');
+    var shell = document.createElement('div');
+    var content = document.createElement('div');
+    var header = document.createElement('div');
+    var heading = document.createElement('h2');
+    var close = document.createElement('button');
+    var body = document.createElement('div');
+    var preview = document.createElement('div');
+    var previewValue = document.createElement('output');
+    var inputLabel = document.createElement('label');
+    var input = document.createElement('input');
+    var palette = document.createElement('div');
+    var footer = document.createElement('div');
+    var cancel = document.createElement('button');
+    var apply = document.createElement('button');
+    var dialogId = 'local-course-banner-builder-title-colour-dialog-' + Date.now();
+    var paletteValues = [
+        '#000000', '#FFFFFF', '#1F2937', '#475569', '#0F6CBF', '#0EA5E9',
+        '#0F766E', '#16A34A', '#CA8A04', '#EA580C', '#DC2626', '#BE123C',
+        '#9333EA', '#7C3AED', '#4F46E5', '#0891B2', '#64748B', '#A16207'
+    ];
+    var closeDialog = function() {
+        dialog.remove();
+        opener.focus({preventScroll: true});
+    };
+    var setDraft = function(value) {
+        draft = /^#[0-9a-f]{6}$/i.test(value || '') ? value.toUpperCase() : draft;
+        preview.style.backgroundColor = draft;
+        previewValue.value = draft;
+        previewValue.textContent = draft;
+        input.classList.toggle('is-invalid', !/^#[0-9a-f]{6}$/i.test(input.value || ''));
+        Array.prototype.slice.call(palette.querySelectorAll('[data-title-colour-value]')).forEach(function(button) {
+            button.setAttribute('aria-pressed', button.getAttribute('data-title-colour-value') === draft ? 'true' : 'false');
+        });
+    };
+
+    dialog.className = 'local-course-banner-builder-title-colour-dialog-backdrop';
+    dialog.setAttribute('data-title-colour-dialog', '1');
+    dialog.setAttribute('role', 'presentation');
+    shell.className = 'modal-dialog local-course-banner-builder-title-colour-dialog';
+    shell.setAttribute('role', 'dialog');
+    shell.setAttribute('aria-modal', 'true');
+    shell.setAttribute('aria-labelledby', dialogId + '-title');
+    content.className = 'modal-content local-course-banner-builder-layer-modal-content';
+    header.className = 'modal-header d-flex align-items-center';
+    heading.className = 'modal-title flex-grow-1';
+    heading.id = dialogId + '-title';
+    heading.textContent = localCourseBannerBuilderGetJsString('bannertitlecolordialog', 'Choose title colour');
+    close.type = 'button';
+    close.className = 'close ml-auto ms-auto';
+    close.setAttribute('aria-label', localCourseBannerBuilderGetJsString('closebuttontitle', 'Close'));
+    close.innerHTML = '<span aria-hidden="true">&times;</span>';
+    body.className = 'modal-body local-course-banner-builder-title-colour-dialog-body';
+    preview.className = 'local-course-banner-builder-title-colour-dialog-preview';
+    preview.setAttribute('aria-hidden', 'true');
+    previewValue.className = 'local-course-banner-builder-title-colour-dialog-value';
+    inputLabel.htmlFor = dialogId + '-hex';
+    inputLabel.textContent = 'HEX';
+    input.type = 'text';
+    input.id = dialogId + '-hex';
+    input.className = 'form-control';
+    input.pattern = '^#[0-9A-Fa-f]{6}$';
+    input.maxLength = 7;
+    input.autocomplete = 'off';
+    input.spellcheck = false;
+    palette.className = 'local-course-banner-builder-title-colour-dialog-palette';
+    palette.setAttribute('role', 'group');
+    palette.setAttribute('aria-label', localCourseBannerBuilderGetJsString('bannertitlecolordialog', 'Choose title colour'));
+    paletteValues.forEach(function(value) {
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'local-course-banner-builder-title-colour-option';
+        button.setAttribute('data-title-colour-value', value);
+        button.setAttribute('aria-label', value);
+        button.style.backgroundColor = value;
+        palette.appendChild(button);
+    });
+    footer.className = 'modal-footer local-course-banner-builder-title-colour-dialog-footer';
+    cancel.type = 'button';
+    cancel.className = 'btn btn-outline-secondary local-course-banner-builder-compact-save-button';
+    cancel.textContent = localCourseBannerBuilderGetJsString('cancel', 'Cancel');
+    apply.type = 'button';
+    apply.className = 'btn btn-primary local-course-banner-builder-compact-save-button';
+    apply.textContent = localCourseBannerBuilderGetJsString('bannertitlecolorapply', 'Apply colour');
+    header.appendChild(heading);
+    header.appendChild(close);
+    body.appendChild(preview);
+    body.appendChild(previewValue);
+    body.appendChild(inputLabel);
+    body.appendChild(input);
+    body.appendChild(palette);
+    footer.appendChild(cancel);
+    footer.appendChild(apply);
+    content.appendChild(header);
+    content.appendChild(body);
+    content.appendChild(footer);
+    shell.appendChild(content);
+    dialog.appendChild(shell);
+    document.body.appendChild(dialog);
+    input.value = draft;
+    setDraft(draft);
+    input.focus({preventScroll: true});
+    input.select();
+
+    input.addEventListener('input', function() {
+        setDraft(input.value);
+    });
+    palette.addEventListener('click', function(event) {
+        var button = event.target.closest('[data-title-colour-value]');
+        if (!button) {
+            return;
         }
-        localCourseBannerBuilderSyncColourInput(picker);
+        input.value = button.getAttribute('data-title-colour-value');
+        setDraft(input.value);
+        input.focus({preventScroll: true});
+    });
+    close.addEventListener('click', closeDialog);
+    cancel.addEventListener('click', closeDialog);
+    apply.addEventListener('click', function() {
+        if (!/^#[0-9a-f]{6}$/i.test(input.value || '')) {
+            input.focus({preventScroll: true});
+            return;
+        }
+        text.value = draft;
+        text.dispatchEvent(new Event('input', {bubbles: true}));
+        closeDialog();
+    });
+    dialog.addEventListener('mousedown', function(event) {
+        if (event.target === dialog) {
+            closeDialog();
+        }
+    });
+    dialog.addEventListener('keydown', function(event) {
+        var focusable;
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            closeDialog();
+            return;
+        }
+        if (event.key !== 'Tab') {
+            return;
+        }
+        focusable = Array.prototype.slice.call(shell.querySelectorAll(
+            'button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        ));
+        if (!focusable.length) {
+            event.preventDefault();
+            return;
+        }
+        if (event.shiftKey && document.activeElement === focusable[0]) {
+            event.preventDefault();
+            focusable[focusable.length - 1].focus();
+        } else if (!event.shiftKey && document.activeElement === focusable[focusable.length - 1]) {
+            event.preventDefault();
+            focusable[0].focus();
+        }
     });
 }
 
@@ -11404,21 +11793,13 @@ function localCourseBannerBuilderBindTitleEditor(form) {
             }
             localCourseBannerBuilderSyncTitleSliderOutput(form, numberName, target.value);
         }
-        if (target && target.matches('[data-title-color-picker-for]')) {
-            var text = form.querySelector('[data-title-color-text-for="' + target.getAttribute('data-title-color-picker-for') + '"]');
-            if (text) {
-                text.value = target.value.toUpperCase();
-            }
-            localCourseBannerBuilderSyncColourInput(target);
-        }
         if (target && target.matches('[data-title-color-text-for]')) {
-            var picker = form.querySelector('[data-title-color-picker-for="' + target.getAttribute('data-title-color-text-for') + '"]');
-            if (picker && /^#[0-9a-f]{6}$/i.test(target.value)) {
-                picker.value = target.value;
-                localCourseBannerBuilderSyncColourInput(picker);
+            var swatch = form.querySelector('[data-title-color-swatch-for="' + target.getAttribute('data-title-color-text-for') + '"]');
+            if (swatch && /^#[0-9a-f]{6}$/i.test(target.value)) {
+                localCourseBannerBuilderSyncTitleColorSwatch(swatch, target.value);
             }
         }
-        if (target && target.matches('[data-title-control], [data-title-range-for], [data-title-number-for], [data-title-color-picker-for], [data-title-color-text-for]') &&
+        if (target && target.matches('[data-title-control], [data-title-range-for], [data-title-number-for], [data-title-color-text-for]') &&
                 target.name !== 'stylemode') {
             localCourseBannerBuilderMarkTitleStyleCustom(form);
         }
@@ -11444,11 +11825,17 @@ function localCourseBannerBuilderBindTitleEditor(form) {
         var redoButton = event.target.closest('[data-action="local-course-banner-builder-title-preview-redo"]');
         var recenterButton = event.target.closest('[data-action="local-course-banner-builder-title-preview-recenter"]');
         var resetButton = event.target.closest('[data-action="local-course-banner-builder-reset-title-style"]');
+        var colourDialogButton = event.target.closest('[data-action="local-course-banner-builder-open-title-colour-dialog"]');
         var input;
         var stack;
         var redo;
         var state;
         var defaults;
+        if (colourDialogButton) {
+            event.preventDefault();
+            localCourseBannerBuilderOpenTitleColourDialog(form, colourDialogButton);
+            return;
+        }
         if (toggleButton) {
             event.preventDefault();
             if (toggleButton.disabled || toggleButton.getAttribute('aria-disabled') === 'true') {
@@ -13914,22 +14301,44 @@ function localCourseBannerBuilderClearSourcePreviewSelection(root) {
  * @param {HTMLElement} root Source visual editor root.
  * @param {string} mode Requested preview mode.
  */
-function localCourseBannerBuilderSetSourcePreviewMode(root, mode) {
+function localCourseBannerBuilderSetSourcePreviewMode(root, mode, animate) {
     if (!root || !root.querySelector('[data-source-preview-mode-control="1"]')) {
-        return;
+        return Promise.resolve(false);
     }
     mode = mode === 'mobile' ? 'mobile' : 'desktop';
-    root.setAttribute('data-source-preview-mode', mode);
-    var sourcekey = root.getAttribute('data-sourcekey') || '';
-    if (sourcekey) {
-        localCourseBannerBuilderSourcePreviewModes[sourcekey] = mode;
+    var apply = function() {
+        root.setAttribute('data-source-preview-mode', mode);
+        var sourcekey = root.getAttribute('data-sourcekey') || '';
+        if (sourcekey) {
+            localCourseBannerBuilderSourcePreviewModes[sourcekey] = mode;
+        }
+        Array.prototype.slice.call(root.querySelectorAll('[data-source-preview-mode-value]')).forEach(function(button) {
+            var selected = button.getAttribute('data-source-preview-mode-value') === mode;
+            button.setAttribute('aria-pressed', selected ? 'true' : 'false');
+            button.classList.toggle('is-active', selected);
+            button.classList.toggle('btn-primary', selected);
+            button.classList.toggle('btn-outline-secondary', !selected);
+        });
+    };
+    if (animate !== false && root.getAttribute('data-source-preview-mode') === mode) {
+        apply();
+        return Promise.resolve(true);
     }
-    Array.prototype.slice.call(root.querySelectorAll('[data-source-preview-mode-value]')).forEach(function(button) {
-        var selected = button.getAttribute('data-source-preview-mode-value') === mode;
-        button.setAttribute('aria-pressed', selected ? 'true' : 'false');
-        button.classList.toggle('is-active', selected);
-        button.classList.toggle('btn-primary', selected);
-        button.classList.toggle('btn-outline-secondary', !selected);
+    if (animate === false) {
+        apply();
+        return Promise.resolve(true);
+    }
+    var surface = root.querySelector('.local-course-banner-builder-source-preview-surface');
+    if (!surface) {
+        apply();
+        return Promise.resolve(true);
+    }
+    return Motion.swap(surface, apply, {
+        exit: false,
+        resize: false,
+        distance: '0px',
+        enterDuration: Motion.timing.normal,
+        swapOpacity: 0.72,
     });
 }
 
@@ -13945,14 +14354,19 @@ function localCourseBannerBuilderInitSourcePreviewMode(root) {
     }
     var buttons = Array.prototype.slice.call(control.querySelectorAll('[data-source-preview-mode-value]'));
     var sourcekey = root.getAttribute('data-sourcekey') || '';
+    var motionRoot = root.closest('[data-easyedu-motion-policy]') || root;
+    if (!motionRoot.dataset.easyeduMotionInitialised) {
+        Motion.init(motionRoot);
+        motionRoot.dataset.easyeduMotionInitialised = '1';
+    }
     localCourseBannerBuilderSetSourcePreviewMode(root, sourcekey && localCourseBannerBuilderSourcePreviewModes[sourcekey] ?
-        localCourseBannerBuilderSourcePreviewModes[sourcekey] : root.getAttribute('data-source-preview-mode'));
+        localCourseBannerBuilderSourcePreviewModes[sourcekey] : root.getAttribute('data-source-preview-mode'), false);
     buttons.forEach(function(button, index) {
         if (button.dataset.sourcePreviewModeBound) {
             return;
         }
         button.addEventListener('click', function() {
-            localCourseBannerBuilderSetSourcePreviewMode(root, button.getAttribute('data-source-preview-mode-value'));
+            localCourseBannerBuilderSetSourcePreviewMode(root, button.getAttribute('data-source-preview-mode-value'), true);
         });
         button.addEventListener('keydown', function(event) {
             var targetindex = null;
@@ -19907,6 +20321,7 @@ localCourseBannerBuilderOnReady(function () {
     localCourseBannerBuilderRunInitStep('source visual editor', function () {
         localCourseBannerBuilderInitSourceVisualEditor(document);
     });
+    localCourseBannerBuilderRunInitStep('source chain disclosure', localCourseBannerBuilderInitSourceChainDisclosure);
     Array.prototype.slice.call(document.querySelectorAll('[data-source-visual-editor="1"]')).forEach(function (root) {
         localCourseBannerBuilderSyncSourcePreviewSelectionOutline(root);
     });
@@ -19973,7 +20388,7 @@ localCourseBannerBuilderOnReady(function () {
     var settings = document.getElementById('local-course-banner-builder-source-settings');
     if (settings && (params.get('sourcekey') || parseInt(params.get('categoryid') || '0', 10) > 0)) {
         window.setTimeout(function () {
-            settings.scrollIntoView({behavior: 'smooth', block: 'start'});
+            Motion.scroll(settings, {block: 'start'});
         }, 120);
     }
     var autoSettingsModal = document.querySelector('[data-auto-open-source-settings="1"]');

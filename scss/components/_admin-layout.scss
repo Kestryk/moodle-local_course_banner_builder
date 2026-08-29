@@ -850,7 +850,7 @@ html[data-local-course-banner-builder-sticky-runtime="1"]
 
 .modal[id^="local-course-banner-builder-"] .local-course-banner-builder-banner-preview-frame,
 .modal[id^="local-course-banner-builder-"] .local-course-banner-builder-border-preview-frame {
-    @include easyedu.preview-surface;
+    @include easyedu.preview-checkerboard;
 
     width: min(100%, 1020px);
     margin-left: auto;
