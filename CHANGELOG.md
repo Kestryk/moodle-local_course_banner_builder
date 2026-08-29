@@ -12,6 +12,10 @@ many small sections.
 
 #### Fixed
 
+- Standardised source edit pencils, modal close controls and neighbouring
+  Save/Cancel action heights through the embedded Kit; the parent selector now
+  opens below its trigger and layer previews reuse the canonical transparency
+  checkerboard without a competing decorative frame.
 - Aligned the Slideshow Course Banner Builder page title with the blue brand
   colour already used by the other CCB administration identities.
 - Restored compact pencil triggers for changing a source parent in both the

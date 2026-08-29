@@ -217,6 +217,18 @@
   }
 }
 
+// Canonical sizing for neighbouring completion actions. This deliberately
+// leaves Bootstrap/Moodle colours and interaction semantics to the consumer;
+// it only guarantees that primary and secondary actions share one geometry.
+@mixin action-row-button {
+  @include button-size(regular);
+
+  align-items: center;
+  display: inline-flex;
+  justify-content: center;
+  line-height: 1.2;
+}
+
 @mixin admin-primary-nav {
   align-items: stretch;
   background: linear-gradient(
