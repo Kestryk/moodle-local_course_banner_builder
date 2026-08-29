@@ -325,6 +325,7 @@ const cropPointerDiagnostic = async(page, form, env) => {
             clientX: point.x,
             clientY: point.y,
             preventDefault: () => {},
+            stopPropagation: () => {},
             target,
         });
         const snapshot = () => ({
