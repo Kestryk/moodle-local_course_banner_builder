@@ -1251,6 +1251,13 @@
     pointer-events: auto;
 }
 
+// This server-rendered modal is portalled to document.body before Bootstrap
+// opens it. Re-establish the embedded Kit tokens that normally inherit from
+// the CCB admin root so its surface never becomes transparent.
+#local-course-banner-builder-change-source-parent-modal {
+    @include easyedu.token-defaults;
+}
+
 .modal[id^="local-course-banner-builder-"] {
     .local-course-banner-builder-modal-side-panel[data-easyedu-motion-owner="runtime"],
     .local-course-banner-builder-preview-opacity-panel[data-easyedu-motion-owner="runtime"],
