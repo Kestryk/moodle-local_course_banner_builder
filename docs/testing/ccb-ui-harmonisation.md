@@ -221,6 +221,20 @@ values and rectangles must remain stable while the five crop fields change.
 Browser execution, fixture creation, cache work and lease acquisition are
 intentionally outside this source-ready record.
 
+### Outer placement correction (`EED-CCB-2026-0043-RF3`) - 2026-08-29
+
+QA2 reached the first Crop assertion at 1440 px and proved the report: a
+deliberately narrow crop left the saved placement unchanged but reduced both
+the active image and its selection mirror from 71.25 × 18.9375 px to 0.703125
+× 0.1875 px. The renderers first scaled their outer placement from the crop
+percentage and then applied the existing inner-image crop transform.
+
+RF3 removes Crop dimensions from those two outer-placement calculations. The
+Crop transform remains wholly inside the already placed image box, so Crop
+fields may change without changing the image rectangle. This does not change
+Filemanager, modal layout, source-preview selection geometry or QA assertions.
+`tools/test-ccb-crop-placement-contract.ps1` protects the split.
+
 ### Recrop action-rail avoidance (`EED-CCB-2026-0023-RF2-B`) - 2026-08-28
 
 When Crop or Recrop is active, the floating Crop and Cancel actions retain the

@@ -6757,11 +6757,14 @@ function localCourseBannerBuilderSyncCurrentImagePreview(scope) {
                 }
             }
         }
+        // Crop is an inner-image transform. The modal layer keeps its saved
+        // placement box; only the image inside that box is enlarged and
+        // translated by localCourseBannerBuilderApplyCropToImageStyles().
         var effectiveDimensions = localCourseBannerBuilderGetEffectivePreviewImageDimensions(
             naturalWidth,
             naturalHeight,
             cropState,
-            fitMode === 'bannerfit' || cropEditing
+            true
         );
         var renderKeepAspect = keepAspect;
         var placementWidth = effectiveDimensions.width;
@@ -9969,11 +9972,14 @@ function localCourseBannerBuilderSyncStandalonePreviewLayer(previewRoot, layer) 
         imagecropheightpercent: layer.getAttribute('data-preview-crop-height') || '100'
     };
     var cropEditing = !!layer.querySelector('[data-preview-crop-editor="1"]');
+    // The draft-selection mirror must use the same outer box as the active
+    // layer. Applying Crop must not make either image's placement depend on
+    // the selected Crop rectangle.
     var effectiveDimensions = localCourseBannerBuilderGetEffectivePreviewImageDimensions(
         naturalWidth,
         naturalHeight,
         cropState,
-        fitMode === 'bannerfit' || cropEditing
+        true
     );
     var renderKeepAspect = keepAspect;
     var placementWidth = effectiveDimensions.width;
