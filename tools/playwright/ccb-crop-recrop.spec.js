@@ -64,6 +64,10 @@ const cropSnapshot = form => form.evaluate(currentForm => {
         width: node.getAttribute('data-preview-custom-width'),
     } : null;
     const value = selector => currentForm.querySelector(selector)?.value ?? null;
+    const cropValue = name => {
+        const field = currentForm.querySelector('#id_' + name) || currentForm.querySelector('[name="' + name + '"]');
+        return field ? field.value : null;
+    };
     let drafts = {};
     try {
         drafts = JSON.parse(value('#id_multilayerdraftsettings') || '{}');
@@ -73,11 +77,11 @@ const cropSnapshot = form => form.evaluate(currentForm => {
     return {
         activeIndex,
         crop: {
-            enabled: value('#id_imagecropenabled'),
-            height: value('#id_imagecropheightpercent'),
-            left: value('#id_imagecropleftpercent'),
-            top: value('#id_imagecroptoppercent'),
-            width: value('#id_imagecropwidthpercent'),
+            enabled: cropValue('imagecropenabled'),
+            height: cropValue('imagecropheightpercent'),
+            left: cropValue('imagecropleftpercent'),
+            top: cropValue('imagecroptoppercent'),
+            width: cropValue('imagecropwidthpercent'),
         },
         current: {placement: state(active), rect: rect(active)},
         draft: drafts[activeIndex] || null,
@@ -92,6 +96,17 @@ const assertPlacement = (before, after, name) => {
         expect(Math.abs(after.current.rect[key] - before.current.rect[key]), name + ': active ' + key).toBeLessThanOrEqual(1);
         expect(Math.abs(after.visual.rect[key] - before.visual.rect[key]), name + ': visual ' + key).toBeLessThanOrEqual(1);
     }
+};
+
+const assertCropBinding = (snapshot, name) => {
+    const draft = snapshot.draft || {};
+    expect(snapshot.crop, name + ': Crop fields must reflect the active draft payload').toEqual({
+        enabled: draft.imagecropenabled ? '1' : '0',
+        height: String(draft.imagecropheightpercent),
+        left: String(draft.imagecropleftpercent),
+        top: String(draft.imagecroptoppercent),
+        width: String(draft.imagecropwidthpercent),
+    });
 };
 
 const login = async(page, env) => {
@@ -177,6 +192,7 @@ test('EED-CCB-2026-0043-QA1 Crop and Recrop preserve image placement across widt
             const key = String(width);
             evidence.widths[key] = {};
             evidence.widths[key].before = await cropSnapshot(form);
+            assertCropBinding(evidence.widths[key].before, width + ' before Crop');
             await modal.screenshot({path: path.join(env.artifactRoot, 'crop-recrop-' + width + '-before.png')});
 
             await changeCrop(page, form, {x: -64, y: -36});
@@ -184,6 +200,7 @@ test('EED-CCB-2026-0043-QA1 Crop and Recrop preserve image placement across widt
             await waitForFrames(page);
             evidence.widths[key].afterInitialCrop = await cropSnapshot(form);
             assertPlacement(evidence.widths[key].before, evidence.widths[key].afterInitialCrop, width + ' initial Crop');
+            assertCropBinding(evidence.widths[key].afterInitialCrop, width + ' initial Crop');
             expect(evidence.widths[key].afterInitialCrop.crop).not.toEqual(evidence.widths[key].before.crop);
             await modal.screenshot({path: path.join(env.artifactRoot, 'crop-recrop-' + width + '-after-initial.png')});
 
@@ -192,6 +209,7 @@ test('EED-CCB-2026-0043-QA1 Crop and Recrop preserve image placement across widt
             await waitForFrames(page);
             evidence.widths[key].afterCancel = await cropSnapshot(form);
             assertPlacement(evidence.widths[key].afterInitialCrop, evidence.widths[key].afterCancel, width + ' Cancel Recrop');
+            assertCropBinding(evidence.widths[key].afterCancel, width + ' Cancel Recrop');
             expect(evidence.widths[key].afterCancel.crop).toEqual(evidence.widths[key].afterInitialCrop.crop);
             await modal.screenshot({path: path.join(env.artifactRoot, 'crop-recrop-' + width + '-after-cancel.png')});
 
@@ -199,11 +217,13 @@ test('EED-CCB-2026-0043-QA1 Crop and Recrop preserve image placement across widt
             await waitForFrames(page);
             evidence.widths[key].afterUndo = await cropSnapshot(form);
             assertPlacement(evidence.widths[key].before, evidence.widths[key].afterUndo, width + ' Undo');
+            assertCropBinding(evidence.widths[key].afterUndo, width + ' Undo');
             expect(evidence.widths[key].afterUndo.crop).toEqual(evidence.widths[key].before.crop);
             await form.locator('[data-action="local-course-banner-builder-redo-modal-preview-change"]').first().click();
             await waitForFrames(page);
             evidence.widths[key].afterRedo = await cropSnapshot(form);
             assertPlacement(evidence.widths[key].afterInitialCrop, evidence.widths[key].afterRedo, width + ' Redo');
+            assertCropBinding(evidence.widths[key].afterRedo, width + ' Redo');
             expect(evidence.widths[key].afterRedo.crop).toEqual(evidence.widths[key].afterInitialCrop.crop);
 
             await changeCrop(page, form, {x: -18, y: -12});
@@ -213,6 +233,7 @@ test('EED-CCB-2026-0043-QA1 Crop and Recrop preserve image placement across widt
             await waitForFrames(page);
             evidence.widths[key].afterDraftSwitch = await cropSnapshot(form);
             assertPlacement(evidence.widths[key].afterRedo, evidence.widths[key].afterDraftSwitch, width + ' draft/image switch');
+            assertCropBinding(evidence.widths[key].afterDraftSwitch, width + ' draft/image switch');
             expect(evidence.widths[key].afterDraftSwitch.crop).not.toEqual(evidence.widths[key].afterRedo.crop);
             await modal.screenshot({path: path.join(env.artifactRoot, 'crop-recrop-' + width + '-after-switch.png')});
         }

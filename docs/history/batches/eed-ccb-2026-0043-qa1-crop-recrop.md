@@ -24,6 +24,12 @@ The second upload deliberately accepts Moodle's `Rename to …` confirmation
 rather than overwriting the first image. This is essential: the draft/image
 switch must exercise two independent images, not two names for one file.
 
+QA3 reads Crop fields through Moodle's normal `#id_*` identifier when present,
+then through the generated `[name]` hidden input created by the modal runtime.
+It also verifies those field values against the active draft payload. This
+retains the Crop-change assertion while distinguishing a test selector error
+from a product persistence failure.
+
 ## Supervision and cleanup
 
 `Invoke-CCBCropRecropValidation.ps1` proves that exactly one test is selected

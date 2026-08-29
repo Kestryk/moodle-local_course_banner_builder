@@ -15,6 +15,7 @@ $checks = [ordered]@{
     'Undo and Redo are covered' = (($spec -match 'undo-modal-preview-change') -and ($spec -match 'redo-modal-preview-change'));
     'Draft/image switching is covered' = (($spec -match 'afterDraftSwitch') -and ($spec -match 'data-preview-draft-visual-layer'));
     'Placement and geometry are asserted independently from Crop fields' = (($spec -match 'assertPlacement') -and ($spec -match 'expect\(.*\.crop\)'));
+    'Crop fields resolve Moodle id or generated name and are bound to draft state' = (($spec -match 'const cropValue = name') -and ($spec -match "'#id_' \+ name") -and ($spec -match '\[name=') -and ($spec -match 'assertCropBinding'));
     'Early and state-change captures are retained' = (($spec -match 'crop-recrop-.*-before\.png') -and ($spec -match 'after-initial') -and ($spec -match 'after-cancel'));
     'Second upload preserves a distinct draft through Moodle Rename confirmation' = (($spec -match 'const completeUpload') -and ($spec -match 'Rename to') -and ($spec -notmatch 'Overwrite'));
     'Supervisor discovers exactly one test before credentials or fixture work' = (($runner -match 'playwright-discovery') -and ($runner -match 'Total:\\s\+1\\s\+test') -and ($runner -match 'if \(\$DiscoveryOnly\)'));

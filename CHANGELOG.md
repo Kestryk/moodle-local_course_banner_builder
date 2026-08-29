@@ -23,6 +23,9 @@ many small sections.
 - QA2 handles Moodle's normal duplicate-file confirmation by choosing its
   Rename action, preserving two distinct images for the required draft-switch
   assertion instead of masking the condition through overwrite.
+- QA3 reads generated hidden Crop inputs by their stable field name as well as
+  their optional Moodle id, and compares them with the active draft payload.
+  This fixes the evidence collector, not Crop persistence or its assertions.
 
 ### EED-CCB-2026-0043 - 2026-08-29
 
