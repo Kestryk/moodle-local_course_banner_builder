@@ -437,8 +437,9 @@ test('EED-CCB-2026-0043-QA1 Crop and Recrop preserve image placement across widt
             assertCropBinding(evidence.widths[key].afterRedo, width + ' Redo');
             expect(evidence.widths[key].afterRedo.crop).toEqual(evidence.widths[key].afterInitialCrop.crop);
 
-            // Grow proportionally from the current Crop without reaching the
-            // opposite bound, so draft switching must commit a real change.
+            // Alter the in-progress Crop without applying it, then switch
+            // drafts. A switch must discard that uncommitted interaction and
+            // keep the accepted Crop bound to its original draft.
             await changeCrop(page, form, 0.05);
             const originalIndex = evidence.widths[key].afterRedo.activeIndex;
             const draftIndexes = await form.locator('[data-draft-preview-select="1"]').evaluateAll(buttons =>
@@ -452,6 +453,8 @@ test('EED-CCB-2026-0043-QA1 Crop and Recrop preserve image placement across widt
             await expect.poll(() => form.getAttribute('data-active-draft-index'), {
                 message: width + ': alternate draft selection must settle',
             }).toBe(alternateIndex);
+            const alternateDraft = await cropSnapshot(form);
+            expect(alternateDraft.crop).not.toEqual(evidence.widths[key].afterRedo.crop);
             await draftSelectButton(form, originalIndex).click();
             await waitForFrames(page);
             await expect.poll(() => form.getAttribute('data-active-draft-index'), {
@@ -460,7 +463,7 @@ test('EED-CCB-2026-0043-QA1 Crop and Recrop preserve image placement across widt
             evidence.widths[key].afterDraftSwitch = await cropSnapshot(form);
             assertPlacement(evidence.widths[key].afterRedo, evidence.widths[key].afterDraftSwitch, width + ' draft/image switch');
             assertCropBinding(evidence.widths[key].afterDraftSwitch, width + ' draft/image switch');
-            expect(evidence.widths[key].afterDraftSwitch.crop).not.toEqual(evidence.widths[key].afterRedo.crop);
+            expect(evidence.widths[key].afterDraftSwitch.crop).toEqual(evidence.widths[key].afterRedo.crop);
             await modal.screenshot({path: path.join(env.artifactRoot, 'crop-recrop-' + width + '-after-switch.png')});
         }
     } catch (error) {
