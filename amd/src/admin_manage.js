@@ -18263,6 +18263,12 @@ function localCourseBannerBuilderSubmitParentSourceChange(form) {
     }).then(localCourseBannerBuilderParseParentSourceChangeResponse)
         .then(localCourseBannerBuilderValidateParentSourceChangeResponse).then(function(data) {
         localCourseBannerBuilderReplaceConfiguredSourcesTable(data.tablehtml || '');
+        if (typeof data.selectedhtml === 'string' && data.selectedhtml !== '') {
+            localCourseBannerBuilderReplaceSelectedSourceContentFromDeleteResponse({
+                success: true,
+                html: data.selectedhtml
+            });
+        }
         localCourseBannerBuilderHideModal(modal);
         localCourseBannerBuilderParentSourceChangeOpener = null;
         localCourseBannerBuilderNotifyAsyncAction(

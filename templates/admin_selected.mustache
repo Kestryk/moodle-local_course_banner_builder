@@ -34,12 +34,32 @@
                                     <input type="hidden" name="sourcekey" value="{{sourcekey}}">
                                     <div class="local-course-banner-builder-summary-inline-view">
                                         <span class="local-course-banner-builder-summary-inline-value">{{displayvalue}}</span>
+                                        {{#usesourcemodal}}
+                                        {{^isreadonly}}
+                                        <button type="button"
+                                            class="btn btn-link p-0 icon-no-margin local-course-banner-builder-summary-inline-trigger local-course-banner-builder-source-parent-trigger"
+                                            data-action="local-course-banner-builder-change-source-parent"
+                                            data-source-key="{{sourcekey}}"
+                                            data-source-key-hash="{{sourcekeyhash}}"
+                                            data-source-label="{{sourcelabel}}"
+                                            data-source-parent-label="{{sourceparentlabel}}"
+                                            data-source-parent-value="{{sourceparentvalue}}"
+                                            data-source-sesskey="{{sourcesesskey}}"
+                                            data-source-options-template="local-course-banner-builder-parent-options-{{sourcekeyhash}}"
+                                            aria-label="{{#str}}changesourceparent, local_course_banner_builder{{/str}}: {{sourcelabel}}">
+                                            <i class="icon fa fa-pen fa-fw" aria-hidden="true"></i>
+                                        </button>
+                                        {{/isreadonly}}
+                                        {{/usesourcemodal}}
+                                        {{^usesourcemodal}}
                                         {{^isreadonly}}
                                         <button type="button" class="btn btn-link p-0 icon-no-margin local-course-banner-builder-summary-inline-trigger" data-action="local-course-banner-builder-inline-edit" aria-label="{{#str}}edit{{/str}}">
                                             <i class="icon fa fa-pen fa-fw" aria-hidden="true"></i>
                                         </button>
                                         {{/isreadonly}}
+                                        {{/usesourcemodal}}
                                     </div>
+                                    {{^usesourcemodal}}
                                     {{^isreadonly}}
                                     <div class="local-course-banner-builder-summary-inline-edit">
                                         <label class="sr-only" for="local-course-banner-builder-summary-field-{{fieldname}}">{{label}}</label>
@@ -94,6 +114,7 @@
                                         </button>
                                     </div>
                                     {{/isreadonly}}
+                                    {{/usesourcemodal}}
                                 </form>
                             </dd>
                         </div>
@@ -504,32 +525,67 @@
                         {{#chainborderlayer}}
                             <tr class="{{rowclass}}" data-chain-border-row="1">
                                 <td class="local-course-banner-builder-layer-select-cell">
-                                    {{actionlabel}}
+                                    <span class="local-course-banner-builder-layer-row-identity">
+                                        <span class="local-course-banner-builder-layer-type-icon" role="img"
+                                            aria-label="{{#str}}bordertitle, local_course_banner_builder{{/str}}">
+                                            <i class="icon fa fa-square-o fa-fw" aria-hidden="true"></i>
+                                        </span>
+                                    </span>
+                                    <span class="local-course-banner-builder-chain-layer-label">{{actionlabel}}</span>
                                 </td>
                                 <td>
-                                    <span class="local-course-banner-builder-sort-position">{{#str}}locked, local_course_banner_builder{{/str}}</span>
+                                    <div class="local-course-banner-builder-layer-sort-indicator-zone">
+                                        <span class="local-course-banner-builder-layer-order-state">
+                                            <span class="local-course-banner-builder-sort-position">{{#str}}locked, local_course_banner_builder{{/str}}</span>
+                                        </span>
+                                        <span class="local-course-banner-builder-layer-sort-indicators">
+                                            <a class="btn btn-link p-0 icon-no-margin local-course-banner-builder-layer-sort-indicator local-course-banner-builder-layer-sort-indicator--lock local-course-banner-builder-lock-help local-course-banner-builder-lock-help--border"
+                                               role="button"
+                                               data-container="body"
+                                               data-toggle="popover"
+                                               data-placement="right"
+                                               data-content="{{orderlockpopovercontent}}"
+                                               data-html="true"
+                                               data-trigger="hover"
+                                               tabindex="0"
+                                               aria-label="{{orderlocklabel}}">
+                                                <i class="icon fa fa-lock fa-fw" aria-hidden="true"></i>
+                                            </a>
+                                        </span>
+                                    </div>
                                 </td>
                                 <td>
                                     {{name}}
                                 </td>
                                 <td>{{enabledlabel}}</td>
-                                <td>
+                                <td class="local-course-banner-builder-fit-override-cell">
                                     {{#chainborderlayer.hasbordersummary}}
-                                        <div class="local-course-banner-builder-border-summary">
-                                            <strong class="local-course-banner-builder-border-summary-title">{{chainborderlayer.bordersummarytitle}}</strong>
-                                            <dl class="local-course-banner-builder-border-summary-list">
-                                                {{#chainborderlayer.bordersummaryitems}}
-                                                    <div>
-                                                        <dt>{{label}}</dt>
-                                                        <dd>{{value}}</dd>
+                                        <div class="local-course-banner-builder-layer-details-disclosure-shell">
+                                            <details class="local-course-banner-builder-layer-details-accordion">
+                                                <summary><span>{{#str}}fitoverride, local_course_banner_builder{{/str}}</span></summary>
+                                                <div class="local-course-banner-builder-layer-details-accordion-content">
+                                                    <div class="local-course-banner-builder-border-summary">
+                                                        <strong class="local-course-banner-builder-border-summary-title">{{chainborderlayer.bordersummarytitle}}</strong>
+                                                        <dl class="local-course-banner-builder-border-summary-list">
+                                                            {{#chainborderlayer.bordersummaryitems}}
+                                                                <div><dt>{{label}}</dt><dd>{{value}}</dd></div>
+                                                            {{/chainborderlayer.bordersummaryitems}}
+                                                        </dl>
                                                     </div>
-                                                {{/chainborderlayer.bordersummaryitems}}
-                                            </dl>
+                                                </div>
+                                            </details>
+                                            <button type="button"
+                                                class="btn btn-link p-0 icon-no-margin local-course-banner-builder-table-help-icon local-course-banner-builder-layer-details-help"
+                                                data-local-course-banner-builder-hover-popover="1"
+                                                data-local-course-banner-builder-popover-variant="compact-centered"
+                                                data-placement="bottom"
+                                                data-content="{{#str}}layerinfoshelp, local_course_banner_builder{{/str}}"
+                                                aria-label="{{#str}}layerinfoshelp, local_course_banner_builder{{/str}}">?</button>
                                         </div>
                                     {{/chainborderlayer.hasbordersummary}}
                                 </td>
                                 <td class="local-course-banner-builder-layer-render-cell">{{#chainborderlayer.haslayerpreviewhtml}}{{{chainborderlayer.layerpreviewhtml}}}{{/chainborderlayer.haslayerpreviewhtml}}</td>
-                                <td>
+                                <td class="local-course-banner-builder-inherited-layer-action-cell">
                                     <a class="btn btn-secondary btn-sm local-course-banner-builder-inherited-layer-action" href="{{sourceediturl}}">
                                         <i class="icon fa fa-arrow-up-right-from-square fa-fw" aria-hidden="true"></i>
                                         {{#str}}editsourceoflayer, local_course_banner_builder{{/str}}
@@ -556,6 +612,12 @@
                     <tbody>
                         <tr class="{{chainoverlaylayer.rowclass}}" data-chain-overlay-row="1">
                             <td class="local-course-banner-builder-layer-select-cell">
+                                <span class="local-course-banner-builder-layer-row-identity">
+                                    <span class="local-course-banner-builder-layer-type-icon" role="img"
+                                        aria-label="{{#str}}overlaytitle, local_course_banner_builder{{/str}}">
+                                        <i class="icon fa fa-adjust fa-fw" aria-hidden="true"></i>
+                                    </span>
+                                </span>
                                 <span class="local-course-banner-builder-chain-layer-label">{{chainoverlaylayer.actionlabel}}</span>
                             </td>
                             <td>
@@ -581,23 +643,34 @@
                             </td>
                             <td>{{chainoverlaylayer.name}}</td>
                             <td>{{chainoverlaylayer.enabledlabel}}</td>
-                            <td>
+                            <td class="local-course-banner-builder-fit-override-cell">
                                 {{#chainoverlaylayer.hasoverlaysummary}}
-                                    <div class="local-course-banner-builder-border-summary">
-                                        <strong class="local-course-banner-builder-border-summary-title">{{chainoverlaylayer.overlaysummarytitle}}</strong>
-                                        <dl class="local-course-banner-builder-border-summary-list">
-                                            {{#chainoverlaylayer.overlaysummaryitems}}
-                                                <div>
-                                                    <dt>{{label}}</dt>
-                                                    <dd>{{value}}</dd>
+                                    <div class="local-course-banner-builder-layer-details-disclosure-shell">
+                                        <details class="local-course-banner-builder-layer-details-accordion">
+                                            <summary><span>{{#str}}fitoverride, local_course_banner_builder{{/str}}</span></summary>
+                                            <div class="local-course-banner-builder-layer-details-accordion-content">
+                                                <div class="local-course-banner-builder-border-summary">
+                                                    <strong class="local-course-banner-builder-border-summary-title">{{chainoverlaylayer.overlaysummarytitle}}</strong>
+                                                    <dl class="local-course-banner-builder-border-summary-list">
+                                                        {{#chainoverlaylayer.overlaysummaryitems}}
+                                                            <div><dt>{{label}}</dt><dd>{{value}}</dd></div>
+                                                        {{/chainoverlaylayer.overlaysummaryitems}}
+                                                    </dl>
                                                 </div>
-                                            {{/chainoverlaylayer.overlaysummaryitems}}
-                                        </dl>
+                                            </div>
+                                        </details>
+                                        <button type="button"
+                                            class="btn btn-link p-0 icon-no-margin local-course-banner-builder-table-help-icon local-course-banner-builder-layer-details-help"
+                                            data-local-course-banner-builder-hover-popover="1"
+                                            data-local-course-banner-builder-popover-variant="compact-centered"
+                                            data-placement="bottom"
+                                            data-content="{{#str}}layerinfoshelp, local_course_banner_builder{{/str}}"
+                                            aria-label="{{#str}}layerinfoshelp, local_course_banner_builder{{/str}}">?</button>
                                     </div>
                                 {{/chainoverlaylayer.hasoverlaysummary}}
                             </td>
                             <td class="local-course-banner-builder-layer-render-cell">{{#chainoverlaylayer.haslayerpreviewhtml}}{{{chainoverlaylayer.layerpreviewhtml}}}{{/chainoverlaylayer.haslayerpreviewhtml}}</td>
-                            <td>
+                            <td class="local-course-banner-builder-inherited-layer-action-cell">
                                 <a class="btn btn-secondary btn-sm local-course-banner-builder-inherited-layer-action"
                                     href="{{chainoverlaylayer.sourceediturl}}">
                                     <i class="icon fa fa-arrow-up-right-from-square fa-fw" aria-hidden="true"></i>

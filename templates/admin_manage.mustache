@@ -135,7 +135,22 @@
                                     <i class="icon fa fa-arrow-down fa-fw" aria-hidden="true"></i>
                                 </span>
                             {{/hasparentconnector}}
-                            <span class="local-course-banner-builder-summary-inline-value">{{parentdisplayvalue}}</span>
+                            <span class="local-course-banner-builder-summary-inline-view local-course-banner-builder-source-parent-view">
+                                <span class="local-course-banner-builder-summary-inline-value">{{parentdisplayvalue}}</span>
+                                <button type="button"
+                                    class="btn btn-link p-0 icon-no-margin local-course-banner-builder-summary-inline-trigger local-course-banner-builder-source-parent-trigger"
+                                    data-action="local-course-banner-builder-change-source-parent"
+                                    data-source-key="{{sourcekey}}"
+                                    data-source-key-hash="{{sourcekeyhash}}"
+                                    data-source-label="{{categoryname}}"
+                                    data-source-parent-label="{{parentdisplayvalue}}"
+                                    data-source-parent-value="{{parentselectedvalue}}"
+                                    data-source-sesskey="{{sesskey}}"
+                                    data-source-options-template="local-course-banner-builder-parent-options-{{sourcekeyhash}}"
+                                    aria-label="{{#str}}changesourceparent, local_course_banner_builder{{/str}}: {{categoryname}}">
+                                    <i class="icon fa fa-pen fa-fw" aria-hidden="true"></i>
+                                </button>
+                            </span>
                         </td>
                         <td>
                             <a href="{{categoryadminurl}}">{{categoryname}}</a>
@@ -269,19 +284,6 @@
                         </td>
                         <td class="local-course-banner-builder-source-actions-cell">
                             <div class="local-course-banner-builder-action-list">
-                                <button type="button"
-                                    class="btn btn-outline-primary btn-sm"
-                                    data-action="local-course-banner-builder-change-source-parent"
-                                    data-source-key="{{sourcekey}}"
-                                    data-source-key-hash="{{sourcekeyhash}}"
-                                    data-source-label="{{categoryname}}"
-                                    data-source-parent-label="{{parentdisplayvalue}}"
-                                    data-source-parent-value="{{parentselectedvalue}}"
-                                    data-source-sesskey="{{sesskey}}"
-                                    data-source-options-template="local-course-banner-builder-parent-options-{{sourcekeyhash}}">
-                                    <i class="icon fa fa-code-branch fa-fw" aria-hidden="true"></i>
-                                    <span class="local-course-banner-builder-action-label">{{#str}}changesourceparent, local_course_banner_builder{{/str}}</span>
-                                </button>
                                 <template id="local-course-banner-builder-parent-options-{{sourcekeyhash}}">
                                     {{#parentoptions}}
                                         <button type="button"
@@ -392,7 +394,8 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-action="local-course-banner-builder-cancel-source-parent-change">{{#str}}cancel{{/str}}</button>
-                <button type="submit" class="btn btn-primary" data-parent-source-change-submit="1">{{#str}}savechanges{{/str}}</button>
+                <button type="submit" class="btn btn-primary btn-sm local-course-banner-builder-parent-source-save"
+                    data-parent-source-change-submit="1">{{#str}}savechanges{{/str}}</button>
             </div>
         </form>
     </div>
