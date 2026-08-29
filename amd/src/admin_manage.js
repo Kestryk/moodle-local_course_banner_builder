@@ -18020,12 +18020,14 @@ function localCourseBannerBuilderRestoreParentSourceChangeModalPortal(modal) {
     if (!portal || portal.modal !== modal) {
         return;
     }
-    if (portal.placeholder.parentNode) {
-        portal.placeholder.parentNode.replaceChild(modal, portal.placeholder);
-    } else if (portal.parent && portal.parent.isConnected) {
-        portal.parent.appendChild(modal);
-    }
     localCourseBannerBuilderParentSourceModalPortal = null;
+    window.setTimeout(function() {
+        if (portal.placeholder.parentNode) {
+            portal.placeholder.parentNode.replaceChild(modal, portal.placeholder);
+        } else if (portal.parent && portal.parent.isConnected) {
+            portal.parent.appendChild(modal);
+        }
+    }, 0);
 }
 
 /**
