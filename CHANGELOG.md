@@ -8,6 +8,20 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0043-RF6 - 2026-08-30
+
+#### Fixed
+
+- Cancelling a Recrop no longer leaves a duplicate history entry. The next
+  Undo now restores the Crop state before the accepted Crop, rather than
+  merely undoing the cancellation.
+
+#### Validation
+
+- RF5 browser evidence preserved Crop and placement but exposed the duplicate
+  Cancel snapshot. RF6 removes only that matching top snapshot; Undo/Redo and
+  all other preview history remain unchanged.
+
 ### EED-CCB-2026-0043-RF5 - 2026-08-30
 
 #### Fixed

@@ -4552,6 +4552,7 @@ function localCourseBannerBuilderCancelCropEditor(control, sourceMode) {
             );
             localCourseBannerBuilderSyncCurrentImagePreview(form);
             localCourseBannerBuilderSaveActiveDraftPreviewState(form);
+            localCourseBannerBuilderDiscardModalPreviewHistorySnapshot(form);
             localCourseBannerBuilderSyncModalPreviewCropButtons(form);
         }
     }
@@ -4705,6 +4706,12 @@ function localCourseBannerBuilderStopCropInteraction() {
     localCourseBannerBuilderCropInteraction = null;
 }
 
+/**
+ * Ends an active Crop gesture before general preview completion can commit stale state.
+ *
+ * @param {PointerEvent} event The terminal pointer event.
+ * @returns {void}
+ */
 function localCourseBannerBuilderStopCropPointerInteraction(event) {
     if (!localCourseBannerBuilderCropInteraction) {
         return;
@@ -15856,6 +15863,19 @@ function localCourseBannerBuilderPushModalPreviewHistory(form) {
         form.dataset.modalPreviewUndoStack = JSON.stringify(undoStack);
     }
     form.dataset.modalPreviewRedoStack = '[]';
+    localCourseBannerBuilderUpdateModalPreviewHistoryButtons(form);
+}
+
+function localCourseBannerBuilderDiscardModalPreviewHistorySnapshot(form) {
+    if (!form) {
+        return;
+    }
+    var undoStack = localCourseBannerBuilderReadJson(form.dataset.modalPreviewUndoStack || '[]', []);
+    var currentSnapshot = localCourseBannerBuilderBuildModalPreviewSnapshot(form);
+    if (undoStack.length && undoStack[undoStack.length - 1] === currentSnapshot) {
+        undoStack.pop();
+        form.dataset.modalPreviewUndoStack = JSON.stringify(undoStack);
+    }
     localCourseBannerBuilderUpdateModalPreviewHistoryButtons(form);
 }
 
