@@ -104,7 +104,9 @@ test('Change parent modal keeps the table informative and rejects a descendant',
 
     await childAction.click();
     await expect(modal).toBeVisible();
-    await modal.click({position: {x: 4, y: 4}});
+    const dialogBox = await modal.locator('.modal-dialog').boundingBox();
+    expect(dialogBox).not.toBeNull();
+    await page.mouse.click(Math.max(8, dialogBox.x - 16), Math.max(8, dialogBox.y - 16));
     await expect(modal).toBeHidden();
     await expect(page.locator('.modal-backdrop')).toHaveCount(0);
     await expect.poll(() => modal.evaluate((node, parent) => node.parentElement === parent, originParent)).toBe(true);
