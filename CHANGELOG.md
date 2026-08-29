@@ -18,6 +18,7 @@ many small sections.
 #### Validation
 
 - Source-only batch: official AMD/Sass builds and static checks are required before handoff. No preview, cache, runtime lease, fixture or browser validation is included.
+- Replaced the retired 0042-0044 candidate with one sequential, lease-gated 0042-0050 supervised scenario. It preserves parent-modal, IMG-08 and motion/drag coverage and adds the 0046 title-colour and 0050 source-preview contracts. The scenario is source-only and was not run.
 
 ### EED-CCB-2026-0046 - 2026-08-29
 

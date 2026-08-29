@@ -22,9 +22,9 @@ The Course, Site and Activity title editors use the same CCB-owned, Kit-shell co
 
 Future lease-gated supervised validation must record these named captures outside Git: `01-0046-course-title-colour-dialog.png`, `02-0046-site-title-colour-dialog.png` and `03-0046-activity-title-colour-dialog.png`. Each capture must show the dialog before Apply. The focused flow proves temporary palette/HEX editing, atomic Apply into the existing preview/input binding, Cancel and Escape without form mutation, focus return to the exact swatch, and a narrow/zoom no-overflow cell. Source work only: no runtime, browser, preview, cache or lease action was performed.
 
-## EED-CCB-2026-0042/0043/0044 cumulative supervised scenario - 2026-08-29
+## EED-CCB-2026-0042-0050 cumulative supervised scenario - 2026-08-29
 
-`tools/playwright/ccb-wave-0042-0044-cumulative.spec.js` is the single
+`tools/playwright/ccb-wave-0042-0050-cumulative.spec.js` is the single
 `local-supervised` scenario for this cumulative QA candidate. It requires the
 approved CCB runtime lease, authenticated Moodle credentials, one prepared
 inherited-source category, an external artifact root and an image fixture. It
@@ -36,13 +36,21 @@ Before sensitive assertions it records these named human captures outside Git:
 - `02-0042-parent-modal-before-sensitive.png`;
 - `03-img08-<desktop|narrow>-<add|edit>-before-geometry.png`;
 - `04-0044-motion-drag-before-sensitive.png`.
+- `05-0046-course-title-colour-dialog.png`, `06-0046-site-title-colour-dialog.png` and
+  `07-0046-activity-title-colour-dialog.png`;
+- `08-0050-source-tree-before-sensitive.png`, `09-0050-preview-loading-before-sensitive.png`,
+  `10-0050-preview-ready-before-sensitive.png` and `11-0050-preview-error-before-sensitive.png`.
 
 The sequential flow covers the 0042 parent modal/list below/search/close/Save
 icon/pencils/checkerboard/inherited rows/Edit source/Collapse all contract; the
 IMG-08 add/edit crop geometry through Apply, Undo, Redo, reopen and draft
 switch at desktop and narrow widths; and the 0044 canvas-only Desktop/Mobile
 motion, reduced-motion, disclosure, drag ghost/placeholder/drop cleanup and
-locked-row alternative.
+locked-row alternative. It additionally covers 0046 title-colour dialog
+transactions for Course, Site and Activity (including Apply, Cancel, Escape,
+focus return, native-picker absence and narrow/zoom overflow), plus the 0050
+three-level source tree, reduced motion, Kit preview loading/ready/error,
+footer-contained Edit source, canvas-only mode switch and preview close focus return.
 
 ## EED-CCB-2026-0044 - motion and draggable-layer parity - 2026-08-29
 
