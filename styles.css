@@ -16941,9 +16941,11 @@ span[data-flexitour=container].orphan .modal-dialog {
   align-items: center;
   box-sizing: border-box;
   display: inline-flex;
-  height: var(--easyedu-control-height);
+  height: var(--easyedu-control-height, 2.5rem) !important;
+  min-height: var(--easyedu-control-height, 2.5rem) !important;
   justify-content: center;
   line-height: 1.2;
+  padding-block: 0.36rem !important;
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-bulk-save-button {
   align-items: center;
@@ -17502,9 +17504,11 @@ span[data-flexitour=container].orphan .modal-dialog {
   align-items: center;
   box-sizing: border-box;
   display: inline-flex;
-  height: var(--easyedu-control-height);
+  height: var(--easyedu-control-height, 2.5rem) !important;
+  min-height: var(--easyedu-control-height, 2.5rem) !important;
   justify-content: center;
   line-height: 1.2;
+  padding-block: 0.36rem !important;
 }
 .modal[id^=local-course-banner-builder-] .local-course-banner-builder-modal-side-panel[data-easyedu-motion-owner=runtime],
 .modal[id^=local-course-banner-builder-] .local-course-banner-builder-preview-opacity-panel[data-easyedu-motion-owner=runtime],

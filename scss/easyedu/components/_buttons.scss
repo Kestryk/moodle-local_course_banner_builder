@@ -226,9 +226,11 @@
   align-items: center;
   box-sizing: border-box;
   display: inline-flex;
-  height: var(--easyedu-control-height);
+  height: var(--easyedu-control-height, 2.5rem) !important;
+  min-height: var(--easyedu-control-height, 2.5rem) !important;
   justify-content: center;
   line-height: 1.2;
+  padding-block: 0.36rem !important;
 }
 
 @mixin admin-primary-nav {
