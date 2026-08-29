@@ -1432,6 +1432,28 @@
     }
 }
 
+.local-course-banner-builder-source-chain-preview-modal {
+    @include easyedu.modal-runtime-animation(".modal-dialog");
+    @include easyedu.native-modal-loading(".loading-icon");
+
+    .modal-dialog {
+        @include easyedu.preview-modal-dialog-shell;
+    }
+
+    .local-course-banner-builder-source-chain-preview-modal-content {
+        @include easyedu.preview-modal-content-shell;
+        @include easyedu.preview-modal-inline-rhythm;
+    }
+
+    .local-course-banner-builder-source-chain-preview-modal-body {
+        @include easyedu.preview-modal-body-shell;
+    }
+
+    .local-course-banner-builder-source-chain-preview-modal-footer {
+        @include easyedu.preview-modal-footer-shell;
+    }
+}
+
 .modal[id^="local-course-banner-builder-"]
     .local-course-banner-builder-modal-preview-action-list
     > .local-course-banner-builder-preview-side-accordion-trigger[aria-expanded="true"]

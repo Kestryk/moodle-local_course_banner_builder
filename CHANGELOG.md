@@ -8,6 +8,17 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0050 - 2026-08-29
+
+#### Fixed
+
+- Configured-source child rows now use the shared cancellable Motion disclosure lifecycle. Individual and bulk collapse preserve `aria-expanded`/`aria-controls`, end in the correct `hidden` state, and honour reduced-motion preferences.
+- Source preview now uses the complete Kit modal shell: its preview canvas remains the only Desktop/Mobile simulation target, Loading is exposed with the Kit `is-loading` / `aria-busy` contract, and the stable Edit source action lives in the modal footer.
+
+#### Validation
+
+- Source-only batch: official AMD/Sass builds and static checks are required before handoff. No preview, cache, runtime lease, fixture or browser validation is included.
+
 ### EED-CCB-2026-0046 - 2026-08-29
 
 #### Changed
