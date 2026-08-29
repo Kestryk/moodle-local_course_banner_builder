@@ -48,6 +48,15 @@ pointer location. Movement is proportional to the active layer and deliberately
 kept away from the bounds. A bounded poll must observe a changed live Crop
 payload before the scenario may click Apply or switch drafts.
 
+QA7 adds a diagnostic mode guarded by `EASYEDU_CCB_CROP_POINTER_DIAGNOSTIC=1`.
+It stays inside the same single Playwright test, creates the same disposable
+modal state, then stops after the first active Crop layer. The diagnostic logs
+native pointer events in capture phase, records `data-preview-crop-*`
+mutations, and compares the browser gesture with direct calls to the exported
+Crop handlers. Its evidence file is
+`ccb-crop-pointer-diagnostic.json`. The goal is to isolate whether the failed
+Crop movement is caused by pointer delivery or by the product handler.
+
 ## Supervision and cleanup
 
 `Invoke-CCBCropRecropValidation.ps1` proves that exactly one test is selected

@@ -218,6 +218,148 @@ const changeCrop = async(page, form, scaleDelta) => {
     }).not.toBe(liveCropBefore);
 };
 
+const cropPointerDiagnostic = async(page, form, env) => {
+    await form.locator('[data-action="local-course-banner-builder-toggle-modal-preview-crop"]').first().click();
+    const activeLayer = form.locator(
+        '[data-preview-current-image="1"][data-preview-draft-layer="1"]' +
+        '.local-course-banner-builder-preview-image-layer--crop-editing'
+    );
+    await expect(activeLayer, 'Diagnostic active draft Crop layer').toBeVisible();
+    await expect(activeLayer, 'Diagnostic exactly one active draft Crop layer').toHaveCount(1);
+    const handle = activeLayer.locator('[data-preview-crop-handle="se"]');
+    await expect(handle, 'Diagnostic active Crop southeast handle').toBeVisible();
+    const handleBox = await waitForStableBox(handle, 'Diagnostic active Crop southeast handle');
+    const layerBox = await waitForStableBox(activeLayer, 'Diagnostic active draft Crop layer');
+    const startPoint = {x: handleBox.x + handleBox.width / 2, y: handleBox.y + handleBox.height / 2};
+    const endPoint = {
+        x: startPoint.x - Math.max(8, Math.min(48, layerBox.width * 0.12)),
+        y: startPoint.y - Math.max(6, Math.min(36, layerBox.height * 0.12)),
+    };
+    const diagnostic = await activeLayer.evaluate((layer, points) => {
+        const handleNode = layer.querySelector('[data-preview-crop-handle="se"]');
+        const snapshot = () => ({
+            height: layer.getAttribute('data-preview-crop-height'),
+            left: layer.getAttribute('data-preview-crop-left'),
+            top: layer.getAttribute('data-preview-crop-top'),
+            width: layer.getAttribute('data-preview-crop-width'),
+        });
+        const hit = document.elementFromPoint(points.start.x, points.start.y);
+        const records = {
+            before: snapshot(),
+            directAfter: null,
+            directChanged: false,
+            hitOwnsPointer: hit === handleNode || (handleNode ? handleNode.contains(hit) : false),
+            hitTag: hit ? {
+                action: hit.getAttribute('data-action'),
+                cropHandle: hit.getAttribute('data-preview-crop-handle'),
+                cropBox: hit.getAttribute('data-preview-crop-box'),
+                tagName: hit.tagName,
+            } : null,
+            mutations: [],
+            nativeEvents: [],
+        };
+        ['pointerdown', 'pointermove', 'pointerup', 'pointercancel'].forEach(type => {
+            document.addEventListener(type, event => {
+                records.nativeEvents.push({
+                    button: event.button,
+                    buttons: event.buttons,
+                    clientX: event.clientX,
+                    clientY: event.clientY,
+                    phase: event.eventPhase,
+                    targetAction: event.target && event.target.getAttribute ? event.target.getAttribute('data-action') : null,
+                    targetHandle: event.target && event.target.getAttribute ?
+                        event.target.getAttribute('data-preview-crop-handle') : null,
+                    targetTag: event.target ? event.target.tagName : null,
+                    type,
+                });
+            }, true);
+        });
+        const observer = new MutationObserver(entries => {
+            entries.forEach(entry => {
+                records.mutations.push({
+                    attributeName: entry.attributeName,
+                    newValue: layer.getAttribute(entry.attributeName),
+                    oldValue: entry.oldValue,
+                });
+            });
+        });
+        observer.observe(layer, {
+            attributeFilter: [
+                'data-preview-crop-height',
+                'data-preview-crop-left',
+                'data-preview-crop-top',
+                'data-preview-crop-width',
+            ],
+            attributeOldValue: true,
+        });
+        window.__ccbCropPointerDiagnostic = {layer, points, records, observer};
+        return records;
+    }, {start: startPoint, end: endPoint});
+
+    await page.mouse.move(startPoint.x, startPoint.y);
+    await page.mouse.down();
+    await page.mouse.move(endPoint.x, endPoint.y, {steps: 8});
+    await page.mouse.up();
+    await waitForFrames(page);
+
+    const nativeResult = await activeLayer.evaluate(layer => {
+        const diagnostic = window.__ccbCropPointerDiagnostic;
+        const snapshot = () => ({
+            height: layer.getAttribute('data-preview-crop-height'),
+            left: layer.getAttribute('data-preview-crop-left'),
+            top: layer.getAttribute('data-preview-crop-top'),
+            width: layer.getAttribute('data-preview-crop-width'),
+        });
+        diagnostic.records.afterNative = snapshot();
+        diagnostic.records.nativeChanged =
+            JSON.stringify(diagnostic.records.afterNative) !== JSON.stringify(diagnostic.records.before);
+        return diagnostic.records;
+    });
+
+    const directResult = await activeLayer.evaluate(layer => {
+        const diagnostic = window.__ccbCropPointerDiagnostic;
+        const handleNode = layer.querySelector('[data-preview-crop-handle="se"]');
+        const eventFor = (target, point) => ({
+            button: 0,
+            buttons: 1,
+            clientX: point.x,
+            clientY: point.y,
+            preventDefault: () => {},
+            target,
+        });
+        const snapshot = () => ({
+            height: layer.getAttribute('data-preview-crop-height'),
+            left: layer.getAttribute('data-preview-crop-left'),
+            top: layer.getAttribute('data-preview-crop-top'),
+            width: layer.getAttribute('data-preview-crop-width'),
+        });
+        window.localCourseBannerBuilderStartCropInteraction(eventFor(handleNode, diagnostic.points.start));
+        window.localCourseBannerBuilderHandleCropPointerMove(eventFor(document, diagnostic.points.end));
+        window.localCourseBannerBuilderStopCropInteraction();
+        diagnostic.records.directAfter = snapshot();
+        diagnostic.records.directChanged =
+            JSON.stringify(diagnostic.records.directAfter) !== JSON.stringify(diagnostic.records.afterNative);
+        diagnostic.observer.disconnect();
+        return diagnostic.records;
+    });
+
+    writeEvidence(path.join(env.artifactRoot, 'ccb-crop-pointer-diagnostic.json'), {
+        scenario: 'EED-CCB-2026-0043-QA2',
+        initial: diagnostic,
+        nativeResult,
+        directResult,
+    });
+    await form.locator('[data-action="local-course-banner-builder-cancel-preview-crop"]').first().click();
+    await waitForFrames(page);
+    expect(directResult.hitOwnsPointer, 'Diagnostic handle must own its centre point').toBe(true);
+    expect(directResult.nativeEvents.some(event => event.type === 'pointerdown'), 'Diagnostic native pointerdown must be logged').toBe(true);
+    expect(directResult.nativeEvents.some(event => event.type === 'pointermove'), 'Diagnostic native pointermove must be logged').toBe(true);
+    expect(
+        directResult.nativeChanged || directResult.directChanged,
+        'Diagnostic must prove whether native or direct Crop handling can mutate the payload'
+    ).toBe(true);
+};
+
 test('EED-CCB-2026-0043-QA1 Crop and Recrop preserve image placement across widths', async() => {
     test.setTimeout(300000);
     const env = requireEnvironment();
@@ -240,6 +382,11 @@ test('EED-CCB-2026-0043-QA1 Crop and Recrop preserve image placement across widt
         await uploadImage(page, form, env.imageFixture, env.manifest);
         const image = form.locator('[data-preview-current-image="1"][data-preview-draft-layer="1"] [data-preview-image-tag="1"]').first();
         await expect.poll(() => image.evaluate(node => node.complete ? node.naturalWidth : 0), {timeout: 45000}).toBeGreaterThan(0);
+
+        if (process.env.EASYEDU_CCB_CROP_POINTER_DIAGNOSTIC === '1') {
+            await cropPointerDiagnostic(page, form, env);
+            return;
+        }
 
         for (const width of [1440, 760]) {
             await page.setViewportSize({width, height: 960});

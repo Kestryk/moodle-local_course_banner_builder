@@ -17,6 +17,7 @@ $checks = [ordered]@{
     'Crop gestures use proportional non-saturating movement' = (($spec -match 'changeCrop\(page, form, -0\.12\)') -and ($spec -match 'changeCrop\(page, form, 0\.05\)'));
     'Gesture targets the stable active southeast handle and proves pointer ownership' = (($spec -match 'waitForStableBox') -and ($spec -match 'preview-image-layer--crop-editing') -and ($spec -match 'data-preview-crop-handle="se"') -and ($spec -match 'elementFromPoint'));
     'Crop payload change is observed before Apply' = (($spec -match 'Active Crop payload must change before Apply') -and ($spec -match '\.not\.toBe\(liveCropBefore\)'));
+    'Pointer diagnostic compares native events with exported Crop handlers' = (($spec -match 'EASYEDU_CCB_CROP_POINTER_DIAGNOSTIC') -and ($spec -match 'ccb-crop-pointer-diagnostic\.json') -and ($spec -match 'localCourseBannerBuilderStartCropInteraction') -and ($spec -match 'localCourseBannerBuilderHandleCropPointerMove') -and ($spec -match 'MutationObserver'));
     'Placement and geometry are asserted independently from Crop fields' = (($spec -match 'assertPlacement') -and ($spec -match 'expect\(.*\.crop\)'));
     'Crop fields resolve Moodle id or generated name and are bound to draft state' = (($spec -match 'const cropValue = name') -and ($spec -match "'#id_' \+ name") -and ($spec -match '\[name=') -and ($spec -match 'assertCropBinding'));
     'Early and state-change captures are retained' = (($spec -match 'crop-recrop-.*-before\.png') -and ($spec -match 'after-initial') -and ($spec -match 'after-cancel'));

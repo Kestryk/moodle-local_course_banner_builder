@@ -35,6 +35,11 @@ many small sections.
   draft Crop layer, verifies that the handle owns its painted centre, uses a
   proportional non-saturating movement and waits for a changed live Crop
   payload before Apply. This is QA-only and changes no product interaction.
+- QA7 adds a bounded pointer diagnostic mode for the same single scenario. It
+  logs native `pointerdown`/`pointermove`/`pointerup` delivery, observes Crop
+  attribute mutations and compares the gesture with direct calls to the
+  exported Crop handlers. This distinguishes a Playwright gesture issue from a
+  product Crop-handler failure without changing product files.
 
 ### EED-CCB-2026-0043 - 2026-08-29
 
