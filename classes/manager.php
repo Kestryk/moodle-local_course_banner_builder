@@ -5893,11 +5893,19 @@ class manager {
     public static function export_source_visual_editor_definition(\stdClass $source): array {
         $layers = [];
         $defaultfitmode = (string)(self::get_source_settings($source)->fitmode ?? self::FIT_MODE_BANNER);
+        // The direct selected-source preview uses the same frame format as the
+        // public banner. Passing that aspect ratio into the shared modal
+        // exporter keeps its saved placement identical for cropped and
+        // uncropped custom image layers.
+        $bannerformat = self::is_site_source($source)
+            ? self::get_site_banner_format()
+            : self::get_course_banner_format();
+        $banneraspect = self::get_banner_format_aspect_ratio($bannerformat);
 
         foreach (self::get_source_elements($source) as $record) {
             $fitmode = self::get_effective_fit_mode_for_record($record, (int)($source->categoryid ?? 0));
             if (self::get_banner_image_file($record)) {
-                $layer = self::export_modal_preview_image_layer($record, $fitmode, false, false);
+                $layer = self::export_modal_preview_image_layer($record, $fitmode, false, false, $banneraspect);
                 if ($layer) {
                     $layer['enabled'] = !empty($record->isenabled);
                     $layer['editable'] = true;

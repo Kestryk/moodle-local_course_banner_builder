@@ -26,6 +26,23 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0043 RF15 - Crop selection and saved source-preview geometry - 2026-08-30
+
+#### Fixed
+
+- Refresh the active Crop selection border and its actions after Keep
+  proportion changes the surrounding preview geometry, without changing the
+  selected Crop data.
+- Give the selected-source general preview the actual public banner aspect
+  ratio when it rebuilds a saved image layer. This unifies placement for both
+  cropped and uncropped custom layers with the modal and public renderer.
+
+#### Validation
+
+- Add a focused static contract for the active Crop refresh and for the
+  selected-source exporter’s explicit format aspect. Human review remains
+  required for the visible selection and Save/reopen flow.
+
 ### EED-CCB-2026-0043 RF14 - Crop persistence transaction - 2026-08-30
 
 #### Fixed
