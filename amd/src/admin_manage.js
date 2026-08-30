@@ -6724,6 +6724,11 @@ function localCourseBannerBuilderSyncCurrentImagePreview(scope) {
         }
         if (layer.dataset.previewCropEditLayout === '1' && layer.querySelector('[data-preview-crop-editor="1"]')) {
             localCourseBannerBuilderUpdateCropSelectionFrame(layer, localCourseBannerBuilderGetPreviewCropState(layer));
+            // Keep proportion may change the surrounding modal geometry while
+            // Crop stays active. The Crop box is the only visible selection in
+            // that mode, so refresh it from the unchanged Crop state instead
+            // of leaving its border/actions measured against the old frame.
+            localCourseBannerBuilderRefreshCropEditor(layer);
             localCourseBannerBuilderUpdatePreviewAspectLockButton(layer);
             return;
         }
