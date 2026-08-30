@@ -26,6 +26,20 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0043 RF12 - Vertical Crop geometry - 2026-08-30
+
+#### Fixed
+
+- Let top and bottom Crop handles apply the same visible aspect constraint as
+  corner handles before Apply. They no longer leave the editor showing a box
+  that the saved image must reshape afterward.
+
+#### Validation
+
+- Add a static vertical-handle contract alongside the modal Crop placement,
+  draft and history checks. Preview review remains the proof for the pointer
+  interaction and final saved geometry.
+
 ### EED-CCB-2026-0043 RF11 - Canonical modal Crop placement - 2026-08-30
 
 #### Fixed

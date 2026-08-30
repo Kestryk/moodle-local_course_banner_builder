@@ -23,6 +23,9 @@ $checks = [ordered]@{
         ($source -notmatch 'function localCourseBannerBuilderGetCropSessionSelectionState'));
     'Source and modal Crop retain one direct visible-selection invariant' =
         ($source -match '(?s)function localCourseBannerBuilderApplyCropEditor\(control, sourceMode\).*?The modal and the source preview share one invariant: after every Crop,.*?visible editor box is the new outer placement');
+    'Vertical Crop handles constrain their visible width before Apply' =
+        (($source -match "(?s)function localCourseBannerBuilderConstrainCropResize\(crop, interaction\).*?if \(mode === 'n' \|\| mode === 's'\) \{\s*crop\.width = widthFromHeight\(crop\.height\);\s*crop\.left = centerX - \(crop\.width / 2\);") -and
+        ($source -notmatch "(?s)function localCourseBannerBuilderConstrainCropResize\(crop, interaction\).*?\['n', 's', 'e', 'w'\]\.indexOf\(mode\).*?return crop;"));
     'Draft selection records a history boundary before switching' =
         ($source -match '(?s)function localCourseBannerBuilderSelectDraftPreviewLayer\(form, index\).*?localCourseBannerBuilderPushModalPreviewHistory\(form\).*?localCourseBannerBuilderCommitActiveDraftCropBeforeSwitch\(form\)');
     'Focused CROP-08 scenario requires exactly two pre-existing image selectors' =

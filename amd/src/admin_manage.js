@@ -4614,9 +4614,6 @@ function localCourseBannerBuilderGetActivePreviewCropLayer(scope) {
 function localCourseBannerBuilderConstrainCropResize(crop, interaction) {
     var rect = interaction.rect;
     var mode = interaction.mode;
-    if (['n', 's', 'e', 'w'].indexOf(mode) !== -1) {
-        return crop;
-    }
     var aspect = interaction.aspectRatio || 1;
     var start = interaction.startCrop;
     var centerX = start.left + (start.width / 2);
