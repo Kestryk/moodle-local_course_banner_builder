@@ -172,7 +172,8 @@ class manage_banner_form extends \moodleform {
             $overlayconflictmessage,
             $overlayconflictmessageinline,
             $iscreatewithoverlayconflict,
-            $currentisoverlaylayer
+            $currentisoverlaylayer,
+            $issitebanneradmin
         );
         $mform->addElement('static', 'layervalidationwarning', '', \html_writer::div(
             get_string('layercontentrequired', 'local_course_banner_builder'),
@@ -201,6 +202,7 @@ class manage_banner_form extends \moodleform {
      * @param string $overlayconflictmessageinline
      * @param bool $iscreatewithoverlayconflict
      * @param bool $currentisoverlaylayer
+     * @param bool $issitebanneradmin
      * @return void
      */
     protected function add_advanced_options(
@@ -218,7 +220,8 @@ class manage_banner_form extends \moodleform {
         string $overlayconflictmessage = '',
         string $overlayconflictmessageinline = '',
         bool $iscreatewithoverlayconflict = false,
-        bool $currentisoverlaylayer = false
+        bool $currentisoverlaylayer = false,
+        bool $issitebanneradmin = false
     ): void {
         $usesharedcreatepreview = $formmode === 'create' && $showadvanced && $showborder;
         if ($showadvanced) {

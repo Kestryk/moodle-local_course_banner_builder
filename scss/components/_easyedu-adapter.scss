@@ -9,6 +9,7 @@
 .local-course-banner-builder-layer-modal-content,
 .local-course-banner-builder-slideshow-preview-modal,
 .local-course-banner-builder-title-settings-modal,
+.local-course-banner-builder-source-chain-preview-modal,
 .local-course-banner-builder-settings-hero,
 #admin-enabled,
 #admin-enabledcustomfields,
@@ -1474,16 +1475,73 @@
         @include easyedu.context-modal-variant(primary);
         @include easyedu.preview-modal-content-shell;
         @include easyedu.preview-modal-inline-rhythm;
+
+        // The runtime preview is appended directly to body rather than inside
+        // the administration root. Keep the actual surface opaque even when a
+        // theme delays or filters inherited custom properties.
+        background: linear-gradient(180deg, #f7fbff 0%, #fff 11rem), #fff;
+    }
+
+    .local-course-banner-builder-source-chain-preview-modal-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        min-height: 4.35rem;
+        padding-block: 0.75rem;
+    }
+
+    .local-course-banner-builder-source-chain-preview-modal-identity {
+        display: inline-flex;
+        flex: 0 0 2.5rem;
+        align-items: center;
+        justify-content: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        border: 1px solid color-mix(in srgb, var(--easyedu-primary) 22%, #fff 78%);
+        border-radius: 0.85rem;
+        background: #fff;
+        color: var(--easyedu-primary);
+        box-shadow: 0 0.18rem 0.48rem rgba(31, 68, 104, 0.08);
+    }
+
+    .local-course-banner-builder-source-chain-preview-modal-heading {
+        min-width: 0;
+    }
+
+    .local-course-banner-builder-source-chain-preview-modal-eyebrow {
+        display: block;
+        margin-bottom: 0.08rem;
+        color: var(--easyedu-primary);
+        font-size: var(--easyedu-font-size-eyebrow);
+        font-weight: var(--easyedu-font-weight-strong);
+        line-height: 1.2;
+        text-transform: uppercase;
+    }
+
+    .local-course-banner-builder-source-chain-preview-modal-title {
+        margin: 0;
+        color: var(--easyedu-text);
+        font-size: var(--easyedu-font-size-modal-title);
+        font-weight: var(--easyedu-font-weight-semibold);
+        line-height: 1.25;
+    }
+
+    .local-course-banner-builder-source-chain-preview-modal__close {
+        margin-inline-start: auto;
     }
 
     .local-course-banner-builder-source-chain-preview-modal-body {
         @include easyedu.preview-modal-body-shell;
 
         overflow-y: auto;
+        background: #fff;
     }
 
     .local-course-banner-builder-source-chain-preview-modal-footer {
         @include easyedu.preview-modal-footer-shell;
+
+        min-height: 4rem;
+        background: #fff;
     }
 
     .local-course-banner-builder-source-chain-preview-feedback {
@@ -1496,6 +1554,11 @@
         border-color: color-mix(in srgb, var(--easyedu-danger) 28%, var(--easyedu-empty-border) 72%);
         color: var(--easyedu-danger);
     }
+}
+
+[data-action="local-course-banner-builder-show-source-chain-preview"].is-focus-returned {
+    outline: 0.18rem solid color-mix(in srgb, var(--easyedu-primary, #0f6cbf) 58%, transparent);
+    outline-offset: 0.14rem;
 }
 
 .modal[id^="local-course-banner-builder-"]
