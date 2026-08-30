@@ -2,6 +2,17 @@
 
 Status: Implemented — validation pending
 
+## RF3 corrective pass - 2026-08-30
+
+Human review rejected the earlier visual result. RF3 therefore strengthens
+the inherited Border/Overlay labels and canonical checkerboard, restores the
+spacing around Collapse all and softens the Layer & Overrides heading.
+
+The source Preview modal now uses the opaque shared surface, common close
+button, Kit loading and feedback treatments, and a footer Edit source action.
+Its Desktop/Mobile choice remains transient to the modal and does not alter the
+saved source or public banner mode.
+
 ## Scope
 
 - Replace immediate `hidden` changes for configured-source descendants with the existing cancellable CCB Motion lifecycle.

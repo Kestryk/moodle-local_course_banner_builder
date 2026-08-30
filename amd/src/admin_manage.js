@@ -1571,9 +1571,9 @@ function localCourseBannerBuilderEnsureSourceChainPreviewModal() {
             '<div class="modal-content local-course-banner-builder-source-chain-preview-modal-content">' +
                 '<div class="modal-header d-flex align-items-center">' +
                     '<h5 class="modal-title flex-grow-1">Source preview</h5>' +
-                    '<button type="button" class="close ml-auto ms-auto" data-dismiss="modal" ' +
+                    '<button type="button" class="close local-course-banner-builder-modal__close ml-auto ms-auto" data-dismiss="modal" ' +
                         'data-bs-dismiss="modal" aria-label="Close">' +
-                        '<span aria-hidden="true">&times;</span>' +
+                        '<i class="icon fa fa-times fa-fw" aria-hidden="true"></i>' +
                     '</button>' +
                 '</div>' +
                 '<div class="modal-body local-course-banner-builder-source-chain-preview-modal-body" ' +
@@ -1584,6 +1584,35 @@ function localCourseBannerBuilderEnsureSourceChainPreviewModal() {
         '</div>';
     document.body.appendChild(modal);
     return modal;
+}
+
+/**
+ * Complete every source-preview close path with the same transient cleanup.
+ *
+ * Bootstrap 4, Bootstrap 5 and the local fallback do not share one event
+ * implementation. Keeping the cleanup here ensures Escape, backdrop, header
+ * close and the fallback all invalidate an in-flight request and return focus
+ * only once.
+ *
+ * @param {HTMLElement} modal Source-preview modal.
+ * @returns {void}
+ */
+function localCourseBannerBuilderFinishSourceChainPreviewClose(modal) {
+    if (!modal || modal.dataset.sourceChainPreviewFocusReturned === '1') {
+        return;
+    }
+    modal.dataset.sourceChainPreviewFocusReturned = '1';
+    modal.dataset.sourceChainPreviewRequest = '';
+    modal.classList.remove('is-loading', 'is-easyedu-animating');
+    var body = modal.querySelector('[data-source-chain-preview-modal-body="1"]');
+    if (body) {
+        body.classList.remove('is-loading');
+        body.setAttribute('aria-busy', 'false');
+    }
+    var opener = modal.localCourseBannerBuilderSourceChainPreviewOpener;
+    if (opener && document.contains(opener)) {
+        opener.focus();
+    }
 }
 
 /**
@@ -1606,16 +1635,14 @@ function localCourseBannerBuilderShowSourceChainPreview(button) {
     var requestToken = String(Date.now()) + Math.random();
     modal.dataset.sourceChainPreviewRequest = requestToken;
     modal.dataset.sourceChainPreviewFocusReturn = '1';
+    modal.dataset.sourceChainPreviewFocusReturned = '0';
     if (!modal.dataset.sourceChainPreviewFocusBound) {
-        var restoreFocus = function() {
-            var opener = modal.localCourseBannerBuilderSourceChainPreviewOpener;
-            if (modal.dataset.sourceChainPreviewFocusReturn === '1' && opener && document.contains(opener)) {
-                opener.focus();
-            }
+        var finishClose = function() {
+            localCourseBannerBuilderFinishSourceChainPreviewClose(modal);
         };
-        modal.addEventListener('hidden.bs.modal', restoreFocus);
+        modal.addEventListener('hidden.bs.modal', finishClose);
         if (typeof window.jQuery !== 'undefined') {
-            window.jQuery(modal).on('hidden.bs.modal', restoreFocus);
+            window.jQuery(modal).on('hidden.bs.modal', finishClose);
         }
         modal.dataset.sourceChainPreviewFocusBound = '1';
     }
@@ -1623,6 +1650,7 @@ function localCourseBannerBuilderShowSourceChainPreview(button) {
         modal.classList.add('is-loading');
         body.classList.add('is-loading');
         body.setAttribute('aria-busy', 'true');
+        body.removeAttribute('tabindex');
         body.innerHTML = '<div class="loading-icon icon-no-margin" role="status">' +
             '<span class="sr-only">' + localCourseBannerBuilderGetJsString('loading', 'Loading') + '</span></div>';
     }
@@ -1654,10 +1682,18 @@ function localCourseBannerBuilderShowSourceChainPreview(button) {
         modal.classList.remove('is-loading');
         body.classList.remove('is-loading');
         body.setAttribute('aria-busy', 'false');
+        body.removeAttribute('tabindex');
         if (!panel) {
-            body.innerHTML = '<p class="text-muted mb-0">' +
-                localCourseBannerBuilderGetJsString('previewunavailable', 'Preview unavailable.') +
-                '</p>';
+            var unavailableMessage = document.createElement('p');
+            unavailableMessage.className = 'local-course-banner-builder-source-chain-preview-feedback mb-0';
+            unavailableMessage.textContent = localCourseBannerBuilderGetJsString(
+                'previewunavailable',
+                'Preview unavailable.'
+            );
+            body.innerHTML = '';
+            body.appendChild(unavailableMessage);
+            body.setAttribute('tabindex', '-1');
+            body.focus();
             return;
         }
         Array.prototype.slice.call(panel.querySelectorAll(
@@ -1680,7 +1716,7 @@ function localCourseBannerBuilderShowSourceChainPreview(button) {
             editButton.className = 'btn btn-primary local-course-banner-builder-source-preview-button';
             editButton.href = editUrl;
             var editIcon = document.createElement('i');
-            editIcon.className = 'fa fa-pen me-2';
+            editIcon.className = 'icon fa fa-pen fa-fw';
             editIcon.setAttribute('aria-hidden', 'true');
             var editText = document.createElement('span');
             editText.textContent = editLabel || localCourseBannerBuilderGetJsString('editsourcebutton', 'Edit source');
@@ -1701,7 +1737,8 @@ function localCourseBannerBuilderShowSourceChainPreview(button) {
             body.setAttribute('aria-busy', 'false');
             body.innerHTML = '';
             var errorMessage = document.createElement('p');
-            errorMessage.className = 'text-danger mb-0';
+            errorMessage.className = 'local-course-banner-builder-source-chain-preview-feedback ' +
+                'local-course-banner-builder-source-chain-preview-feedback--error mb-0';
             errorMessage.textContent = error.message || localCourseBannerBuilderGetJsString(
                 'unabletoloadsourcepreview',
                 'Unable to load source preview'
@@ -14391,10 +14428,11 @@ function localCourseBannerBuilderSetSourcePreviewMode(root, mode, animate) {
         return Promise.resolve(false);
     }
     mode = mode === 'mobile' ? 'mobile' : 'desktop';
+    var isModalPreview = !!root.closest('.local-course-banner-builder-source-chain-preview-modal');
     var apply = function() {
         root.setAttribute('data-source-preview-mode', mode);
         var sourcekey = root.getAttribute('data-sourcekey') || '';
-        if (sourcekey) {
+        if (sourcekey && !isModalPreview) {
             localCourseBannerBuilderSourcePreviewModes[sourcekey] = mode;
         }
         Array.prototype.slice.call(root.querySelectorAll('[data-source-preview-mode-value]')).forEach(function(button) {
@@ -14439,12 +14477,13 @@ function localCourseBannerBuilderInitSourcePreviewMode(root) {
     }
     var buttons = Array.prototype.slice.call(control.querySelectorAll('[data-source-preview-mode-value]'));
     var sourcekey = root.getAttribute('data-sourcekey') || '';
+    var isModalPreview = !!root.closest('.local-course-banner-builder-source-chain-preview-modal');
     var motionRoot = root.closest('[data-easyedu-motion-policy]') || root;
     if (!motionRoot.dataset.easyeduMotionInitialised) {
         Motion.init(motionRoot);
         motionRoot.dataset.easyeduMotionInitialised = '1';
     }
-    localCourseBannerBuilderSetSourcePreviewMode(root, sourcekey && localCourseBannerBuilderSourcePreviewModes[sourcekey] ?
+    localCourseBannerBuilderSetSourcePreviewMode(root, !isModalPreview && sourcekey && localCourseBannerBuilderSourcePreviewModes[sourcekey] ?
         localCourseBannerBuilderSourcePreviewModes[sourcekey] : root.getAttribute('data-source-preview-mode'), false);
     buttons.forEach(function(button, index) {
         if (button.dataset.sourcePreviewModeBound) {
@@ -19106,6 +19145,9 @@ function localCourseBannerBuilderForceHideModal(modal) {
     }
     localCourseBannerBuilderRestoreAddLayerModalPortal(modal);
     localCourseBannerBuilderRestoreParentSourceChangeModalPortal(modal);
+    if (modal.classList.contains('local-course-banner-builder-source-chain-preview-modal')) {
+        localCourseBannerBuilderFinishSourceChainPreviewClose(modal);
+    }
 }
 
 function localCourseBannerBuilderHideModal(modal) {

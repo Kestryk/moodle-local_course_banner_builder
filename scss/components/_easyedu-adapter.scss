@@ -1072,7 +1072,7 @@
     .local-course-banner-builder-configured-source-tools {
         @include easyedu.table-toolbar;
 
-        margin-bottom: 0.55rem;
+        margin: 0.85rem 0 0.65rem;
 
         .local-course-banner-builder-chain-collapse-toggle {
             @include easyedu.admin-secondary-action;
@@ -1470,16 +1470,31 @@
     }
 
     .local-course-banner-builder-source-chain-preview-modal-content {
+        @include easyedu.context-modal-surface;
+        @include easyedu.context-modal-variant(primary);
         @include easyedu.preview-modal-content-shell;
         @include easyedu.preview-modal-inline-rhythm;
     }
 
     .local-course-banner-builder-source-chain-preview-modal-body {
         @include easyedu.preview-modal-body-shell;
+
+        overflow-y: auto;
     }
 
     .local-course-banner-builder-source-chain-preview-modal-footer {
         @include easyedu.preview-modal-footer-shell;
+    }
+
+    .local-course-banner-builder-source-chain-preview-feedback {
+        @include easyedu.inline-empty-state;
+
+        margin: 0;
+    }
+
+    .local-course-banner-builder-source-chain-preview-feedback--error {
+        border-color: color-mix(in srgb, var(--easyedu-danger) 28%, var(--easyedu-empty-border) 72%);
+        color: var(--easyedu-danger);
     }
 }
 
