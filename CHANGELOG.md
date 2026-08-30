@@ -26,6 +26,21 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0043 RF11 - Canonical modal Crop placement - 2026-08-30
+
+#### Fixed
+
+- Remove the modal-only Recrop composition branch that regressed from the
+  second Crop onward. Every Crop now promotes the same visible selection box
+  to the outer placement, matching the stable source-preview Crop path.
+- Keep the accepted Crop attributes, draft state and final Save path intact;
+  no Crop depends on whether it is the first, second, third or later edit.
+
+#### Validation
+
+- Replace the RF10 conditional-composition static contract with the one direct
+  visible-selection invariant shared by modal and source-preview Crop.
+
 ### EED-CCB-2026-0043 RF10 - Unbounded modal Recrop composition - 2026-08-30
 
 #### Fixed

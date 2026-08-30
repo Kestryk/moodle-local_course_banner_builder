@@ -16,15 +16,13 @@ $checks = [ordered]@{
         ($source -match '(?s)function localCourseBannerBuilderRestoreDraftTransformationHistory\(form, snapshot\).*?availableIndexes.*?settings\[index\] && settings\[index\]\.deleted.*?localCourseBannerBuilderRenderDraftUploadPreview\(form\)');
     'Fit leaves Crop fields outside its replacement patch' =
         ($source -match '(?s)function localCourseBannerBuilderApplyFitToLayerFormPreview\(form\).*?Fit changes outer placement only; it deliberately preserves Crop fields\.');
-    'First modal Crop derives outer geometry from the accepted selection' =
-        ($source -match '(?s)function localCourseBannerBuilderApplyCropEditor\(control, sourceMode\).*?if \(!cropSelectionState\) \{\s*cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState\(layer, false\);');
-    'Modal Recrop measures the rendered editor selection in session coordinates' =
-        ($source -match '(?s)function localCourseBannerBuilderGetCropSessionSelectionState\(layer\).*?GetCropSessionSourceState\(layer\).*?data-preview-crop-box="1".*?BuildPercentRectFromDomRect\(boxRect, frameRect\).*?source\.width.*?source\.height');
-    'Every modal Recrop composes inside the already accepted geometry' =
-        (($source -match '(?s)function localCourseBannerBuilderGetModalRecropSelectionCustomState\(layer, selectionState\).*?relativeWidth = currentCropState\.width / initialWidth.*?acceptedWidth \* relativeWidth.*?acceptedLeft \+ \(acceptedWidth \* relativeLeft\)') -and
-        ($source -match '(?s)function localCourseBannerBuilderApplyCropEditor\(control, sourceMode\).*?GetCropSessionSelectionState\(layer\).*?sourceMode \? null :\s*localCourseBannerBuilderGetModalRecropSelectionCustomState\(layer, crop\)'));
-    'Recrop outside the accepted Crop falls back to absolute editor geometry' =
-        ($source -match '(?s)function localCourseBannerBuilderGetModalRecropSelectionCustomState\(layer, selectionState\).*?Reframing outside the accepted Crop.*?return null;');
+    'Every modal Crop derives outer geometry directly from the visible editor box' =
+        ($source -match '(?s)function localCourseBannerBuilderApplyCropEditor\(control, sourceMode\).*?var crop = localCourseBannerBuilderGetPreviewCropState\(layer\);.*?var cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState\(layer, false\);');
+    'Modal Crop does not introduce a separate Recrop coordinate system' =
+        (($source -notmatch 'function localCourseBannerBuilderGetModalRecropSelectionCustomState') -and
+        ($source -notmatch 'function localCourseBannerBuilderGetCropSessionSelectionState'));
+    'Source and modal Crop retain one direct visible-selection invariant' =
+        ($source -match '(?s)function localCourseBannerBuilderApplyCropEditor\(control, sourceMode\).*?The modal and the source preview share one invariant: after every Crop,.*?visible editor box is the new outer placement');
     'Draft selection records a history boundary before switching' =
         ($source -match '(?s)function localCourseBannerBuilderSelectDraftPreviewLayer\(form, index\).*?localCourseBannerBuilderPushModalPreviewHistory\(form\).*?localCourseBannerBuilderCommitActiveDraftCropBeforeSwitch\(form\)');
     'Focused CROP-08 scenario requires exactly two pre-existing image selectors' =
