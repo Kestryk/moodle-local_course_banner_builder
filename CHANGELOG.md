@@ -26,6 +26,21 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0043 RF14 - Crop persistence transaction - 2026-08-30
+
+#### Fixed
+
+- Preserve all Crop fields through repeated Keep proportion toggles instead of
+  restoring only the outer placement snapshot.
+- Make the standalone/general preview calculate locked placement from the same
+  effective cropped image dimensions as the persisted public geometry.
+
+#### Validation
+
+- Add static contracts for Crop-bearing aspect snapshots and general-preview
+  geometry parity. Human preview review remains required for interaction and
+  save/reopen proof.
+
 ### EED-CCB-2026-0043 RF13 - Unidirectional Crop geometry - 2026-08-30
 
 #### Fixed

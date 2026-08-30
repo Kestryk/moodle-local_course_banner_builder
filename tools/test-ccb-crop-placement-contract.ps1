@@ -6,14 +6,16 @@ $pluginRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 $source = Get-Content -LiteralPath (Join-Path $pluginRoot 'amd\src\admin_manage.js') -Raw
 $build = Get-Content -LiteralPath (Join-Path $pluginRoot 'amd\build\admin_manage.min.js') -Raw
 $map = Get-Content -LiteralPath (Join-Path $pluginRoot 'amd\build\admin_manage.min.js.map') -Raw | ConvertFrom-Json
-$outerPlacementCalls = [regex]::Matches(
+$naturalOuterPlacementCalls = [regex]::Matches(
     $source,
     'localCourseBannerBuilderGetEffectivePreviewImageDimensions\(\s*naturalWidth,\s*naturalHeight,\s*cropState,\s*true\s*\)'
 ).Count
 
 $checks = [ordered]@{
     'Crop remains an inner-image transform' = $source -match 'Crop is an inner-image transform';
-    'Modal and draft-selection render paths retain natural outer dimensions' = $outerPlacementCalls -eq 2;
+    'Modal and draft-selection render path retains natural outer dimensions' = $naturalOuterPlacementCalls -eq 1;
+    'Standalone preview shares the persisted Crop aspect for locked placement' =
+        ($source -match '(?s)function localCourseBannerBuilderSyncStandalonePreviewLayer\(previewRoot, layer\).*?localCourseBannerBuilderGetEffectivePreviewImageDimensions\(\s*naturalWidth,\s*naturalHeight,\s*cropState,\s*false\s*\)');
     'Crop styles still enlarge and translate the inner image' = ($source -match 'width: .+10000 / crop\.width') -and ($source -match 'transform: translate');
     'Generated AMD is present and contains Crop rendering' = ($build.Length -gt 1000) -and ($build -match 'data-preview-crop-width');
     'Generated source map is valid and embeds source content' = ($map.version -eq 3) -and $map.sourcesContent -and ($map.sources.Count -gt 0);
