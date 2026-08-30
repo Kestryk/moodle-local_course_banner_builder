@@ -117,7 +117,8 @@ Status values:
 | CROP-04 | Open crop editor | Original image and crop selection are shown | Playwright | Blocked |
 | CROP-05 | Move and resize crop, then validate | Crop persists after reload | Playwright | Blocked |
 | CROP-06 | Cancel crop | Previous persisted geometry is restored | Playwright | Blocked |
-| CROP-07 | Crop two draft images independently | Switching selection preserves both crops | Playwright | Blocked |
+| CROP-07 | Crop two existing draft images independently | Switching selection preserves both crops and their outer placement | Playwright | Candidate |
+| CROP-08 | Chronological multi-image transformation history | Starting with exactly two existing draft images, Crop A, switch to B, Fit/Fill/placement/size/opacity/options, then Undo/Redo restores the selected image and every non-destructive state in action order. `Fit to preview` retains Crop. Filemanager Add/Delete is explicitly excluded because current Moodle draft deletion is irreversible; that lifecycle is `EED-CCB-2026-0056`. | One local-supervised leased Moodle 5.1 Playwright scenario (`ccb-crop-recrop-history.spec.js`) plus desktop/narrow manual review | Candidate |
 | LYR-01 | Reorder layers by buttons | Preview z-order changes and persists | Behat/Playwright | Blocked |
 | LYR-02 | Reorder layers by drag/drop | Same persisted order as button flow | Playwright | Blocked |
 | LYR-03 | Push image above overlay/border | Conflicting order controls are disabled | Playwright | Blocked |

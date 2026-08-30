@@ -235,6 +235,30 @@ fields may change without changing the image rectangle. This does not change
 Filemanager, modal layout, source-preview selection geometry or QA assertions.
 `tools/test-ccb-crop-placement-contract.ps1` protects the split.
 
+### Atomic multi-image transformation history (`EED-CCB-2026-0043-RF7`) - 2026-08-30
+
+`Fit to preview` changes Fit and placement values only. It no longer resets
+the accepted Crop rectangle. In the add-image modal, history snapshots now
+capture the selected existing image plus the reversible transformation state of
+every existing draft image: Crop, Fit/Fill, placement, custom size, opacity,
+ordering/options and the active-image selection. Restoring a snapshot merges
+only those states into still-available, non-deleted files, then rerenders the
+selected draft. This prevents Undo/Redo from crossing an image switch with the
+previous image's form values.
+
+Filemanager lifecycle is intentionally not part of this transaction. An image
+added after a snapshot remains added; a Moodle draft file deleted after a
+snapshot is not recreated. That reversible server/file contract is separately
+named `EED-CCB-2026-0056`.
+
+Before a browser run, the fixture must open an image modal that already has
+exactly two image selectors. The focused `CROP-08` scenario then records
+desktop and narrow before/after Crop, B Fit/Fill/placement/size/opacity/options,
+each Undo/Redo boundary, final draft JSON and current/visual image rectangles.
+The visible inner Crop must remain constrained while its outer placement stays
+stable. `tools/test-image-modal-transform-contract.ps1` and
+`tools/test-ccb-crop-history-contract.ps1` protect the source contract.
+
 ### Recrop action-rail avoidance (`EED-CCB-2026-0023-RF2-B`) - 2026-08-28
 
 When Crop or Recrop is active, the floating Crop and Cancel actions retain the
