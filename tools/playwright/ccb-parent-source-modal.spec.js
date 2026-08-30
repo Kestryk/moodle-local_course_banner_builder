@@ -47,8 +47,11 @@ const login = async(page, environment) => {
     await page.goto(environment.baseUrl + '/login/index.php', {waitUntil: 'domcontentloaded'});
     await page.locator('#username').fill(environment.username);
     await page.locator('#password').fill(environment.password);
-    await page.locator('#loginbtn').click({noWaitAfter: true});
-    await expect(page).not.toHaveURL(/\/login\//, {timeout: 30000});
+    await Promise.all([
+        page.waitForURL(url => url.protocol.startsWith('http') &&
+            !url.pathname.endsWith('/login/index.php'), {timeout: 30000}),
+        page.locator('#loginbtn').click(),
+    ]);
 };
 
 test('Change parent modal keeps the table informative and rejects a descendant', async({page}) => {

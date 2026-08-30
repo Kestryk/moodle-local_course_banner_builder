@@ -29,6 +29,15 @@ the searched list is fully within the opaque modal bounds, keyboard/Escape and
 backdrop closure still work, and focus returns to the originating pencil at
 desktop and a narrow viewport.
 
+### QA harness note
+
+The first authorised RF3 run stopped at Moodle login, before it created any
+Parent-modal evidence. The test now uses the same explicit post-login HTTP
+navigation wait as the established supervised CCB scenarios. This is a
+QA-only reliability correction: it does not alter product behaviour and needs
+one newly authorised, non-retry validation run. No user-facing changelog entry
+is required for this harness-only correction.
+
 ## Allowlist
 
 - `templates/admin_manage.mustache`
