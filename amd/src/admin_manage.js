@@ -4357,10 +4357,50 @@ function localCourseBannerBuilderGetCropSelectionCustomState(layer, preserveSess
     };
 }
 
-function localCourseBannerBuilderGetModalRecropSelectionCustomState(layer) {
+/**
+ * Reads the Crop selection from its rendered editor box in the coordinate
+ * system captured at the start of this editor session.
+ *
+ * Crop attributes are persisted between sessions, but successive Recrops must
+ * compose from what the editor actually displays. Reading the box avoids
+ * accumulating rounding or stale attribute coordinates on a third (or later)
+ * Recrop.
+ *
+ * @param {HTMLElement} layer Current editable image layer.
+ * @returns {Object|null} Normalised selection state in source coordinates.
+ */
+function localCourseBannerBuilderGetCropSessionSelectionState(layer) {
+    var source = localCourseBannerBuilderGetCropSessionSourceState(layer);
+    var box = layer ? layer.querySelector('[data-preview-crop-box="1"]') : null;
+    var frame = localCourseBannerBuilderGetCropFrameForLayer(layer);
+    if (!source || !box || !frame || !box.getBoundingClientRect || !frame.getBoundingClientRect) {
+        return null;
+    }
+    var boxRect = box.getBoundingClientRect();
+    var frameRect = frame.getBoundingClientRect();
+    if (!boxRect.width || !boxRect.height || !frameRect.width || !frameRect.height ||
+            source.width <= 0 || source.height <= 0) {
+        return null;
+    }
+    var absoluteSelection = localCourseBannerBuilderBuildPercentRectFromDomRect(boxRect, frameRect);
+    if (!absoluteSelection) {
+        return null;
+    }
+    return localCourseBannerBuilderNormaliseCropState({
+        enabled: true,
+        left: ((absoluteSelection.left - source.left) / source.width) * 100,
+        top: ((absoluteSelection.top - source.top) / source.height) * 100,
+        width: (absoluteSelection.width / source.width) * 100,
+        height: (absoluteSelection.height / source.height) * 100
+    });
+}
+
+function localCourseBannerBuilderGetModalRecropSelectionCustomState(layer, selectionState) {
     var sessionPlacement = localCourseBannerBuilderGetCropSessionPlacementState(layer);
     var initialCropState = localCourseBannerBuilderGetCropSessionInitialCropState(layer);
-    var currentCropState = localCourseBannerBuilderGetPreviewCropState(layer);
+    var currentCropState = localCourseBannerBuilderNormaliseCropState(
+        selectionState || localCourseBannerBuilderGetPreviewCropState(layer)
+    );
     if (!sessionPlacement || !initialCropState || !initialCropState.enabled || !currentCropState.enabled) {
         return null;
     }
@@ -4539,13 +4579,18 @@ function localCourseBannerBuilderApplyCropEditor(control, sourceMode) {
     if (!layer) {
         return;
     }
-    var crop = localCourseBannerBuilderGetPreviewCropState(layer);
+    // The rendered Crop box is the source of truth for a modal Recrop. This
+    // keeps every accepted Crop in one coordinate system instead of treating
+    // the third edit as a fresh selection against a stale prior rectangle.
+    var crop = sourceMode ? localCourseBannerBuilderGetPreviewCropState(layer) :
+        (localCourseBannerBuilderGetCropSessionSelectionState(layer) ||
+        localCourseBannerBuilderGetPreviewCropState(layer));
     // The first modal Crop derives its result from the editor box. A Recrop
     // inside an already accepted Crop must instead compose that inner box with
     // the accepted geometry: recalculating from the original image frame is
     // what made a second accepted Crop change the visible size or aspect.
     var cropSelectionState = sourceMode ? null :
-        localCourseBannerBuilderGetModalRecropSelectionCustomState(layer);
+        localCourseBannerBuilderGetModalRecropSelectionCustomState(layer, crop);
     if (!cropSelectionState) {
         cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState(layer, false);
     }

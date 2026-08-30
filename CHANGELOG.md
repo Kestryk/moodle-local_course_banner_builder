@@ -26,6 +26,20 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0043 RF10 - Unbounded modal Recrop composition - 2026-08-30
+
+#### Fixed
+
+- Make every image-modal Recrop compose from the rendered selection in the
+  current Crop session. Third and later accepted Recrops no longer reuse stale
+  stored percentages that can deform the accepted image geometry.
+
+#### Validation
+
+- Extend the static Crop-history contract with the rendered-session selection
+  and unbounded Recrop-composition invariants. Preview and human repetition
+  review remain separately gated.
+
 ### EED-CCB-2026-0043-RF9 - 2026-08-30
 
 #### Fixed
