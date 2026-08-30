@@ -938,6 +938,7 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 .local-course-banner-builder-source-preview-layer--selected::after {
     content: "";
     position: absolute;
+    box-sizing: border-box;
     inset:
         var(--local-course-banner-builder-crop-selection-top, 0)
         var(--local-course-banner-builder-crop-selection-right, 0)
