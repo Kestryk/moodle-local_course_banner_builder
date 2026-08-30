@@ -21,12 +21,13 @@ $checks = [ordered]@{
     'Overflow is detected from the rendered selected Crop bounds' =
         (($source -match 'var right = left \+ width;') -and
         ($source -match 'var bottom = top \+ height;') -and
-        ($source -match 'selectionOverflowsFrame = left < 0 \|\| top < 0'));
-    'An overflowing selection uses the complete preview frame bounds' =
-        (($source -match '(?s)if \(selectionOverflowsFrame\).*?outline\.style\.left = ''0px'';.*?outline\.style\.top = ''0px'';.*?outline\.style\.width = frameRect\.width \+ ''px'';.*?outline\.style\.height = frameRect\.height \+ ''px'';') -and
-        ($source -match 'data-preview-selection-overflow'));
-    'The generated AMD artifact contains the overflow frame indicator' =
-        (($build.Length -gt 1000) -and ($build -match 'data-preview-selection-overflow'));
+        ($source -match '(?s)var clampedEdges = \{.*?left: left < 0.*?top: top < 0.*?right: right > frameRect\.width.*?bottom: bottom > frameRect\.height'));
+    'Overflowing selection edges clamp independently to the preview frame' =
+        (($source -match '(?s)var clampedEdges = \{.*?left: left < 0.*?top: top < 0.*?right: right > frameRect\.width.*?bottom: bottom > frameRect\.height') -and
+        ($source -match "data-preview-selection-clamp-' \+ edge") -and
+        ($source -notmatch "outline\.style\.width = frameRect\.width \+ 'px'"));
+    'The generated AMD artifact contains the magnetic edge indicators' =
+        (($build.Length -gt 1000) -and ($build -match 'data-preview-selection-clamp-'));
     'Selection outline keeps its border inside the frame box' =
         ($scss -match '(?s)\.local-course-banner-builder-preview-selection-outline\s*\{.*?box-sizing:\s*border-box;.*?border:\s*3px');
 }

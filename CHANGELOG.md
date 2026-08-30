@@ -35,6 +35,37 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0059 RF2 - Magnetic selection edges - 2026-08-30
+
+#### Fixed
+
+- Clamp only the selected-image edges that overflow an editable preview. A
+  right-only overflow now paints a magnetic right edge instead of illuminating
+  the complete preview surface.
+- Keep the same three-pixel selection stroke inset uniformly on all four sides
+  in the general, Add image and Edit image previews. Image geometry,
+  hit-testing and persistence remain unchanged.
+
+#### Validation
+
+- Replaced the rejected complete-frame contract with independent edge-clamp
+  assertions and added a focused cumulative RF contract.
+
+### EED-CCB-2026-0043 RF18 - Contained Crop aspect toggle - 2026-08-30
+
+#### Fixed
+
+- Fit the Keep proportions result inside the accepted Crop rectangle after a
+  top, bottom, left or right one-edge Crop. The aspect conversion can no longer
+  choose an equally close candidate that expands outside the visible image.
+- Keep the local selection border inside its image box while retaining the
+  accepted repeated Recrop, Undo/Redo and saved Crop coordinates.
+
+#### Validation
+
+- Added a focused source contract for contained aspect conversion, local
+  border sizing and the generated AMD/CSS artifacts.
+
 ### EED-CCB-2026-0059 - Selection frame for clipped editable images - 2026-08-30
 
 #### Fixed
