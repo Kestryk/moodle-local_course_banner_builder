@@ -11,8 +11,11 @@ param(
 $ErrorActionPreference = 'Stop'
 $scriptDir = Split-Path -Parent $PSCommandPath
 $pluginRoot = (Resolve-Path -LiteralPath (Join-Path $scriptDir '..\..')).Path
-$workspaceRoot = Split-Path -Parent (Split-Path -Parent $pluginRoot)
-$platformRoot = if ($env:EASYEDU_PLATFORM_ROOT) { [IO.Path]::GetFullPath($env:EASYEDU_PLATFORM_ROOT) } else { Join-Path $workspaceRoot 'easyedu-platform' }
+$platformRoot = if ($env:EASYEDU_PLATFORM_ROOT) {
+    [IO.Path]::GetFullPath($env:EASYEDU_PLATFORM_ROOT)
+} else {
+    'C:\dev\easyedu-platform'
+}
 $orchestrationRoot = Join-Path $platformRoot 'tools\orchestration'
 $orchestrationModule = Join-Path $orchestrationRoot 'EasyEduOrchestration.psm1'
 $statusScript = Join-Path $orchestrationRoot 'Get-EasyEduRuntimePreviewStatus.ps1'
