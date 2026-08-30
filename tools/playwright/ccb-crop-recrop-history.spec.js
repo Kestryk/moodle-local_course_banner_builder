@@ -8,7 +8,9 @@ const requireEnvironment = () => {
         'EASYEDU_MOODLE_USERNAME',
         'EASYEDU_MOODLE_PASSWORD',
         'EASYEDU_CCB_CROP_HISTORY_MODAL_URL',
+        'EASYEDU_CCB_CROP_HISTORY_ELEMENT_ID',
         'EASYEDU_CCB_CROP_HISTORY_ARTIFACT_ROOT',
+        'EASYEDU_CCB_CROP_HISTORY_MANIFEST',
     ];
     const missing = names.filter(name => !process.env[name]);
     if (missing.length) {
@@ -16,6 +18,8 @@ const requireEnvironment = () => {
     }
     return {
         artifactRoot: path.resolve(process.env.EASYEDU_CCB_CROP_HISTORY_ARTIFACT_ROOT),
+        elementId: String(process.env.EASYEDU_CCB_CROP_HISTORY_ELEMENT_ID),
+        manifest: path.resolve(process.env.EASYEDU_CCB_CROP_HISTORY_MANIFEST),
         modalUrl: process.env.EASYEDU_CCB_CROP_HISTORY_MODAL_URL,
         password: process.env.EASYEDU_MOODLE_PASSWORD,
         url: process.env.EASYEDU_MOODLE_URL.replace(/\/$/, ''),
@@ -27,8 +31,10 @@ const login = async(page, env) => {
     await page.goto(env.url + '/login/index.php', {waitUntil: 'domcontentloaded'});
     await page.locator('#username').fill(env.username);
     await page.locator('#password').fill(env.password);
-    await page.locator('#loginbtn').click({noWaitAfter: true});
-    await expect(page).not.toHaveURL(/\/login\//);
+    await Promise.all([
+        page.waitForURL(url => url.protocol.startsWith('http') && !url.pathname.endsWith('/login/index.php'), {timeout: 60000}),
+        page.locator('#loginbtn').click(),
+    ]);
 };
 
 const sample = form => form.evaluate(node => {
@@ -57,8 +63,16 @@ test('CROP-08 restores chronological non-destructive transformations across two 
     await login(page, env);
     await page.goto(env.modalUrl, {waitUntil: 'domcontentloaded'});
 
-    const form = page.locator('.modal:visible form.mform, [data-dynamic-layer-modal="1"] form.mform').last();
+    const edit = page.locator('[data-edit-layer-url*="elementid=' + env.elementId + '"]');
+    await expect(edit, 'CROP-08 fixture image layer must expose its edit action.').toHaveCount(1);
+    await edit.click();
+    const form = page.locator('[data-dynamic-layer-modal="1"]:visible form.mform').last();
     await expect(form).toBeVisible();
+    const draftitemid = await form.locator('#id_bannerimage_filemanager').inputValue();
+    expect(draftitemid).toMatch(/^\d+$/);
+    const manifest = JSON.parse(fs.readFileSync(env.manifest, 'utf8').replace(/^\uFEFF/, ''));
+    manifest.draftitemid = Number(draftitemid);
+    fs.writeFileSync(env.manifest, JSON.stringify(manifest, null, 2));
     const selectors = form.locator('[data-draft-preview-select="1"]');
     await expect(selectors).toHaveCount(2);
     const firstIndex = await selectors.nth(0).getAttribute('data-draft-index');

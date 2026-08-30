@@ -47,9 +47,11 @@ many small sections.
 
 #### Validation
 
-- Added static history and transformation contracts plus a future one-test
-  `CROP-08` scenario that starts only with two pre-existing images. Browser
-  execution and visual review remain separately authorised.
+- Added static history and transformation contracts plus a supervised one-test
+  `CROP-08` fixture/runner that starts only with two pre-existing images,
+  discovers the exact test before credentials or fixture setup, and removes
+  its draft/source fixture afterward. Browser execution and visual review
+  remain separately authorised.
 
 ### EED-CCB-2026-0043-RF6 - 2026-08-30
 

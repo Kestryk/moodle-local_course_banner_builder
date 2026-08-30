@@ -6,6 +6,8 @@ $pluginRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 $source = Get-Content -LiteralPath (Join-Path $pluginRoot 'amd\src\admin_manage.js') -Raw
 $build = Get-Content -LiteralPath (Join-Path $pluginRoot 'amd\build\admin_manage.min.js') -Raw
 $spec = Get-Content -LiteralPath (Join-Path $pluginRoot 'tools\playwright\ccb-crop-recrop-history.spec.js') -Raw
+$fixture = Get-Content -LiteralPath (Join-Path $pluginRoot 'tools\playwright\ccb-crop-history-fixture.php') -Raw
+$runner = Get-Content -LiteralPath (Join-Path $pluginRoot 'tools\playwright\Invoke-CCBCropHistoryValidation.ps1') -Raw
 
 $checks = [ordered]@{
     'History captures every existing draft transformation and active selection' =
@@ -22,6 +24,14 @@ $checks = [ordered]@{
         ($spec -match 'EASYEDU_CCB_CROP_HISTORY_MODAL_URL'));
     'Focused CROP-08 scenario does not add or delete Filemanager files' =
         (($spec -notmatch 'setInputFiles') -and ($spec -notmatch 'fp-upload') -and ($spec -notmatch 'delete'));
+    'CROP-08 fixture owns exactly two existing image files and reports an edit route' =
+        (($fixture -like '*CROP-08 fixture must create exactly two element images*') -and
+        ($fixture -like "*'filecount' => count(`$files)*") -and
+        ($fixture -like "*'modalPath' => '/local/course_banner_builder/admin_manage.php?sourcekey='*"));
+    'CROP-08 runner discovers one test before credentials and fixture setup' =
+        (($runner -like '*Selecting exactly one CROP-08 test before credentials or fixture work*') -and
+        ($runner -like '*Playwright discovery did not select exactly one CROP-08 test*') -and
+        ($runner -like "*`$fixture = Invoke-Fixture 'setup'*"));
     'Generated AMD contains the transaction implementation' =
         (($build.Length -gt 1000) -and ($build -match 'localCourseBannerBuilderBuildModalPreviewSnapshot'));
 }

@@ -47,9 +47,11 @@ source map. The placement and selector contracts use that map to verify the
 official minified output without assuming that Terser keeps local function
 names in the bundle.
 
-The future one-test `CROP-08` Playwright scenario starts from a fixture where
-the modal already exposes exactly two image selectors; it must not use the
-Filepicker to add/delete during its assertions. It must capture desktop and
+The dedicated one-test `CROP-08` runner first discovers exactly one test, then
+creates a disposable source with one edit-image layer containing exactly two
+existing images. It opens that layer through its normal edit route; it must not
+use Filepicker to add/delete during assertions. Cleanup removes both the
+temporary modal draft and the disposable source. It must capture desktop and
 narrow states before/after Crop, Fit/Fill, image switching and each Undo/Redo
 step. Human review must confirm that Crop stays visually constrained, Fit does
 not remove Crop, and restoration moves chronologically across both images.
