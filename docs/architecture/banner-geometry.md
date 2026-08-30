@@ -116,10 +116,11 @@ The editable source preview, Add image modal and Edit image modal use one
 transient `local-course-banner-builder-preview-selection-outline` element
 managed by `localCourseBannerBuilderSyncPreviewSelectionOutline`. It normally
 tracks the rendered image Crop selection. If that selection extends beyond any
-edge of the preview frame, the indicator switches to the complete frame bounds
-so all four frame edges remain visible while the image itself stays clipped.
-This is selection chrome only: it does not clamp or rewrite image geometry,
-Crop, pointer hit-testing, Keep proportions, persistence or public rendering.
+edge of the preview frame, only that indicator edge clamps magnetically to the
+matching frame edge. The remaining edges continue to track the selected image;
+a uniform inset keeps the complete stroke inside the clipped preview. This is
+selection chrome only: it does not clamp or rewrite image geometry, Crop,
+pointer hit-testing, Keep proportions, persistence or public rendering.
 The indicator is hidden when there is no visible selected layer and remains
 above preview guides through its existing z-index contract.
 

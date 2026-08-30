@@ -5543,24 +5543,34 @@ function localCourseBannerBuilderSyncPreviewSelectionOutline(frame, layer) {
     var height = layerRect.height * Math.max(0, 100 - cropTop - cropBottom) / 100;
     var right = left + width;
     var bottom = top + height;
-    var selectionOverflowsFrame = left < 0 || top < 0 ||
-        right > frameRect.width || bottom > frameRect.height;
+    var clampedEdges = {
+        left: left < 0,
+        top: top < 0,
+        right: right > frameRect.width,
+        bottom: bottom > frameRect.height
+    };
+    var selectionOverflowsFrame = Object.keys(clampedEdges).some(function (edge) {
+        return clampedEdges[edge];
+    });
+    // Keep the complete stroke inside the clipping surface. Each overflowing
+    // side clamps independently, so a right overflow paints only the magnetic
+    // right edge instead of lighting the complete preview frame.
+    var strokeInset = 3;
+    var maximumRight = Math.max(strokeInset, frameRect.width - strokeInset);
+    var maximumBottom = Math.max(strokeInset, frameRect.height - strokeInset);
+    var outlineLeft = Math.max(strokeInset, Math.min(maximumRight, left));
+    var outlineTop = Math.max(strokeInset, Math.min(maximumBottom, top));
+    var outlineRight = Math.max(strokeInset, Math.min(maximumRight, right));
+    var outlineBottom = Math.max(strokeInset, Math.min(maximumBottom, bottom));
     outline.hidden = false;
     outline.setAttribute('data-preview-selection-overflow', selectionOverflowsFrame ? '1' : '0');
-    if (selectionOverflowsFrame) {
-        // The image may be clipped by the preview frame. Keep the selected
-        // state visible on every edge of that frame without changing the
-        // image's transform, clipping or pointer geometry.
-        outline.style.left = '0px';
-        outline.style.top = '0px';
-        outline.style.width = frameRect.width + 'px';
-        outline.style.height = frameRect.height + 'px';
-        return;
-    }
-    outline.style.left = left + 'px';
-    outline.style.top = top + 'px';
-    outline.style.width = width + 'px';
-    outline.style.height = height + 'px';
+    Object.keys(clampedEdges).forEach(function (edge) {
+        outline.setAttribute('data-preview-selection-clamp-' + edge, clampedEdges[edge] ? '1' : '0');
+    });
+    outline.style.left = outlineLeft + 'px';
+    outline.style.top = outlineTop + 'px';
+    outline.style.width = Math.max(0, outlineRight - outlineLeft) + 'px';
+    outline.style.height = Math.max(0, outlineBottom - outlineTop) + 'px';
 }
 
 function localCourseBannerBuilderSyncModalPreviewSelectionOutline(scope) {
@@ -5854,9 +5864,13 @@ function localCourseBannerBuilderGetClosestAspectPreviewBox(widthPercent, height
     }
     var heightForWidth = (widthPercent * frameAspect) / imageAspect;
     var widthForHeight = (heightPercent * imageAspect) / frameAspect;
-    var keepWidthDelta = Math.abs(heightForWidth - heightPercent);
-    var keepHeightDelta = Math.abs(widthForHeight - widthPercent);
-    if (keepWidthDelta <= keepHeightDelta) {
+    // Keep proportion is a containment operation. In particular, after a
+    // one-edge Crop the accepted visible rectangle is the largest boundary we
+    // may use: choosing the numerically closest aspect candidate can expand
+    // the other axis outside that image when both deltas are equal. Fit the
+    // proportional box inside the current rectangle instead, preserving its
+    // centre in the callers and leaving Crop/persistence coordinates intact.
+    if (heightForWidth <= heightPercent) {
         return {
             width: widthPercent,
             height: heightForWidth

@@ -5411,6 +5411,7 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 .local-course-banner-builder-source-preview-layer--selected::after {
   content: "";
   position: absolute;
+  box-sizing: border-box;
   inset: var(--local-course-banner-builder-crop-selection-top, 0) var(--local-course-banner-builder-crop-selection-right, 0) var(--local-course-banner-builder-crop-selection-bottom, 0) var(--local-course-banner-builder-crop-selection-left, 0);
   border: 3px solid rgba(15, 108, 191, 0.9);
   border-radius: 0.5rem;
