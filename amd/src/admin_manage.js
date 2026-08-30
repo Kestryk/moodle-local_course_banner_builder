@@ -9214,10 +9214,11 @@ function localCourseBannerBuilderCommitModalImagePreviewState(form, patch, optio
 
 function localCourseBannerBuilderGetDefaultDraftPreviewState(file) {
     return {
-        // A new draft starts at its original image geometry.  The explicit
-        // Fit action can then apply the proportional preview geometry instead
-        // of rewriting the draft's initial state as a visual no-op.
-        fitmodeoverride: 'original',
+        // A newly uploaded draft receives the same proportional geometry as
+        // the existing Fit to preview action. This state is created only
+        // when the file has no stored draft state (or its URL changed), so a
+        // later render cannot overwrite an edit made by the user.
+        fitmodeoverride: 'cover',
         positionanchor: 'center',
         customwidthpercent: 100,
         customheightpercent: 100,

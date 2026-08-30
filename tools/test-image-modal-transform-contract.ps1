@@ -9,8 +9,11 @@ $build = Get-Content -LiteralPath (Join-Path $pluginRoot 'amd\build\admin_manage
 $form = Get-Content -LiteralPath (Join-Path $pluginRoot 'classes\form\manage_banner_form.php') -Raw
 
 $checks = [ordered]@{
-    'New drafts start at original image geometry' =
-        ($source -match "(?s)function localCourseBannerBuilderGetDefaultDraftPreviewState\(file\).*?fitmodeoverride:\s*'original'");
+    'New uploads start with Fit to preview geometry' =
+        (($source -match "(?s)function localCourseBannerBuilderGetDefaultDraftPreviewState\(file\).*?fitmodeoverride:\s*'cover'.*?positionanchor:\s*'center'.*?customwidthpercent:\s*100.*?customheightpercent:\s*100.*?customsizekeepaspect:\s*true") -and
+        ($build -match 'fitmodeoverride:"cover"'));
+    'Existing draft state is not re-fitted during subsequent renders' =
+        ($source -match "(?s)function localCourseBannerBuilderRenderDraftUploadPreview\(form\).*?var existingState = settings\[file\.index\] \|\| null;.*?if \(!existingState \|\| existingState\.deleted \|\| \(existingUrl && fileUrl && existingUrl !== fileUrl\)\).*?localCourseBannerBuilderGetDefaultDraftPreviewState\(file\)");
     'Modal image controls resolve the scoped id before the canonical field name' =
         ($source -match "(?s)function localCourseBannerBuilderGetLayerFormControl\(form, id, name\).*?form\.querySelector\('#' \+ id\).*?return byId \|\| \(name \? form\.querySelector");
     'Fit applies proportional preview geometry through the modal transaction' =
@@ -72,8 +75,6 @@ $checks = [ordered]@{
     'File-manager refreshes are coalesced per modal form' =
         (($source -match '(?s)function localCourseBannerBuilderScheduleDraftPreviewRefresh\(form, delays\).*?form\._localCourseBannerBuilderDraftPreviewRefreshQueue.*?window\.clearTimeout\(queue\.timer\).*?window\.setTimeout') -and
         ($source -match '(?s)new MutationObserver\(function \(\) \{.*?localCourseBannerBuilderScheduleDraftPreviewRefresh\('));
-    'Generated AMD contains the original-size draft default' =
-        ($build -match 'fitmodeoverride:"original"');
 }
 
 $failed = @($checks.GetEnumerator() | Where-Object { -not $_.Value })
