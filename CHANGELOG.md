@@ -35,6 +35,21 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0059 - Selection frame for clipped editable images - 2026-08-30
+
+#### Fixed
+
+- Keep the selected-image indication visible around all four edges of the
+  editable preview frame when the image extends outside that frame.
+- Reuse the existing shared selection-outline primitive across the general
+  source preview and Add/Edit image modal previews without changing image
+  geometry, Crop, clipping, hit-testing or persistence.
+
+#### Validation
+
+- Added a focused static selection-frame contract. Browser and human visual
+  review remain separate.
+
 ### EED-CCB-2026-0043 RF17 - Direction-independent Crop proportions - 2026-08-30
 
 #### Fixed

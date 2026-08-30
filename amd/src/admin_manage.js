@@ -5470,12 +5470,14 @@ function localCourseBannerBuilderSyncPreviewSelectionOutline(frame, layer) {
     }
     if (!layer || layer.hidden || !layer.getClientRects || !layer.getClientRects().length) {
         outline.hidden = true;
+        outline.removeAttribute('data-preview-selection-overflow');
         return;
     }
     var frameRect = frame.getBoundingClientRect();
     var layerRect = layer.getBoundingClientRect();
     if (!frameRect.width || !frameRect.height || !layerRect.width || !layerRect.height) {
         outline.hidden = true;
+        outline.removeAttribute('data-preview-selection-overflow');
         return;
     }
     var cropLeft = localCourseBannerBuilderGetSelectionPercent(
@@ -5502,7 +5504,22 @@ function localCourseBannerBuilderSyncPreviewSelectionOutline(frame, layer) {
     var top = (layerRect.top - frameRect.top) + (layerRect.height * cropTop / 100);
     var width = layerRect.width * Math.max(0, 100 - cropLeft - cropRight) / 100;
     var height = layerRect.height * Math.max(0, 100 - cropTop - cropBottom) / 100;
+    var right = left + width;
+    var bottom = top + height;
+    var selectionOverflowsFrame = left < 0 || top < 0 ||
+        right > frameRect.width || bottom > frameRect.height;
     outline.hidden = false;
+    outline.setAttribute('data-preview-selection-overflow', selectionOverflowsFrame ? '1' : '0');
+    if (selectionOverflowsFrame) {
+        // The image may be clipped by the preview frame. Keep the selected
+        // state visible on every edge of that frame without changing the
+        // image's transform, clipping or pointer geometry.
+        outline.style.left = '0px';
+        outline.style.top = '0px';
+        outline.style.width = frameRect.width + 'px';
+        outline.style.height = frameRect.height + 'px';
+        return;
+    }
     outline.style.left = left + 'px';
     outline.style.top = top + 'px';
     outline.style.width = width + 'px';

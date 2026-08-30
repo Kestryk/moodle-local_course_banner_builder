@@ -110,6 +110,19 @@ batch neither changes that form flow nor introduces a second frontend ratio
 map. Modal previews that share the source-preview frame receive the same
 modifier; independent square layer thumbnails retain their explicit 1:1 rule.
 
+### Transient selection frame for clipped editor images
+
+The editable source preview, Add image modal and Edit image modal use one
+transient `local-course-banner-builder-preview-selection-outline` element
+managed by `localCourseBannerBuilderSyncPreviewSelectionOutline`. It normally
+tracks the rendered image Crop selection. If that selection extends beyond any
+edge of the preview frame, the indicator switches to the complete frame bounds
+so all four frame edges remain visible while the image itself stays clipped.
+This is selection chrome only: it does not clamp or rewrite image geometry,
+Crop, pointer hit-testing, Keep proportions, persistence or public rendering.
+The indicator is hidden when there is no visible selected layer and remains
+above preview guides through its existing z-index contract.
+
 The English `bannerformat:fullwidthtop_help` text still describes 4:1. It is a
 known localisation/documentation discrepancy and remains deliberately out of
 scope for Batch 2C.
