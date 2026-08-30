@@ -4357,6 +4357,68 @@ function localCourseBannerBuilderGetCropSelectionCustomState(layer, preserveSess
     };
 }
 
+function localCourseBannerBuilderGetModalRecropSelectionCustomState(layer) {
+    var sessionPlacement = localCourseBannerBuilderGetCropSessionPlacementState(layer);
+    var initialCropState = localCourseBannerBuilderGetCropSessionInitialCropState(layer);
+    var currentCropState = localCourseBannerBuilderGetPreviewCropState(layer);
+    if (!sessionPlacement || !initialCropState || !initialCropState.enabled || !currentCropState.enabled) {
+        return null;
+    }
+
+    var initialWidth = Math.max(0.01, initialCropState.width);
+    var initialHeight = Math.max(0.01, initialCropState.height);
+    var relativeLeft = (currentCropState.left - initialCropState.left) / initialWidth;
+    var relativeTop = (currentCropState.top - initialCropState.top) / initialHeight;
+    var relativeWidth = currentCropState.width / initialWidth;
+    var relativeHeight = currentCropState.height / initialHeight;
+    var tolerance = 0.001;
+    if (relativeLeft < -tolerance || relativeTop < -tolerance ||
+            relativeLeft + relativeWidth > 1 + tolerance ||
+            relativeTop + relativeHeight > 1 + tolerance ||
+            relativeWidth <= 0 || relativeHeight <= 0) {
+        // Reframing outside the accepted Crop is still supported. In that
+        // exceptional case, use the absolute editor box rather than applying
+        // a relative transform that would incorrectly constrain the user.
+        return null;
+    }
+
+    var acceptedWidth = localCourseBannerBuilderNormaliseNumericValue(
+        sessionPlacement.customwidthpercent,
+        0
+    );
+    var acceptedHeight = localCourseBannerBuilderNormaliseNumericValue(
+        sessionPlacement.customheightpercent,
+        0
+    );
+    if (acceptedWidth <= 0 || acceptedHeight <= 0) {
+        return null;
+    }
+    var acceptedLeft = localCourseBannerBuilderNormaliseNumericValue(
+        sessionPlacement.offsetleftpercent,
+        0
+    );
+    var acceptedTop = localCourseBannerBuilderNormaliseNumericValue(
+        sessionPlacement.offsettoppercent,
+        0
+    );
+
+    return {
+        fitmodeoverride: 'custom',
+        positionanchor: 'top-left',
+        customsizekeepaspect: !!sessionPlacement.customsizekeepaspect,
+        customwidthpercent: localCourseBannerBuilderRoundPreviewPercent(
+            Math.max(1, Math.min(localCourseBannerBuilderCustomSizePercentMax, acceptedWidth * relativeWidth))
+        ),
+        customheightpercent: localCourseBannerBuilderRoundPreviewPercent(
+            Math.max(1, Math.min(localCourseBannerBuilderCustomSizePercentMax, acceptedHeight * relativeHeight))
+        ),
+        offsetleftpercent: localCourseBannerBuilderRoundPreviewPercent(acceptedLeft + (acceptedWidth * relativeLeft)),
+        offsettoppercent: localCourseBannerBuilderRoundPreviewPercent(acceptedTop + (acceptedHeight * relativeTop)),
+        offsetrightpercent: 0,
+        offsetbottompercent: 0
+    };
+}
+
 function localCourseBannerBuilderApplyCropSelectionCustomStateToForm(form, state) {
     if (!form || !state) {
         return;
@@ -4478,12 +4540,15 @@ function localCourseBannerBuilderApplyCropEditor(control, sourceMode) {
         return;
     }
     var crop = localCourseBannerBuilderGetPreviewCropState(layer);
-    // An accepted crop defines both the visible source rectangle and the
-    // resulting outer geometry. Derive placement from the selected crop box
-    // in both editors so the modal has the same semantics as the main preview;
-    // retaining the pre-crop session placement would expand the result back to
-    // the original image size.
-    var cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState(layer, false);
+    // The first modal Crop derives its result from the editor box. A Recrop
+    // inside an already accepted Crop must instead compose that inner box with
+    // the accepted geometry: recalculating from the original image frame is
+    // what made a second accepted Crop change the visible size or aspect.
+    var cropSelectionState = sourceMode ? null :
+        localCourseBannerBuilderGetModalRecropSelectionCustomState(layer);
+    if (!cropSelectionState) {
+        cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState(layer, false);
+    }
     localCourseBannerBuilderSetPreviewCropState(layer, {
         imagecropenabled: crop.enabled,
         imagecropleftpercent: crop.left,
