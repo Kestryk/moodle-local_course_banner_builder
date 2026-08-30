@@ -1,5 +1,14 @@
 # Changelog
 
+## EED-CCB-2026-0058 - 2026-08-30
+
+### Changed
+
+- Newly uploaded images in the Add image modal now start in the existing
+  **Fit to preview** state: centred, proportional and sized to the preview.
+  The one-time default is stored per uploaded file, so later refreshes and
+  user edits are preserved.
+
 ## EED-CCB-2026-0042-RF3 - 2026-08-30
 
 ### Changed
