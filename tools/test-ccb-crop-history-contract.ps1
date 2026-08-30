@@ -28,6 +28,8 @@ $checks = [ordered]@{
         ($source -match '(?s)function localCourseBannerBuilderRestoreDraftTransformationHistory\(form, snapshot\).*?availableIndexes.*?settings\[index\] && settings\[index\]\.deleted.*?localCourseBannerBuilderRenderDraftUploadPreview\(form\)');
     'Fit leaves Crop fields outside its replacement patch' =
         ($source -match '(?s)function localCourseBannerBuilderApplyFitToLayerFormPreview\(form\).*?Fit changes outer placement only; it deliberately preserves Crop fields\.');
+    'Modal Crop derives outer geometry from the accepted selection in parity with the main preview' =
+        ($source -match '(?s)function localCourseBannerBuilderApplyCropEditor\(control, sourceMode\).*?var cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState\(layer, false\);');
     'Draft selection records a history boundary before switching' =
         ($source -match '(?s)function localCourseBannerBuilderSelectDraftPreviewLayer\(form, index\).*?localCourseBannerBuilderPushModalPreviewHistory\(form\).*?localCourseBannerBuilderCommitActiveDraftCropBeforeSwitch\(form\)');
     'Undo and redo are inverse chronological stack operations' =
