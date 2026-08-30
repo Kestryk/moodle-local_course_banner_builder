@@ -65,18 +65,20 @@ test('CROP-08 restores chronological non-destructive transformations across two 
 
     const edit = page.locator('[data-edit-layer-url*="elementid=' + env.elementId + '"]');
     await expect(edit, 'CROP-08 fixture image layer must expose its edit action.').toHaveCount(1);
+    const modalId = await edit.getAttribute('data-edit-layer-modal');
+    expect(modalId, 'CROP-08 edit action must identify its modal.').toBeTruthy();
     await edit.click();
-    // The edit response is rendered as a Bootstrap dialog. Its accessible
-    // dialog is stable, while the placeholder's data attribute and Moodle's
-    // form class are not guaranteed to survive the AJAX body replacement.
-    // Scope to the visible edit dialog and require the image Filemanager field
-    // so an old/hidden modal can never be selected.
-    const editDialog = page.locator(
-        '[role="dialog"].modal.show, [role="dialog"].modal[aria-modal="true"]'
-    ).filter({has: page.locator('#id_bannerimage_filemanager')}).last();
-    await expect(editDialog, 'CROP-08 image edit dialog must be visible after the edit action.').toBeVisible();
-    const form = editDialog.locator('form').filter({has: page.locator('#id_bannerimage_filemanager')}).last();
-    await expect(form).toBeVisible();
+    // The modal is shown immediately with a loading placeholder while its
+    // form is fetched and inserted asynchronously. Select the modal by the
+    // trigger-owned id, then wait for the actual form/field in that modal;
+    // never treat the loading placeholder or an older hidden modal as ready.
+    const editDialog = page.locator('#' + modalId);
+    await expect(editDialog, 'CROP-08 image edit dialog must be visible after the edit action.')
+        .toBeVisible({timeout: 30000});
+    const form = editDialog.locator('form.mform:has(#id_bannerimage_filemanager)');
+    await expect(form, 'CROP-08 must wait for the fetched image-edit form, not the loading placeholder.')
+        .toHaveCount(1, {timeout: 30000});
+    await expect(form.locator('#id_bannerimage_filemanager')).toHaveCount(1);
     const draftitemid = await form.locator('#id_bannerimage_filemanager').inputValue();
     expect(draftitemid).toMatch(/^\d+$/);
     const manifest = JSON.parse(fs.readFileSync(env.manifest, 'utf8').replace(/^\uFEFF/, ''));
