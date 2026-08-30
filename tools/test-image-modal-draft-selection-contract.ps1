@@ -6,6 +6,7 @@ $pluginRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 
 $source = Get-Content -LiteralPath (Join-Path $pluginRoot 'amd\src\admin_manage.js') -Raw
 $build = Get-Content -LiteralPath (Join-Path $pluginRoot 'amd\build\admin_manage.min.js') -Raw
+$sourceMap = Get-Content -LiteralPath (Join-Path $pluginRoot 'amd\build\admin_manage.min.js.map') -Raw | ConvertFrom-Json
 $admin = Get-Content -LiteralPath (Join-Path $pluginRoot 'admin_manage.php') -Raw
 $english = Get-Content -LiteralPath (Join-Path $pluginRoot 'lang\en\local_course_banner_builder.php') -Raw
 $french = Get-Content -LiteralPath (Join-Path $pluginRoot 'lang\fr\local_course_banner_builder.php') -Raw
@@ -26,7 +27,7 @@ $checks = [ordered]@{
         ($source -match '(?s)function localCourseBannerBuilderSelectDraftPreviewLayer\(form, index\).*?localCourseBannerBuilderCommitActiveDraftCropBeforeSwitch\(form\).*?form\.dataset\.activeDraftIndex\s*=\s*String\(index\)'));
     'Generated AMD contains the accessible draft selector route' =
         (($build -match 'data-draft-preview-select') -and
-        ($build -match 'localCourseBannerBuilderActivateDraftPreviewSelection') -and
+        ($sourceMap.names -contains 'localCourseBannerBuilderActivateDraftPreviewSelection') -and
         ($build -match 'selectimagedraft'));
 }
 

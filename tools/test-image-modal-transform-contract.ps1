@@ -15,6 +15,8 @@ $checks = [ordered]@{
         ($source -match "(?s)function localCourseBannerBuilderGetLayerFormControl\(form, id, name\).*?form\.querySelector\('#' \+ id\).*?return byId \|\| \(name \? form\.querySelector");
     'Fit applies proportional preview geometry through the modal transaction' =
         ($source -match "(?s)function localCourseBannerBuilderApplyFitToLayerFormPreview\(form\).*?fitmodeoverride:\s*'cover'.*?positionanchor:\s*'center'.*?customwidthpercent:\s*100.*?customheightpercent:\s*100.*?customsizekeepaspect:\s*true.*?localCourseBannerBuilderCommitModalImagePreviewState\(");
+    'Fit preserves the active image Crop state' =
+        ($source -match '(?s)function localCourseBannerBuilderApplyFitToLayerFormPreview\(form\).*?Fit changes outer placement only; it deliberately preserves Crop fields\..*?customsizekeepaspect:\s*true,.*?offsettoppercent:');
     'Fit action has a local modal event route through history' =
         ($source -match '(?s)var fitLayerPreviewButton = localCourseBannerBuilderCreatePreviewIconButton\(.*?local-course-banner-builder-fit-layer-preview-image.*?fitLayerPreviewButton\.addEventListener\(''click''.*?event\.stopPropagation\(\).*?localCourseBannerBuilderPushModalPreviewHistoryFromControl\(fitLayerPreviewButton\).*?localCourseBannerBuilderFitSelectedLayerPreviewImageToFrame\(fitLayerPreviewButton\).*?modalPreviewFitBound');
     'Preview exposes corner and edge resize handles' =
@@ -39,6 +41,12 @@ $checks = [ordered]@{
     'Cancelling Recrop discards only its duplicate history snapshot' =
         (($source -match '(?s)function localCourseBannerBuilderCancelCropEditor\(control, sourceMode\).*?localCourseBannerBuilderDiscardModalPreviewHistorySnapshot\(form\)') -and
         ($source -match '(?s)function localCourseBannerBuilderDiscardModalPreviewHistorySnapshot\(form\).*?undoStack\[undoStack\.length - 1\] === currentSnapshot.*?undoStack\.pop\(\)'));
+    'Draft modal history atomically records all existing image transformations' =
+        (($source -match '(?s)function localCourseBannerBuilderBuildDraftTransformationHistorySnapshot\(form, fields\).*?localCourseBannerBuilderSaveActiveDraftPreviewState\(form\).*?draftStates.*?kind:\s*''draft-transformations''') -and
+        ($source -match '(?s)function localCourseBannerBuilderRestoreDraftTransformationHistory\(form, snapshot\).*?availableIndexes.*?localCourseBannerBuilderRenderDraftUploadPreview\(form\)'));
+    'Draft selection itself is undoable without restoring file lifecycle' =
+        (($source -match '(?s)function localCourseBannerBuilderSelectDraftPreviewLayer\(form, index\).*?localCourseBannerBuilderPushModalPreviewHistory\(form\).*?localCourseBannerBuilderCommitActiveDraftCropBeforeSwitch\(form\)') -and
+        ($source -match '(?s)function localCourseBannerBuilderRestoreDraftTransformationHistory\(form, snapshot\).*?Never recreate a deleted file or remove a file that was added after'));
     'Create draft handles use the dedicated resize state' =
         ($source -match '(?s)function localCourseBannerBuilderHandleLayerModalPreviewPointerDown\(form, event\).*?if \(resizeHandle\).*?data-preview-draft-selection-overlay.*?localCourseBannerBuilderStartModalResizeInteraction\(event, resizeHandle\).*?return true;.*?localCourseBannerBuilderStartPreviewInteraction');
     'Generic preview sync avoids redundant pre-render draft serialization' =

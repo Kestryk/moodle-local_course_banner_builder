@@ -7260,17 +7260,13 @@ function localCourseBannerBuilderApplyFitToLayerFormPreview(form) {
     if (!form) {
         return;
     }
+    // Fit changes outer placement only; it deliberately preserves Crop fields.
     var fitState = {
         fitmodeoverride: 'cover',
         positionanchor: 'center',
         customwidthpercent: 100,
         customheightpercent: 100,
         customsizekeepaspect: true,
-        imagecropenabled: false,
-        imagecropleftpercent: 0,
-        imagecroptoppercent: 0,
-        imagecropwidthpercent: 100,
-        imagecropheightpercent: 100,
         offsettoppercent: 0,
         offsetrightpercent: 0,
         offsetbottompercent: 0,
@@ -7294,9 +7290,6 @@ function localCourseBannerBuilderApplyFitToLayerFormPreview(form) {
         var visualDraftLayer = form.querySelector(
             '[data-preview-draft-visual-layer="1"][data-draft-index="' + activeDraftIndex + '"]'
         );
-        if (currentDraftLayer) {
-            localCourseBannerBuilderClearLayerPreviewCropState(form, currentDraftLayer);
-        }
         var draftState = draftSettings[activeDraftIndex] ||
             localCourseBannerBuilderReadLayerPreviewStateFromLayer(currentDraftLayer || visualDraftLayer);
         if (draftState) {
@@ -7306,10 +7299,6 @@ function localCourseBannerBuilderApplyFitToLayerFormPreview(form) {
             );
             return;
         }
-    }
-    var currentLayer = localCourseBannerBuilderGetEditableCurrentPreviewImage(form);
-    if (currentLayer) {
-        localCourseBannerBuilderClearLayerPreviewCropState(form, currentLayer);
     }
     localCourseBannerBuilderCommitModalImagePreviewState(form, fitState);
 }
@@ -9786,6 +9775,10 @@ function localCourseBannerBuilderSelectDraftPreviewLayer(form, index) {
     if (String(form.dataset.activeDraftIndex || '') === String(index)) {
         return;
     }
+    // Selection itself is a chronological modal action. Capture every existing
+    // draft's reversible transform before replacing the form controls with the
+    // next image's state, so Undo/Redo can cross image boundaries.
+    localCourseBannerBuilderPushModalPreviewHistory(form);
     var committedDraftCrop = localCourseBannerBuilderCommitActiveDraftCropBeforeSwitch(form);
     if (!committedDraftCrop) {
         localCourseBannerBuilderCancelActivePreviewCropInScope(form, null);
@@ -15769,6 +15762,63 @@ function localCourseBannerBuilderEscapeSelectorId(id) {
     return String(id || '').replace(/([ #;?%&,.+*~':"!^$[\]()=>|/@])/g, '\$1');
 }
 
+function localCourseBannerBuilderGetDraftPreviewTransformationState(state) {
+    var keys = [
+        'fitmodeoverride',
+        'positionanchor',
+        'customwidthpercent',
+        'customheightpercent',
+        'customsizekeepaspect',
+        'dynamicimagesizeenabled',
+        'imageaboveoverlayenabled',
+        'imagebelowinheritedenabled',
+        'imageaboveinheritedenabled',
+        'imagecenterfixed',
+        'imageopacity',
+        'imagecropenabled',
+        'imagecropleftpercent',
+        'imagecroptoppercent',
+        'imagecropwidthpercent',
+        'imagecropheightpercent',
+        'offsettoppercent',
+        'offsetrightpercent',
+        'offsetbottompercent',
+        'offsetleftpercent',
+        'sortorder',
+        'zindex'
+    ];
+    var result = {};
+    keys.forEach(function (key) {
+        if (state && typeof state[key] !== 'undefined') {
+            result[key] = state[key];
+        }
+    });
+    return result;
+}
+
+function localCourseBannerBuilderBuildDraftTransformationHistorySnapshot(form, fields) {
+    // Filemanager add/delete is deliberately outside modal history: Moodle
+    // deletes draft files through an irreversible server API. This snapshot
+    // records only reversible appearance state and the selected existing image.
+    localCourseBannerBuilderSaveActiveDraftPreviewState(form);
+    var draftStates = {};
+    var settings = localCourseBannerBuilderGetDraftPreviewSettings(form);
+    Object.keys(settings).forEach(function (index) {
+        var state = settings[index];
+        if (!state || state.deleted) {
+            return;
+        }
+        draftStates[String(index)] = localCourseBannerBuilderGetDraftPreviewTransformationState(state);
+    });
+    return JSON.stringify({
+        activeDraftIndex: String(form.dataset.activeDraftIndex || ''),
+        draftStates: draftStates,
+        fields: fields,
+        kind: 'draft-transformations',
+        version: 2
+    });
+}
+
 function localCourseBannerBuilderBuildModalPreviewSnapshot(form) {
     if (!form) {
         return '';
@@ -15784,7 +15834,8 @@ function localCourseBannerBuilderBuildModalPreviewSnapshot(form) {
         if (!field.id || field.type === 'file' || field.type === 'submit' || field.type === 'button') {
             return;
         }
-        if (field.name === 'sesskey' || field.id.indexOf('filemanager') !== -1 || field.name === 'bannerimage') {
+        if (field.name === 'sesskey' || field.id.indexOf('filemanager') !== -1 || field.name === 'bannerimage' ||
+                field.id === 'id_multilayerdraftsettings') {
             return;
         }
         fields.push({
@@ -15794,6 +15845,9 @@ function localCourseBannerBuilderBuildModalPreviewSnapshot(form) {
             checked: !!field.checked
         });
     });
+    if (form.querySelector('[data-preview-draft-layer-host="1"]')) {
+        return localCourseBannerBuilderBuildDraftTransformationHistorySnapshot(form, fields);
+    }
     return JSON.stringify(fields);
 }
 
@@ -15949,21 +16003,60 @@ function localCourseBannerBuilderApplyModalPreviewSnapshotSilently(form, fields)
     });
 }
 
+function localCourseBannerBuilderRestoreDraftTransformationHistory(form, snapshot) {
+    if (!form || !snapshot || snapshot.kind !== 'draft-transformations') {
+        return false;
+    }
+    var files = localCourseBannerBuilderGetDraftPreviewFiles(form);
+    var availableIndexes = {};
+    files.forEach(function (file) {
+        availableIndexes[String(file.index)] = true;
+    });
+    var settings = localCourseBannerBuilderGetDraftPreviewSettings(form);
+    Object.keys(snapshot.draftStates || {}).forEach(function (index) {
+        // Never recreate a deleted file or remove a file that was added after
+        // this snapshot. File lifecycle has a separate reversible contract.
+        if (!availableIndexes[index] || (settings[index] && settings[index].deleted)) {
+            return;
+        }
+        settings[index] = Object.assign(
+            {},
+            settings[index] || {},
+            localCourseBannerBuilderGetDraftPreviewTransformationState(snapshot.draftStates[index])
+        );
+    });
+    localCourseBannerBuilderSetDraftPreviewSettings(form, settings);
+
+    var selectedIndex = String(snapshot.activeDraftIndex || '');
+    if (availableIndexes[selectedIndex]) {
+        form.dataset.activeDraftIndex = selectedIndex;
+    } else if (!availableIndexes[String(form.dataset.activeDraftIndex || '')]) {
+        form.dataset.activeDraftIndex = files.length ? String(files[0].index) : '';
+    }
+    localCourseBannerBuilderRenderDraftUploadPreview(form);
+    return true;
+}
+
 function localCourseBannerBuilderApplyModalPreviewSnapshot(form, snapshot) {
     if (!form || !snapshot) {
         return;
     }
-    var fields = localCourseBannerBuilderReadJson(snapshot, []);
+    var data = localCourseBannerBuilderReadJson(snapshot, []);
+    var isDraftTransformationSnapshot = !!(data && !Array.isArray(data) &&
+        data.kind === 'draft-transformations');
+    var fields = isDraftTransformationSnapshot ? (data.fields || []) : data;
     var activeDraftState = fields.find(function (state) {
         return state && state.id === '__activeDraftIndex';
     });
     var currentActiveDraftIndex = String(form.dataset.activeDraftIndex || '');
-    var nextActiveDraftIndex = activeDraftState ? String(activeDraftState.value || '') : currentActiveDraftIndex;
+    var nextActiveDraftIndex = isDraftTransformationSnapshot ?
+        String(data.activeDraftIndex || currentActiveDraftIndex) :
+        (activeDraftState ? String(activeDraftState.value || '') : currentActiveDraftIndex);
     form.dataset.previewApplyingInteraction = '1';
     form.dataset.modalPreviewApplyingSnapshot = '1';
     try {
         localCourseBannerBuilderApplyModalPreviewSnapshotSilently(form, fields);
-        if (nextActiveDraftIndex !== currentActiveDraftIndex) {
+        if (!isDraftTransformationSnapshot && nextActiveDraftIndex !== currentActiveDraftIndex) {
             form.dataset.activeDraftIndex = nextActiveDraftIndex;
         }
         if (localCourseBannerBuilderIsOverlayLayerForm(form)) {
@@ -15981,7 +16074,9 @@ function localCourseBannerBuilderApplyModalPreviewSnapshot(form, snapshot) {
         localCourseBannerBuilderSyncOffsetFields(form);
         localCourseBannerBuilderBindPercentSliders(form);
         if (form.querySelector('[data-preview-draft-layer-host="1"]')) {
-            localCourseBannerBuilderRenderDraftUploadPreview(form);
+            if (!localCourseBannerBuilderRestoreDraftTransformationHistory(form, data)) {
+                localCourseBannerBuilderRenderDraftUploadPreview(form);
+            }
             var restoredDraftLayer = localCourseBannerBuilderGetEditableCurrentPreviewImage(form);
             var restoredDraftState = localCourseBannerBuilderReadLayerPreviewStateFromLayer(restoredDraftLayer);
             if (restoredDraftState) {
@@ -16019,6 +16114,67 @@ function localCourseBannerBuilderUpdateModalPreviewHistoryButtons(form) {
         redo.classList.toggle('disabled', redo.disabled);
         redo.setAttribute('aria-disabled', redo.disabled ? 'true' : 'false');
     }
+}
+
+function localCourseBannerBuilderIsDraftTransformationHistoryEvent(form, event) {
+    if (!form || !event || !event.target || !event.target.closest ||
+            !form.querySelector('[data-preview-draft-layer-host="1"]') ||
+            form.dataset.previewApplyingInteraction === '1' ||
+            form.dataset.modalPreviewApplyingSnapshot === '1' ||
+            form.dataset.renderingDraftPreview === '1') {
+        return false;
+    }
+    var target = event.target.closest('button, input, select, textarea, [data-preview-resize-handle="1"], [data-preview-crop-handle]');
+    if (!target || !form.contains(target)) {
+        return false;
+    }
+    if (target.closest('#fitem_id_bannerimage_filemanager')) {
+        return !!target.closest('[data-draft-preview-select="1"]');
+    }
+    return target.matches([
+        '[data-draft-preview-select="1"]',
+        '[data-preview-resize-handle="1"]',
+        '[data-preview-crop-handle]',
+        '[data-action="local-course-banner-builder-fit-layer-preview-image"]',
+        '[data-action="local-course-banner-builder-fill-layer-preview-image"]',
+        '[data-action="local-course-banner-builder-recenter-preview-image"]',
+        '[data-action="local-course-banner-builder-toggle-modal-preview-crop"]',
+        '[data-action="local-course-banner-builder-apply-modal-preview-crop"]',
+        '[data-action="local-course-banner-builder-cancel-modal-preview-crop"]',
+        '[data-action="local-course-banner-builder-toggle-modal-preview-center-fixed"]',
+        '[data-action="local-course-banner-builder-push-modal-preview-layer-behind"]',
+        '[data-action="local-course-banner-builder-pull-modal-preview-layer-forward"]',
+        '[data-preview-action-bound-input]',
+        '[data-modal-side-range-number-for]',
+        '[data-percent-slider-for]',
+        '[data-layer-position-anchor="1"]',
+        '#id_customwidthpercent',
+        '#id_customheightpercent',
+        '#id_imageopacity',
+        '#id_dynamicimagesizeenabled',
+        '#id_imageaboveoverlayenabled',
+        '#id_imagebelowinheritedenabled',
+        '#id_imageaboveinheritedenabled',
+        '#id_imagecenterfixed',
+        '[data-custom-size-keep-aspect="1"]'
+    ].join(','));
+}
+
+function localCourseBannerBuilderBindDraftTransformationHistoryEvents(form) {
+    if (!form || form.dataset.draftTransformationHistoryEventsBound === '1') {
+        return;
+    }
+    var capture = function (event) {
+        if (localCourseBannerBuilderIsDraftTransformationHistoryEvent(form, event)) {
+            localCourseBannerBuilderPushModalPreviewHistory(form);
+        }
+    };
+    // Focus catches keyboard edits before a number/select value changes;
+    // pointerdown catches sliders, action buttons and crop handles first.
+    form.addEventListener('focusin', capture, true);
+    form.addEventListener('pointerdown', capture, true);
+    form.addEventListener('keydown', capture, true);
+    form.dataset.draftTransformationHistoryEventsBound = '1';
 }
 
 function localCourseBannerBuilderEnsureModalOpacityControls(form) {
@@ -18032,6 +18188,7 @@ function localCourseBannerBuilderEnhanceModalPreviewActions(form) {
 
     localCourseBannerBuilderLayoutModalPreviewActionButtons(host);
     localCourseBannerBuilderSyncModalPreviewActionButtons(form);
+    localCourseBannerBuilderBindDraftTransformationHistoryEvents(form);
     localCourseBannerBuilderEnsureModalPreviewHistory(form);
     localCourseBannerBuilderInitPopovers(panel);
 }
@@ -20899,6 +21056,8 @@ localCourseBannerBuilderOnReady(function () {
         window.localCourseBannerBuilderSyncModalImageOpacityInputFromLayer = localCourseBannerBuilderSyncModalImageOpacityInputFromLayer;
         window.localCourseBannerBuilderApplyModalImageOpacity = localCourseBannerBuilderApplyModalImageOpacity;
         window.localCourseBannerBuilderEscapeSelectorId = localCourseBannerBuilderEscapeSelectorId;
+        window.localCourseBannerBuilderGetDraftPreviewTransformationState = localCourseBannerBuilderGetDraftPreviewTransformationState;
+        window.localCourseBannerBuilderBuildDraftTransformationHistorySnapshot = localCourseBannerBuilderBuildDraftTransformationHistorySnapshot;
         window.localCourseBannerBuilderBuildModalPreviewSnapshot = localCourseBannerBuilderBuildModalPreviewSnapshot;
         window.localCourseBannerBuilderEnsureModalPreviewHistory = localCourseBannerBuilderEnsureModalPreviewHistory;
         window.localCourseBannerBuilderScheduleOverlayPreviewSync = localCourseBannerBuilderScheduleOverlayPreviewSync;
@@ -20907,8 +21066,10 @@ localCourseBannerBuilderOnReady(function () {
         window.localCourseBannerBuilderIsOverlayLayerForm = localCourseBannerBuilderIsOverlayLayerForm;
         window.localCourseBannerBuilderSyncOverlayAppearanceControlValues = localCourseBannerBuilderSyncOverlayAppearanceControlValues;
         window.localCourseBannerBuilderApplyModalPreviewSnapshotSilently = localCourseBannerBuilderApplyModalPreviewSnapshotSilently;
+        window.localCourseBannerBuilderRestoreDraftTransformationHistory = localCourseBannerBuilderRestoreDraftTransformationHistory;
         window.localCourseBannerBuilderApplyModalPreviewSnapshot = localCourseBannerBuilderApplyModalPreviewSnapshot;
         window.localCourseBannerBuilderUpdateModalPreviewHistoryButtons = localCourseBannerBuilderUpdateModalPreviewHistoryButtons;
+        window.localCourseBannerBuilderBindDraftTransformationHistoryEvents = localCourseBannerBuilderBindDraftTransformationHistoryEvents;
         window.localCourseBannerBuilderEnsureModalOpacityControls = localCourseBannerBuilderEnsureModalOpacityControls;
         window.localCourseBannerBuilderCloseOtherModalSidePanels = localCourseBannerBuilderCloseOtherModalSidePanels;
         window.localCourseBannerBuilderEnhanceModalSidePanelLinkedRanges = localCourseBannerBuilderEnhanceModalSidePanelLinkedRanges;

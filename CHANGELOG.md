@@ -26,6 +26,31 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0043-RF7 - 2026-08-30
+
+#### Fixed
+
+- `Fit to preview` now changes only placement/fit values and retains the active
+  image's accepted Crop coordinates.
+- The add-image modal now records an atomic, chronological history for the
+  reversible transformations of every image already present in the modal:
+  Crop, Fit/Fill, placement, size, opacity, image options and active-image
+  selection. Undo and Redo restore both the selected image and the saved
+  transformation state across image switches.
+
+#### Scope boundary
+
+- Filemanager Add/Delete remains outside this history. Moodle draft-file
+  deletion is physically irreversible in the current API and is tracked as
+  `EED-CCB-2026-0056`; RF7 neither removes an added file nor recreates a
+  deleted file during Undo/Redo.
+
+#### Validation
+
+- Added static history and transformation contracts plus a future one-test
+  `CROP-08` scenario that starts only with two pre-existing images. Browser
+  execution and visual review remain separately authorised.
+
 ### EED-CCB-2026-0043-RF6 - 2026-08-30
 
 #### Fixed
