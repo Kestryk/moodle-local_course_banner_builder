@@ -2147,6 +2147,7 @@ $PAGE->requires->strings_for_js([
     'showpreviewtitle',
     'sharpinnercorners',
     'sourcealreadyhasoverlayinline',
+    'sourcechainpreviewtitle',
     'summarycustomsize',
     'summarykeepaspect',
     'summaryleft',

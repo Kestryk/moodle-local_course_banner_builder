@@ -2,6 +2,37 @@
 
 Status: Implemented — validation pending
 
+## RF4 live-DOM corrective pass - 2026-08-30
+
+The cumulative preview showed that RF3 had styled a body-appended modal without
+also putting that live root inside the EasyEdu token scope. Undefined surface
+variables invalidated the intended backgrounds, which explains the transparent
+modal and apparently floating footer. RF4 targets that actual runtime modal,
+adds the shared identity header/body/footer structure and keeps a literal opaque
+fallback. Its canonical close returns a visible focus ring to the exact Preview
+trigger. Desktop/Mobile stays modal-local and now uses an intentionally visible
+Motion swap.
+
+Configured-source children are table rows, so applying the generic fade
+lifecycle to each `tr` could not produce a slide. RF4 uses `Motion.resize` on
+the live table shell around the real row visibility mutation. That preserves
+the row DOM and its direct-child layout selectors while progressively revealing
+or removing the table content. The actual Layer & Overrides `details` selector
+is also added to the shared cancellable accordion controller. Reduced-motion
+continues to settle immediately through the existing Motion policy.
+
+The corrective pass also shortens the inherited labels to `Inherited border`
+and `Inherited overlay` (`Bordure héritée` / `Overlay hérité` in French), centres
+the Layer & Overrides summary and gives Collapse all bounded inline spacing.
+Accepted checkerboards, rounding, Locked state and inheritance logic are not
+changed.
+
+Two render warnings observed during the audit are removed in the same bounded
+path: site-admin context is now passed explicitly to the advanced form helper,
+and the source-child accessible name uses a real plugin string instead of the
+missing Moodle core `toggle` string. Guide payload architecture is explicitly
+outside RF4.
+
 ## RF3 corrective pass - 2026-08-30
 
 Human review rejected the earlier visual result. RF3 therefore strengthens
