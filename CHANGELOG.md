@@ -26,6 +26,19 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0043 RF17 - Direction-independent Crop proportions - 2026-08-30
+
+#### Fixed
+
+- Canonicalise a Crop rectangle whose dragged edge crosses its opposite edge
+  before applying bounds. Bottom-to-top and left-to-right selections now retain
+  the same valid frame when Keep proportions is toggled.
+
+#### Validation
+
+- Extended the focused Crop-history source contract. Browser and human visual
+  review remain separate.
+
 ### EED-CCB-2026-0043 RF16 - Draft image transform persistence - 2026-08-30
 
 #### Fixed

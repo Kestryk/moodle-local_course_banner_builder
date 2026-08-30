@@ -25,6 +25,8 @@ $checks = [ordered]@{
         ($source -match '(?s)function localCourseBannerBuilderApplyCropEditor\(control, sourceMode\).*?The modal and the source preview share one invariant: after every Crop,.*?visible editor box is the new outer placement');
     'Edge Crop handles keep one-dimensional pointer geometry' =
         ($source -match "(?s)function localCourseBannerBuilderConstrainCropResize\(crop, interaction\).*?\['n', 's', 'e', 'w'\]\.indexOf\(mode\).*?Edge handles are intentionally unidirectional.*?return crop;");
+    'Crossed Crop edges are canonicalised before clamping' =
+        ($source -match "(?s)function localCourseBannerBuilderNormaliseCropState\(state\).*?if \(rawWidth < 0\).*?rawLeft \+= rawWidth;.*?rawWidth = Math\.abs\(rawWidth\);.*?if \(rawHeight < 0\).*?rawTop \+= rawHeight;.*?rawHeight = Math\.abs\(rawHeight\);");
     'Applying Crop does not re-enable an aspect lock over a freeform box' =
         ($source -match "(?s)function localCourseBannerBuilderGetCropSelectionCustomState\(layer, preserveSessionPlacement, preserveFreeformCropBox\).*?var keepAspect = layer\.getAttribute\('data-preview-keep-aspect'\) === '1' && !preserveFreeformCropBox;.*?customsizekeepaspect: keepAspect");
     'Keep proportion snapshots preserve the complete Crop state' =
