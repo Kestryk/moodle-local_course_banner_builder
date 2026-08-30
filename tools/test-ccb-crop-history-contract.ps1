@@ -10,14 +10,34 @@ $fixture = Get-Content -LiteralPath (Join-Path $pluginRoot 'tools\playwright\ccb
 $runner = Get-Content -LiteralPath (Join-Path $pluginRoot 'tools\playwright\Invoke-CCBCropHistoryValidation.ps1') -Raw
 
 $checks = [ordered]@{
+    'History snapshot has a versioned atomic transformation envelope' =
+        (($source -match "kind: 'draft-transformations'") -and
+        ($source -match "version: 2") -and
+        ($source -match "activeDraftIndex: String\(form\.dataset\.activeDraftIndex") -and
+        ($source -match "draftStates: draftStates") -and
+        ($source -match "fields: fields"));
     'History captures every existing draft transformation and active selection' =
         ($source -match '(?s)function localCourseBannerBuilderBuildDraftTransformationHistorySnapshot\(form, fields\).*?localCourseBannerBuilderSaveActiveDraftPreviewState\(form\).*?activeDraftIndex.*?draftStates');
+    'Every draft transformation snapshot retains crop, fit, placement, size, opacity and ordering' =
+        (($source -match "(?s)function localCourseBannerBuilderGetDraftPreviewTransformationState\(state\).*?customwidthpercent") -and
+        ($source -match "(?s)function localCourseBannerBuilderGetDraftPreviewTransformationState\(state\).*?imagecropenabled") -and
+        ($source -match "(?s)function localCourseBannerBuilderGetDraftPreviewTransformationState\(state\).*?imageopacity") -and
+        ($source -match "(?s)function localCourseBannerBuilderGetDraftPreviewTransformationState\(state\).*?sortorder") -and
+        ($source -match "(?s)function localCourseBannerBuilderGetDraftPreviewTransformationState\(state\).*?zindex"));
     'History restores only available non-deleted draft settings' =
         ($source -match '(?s)function localCourseBannerBuilderRestoreDraftTransformationHistory\(form, snapshot\).*?availableIndexes.*?settings\[index\] && settings\[index\]\.deleted.*?localCourseBannerBuilderRenderDraftUploadPreview\(form\)');
     'Fit leaves Crop fields outside its replacement patch' =
         ($source -match '(?s)function localCourseBannerBuilderApplyFitToLayerFormPreview\(form\).*?Fit changes outer placement only; it deliberately preserves Crop fields\.');
     'Draft selection records a history boundary before switching' =
         ($source -match '(?s)function localCourseBannerBuilderSelectDraftPreviewLayer\(form, index\).*?localCourseBannerBuilderPushModalPreviewHistory\(form\).*?localCourseBannerBuilderCommitActiveDraftCropBeforeSwitch\(form\)');
+    'Undo and redo are inverse chronological stack operations' =
+        (($source -match "(?s)function localCourseBannerBuilderUndoModalPreviewChange\(control\).*?currentSnapshot.*?undoStack\.push\(currentSnapshot\).*?redoStack\.push\(undoStack\.pop\(\)\).*?localCourseBannerBuilderApplyModalPreviewSnapshot\(form, snapshot\)") -and
+        ($source -match "(?s)function localCourseBannerBuilderRedoModalPreviewChange\(control\).*?var snapshot = redoStack\.pop\(\).*?undoStack\.push\(snapshot\).*?localCourseBannerBuilderApplyModalPreviewSnapshot\(form, snapshot\)"));
+    'History event binding covers controls across the draft image collection' =
+        (($source -match 'data-draft-preview-select="1"') -and
+        ($source -match 'data-preview-resize-handle="1"') -and
+        ($source -match 'data-preview-crop-handle') -and
+        ($source -match 'localCourseBannerBuilderBindDraftTransformationHistoryEvents\(form\)'));
     'Focused CROP-08 scenario requires exactly two pre-existing image selectors' =
         (($spec -match 'CROP-08 restores chronological') -and
         ($spec -match 'toHaveCount\(2\)') -and
