@@ -26,6 +26,20 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0043 RF13 - Unidirectional Crop geometry - 2026-08-30
+
+#### Fixed
+
+- Restore true one-edge Crop resizing: dragging a top, bottom, left or right
+  handle changes only that edge instead of recentering the selected box.
+- Keep the raw visible Crop box when Apply converts it to placement data, so a
+  freeform edge Crop is not reshaped by the pre-existing aspect lock.
+
+#### Validation
+
+- Add static contracts for one-edge pointer geometry and freeform Crop Apply
+  persistence. Preview review remains required for the pointer interaction.
+
 ### EED-CCB-2026-0043 RF12 - Vertical Crop geometry - 2026-08-30
 
 #### Fixed

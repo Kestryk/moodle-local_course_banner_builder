@@ -4298,7 +4298,7 @@ function localCourseBannerBuilderGetCropControlLayer(control, sourceMode) {
     return localCourseBannerBuilderGetLayerFormPreviewImage(form);
 }
 
-function localCourseBannerBuilderGetCropSelectionCustomState(layer, preserveSessionPlacement) {
+function localCourseBannerBuilderGetCropSelectionCustomState(layer, preserveSessionPlacement, preserveFreeformCropBox) {
     var sessionPlacement = localCourseBannerBuilderGetCropSessionPlacementState(layer);
     var initialCropState = localCourseBannerBuilderGetCropSessionInitialCropState(layer);
     var currentCropState = localCourseBannerBuilderGetPreviewCropState(layer);
@@ -4324,7 +4324,10 @@ function localCourseBannerBuilderGetCropSelectionCustomState(layer, preserveSess
     var heightPercent = (boxRect.height / frameRect.height) * 100;
     var centerLeft = ((boxRect.left - frameRect.left) / frameRect.width) * 100 + (widthPercent / 2);
     var centerTop = ((boxRect.top - frameRect.top) / frameRect.height) * 100 + (heightPercent / 2);
-    var keepAspect = layer.getAttribute('data-preview-keep-aspect') === '1';
+    // A Crop can deliberately change just one edge. Its visible box is already
+    // the learner's chosen geometry, so never re-apply the placement aspect
+    // lock while committing that Crop.
+    var keepAspect = layer.getAttribute('data-preview-keep-aspect') === '1' && !preserveFreeformCropBox;
     var proportionalBox = {
         width: widthPercent,
         height: heightPercent
@@ -4482,7 +4485,7 @@ function localCourseBannerBuilderApplyCropEditor(control, sourceMode) {
     // the visible editor box is the new outer placement. Do not recompose a
     // later Recrop from saved percentages; that creates a second coordinate
     // system and makes repeated Crop operations drift.
-    var cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState(layer, false);
+    var cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState(layer, false, true);
     localCourseBannerBuilderSetPreviewCropState(layer, {
         imagecropenabled: crop.enabled,
         imagecropleftpercent: crop.left,
@@ -4614,6 +4617,11 @@ function localCourseBannerBuilderGetActivePreviewCropLayer(scope) {
 function localCourseBannerBuilderConstrainCropResize(crop, interaction) {
     var rect = interaction.rect;
     var mode = interaction.mode;
+    if (['n', 's', 'e', 'w'].indexOf(mode) !== -1) {
+        // Edge handles are intentionally unidirectional: moving one border
+        // must not recenter or resize the opposite dimension.
+        return crop;
+    }
     var aspect = interaction.aspectRatio || 1;
     var start = interaction.startCrop;
     var centerX = start.left + (start.width / 2);
