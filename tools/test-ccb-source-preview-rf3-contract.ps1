@@ -14,7 +14,7 @@ $css = Get-Content -LiteralPath (Join-Path $pluginRoot 'styles.css') -Raw
 
 $checks = [ordered]@{
     'Chain children keep the shared cancellable Motion disclosure lifecycle' =
-        (($source -match '(?s)function localCourseBannerBuilderSyncSourceChainRowVisibility\(animate\).*?Motion\.cancel\(row\).*?Motion\.enter\(row, \{distance: ''0px''\}\).*?Motion\.exit\(row, \{distance: ''0px'', hide: true\}\)') -and
+        (($source -match '(?s)function localCourseBannerBuilderSyncSourceChainRowVisibility\(animate\).*?Motion\.resize\(tableShell, apply, \{duration: Motion\.timing\.slow\}\)') -and
         ($source -match '(?s)function localCourseBannerBuilderInitSourceChainDisclosure\(\).*?localCourseBannerBuilderSyncSourceChainRowVisibility\(false\)'));
     'Layer infos disclosure disables its chevron transition for reduced motion' =
         ($actions -match '(?s)@media \(prefers-reduced-motion: reduce\)\s*\{\s*\.local-course-banner-builder-layer-details-accordion > summary::after\s*\{\s*transition: none;');

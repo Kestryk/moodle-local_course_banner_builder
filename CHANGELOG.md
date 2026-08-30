@@ -285,6 +285,20 @@ many small sections.
 
 ### EED-CCB-2026-0050 - 2026-08-29
 
+#### RF4 - 2026-08-30
+
+- Target the actual live configured-source DOM: table-shell child-row slides and
+  Layer & Overrides now reuse the cancellable EasyEdu Motion lifecycle, with
+  the existing reduced-motion fallback.
+- Give Collapse all bounded spacing, centre Layer & Overrides and replace the
+  squeezed inherited labels with concise English and French wording.
+- Repair the body-appended Source Preview root with scoped Kit tokens, an opaque
+  identity header/body/footer, canonical close, visible focus return, footer
+  action spacing and a transient animated Desktop/Mobile choice.
+- Remove two render warnings by passing site-admin context into the advanced
+  form helper and replacing the missing core `toggle` lookup with a localised
+  plugin string. Guide payload architecture remains outside this batch.
+
 #### RF3 - 2026-08-30
 
 - Strengthen inherited Border/Overlay labels, reuse the canonical checkerboard

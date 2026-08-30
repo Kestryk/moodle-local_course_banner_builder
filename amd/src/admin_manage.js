@@ -1416,6 +1416,7 @@ function localCourseBannerBuilderGetSourceChainRowsByKey() {
  */
 function localCourseBannerBuilderSyncSourceChainRowVisibility(animate) {
     var rowsByKey = localCourseBannerBuilderGetSourceChainRowsByKey();
+    var changes = [];
     Array.prototype.slice.call(document.querySelectorAll('[data-source-chain-row="1"]')).forEach(function (row) {
         var parentKey = row.getAttribute('data-source-chain-parent') || '';
         var isVisible = true;
@@ -1438,23 +1439,26 @@ function localCourseBannerBuilderSyncSourceChainRowVisibility(animate) {
             return;
         }
         row.dataset.sourceChainVisibilityTarget = target;
-        Motion.cancel(row);
-        if (isVisible) {
-            row.hidden = false;
-            if (animate !== false) {
-                Motion.enter(row, {distance: '0px'});
-            }
-            return;
-        }
-        if (row.hidden) {
-            return;
-        }
-        if (animate === false) {
-            row.hidden = true;
-            return;
-        }
-        Motion.exit(row, {distance: '0px', hide: true});
+        changes.push({row: row, visible: isVisible});
     });
+    if (!changes.length) {
+        return;
+    }
+    var apply = function() {
+        changes.forEach(function(change) {
+            change.row.hidden = !change.visible;
+        });
+    };
+    var tableShell = changes[0].row.closest('.local-course-banner-builder-table-shell--sources');
+    if (animate === false || !tableShell) {
+        apply();
+        return;
+    }
+    // A table row does not honour block-height keyframes consistently. Resize
+    // the live table shell around the real row mutation so children are
+    // progressively revealed/removed without changing the row DOM or its
+    // direct-child selectors.
+    Motion.resize(tableShell, apply, {duration: Motion.timing.slow});
 }
 
 /**
@@ -1569,11 +1573,18 @@ function localCourseBannerBuilderEnsureSourceChainPreviewModal() {
     modal.innerHTML =
         '<div class="modal-dialog modal-xl" role="document">' +
             '<div class="modal-content local-course-banner-builder-source-chain-preview-modal-content">' +
-                '<div class="modal-header d-flex align-items-center">' +
-                    '<h5 class="modal-title flex-grow-1">Source preview</h5>' +
-                    '<button type="button" class="close local-course-banner-builder-modal__close ml-auto ms-auto" data-dismiss="modal" ' +
+                '<div class="modal-header local-course-banner-builder-source-chain-preview-modal-header">' +
+                    '<span class="local-course-banner-builder-source-chain-preview-modal-identity" aria-hidden="true">' +
+                        '<i class="icon fa fa-eye fa-fw"></i>' +
+                    '</span>' +
+                    '<div class="local-course-banner-builder-source-chain-preview-modal-heading">' +
+                        '<span class="local-course-banner-builder-source-chain-preview-modal-eyebrow"></span>' +
+                        '<h5 class="modal-title local-course-banner-builder-source-chain-preview-modal-title">Source preview</h5>' +
+                    '</div>' +
+                    '<button type="button" class="close local-course-banner-builder-modal__close ' +
+                        'local-course-banner-builder-source-chain-preview-modal__close" data-dismiss="modal" ' +
                         'data-bs-dismiss="modal" aria-label="Close">' +
-                        '<i class="icon fa fa-times fa-fw" aria-hidden="true"></i>' +
+                        '<span aria-hidden="true">&times;</span>' +
                     '</button>' +
                 '</div>' +
                 '<div class="modal-body local-course-banner-builder-source-chain-preview-modal-body" ' +
@@ -1611,7 +1622,11 @@ function localCourseBannerBuilderFinishSourceChainPreviewClose(modal) {
     }
     var opener = modal.localCourseBannerBuilderSourceChainPreviewOpener;
     if (opener && document.contains(opener)) {
+        opener.classList.add('is-focus-returned');
         opener.focus();
+        opener.addEventListener('blur', function clearReturnedFocus() {
+            opener.classList.remove('is-focus-returned');
+        }, {once: true});
     }
 }
 
@@ -1625,12 +1640,27 @@ function localCourseBannerBuilderShowSourceChainPreview(button) {
     var url = button ? button.getAttribute('data-preview-url') : '';
     var editUrl = button ? button.getAttribute('data-edit-url') : '';
     var editLabel = button ? button.getAttribute('data-edit-label') : '';
+    var previewTitle = button ? button.getAttribute('data-preview-title') : '';
+    var previewEyebrow = button ? button.getAttribute('data-preview-eyebrow') : '';
+    var closeLabel = button ? button.getAttribute('data-close-label') : '';
     if (!url) {
         return;
     }
     var modal = localCourseBannerBuilderEnsureSourceChainPreviewModal();
     var body = modal.querySelector('[data-source-chain-preview-modal-body="1"]');
     var footer = modal.querySelector('[data-source-chain-preview-modal-footer="1"]');
+    var title = modal.querySelector('.local-course-banner-builder-source-chain-preview-modal-title');
+    var eyebrow = modal.querySelector('.local-course-banner-builder-source-chain-preview-modal-eyebrow');
+    var close = modal.querySelector('.local-course-banner-builder-source-chain-preview-modal__close');
+    if (title) {
+        title.textContent = previewTitle || localCourseBannerBuilderGetJsString('sourcechainpreviewtitle', 'Source preview');
+    }
+    if (eyebrow) {
+        eyebrow.textContent = previewEyebrow || 'Course Banner Builder';
+    }
+    if (close && closeLabel) {
+        close.setAttribute('aria-label', closeLabel);
+    }
     modal.localCourseBannerBuilderSourceChainPreviewOpener = button;
     var requestToken = String(Date.now()) + Math.random();
     modal.dataset.sourceChainPreviewRequest = requestToken;
@@ -14457,11 +14487,13 @@ function localCourseBannerBuilderSetSourcePreviewMode(root, mode, animate) {
         return Promise.resolve(true);
     }
     return Motion.swap(surface, apply, {
-        exit: false,
+        exit: true,
         resize: false,
-        distance: '0px',
+        exitDuration: Motion.timing.fast,
         enterDuration: Motion.timing.normal,
-        swapOpacity: 0.72,
+        distance: '0.15rem',
+        exitDistance: '-0.08rem',
+        swapOpacity: 0.28,
     });
 }
 
@@ -19965,12 +19997,14 @@ function localCourseBannerBuilderFinishActiveAccordions(scope) {
     Array.prototype.slice.call((scope || document).querySelectorAll([
         'details.local-course-banner-builder-upload-accordion',
         'details.local-course-banner-builder-advanced-accordion',
-        'details.local-course-banner-builder-section'
+        'details.local-course-banner-builder-section',
+        'details.local-course-banner-builder-layer-details-accordion'
     ].join(','))).forEach(function(details) {
         if (details.dataset.accordionMotionActive !== '1') {
             return;
         }
-        var content = details.querySelector(':scope > .local-course-banner-builder-accordion-content');
+        var content = details.querySelector(':scope > .local-course-banner-builder-accordion-content, ' +
+            ':scope > .local-course-banner-builder-layer-details-accordion-content');
         if (content) {
             Motion.finish(content);
         }
@@ -20004,13 +20038,15 @@ function localCourseBannerBuilderEnhanceAccordions(root) {
     Array.prototype.slice.call((root || document).querySelectorAll([
         'details.local-course-banner-builder-upload-accordion',
         'details.local-course-banner-builder-advanced-accordion',
-        'details.local-course-banner-builder-section'
+        'details.local-course-banner-builder-section',
+        'details.local-course-banner-builder-layer-details-accordion'
     ].join(','))).forEach(function (details) {
         var summary = details.querySelector(':scope > summary');
         if (!summary) {
             return;
         }
-        var content = details.querySelector(':scope > .local-course-banner-builder-accordion-content');
+        var content = details.querySelector(':scope > .local-course-banner-builder-accordion-content, ' +
+            ':scope > .local-course-banner-builder-layer-details-accordion-content');
         if (!content) {
             content = document.createElement('div');
             content.className = 'local-course-banner-builder-accordion-content';
@@ -20030,8 +20066,9 @@ function localCourseBannerBuilderEnhanceAccordions(root) {
         summary.setAttribute('aria-controls', content.id);
         summary.setAttribute('aria-expanded', details.hasAttribute('open') ? 'true' : 'false');
         content.hidden = !details.hasAttribute('open');
+        var usesCssChevron = details.classList.contains('local-course-banner-builder-layer-details-accordion');
         var icon = summary.querySelector('[data-accordion-chevron="1"], [data-local-details-toggle-icon="1"], .icons-collapse-expand');
-        if (!icon) {
+        if (!icon && !usesCssChevron) {
             icon = document.createElement('span');
             icon.setAttribute('data-accordion-chevron', '1');
             icon.setAttribute('aria-hidden', 'true');
@@ -20039,15 +20076,17 @@ function localCourseBannerBuilderEnhanceAccordions(root) {
             var firstChild = summary.firstChild;
             summary.insertBefore(icon, firstChild);
         }
-        icon.setAttribute('data-accordion-chevron', '1');
-        icon.setAttribute('aria-hidden', 'true');
-        icon.className = 'btn btn-icon me-2 icons-collapse-expand local-course-banner-builder-collapse-icon';
-        if (!icon.querySelector('.expanded-icon')) {
-            icon.innerHTML = '<span class="expanded-icon icon-no-margin p-2"><i class="icon fa fa-chevron-down fa-fw" aria-hidden="true"></i></span>' +
-                '<span class="collapsed-icon icon-no-margin p-2"><i class="icon fa fa-chevron-right fa-fw" aria-hidden="true"></i></span>';
+        if (icon) {
+            icon.setAttribute('data-accordion-chevron', '1');
+            icon.setAttribute('aria-hidden', 'true');
+            icon.className = 'btn btn-icon me-2 icons-collapse-expand local-course-banner-builder-collapse-icon';
+            if (!icon.querySelector('.expanded-icon')) {
+                icon.innerHTML = '<span class="expanded-icon icon-no-margin p-2"><i class="icon fa fa-chevron-down fa-fw" aria-hidden="true"></i></span>' +
+                    '<span class="collapsed-icon icon-no-margin p-2"><i class="icon fa fa-chevron-right fa-fw" aria-hidden="true"></i></span>';
+            }
+            icon.removeAttribute('style');
+            icon.classList.toggle('collapsed', !details.hasAttribute('open'));
         }
-        icon.removeAttribute('style');
-        icon.classList.toggle('collapsed', !details.hasAttribute('open'));
         if (!details.dataset.chevronBound) {
             details.addEventListener('toggle', function () {
                 var toggleIcon = summary.querySelector('[data-accordion-chevron="1"], [data-local-details-toggle-icon="1"], .icons-collapse-expand');
@@ -20074,7 +20113,9 @@ function localCourseBannerBuilderEnhanceAccordions(root) {
                 details.dataset.accordionTargetOpen = opening ? '1' : '0';
                 details.dataset.accordionTransitionId = transitionId;
                 summary.setAttribute('aria-expanded', opening ? 'true' : 'false');
-                icon.classList.toggle('collapsed', !opening);
+                if (icon) {
+                    icon.classList.toggle('collapsed', !opening);
+                }
                 if (opening) {
                     details.setAttribute('open', 'open');
                     content.hidden = false;
