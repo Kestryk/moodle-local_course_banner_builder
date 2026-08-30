@@ -27,6 +27,12 @@ $checks = [ordered]@{
         ($source -match "(?s)function localCourseBannerBuilderConstrainCropResize\(crop, interaction\).*?\['n', 's', 'e', 'w'\]\.indexOf\(mode\).*?Edge handles are intentionally unidirectional.*?return crop;");
     'Applying Crop does not re-enable an aspect lock over a freeform box' =
         ($source -match "(?s)function localCourseBannerBuilderGetCropSelectionCustomState\(layer, preserveSessionPlacement, preserveFreeformCropBox\).*?var keepAspect = layer\.getAttribute\('data-preview-keep-aspect'\) === '1' && !preserveFreeformCropBox;.*?customsizekeepaspect: keepAspect");
+    'Keep proportion snapshots preserve the complete Crop state' =
+        ($source -match "(?s)function localCourseBannerBuilderBuildAspectToggleSnapshot\(state\).*?imagecropenabled: !!state\.imagecropenabled.*?imagecropleftpercent:.*?imagecroptoppercent:.*?imagecropwidthpercent:.*?imagecropheightpercent:");
+    'Repeated Keep proportion toggles reject a stale Crop baseline' =
+        ($source -match "(?s)function localCourseBannerBuilderAspectToggleSnapshotsMatch\(current, baseline\).*?if \(!!current\.imagecropenabled !== !!baseline\.imagecropenabled\).*?imagecropleftpercent.*?imagecropheightpercent");
+    'Standalone preview derives locked geometry from the saved Crop dimensions' =
+        ($source -match "(?s)function localCourseBannerBuilderSyncStandalonePreviewLayer\(previewRoot, layer\).*?localCourseBannerBuilderGetEffectivePreviewImageDimensions\(\s*naturalWidth,\s*naturalHeight,\s*cropState,\s*false\s*\)");
     'Draft selection records a history boundary before switching' =
         ($source -match '(?s)function localCourseBannerBuilderSelectDraftPreviewLayer\(form, index\).*?localCourseBannerBuilderPushModalPreviewHistory\(form\).*?localCourseBannerBuilderCommitActiveDraftCropBeforeSwitch\(form\)');
     'Focused CROP-08 scenario requires exactly two pre-existing image selectors' =

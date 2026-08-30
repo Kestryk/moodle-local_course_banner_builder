@@ -5812,7 +5812,15 @@ function localCourseBannerBuilderBuildAspectToggleSnapshot(state) {
         offsetleftpercent: localCourseBannerBuilderRoundPreviewPercent(state.offsetleftpercent ?? 0),
         offsettoppercent: localCourseBannerBuilderRoundPreviewPercent(state.offsettoppercent ?? 0),
         offsetrightpercent: localCourseBannerBuilderRoundPreviewPercent(state.offsetrightpercent ?? 0),
-        offsetbottompercent: localCourseBannerBuilderRoundPreviewPercent(state.offsetbottompercent ?? 0)
+        offsetbottompercent: localCourseBannerBuilderRoundPreviewPercent(state.offsetbottompercent ?? 0),
+        // Keep proportion can be toggled repeatedly while a Crop is active.
+        // The snapshot must therefore retain the complete Crop, not merely
+        // the outer placement that existed when the aspect state was changed.
+        imagecropenabled: !!state.imagecropenabled,
+        imagecropleftpercent: localCourseBannerBuilderRoundPreviewPercent(state.imagecropleftpercent ?? 0),
+        imagecroptoppercent: localCourseBannerBuilderRoundPreviewPercent(state.imagecroptoppercent ?? 0),
+        imagecropwidthpercent: localCourseBannerBuilderRoundPreviewPercent(state.imagecropwidthpercent ?? 100),
+        imagecropheightpercent: localCourseBannerBuilderRoundPreviewPercent(state.imagecropheightpercent ?? 100)
     };
 }
 
@@ -5824,8 +5832,12 @@ function localCourseBannerBuilderAspectToggleSnapshotsMatch(current, baseline) {
             (current.positionanchor || 'top-left') !== (baseline.positionanchor || 'top-left')) {
         return false;
     }
+    if (!!current.imagecropenabled !== !!baseline.imagecropenabled) {
+        return false;
+    }
     return ['customwidthpercent', 'customheightpercent', 'offsetleftpercent', 'offsettoppercent',
-        'offsetrightpercent', 'offsetbottompercent'].every(function (field) {
+        'offsetrightpercent', 'offsetbottompercent', 'imagecropleftpercent', 'imagecroptoppercent',
+        'imagecropwidthpercent', 'imagecropheightpercent'].every(function (field) {
         return Math.abs(
             localCourseBannerBuilderNormaliseNumericValue(current[field], 0) -
                 localCourseBannerBuilderNormaliseNumericValue(baseline[field], 0)
@@ -9994,14 +10006,15 @@ function localCourseBannerBuilderSyncStandalonePreviewLayer(previewRoot, layer) 
         imagecropheightpercent: layer.getAttribute('data-preview-crop-height') || '100'
     };
     var cropEditing = !!layer.querySelector('[data-preview-crop-editor="1"]');
-    // The draft-selection mirror must use the same outer box as the active
-    // layer. Applying Crop must not make either image's placement depend on
-    // the selected Crop rectangle.
+    // The standalone/source preview must use the same effective Crop aspect
+    // as the saved public geometry when Keep proportion is enabled. Freeform
+    // Crop placement remains unchanged because it deliberately disables that
+    // aspect lock before Apply.
     var effectiveDimensions = localCourseBannerBuilderGetEffectivePreviewImageDimensions(
         naturalWidth,
         naturalHeight,
         cropState,
-        true
+        false
     );
     var renderKeepAspect = keepAspect;
     var placementWidth = effectiveDimensions.width;
