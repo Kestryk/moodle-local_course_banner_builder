@@ -2344,9 +2344,10 @@ img.local-course-banner-builder-course-card-thumb {
 .local-course-banner-builder-chain-layer-label {
   display: block;
   margin-left: 1.85rem;
-  font-size: 0.76rem;
-  line-height: 1.2;
-  color: #64748b;
+  color: var(--easyedu-text, var(--bs-body-color, #212529));
+  font-size: var(--easyedu-font-size-control);
+  font-weight: var(--easyedu-font-weight-semibold);
+  line-height: 1.35;
 }
 
 .local-course-banner-builder-admin-layer-visual .local-course-banner-builder-border-preview-frame,
@@ -2356,11 +2357,19 @@ img.local-course-banner-builder-course-card-thumb {
   width: 100%;
   aspect-ratio: 1/1;
   overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, 0.32);
   border-radius: 0.35rem;
-  background: linear-gradient(45deg, rgba(148, 163, 184, 0.12) 25%, transparent 25%), linear-gradient(-45deg, rgba(148, 163, 184, 0.12) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(148, 163, 184, 0.12) 75%), linear-gradient(-45deg, transparent 75%, rgba(148, 163, 184, 0.12) 75%);
-  background-position: 0 0, 0 0.35rem, 0.35rem -0.35rem, -0.35rem 0;
-  background-size: 0.7rem 0.7rem;
+  background-color: var(--easyedu-preview-checker-light);
+  background-image: conic-gradient(var(--easyedu-preview-checker-dark) 25%, transparent 0 50%, var(--easyedu-preview-checker-dark) 0 75%, transparent 0);
+  background-position: 0 0;
+  background-size: var(--easyedu-preview-checker-size) var(--easyedu-preview-checker-size);
+  border: 1px solid var(--easyedu-preview-checker-border);
+}
+@media (forced-colors: active) {
+  .local-course-banner-builder-admin-layer-visual .local-course-banner-builder-border-preview-frame,
+  .local-course-banner-builder-admin-layer-overlay-frame {
+    background: Canvas;
+    border-color: CanvasText;
+  }
 }
 
 .local-course-banner-builder-admin-layer-overlay-frame .local-course-banner-builder-banner-overlay-layer {
@@ -4764,9 +4773,13 @@ button[data-toggler=drawers][data-target=theme_boost-drawers-blocks] {
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  margin: 0.75rem 0;
+  margin: 0.85rem 0 0.65rem;
   padding-left: 0;
   gap: 0.5rem;
+}
+
+.local-course-banner-builder-configured-source-tools .local-course-banner-builder-chain-collapse-toggle {
+  margin-inline-end: 0.25rem;
 }
 
 .local-course-banner-builder-table-shell--sources {
@@ -16397,7 +16410,7 @@ span[data-flexitour=container].orphan .modal-dialog {
   gap: 0.55rem;
   justify-content: space-between;
   margin-bottom: 0.65rem;
-  margin-bottom: 0.55rem;
+  margin: 0.85rem 0 0.65rem;
 }
 .local-course-banner-builder-admin--native .local-course-banner-builder-configured-source-tools .local-course-banner-builder-chain-collapse-toggle {
   align-items: center;
@@ -18075,6 +18088,14 @@ span[data-flexitour=container].orphan .modal-dialog {
   width: min(105rem, 100vw - 3rem);
 }
 .local-course-banner-builder-source-chain-preview-modal .local-course-banner-builder-source-chain-preview-modal-content {
+  background: var(--easyedu-surface);
+  border: 1px solid var(--easyedu-modal-border);
+  border-radius: var(--easyedu-modal-radius);
+  box-shadow: var(--easyedu-modal-shadow);
+  overflow: hidden;
+  background: linear-gradient(180deg, #f7fbff 0%, var(--easyedu-surface) 11rem);
+  --easyedu-context-modal-accent: var(--easyedu-modal-primary-accent);
+  --easyedu-context-modal-header-bg: var(--easyedu-modal-header-primary-bg);
   --easyedu-preview-modal-inline-space: 1rem;
   display: flex;
   flex-direction: column;
@@ -18082,6 +18103,17 @@ span[data-flexitour=container].orphan .modal-dialog {
   max-height: 100%;
   overflow: hidden;
   width: 100%;
+}
+.local-course-banner-builder-source-chain-preview-modal .local-course-banner-builder-source-chain-preview-modal-content .modal-header {
+  background: var(--easyedu-context-modal-header-bg, var(--easyedu-modal-header-bg));
+  border-bottom: 1px solid var(--easyedu-modal-border);
+}
+.local-course-banner-builder-source-chain-preview-modal .local-course-banner-builder-source-chain-preview-modal-content .modal-body {
+  background: var(--easyedu-modal-body-bg);
+}
+.local-course-banner-builder-source-chain-preview-modal .local-course-banner-builder-source-chain-preview-modal-content .modal-footer {
+  background: var(--easyedu-modal-footer-bg);
+  border-top: 1px solid var(--easyedu-modal-border);
 }
 .local-course-banner-builder-source-chain-preview-modal .local-course-banner-builder-source-chain-preview-modal-content .modal-header,
 .local-course-banner-builder-source-chain-preview-modal .local-course-banner-builder-source-chain-preview-modal-content .modal-footer {
@@ -18096,6 +18128,7 @@ span[data-flexitour=container].orphan .modal-dialog {
   min-height: 0;
   overscroll-behavior: contain;
   position: relative;
+  overflow-y: auto;
 }
 .local-course-banner-builder-source-chain-preview-modal .local-course-banner-builder-source-chain-preview-modal-footer {
   background: var(--easyedu-surface);
@@ -18112,6 +18145,26 @@ span[data-flexitour=container].orphan .modal-dialog {
   pointer-events: none;
   position: absolute;
   right: 0;
+}
+.local-course-banner-builder-source-chain-preview-modal .local-course-banner-builder-source-chain-preview-feedback {
+  align-items: center;
+  background: linear-gradient(180deg, var(--easyedu-empty-bg-start) 0%, var(--easyedu-empty-bg-end) 100%);
+  border: 1px dashed var(--easyedu-empty-border);
+  border-radius: 0.85rem;
+  color: var(--easyedu-text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  justify-content: center;
+  padding: 0.9rem 1rem;
+  text-align: center;
+  min-height: 3.2rem;
+  padding: 0.7rem 0.85rem;
+  margin: 0;
+}
+.local-course-banner-builder-source-chain-preview-modal .local-course-banner-builder-source-chain-preview-feedback--error {
+  border-color: color-mix(in srgb, var(--easyedu-danger) 28%, var(--easyedu-empty-border) 72%);
+  color: var(--easyedu-danger);
 }
 
 .modal[id^=local-course-banner-builder-] .local-course-banner-builder-modal-preview-action-list > .local-course-banner-builder-preview-side-accordion-trigger[aria-expanded=true] + .local-course-banner-builder-preview-side-accordion-panel:not(.is-collapsed) {
@@ -18489,9 +18542,9 @@ span[data-flexitour=container].orphan .modal-dialog {
   padding: 0.48rem 3.2rem 0.48rem 0.7rem;
   color: var(--easyedu-text, var(--bs-body-color, #212529));
   cursor: pointer;
-  font-size: 0.78rem;
-  font-weight: 720;
-  line-height: 1.2;
+  font-size: var(--easyedu-font-size-control);
+  font-weight: var(--easyedu-font-weight-semibold);
+  line-height: 1.35;
   list-style: none;
 }
 .local-course-banner-builder-layer-details-accordion > summary::-webkit-details-marker {
@@ -18520,6 +18573,11 @@ span[data-flexitour=container].orphan .modal-dialog {
   transform: rotate(225deg) translateY(-0.08rem);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .local-course-banner-builder-layer-details-accordion > summary::after {
+    transition: none;
+  }
+}
 .local-course-banner-builder-layer-details-empty-state {
   align-items: center;
   background: linear-gradient(180deg, var(--easyedu-empty-bg-start) 0%, var(--easyedu-empty-bg-end) 100%);

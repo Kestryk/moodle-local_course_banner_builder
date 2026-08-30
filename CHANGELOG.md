@@ -285,6 +285,16 @@ many small sections.
 
 ### EED-CCB-2026-0050 - 2026-08-29
 
+#### RF3 - 2026-08-30
+
+- Strengthen inherited Border/Overlay labels, reuse the canonical checkerboard
+  for layer thumbnails and restore spacing around Collapse all.
+- Soften the Layer & Overrides title, retain cancellable source-child motion
+  and disable decorative chevron motion when reduced motion is requested.
+- Make Source Preview use the opaque shared modal surface, common close button,
+  native loading/feedback states and footer Edit source action. Desktop/Mobile
+  mode remains local to that modal and never updates the saved source mode.
+
 #### Fixed
 
 - Configured-source child rows now use the shared cancellable Motion disclosure lifecycle. Individual and bulk collapse preserve `aria-expanded`/`aria-controls`, end in the correct `hidden` state, and honour reduced-motion preferences.

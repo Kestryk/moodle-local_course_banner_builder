@@ -110,9 +110,9 @@
         padding: 0.48rem 3.2rem 0.48rem 0.7rem;
         color: var(--easyedu-text, var(--bs-body-color, #212529));
         cursor: pointer;
-        font-size: 0.78rem;
-        font-weight: 720;
-        line-height: 1.2;
+        font-size: var(--easyedu-font-size-control);
+        font-weight: var(--easyedu-font-weight-semibold);
+        line-height: 1.35;
         list-style: none;
 
         &::-webkit-details-marker {
@@ -145,6 +145,12 @@
         &::after {
             transform: rotate(225deg) translateY(-0.08rem);
         }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .local-course-banner-builder-layer-details-accordion > summary::after {
+        transition: none;
     }
 }
 
