@@ -26,6 +26,22 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0043-RF8 - 2026-08-30
+
+#### Fixed
+
+- Applying Crop in the add-image modal now retains the accepted Crop rectangle
+  as the image's resulting outer geometry. Previously, the inner image was
+  cropped correctly but the modal restored the pre-Crop placement dimensions,
+  making the accepted result appear to expand back to the original image size.
+
+#### Validation
+
+- Rebuilt the official AMD bundle and source map from `amd/src`, then passed
+  the focused Crop placement, transformation, draft-selection and history
+  contracts. Preview and human visual confirmation remain separately
+  authorised.
+
 ### EED-CCB-2026-0043-RF7 - 2026-08-30
 
 #### Fixed

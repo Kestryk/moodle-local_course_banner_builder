@@ -4478,10 +4478,12 @@ function localCourseBannerBuilderApplyCropEditor(control, sourceMode) {
         return;
     }
     var crop = localCourseBannerBuilderGetPreviewCropState(layer);
-    // A modal crop changes the visible source rectangle, never its placement.
-    // Keep the session placement even after a real crop gesture; source-editor
-    // callers deliberately retain their existing box-derived behaviour.
-    var cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState(layer, !sourceMode);
+    // An accepted crop defines both the visible source rectangle and the
+    // resulting outer geometry. Derive placement from the selected crop box
+    // in both editors so the modal has the same semantics as the main preview;
+    // retaining the pre-crop session placement would expand the result back to
+    // the original image size.
+    var cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState(layer, false);
     localCourseBannerBuilderSetPreviewCropState(layer, {
         imagecropenabled: crop.enabled,
         imagecropleftpercent: crop.left,
