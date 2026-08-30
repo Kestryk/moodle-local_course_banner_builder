@@ -63,6 +63,15 @@ test('CROP-08 restores chronological non-destructive transformations across two 
     await login(page, env);
     await page.goto(env.modalUrl, {waitUntil: 'domcontentloaded'});
 
+    // The fixture owns the draft item id.  In image edit mode Moodle renders
+    // bannerimage_filemanager as a hidden value of 0 (the Filemanager UI is
+    // deliberately absent), so the edit form cannot be used to discover the
+    // draft item.  Read the supervised fixture manifest instead.
+    const manifest = JSON.parse(fs.readFileSync(env.manifest, 'utf8').replace(/^\uFEFF/, ''));
+    const draftitemid = Number(manifest.seedDraftItemId || manifest.draftitemid || 0);
+    expect(Number.isInteger(draftitemid) && draftitemid > 0,
+        'CROP-08 fixture manifest must provide its owned draft item id.').toBe(true);
+
     const edit = page.locator('[data-edit-layer-url*="elementid=' + env.elementId + '"]');
     await expect(edit, 'CROP-08 fixture image layer must expose its edit action.').toHaveCount(1);
     const modalId = await edit.getAttribute('data-edit-layer-modal');
@@ -75,14 +84,17 @@ test('CROP-08 restores chronological non-destructive transformations across two 
     const editDialog = page.locator('#' + modalId);
     await expect(editDialog, 'CROP-08 image edit dialog must be visible after the edit action.')
         .toBeVisible({timeout: 30000});
-    const form = editDialog.locator('form.mform:has(#id_bannerimage_filemanager)');
-    await expect(form, 'CROP-08 must wait for the fetched image-edit form, not the loading placeholder.')
+    // Image edit has no visible Filemanager field.  Scope to the exact,
+    // trigger-owned dialog and require the fetched form to contain the two
+    // draft selectors, which also excludes a stale hidden modal/form.
+    const form = editDialog.locator('form.mform').filter({
+        has: editDialog.locator('[data-draft-preview-select="1"]'),
+    });
+    await expect(form, 'CROP-08 must wait for the fetched image-edit form in the exact edit dialog, not the loading placeholder or a stale modal.')
         .toHaveCount(1, {timeout: 30000});
-    await expect(form.locator('#id_bannerimage_filemanager')).toHaveCount(1);
-    const draftitemid = await form.locator('#id_bannerimage_filemanager').inputValue();
-    expect(draftitemid).toMatch(/^\d+$/);
-    const manifest = JSON.parse(fs.readFileSync(env.manifest, 'utf8').replace(/^\uFEFF/, ''));
-    manifest.draftitemid = Number(draftitemid);
+    await expect(form, 'CROP-08 fetched image-edit form must be visible in the trigger-owned dialog.')
+        .toBeVisible({timeout: 30000});
+    manifest.draftitemid = draftitemid;
     fs.writeFileSync(env.manifest, JSON.stringify(manifest, null, 2));
     const selectors = form.locator('[data-draft-preview-select="1"]');
     await expect(selectors).toHaveCount(2);
