@@ -4560,8 +4560,13 @@ class manager {
         $multidraftsettings = self::extract_multi_draft_settings($data->multilayerdraftsettings ?? '');
         $draftfiles = [];
         foreach ($rawdraftfiles as $draftindex => $draftfile) {
-            if (!empty($multidraftsettings[$draftindex]['deleted'])) {
-                $deletedfilename = (string)($multidraftsettings[$draftindex]['deletedfilename'] ?? '');
+            $draftsettings = self::get_multi_draft_settings_for_file(
+                $multidraftsettings,
+                $draftfile,
+                (int)$draftindex
+            );
+            if (!empty($draftsettings['deleted'])) {
+                $deletedfilename = (string)($draftsettings['deletedfilename'] ?? '');
                 if ($deletedfilename !== '' && $deletedfilename !== $draftfile->get_filename()) {
                     $draftfiles[$draftindex] = $draftfile;
                     continue;
@@ -4609,7 +4614,10 @@ class manager {
                 $record->name = self::get_automatic_layer_name($draftfile);
                 $record->sortorder = $nextsortorder++;
                 $record->isenabled = empty($data->isenabled) ? 0 : 1;
-                $layerdata = self::apply_multi_draft_layer_settings($data, $multidraftsettings[$draftindex] ?? []);
+                $layerdata = self::apply_multi_draft_layer_settings(
+                    $data,
+                    self::get_multi_draft_settings_for_file($multidraftsettings, $draftfile, (int)$draftindex)
+                );
                 self::apply_element_display_settings($record, $layerdata, $source);
                 $record->timemodified = time();
                 $DB->update_record('local_course_banner_builder_elements', $record);
@@ -4656,7 +4664,11 @@ class manager {
         $displaydata = $data;
         if (!$elementid && !$hasborder && count($draftfiles) === 1) {
             $onlydraftindex = array_key_first($draftfiles);
-            $draftsettings = $multidraftsettings[$onlydraftindex] ?? [];
+            $draftsettings = self::get_multi_draft_settings_for_file(
+                $multidraftsettings,
+                $draftfiles[$onlydraftindex],
+                (int)$onlydraftindex
+            );
             foreach (['enabled', 'leftpercent', 'toppercent', 'widthpercent', 'heightpercent'] as $cropfield) {
                 $property = 'imagecrop' . $cropfield;
                 if (property_exists($data, $property)) {
@@ -4757,6 +4769,36 @@ class manager {
 
         ksort($settings);
         return $settings;
+    }
+
+    /**
+     * Resolve one browser draft transform against its actual stored draft file.
+     *
+     * Browser state uses stable visual indices so switching/removing images does
+     * not lose history. Moodle can reindex draft files at submit time, so the
+     * filename is the durable per-image binding. The numeric fallback retains
+     * compatibility with payloads created before this correction.
+     *
+     * @param array $settings
+     * @param \stored_file $draftfile
+     * @param int $fallbackindex
+     * @return array
+     */
+    protected static function get_multi_draft_settings_for_file(
+        array $settings,
+        \stored_file $draftfile,
+        int $fallbackindex
+    ): array {
+        $filename = (string)$draftfile->get_filename();
+        if ($filename !== '') {
+            foreach ($settings as $setting) {
+                if (is_array($setting) && (string)($setting['draftfilename'] ?? '') === $filename) {
+                    return $setting;
+                }
+            }
+        }
+
+        return is_array($settings[$fallbackindex] ?? null) ? $settings[$fallbackindex] : [];
     }
 
     /**

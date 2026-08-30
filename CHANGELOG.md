@@ -26,6 +26,21 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0043 RF16 - Draft image transform persistence - 2026-08-30
+
+#### Fixed
+
+- Bind each draft image’s position, proportion and Crop transform to its stored
+  filename before saving, rather than relying solely on browser indices that
+  can diverge from Moodle’s stored-file order.
+- Retain the existing numeric mapping only as a compatibility fallback for
+  draft payloads created before this correction.
+
+#### Validation
+
+- Add a static contract for filename-bound draft transform serialization and
+  server resolution. Human preview review remains required for Save/reopen.
+
 ### EED-CCB-2026-0043 RF15 - Crop selection and saved source-preview geometry - 2026-08-30
 
 #### Fixed

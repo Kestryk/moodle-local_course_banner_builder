@@ -8518,6 +8518,10 @@ function localCourseBannerBuilderReadLayerPreviewStateFromLayer(layer) {
         imagewidth: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-natural-width') || (image ? image.naturalWidth : '0'), 0),
         imageheight: localCourseBannerBuilderNormaliseNumericValue(layer.getAttribute('data-preview-natural-height') || (image ? image.naturalHeight : '0'), 0),
         url: layer.getAttribute('data-preview-current-url') || (image ? image.getAttribute('src') : ''),
+        // Browser indices deliberately stay stable while images are switched
+        // or removed. Persist the actual draft filename too, because Moodle
+        // can compact stored-file indexes when the form is saved.
+        draftfilename: layer.getAttribute('data-preview-draft-filename') || '',
         sortorder: parseInt(layer.getAttribute('data-preview-sortorder') || layer.getAttribute('data-draft-index') || '0', 10) || 0,
         zindex: parseInt(layer.getAttribute('data-preview-zindex') || '', 10) ||
             localCourseBannerBuilderGetDraftPreviewZIndex(layer.getAttribute('data-draft-index') || '0')
@@ -9494,6 +9498,7 @@ function localCourseBannerBuilderApplyDraftVisualLayerState(form, previewRoot, l
     layer.setAttribute('data-preview-draft-layer', '1');
     layer.setAttribute('data-preview-draft-visual-layer', '1');
     layer.setAttribute('data-draft-index', String(file.index));
+    layer.setAttribute('data-preview-draft-filename', String(file.name || ''));
     layer.setAttribute('data-preview-fitmode', layerState.fitmodeoverride || '');
     layer.setAttribute('data-preview-anchor', layerState.positionanchor || 'center');
     layer.setAttribute('data-preview-custom-width', String(layerState.customwidthpercent ?? 100));
@@ -9673,6 +9678,7 @@ function localCourseBannerBuilderRenderDraftUploadPreview(form) {
     currentLayer.setAttribute('data-preview-draft-layer', '1');
     currentLayer.setAttribute('data-preview-draft-selection-overlay', '1');
     currentLayer.setAttribute('data-draft-index', activeIndex);
+    currentLayer.setAttribute('data-preview-draft-filename', String(activeFile.name || ''));
     currentLayer.setAttribute('data-preview-sortorder', String(settings[activeIndex].sortorder ?? activeIndex));
     currentLayer.setAttribute(
         'data-preview-zindex',
