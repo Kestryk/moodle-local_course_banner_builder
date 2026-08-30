@@ -159,6 +159,12 @@ test('Change parent modal keeps the table informative and rejects a descendant',
     expect(dropdownGeometry[1].y).toBeGreaterThanOrEqual(
         dropdownGeometry[0].y + dropdownGeometry[0].height - 1
     );
+    const modalBox = await modal.boundingBox();
+    expect(modalBox).not.toBeNull();
+    expect(dropdownGeometry[1].x).toBeGreaterThanOrEqual(modalBox.x - 1);
+    expect(dropdownGeometry[1].y + dropdownGeometry[1].height).toBeLessThanOrEqual(
+        modalBox.y + modalBox.height + 1
+    );
     await page.screenshot({
         path: artifact(environment, 'parent-source-modal-options.png'),
         fullPage: true,
