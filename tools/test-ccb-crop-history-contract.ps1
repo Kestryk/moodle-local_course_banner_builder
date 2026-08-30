@@ -16,8 +16,13 @@ $checks = [ordered]@{
         ($source -match '(?s)function localCourseBannerBuilderRestoreDraftTransformationHistory\(form, snapshot\).*?availableIndexes.*?settings\[index\] && settings\[index\]\.deleted.*?localCourseBannerBuilderRenderDraftUploadPreview\(form\)');
     'Fit leaves Crop fields outside its replacement patch' =
         ($source -match '(?s)function localCourseBannerBuilderApplyFitToLayerFormPreview\(form\).*?Fit changes outer placement only; it deliberately preserves Crop fields\.');
-    'Modal Crop derives outer geometry from the accepted selection in parity with the main preview' =
-        ($source -match '(?s)function localCourseBannerBuilderApplyCropEditor\(control, sourceMode\).*?var cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState\(layer, false\);');
+    'First modal Crop derives outer geometry from the accepted selection' =
+        ($source -match '(?s)function localCourseBannerBuilderApplyCropEditor\(control, sourceMode\).*?if \(!cropSelectionState\) \{\s*cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState\(layer, false\);');
+    'Modal Recrop composes inside the already accepted geometry' =
+        (($source -match '(?s)function localCourseBannerBuilderGetModalRecropSelectionCustomState\(layer\).*?relativeWidth = currentCropState\.width / initialWidth.*?acceptedWidth \* relativeWidth.*?acceptedLeft \+ \(acceptedWidth \* relativeLeft\)') -and
+        ($source -match '(?s)function localCourseBannerBuilderApplyCropEditor\(control, sourceMode\).*?sourceMode \? null :\s*localCourseBannerBuilderGetModalRecropSelectionCustomState\(layer\)'));
+    'Recrop outside the accepted Crop falls back to absolute editor geometry' =
+        ($source -match '(?s)function localCourseBannerBuilderGetModalRecropSelectionCustomState\(layer\).*?Reframing outside the accepted Crop.*?return null;');
     'Draft selection records a history boundary before switching' =
         ($source -match '(?s)function localCourseBannerBuilderSelectDraftPreviewLayer\(form, index\).*?localCourseBannerBuilderPushModalPreviewHistory\(form\).*?localCourseBannerBuilderCommitActiveDraftCropBeforeSwitch\(form\)');
     'Focused CROP-08 scenario requires exactly two pre-existing image selectors' =

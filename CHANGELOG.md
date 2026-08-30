@@ -26,6 +26,21 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0043-RF9 - 2026-08-30
+
+#### Fixed
+
+- Recropping an already cropped image in the Add layer Image modal now composes
+  the reduced selection with the geometry accepted by the first Crop. It no
+  longer recalculates that reduced result from the reconstituted original-image
+  frame and changes its apparent size or aspect.
+
+#### Validation
+
+- Added a narrow static contract for first-Crop fallback, relative Recrop
+  composition and explicit outside-selection fallback. AMD rebuild, static
+  contracts and human preview review remain separately documented.
+
 ### EED-CCB-2026-0043-RF8 - 2026-08-30
 
 #### Fixed
