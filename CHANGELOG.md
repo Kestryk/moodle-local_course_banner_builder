@@ -1,5 +1,23 @@
 # Changelog
 
+## EED-CCB-2026-0042-RF3 - 2026-08-30
+
+### Changed
+
+- Kept the searched Parent source list in the Change parent modal's own flow
+  and scrollable body, so options remain reachable below their field rather
+  than escaping below the opaque modal surface.
+- Applied the shared EasyEdu modal-close primitive to that modal's close
+  control, preserving its existing Cancel, Escape, backdrop and focus-return
+  behavior.
+
+### Validation
+
+- Added a source contract for the modal-owned parent list and close primitive,
+  and extended the existing candidate Playwright scenario to assert that the
+  open list stays inside the modal bounds. Runtime validation remains a
+  separately authorised operation.
+
 All notable changes to Course Banner Builder are documented in this file.
 
 The format is inspired by [Keep a Changelog](https://keepachangelog.com/).

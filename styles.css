@@ -17684,12 +17684,60 @@ span[data-flexitour=container].orphan .modal-dialog {
   --easyedu-drag-handle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 14'%3E%3Ccircle cx='2' cy='2' r='1.2'/%3E%3Ccircle cx='6' cy='2' r='1.2'/%3E%3Ccircle cx='2' cy='7' r='1.2'/%3E%3Ccircle cx='6' cy='7' r='1.2'/%3E%3Ccircle cx='2' cy='12' r='1.2'/%3E%3Ccircle cx='6' cy='12' r='1.2'/%3E%3C/svg%3E");
   z-index: 1095;
 }
+#local-course-banner-builder-change-source-parent-modal .modal-content {
+  max-height: calc(100vh - 2rem);
+}
+#local-course-banner-builder-change-source-parent-modal .modal-body {
+  min-height: 0;
+  overflow-y: auto;
+}
 #local-course-banner-builder-change-source-parent-modal [data-source-dropdown=parent-change] .local-course-banner-builder-source-dropdown-menu {
-  top: calc(100% + 0.35rem) !important;
-  right: auto !important;
-  bottom: auto !important;
-  left: 0 !important;
+  position: static !important;
+  width: 100%;
+  margin-top: 0.35rem;
   transform: none !important;
+}
+#local-course-banner-builder-change-source-parent-modal .modal-header > .local-course-banner-builder-modal__close {
+  align-items: center;
+  border-radius: var(--easyedu-control-radius);
+  display: inline-flex;
+  justify-content: center;
+  line-height: 1;
+  font-size: 0.78rem;
+  min-height: 1.9rem;
+  min-width: 1.9rem;
+  padding: 0.22rem 0.5rem;
+  transition: background-color var(--easyedu-motion-fast) ease, border-color var(--easyedu-motion-fast) ease, box-shadow var(--easyedu-motion-fast) ease, color var(--easyedu-motion-fast) ease, transform var(--easyedu-motion-fast) ease;
+  background: var(--easyedu-surface);
+  border: 1px solid var(--easyedu-card-border);
+  color: var(--easyedu-text-muted);
+  height: 2.3rem;
+  min-height: 2.3rem;
+  min-width: 2.3rem;
+  padding: 0;
+  width: 2.3rem;
+}
+#local-course-banner-builder-change-source-parent-modal .modal-header > .local-course-banner-builder-modal__close:focus-visible {
+  box-shadow: 0 0 0 var(--easyedu-focus-ring-width) var(--easyedu-focus-ring);
+  outline: var(--easyedu-focus-outline-width) solid transparent;
+  outline-offset: var(--easyedu-focus-outline-offset);
+}
+#local-course-banner-builder-change-source-parent-modal .modal-header > .local-course-banner-builder-modal__close:hover, #local-course-banner-builder-change-source-parent-modal .modal-header > .local-course-banner-builder-modal__close:focus-visible {
+  background: var(--easyedu-danger-soft);
+  border-color: color-mix(in srgb, var(--easyedu-danger) 22%, #fff 78%);
+  color: var(--easyedu-danger);
+}
+#local-course-banner-builder-change-source-parent-modal .modal-header > .local-course-banner-builder-modal__close {
+  margin: 0 0 0 auto;
+  text-decoration: none !important;
+}
+#local-course-banner-builder-change-source-parent-modal .modal-header > .local-course-banner-builder-modal__close > span {
+  align-items: center;
+  display: inline-flex;
+  height: 100%;
+  justify-content: center;
+  line-height: 1;
+  width: 100%;
 }
 
 .modal[id^=local-course-banner-builder-] .modal-header > .close,

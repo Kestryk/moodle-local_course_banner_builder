@@ -5,6 +5,7 @@ and `Pending historical confirmation` are intentional states, not omissions.
 
 | Batch or evolution | Title | Area | Status | First known date | Latest validation date | Detail | Release / commit reference | Successor or dependency |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| EED-CCB-2026-0042-RF3 | Parent modal owned menu | Sources / parent modal | Implemented - source validation pending | 2026-08-30 | Human review 2026-08-30 | [0042-RF3](batches/eed-ccb-2026-0042-rf3-parent-modal-owned-menu.md) | Worktree candidate pending commit | One scoped parent-modal run and human visual review |
 | EED-CCB-2026-0043-RF6 | Recrop-cancel history repair | Image modal / Crop | Implemented - source validation pending | 2026-08-30 | RF5 browser failure 2026-08-29 | [0043-RF6](batches/eed-ccb-2026-0043-rf6-recrop-cancel-history.md) | Worktree candidate pending commit | AMD build then one scoped Crop/Recrop run |
 | EED-CCB-2026-0043-RF5 | Crop pointer-completion isolation | Image modal / Crop | Implemented - source validation pending | 2026-08-30 | QA7 pointer diagnostic 2026-08-29 | [0043-RF5](batches/eed-ccb-2026-0043-rf5-crop-pointer-isolation.md) | Worktree candidate pending commit | AMD build then one scoped Crop diagnostic |
 | EED-CCB-2026-0043-RF3 | Crop outer-geometry preservation | Image modal / Crop | Implemented - browser validation pending | 2026-08-29 | QA2 product failure 2026-08-29 | [0043-RF3](batches/eed-ccb-2026-0043-rf3-crop-outer-geometry.md) | Source branch pending commit | Run QA2 unchanged against the promoted candidate |

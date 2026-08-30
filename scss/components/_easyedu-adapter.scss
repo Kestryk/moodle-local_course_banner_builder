@@ -1310,12 +1310,41 @@
     // modal layer instead of allowing the later backdrop to veil its surface.
     z-index: 1095;
 
+    // The parent selector is an in-modal disclosure, not a viewport Popper.
+    // Keeping it in normal flow makes every searched option reachable in the
+    // opaque modal body instead of painting it beyond the modal edge.
+    .modal-content {
+        max-height: calc(100vh - 2rem);
+    }
+
+    .modal-body {
+        min-height: 0;
+        overflow-y: auto;
+    }
+
     [data-source-dropdown="parent-change"] .local-course-banner-builder-source-dropdown-menu {
-        top: calc(100% + 0.35rem) !important;
-        right: auto !important;
-        bottom: auto !important;
-        left: 0 !important;
+        position: static !important;
+        width: 100%;
+        margin-top: 0.35rem;
         transform: none !important;
+    }
+
+    .modal-header > .local-course-banner-builder-modal__close {
+        @include easyedu.modal-close-button(small);
+
+        & {
+            margin: 0 0 0 auto;
+            text-decoration: none !important;
+        }
+
+        > span {
+            align-items: center;
+            display: inline-flex;
+            height: 100%;
+            justify-content: center;
+            line-height: 1;
+            width: 100%;
+        }
     }
 }
 
