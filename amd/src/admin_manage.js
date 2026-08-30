@@ -3320,12 +3320,27 @@ function localCourseBannerBuilderNormaliseCropState(state) {
     var cropHeight = state && typeof state.imagecropheightpercent !== 'undefined' ?
         state.imagecropheightpercent :
         (state ? state.height : 100);
+    var rawLeft = localCourseBannerBuilderNormaliseNumericValue(cropLeft, 0);
+    var rawTop = localCourseBannerBuilderNormaliseNumericValue(cropTop, 0);
+    var rawWidth = localCourseBannerBuilderNormaliseNumericValue(cropWidth, 100);
+    var rawHeight = localCourseBannerBuilderNormaliseNumericValue(cropHeight, 100);
+    // Pointer-resized rectangles can cross their opposite edge. Canonicalise
+    // that signed geometry before clamping so a left-to-right or bottom-to-top
+    // Crop has the same box as the equivalent gesture in the other direction.
+    if (rawWidth < 0) {
+        rawLeft += rawWidth;
+        rawWidth = Math.abs(rawWidth);
+    }
+    if (rawHeight < 0) {
+        rawTop += rawHeight;
+        rawHeight = Math.abs(rawHeight);
+    }
     var crop = {
         enabled: cropEnabled,
-        left: localCourseBannerBuilderClampPercent(cropLeft, 0),
-        top: localCourseBannerBuilderClampPercent(cropTop, 0),
-        width: localCourseBannerBuilderClampCropSize(cropWidth),
-        height: localCourseBannerBuilderClampCropSize(cropHeight)
+        left: localCourseBannerBuilderClampPercent(rawLeft, 0),
+        top: localCourseBannerBuilderClampPercent(rawTop, 0),
+        width: localCourseBannerBuilderClampCropSize(rawWidth),
+        height: localCourseBannerBuilderClampCropSize(rawHeight)
     };
     crop.left = Math.max(0, Math.min(100 - crop.width, crop.left));
     crop.top = Math.max(0, Math.min(100 - crop.height, crop.top));
