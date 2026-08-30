@@ -66,7 +66,16 @@ test('CROP-08 restores chronological non-destructive transformations across two 
     const edit = page.locator('[data-edit-layer-url*="elementid=' + env.elementId + '"]');
     await expect(edit, 'CROP-08 fixture image layer must expose its edit action.').toHaveCount(1);
     await edit.click();
-    const form = page.locator('[data-dynamic-layer-modal="1"]:visible form.mform').last();
+    // The edit response is rendered as a Bootstrap dialog. Its accessible
+    // dialog is stable, while the placeholder's data attribute and Moodle's
+    // form class are not guaranteed to survive the AJAX body replacement.
+    // Scope to the visible edit dialog and require the image Filemanager field
+    // so an old/hidden modal can never be selected.
+    const editDialog = page.locator(
+        '[role="dialog"].modal.show, [role="dialog"].modal[aria-modal="true"]'
+    ).filter({has: page.locator('#id_bannerimage_filemanager')}).last();
+    await expect(editDialog, 'CROP-08 image edit dialog must be visible after the edit action.').toBeVisible();
+    const form = editDialog.locator('form').filter({has: page.locator('#id_bannerimage_filemanager')}).last();
     await expect(form).toBeVisible();
     const draftitemid = await form.locator('#id_bannerimage_filemanager').inputValue();
     expect(draftitemid).toMatch(/^\d+$/);
