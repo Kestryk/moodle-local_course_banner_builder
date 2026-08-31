@@ -2381,7 +2381,18 @@ if (
     confirm_sesskey() &&
     $selectedsource
 ) {
-    \local_course_banner_builder\manager::delete_banner_element($deletepreviewlayerajax);
+    $deleted = \local_course_banner_builder\manager::delete_source_banner_element(
+        $selectedsource,
+        $deletepreviewlayerajax
+    );
+    if (!$deleted) {
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'message' => get_string('unabletodeleteselectedlayer', 'local_course_banner_builder'),
+        ]);
+        exit;
+    }
     $updatedcontext = \local_course_banner_builder\manager::export_selected_source($selectedsource);
     $updatedcontext['sourcevisualeditorhtml'] = local_course_banner_builder_render_source_visual_editor($selectedsource);
     header('Content-Type: application/json');
@@ -2399,8 +2410,22 @@ if (
     confirm_sesskey() &&
     $selectedsource
 ) {
-    $selectedelementids = optional_param_array('selectedelements', [], PARAM_INT);
-    $deleted = \local_course_banner_builder\manager::delete_banner_elements($selectedelementids);
+    $selectedelementids = array_values(array_unique(array_filter(array_map(
+        'intval',
+        optional_param_array('selectedelements', [], PARAM_INT)
+    ))));
+    $deleted = \local_course_banner_builder\manager::delete_source_banner_elements(
+        $selectedsource,
+        $selectedelementids
+    );
+    if (!$deleted || $deleted !== count($selectedelementids)) {
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'message' => get_string('unabletodeleteselectedlayer', 'local_course_banner_builder'),
+        ]);
+        exit;
+    }
     $updatedcontext = \local_course_banner_builder\manager::export_selected_source($selectedsource);
     $updatedcontext['sourcevisualeditorhtml'] = local_course_banner_builder_render_source_visual_editor($selectedsource);
     header('Content-Type: application/json');
