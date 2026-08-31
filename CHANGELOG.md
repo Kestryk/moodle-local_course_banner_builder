@@ -35,6 +35,21 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0043 RF19 - Stable Crop edit coordinates - 2026-08-31
+
+#### Fixed
+
+- Kept the active Crop editor in its source-image coordinate system when
+  **Keep proportions** or a draft refresh updates the placed-image state.
+- Prevented a vertical Crop selection from being applied a second time to the
+  placed rectangle and drawing its border below the image.
+
+#### Validation
+
+- Added a focused source/build contract for the active Crop coordinate
+  boundary. Runtime validation remains the standing managed-preview human
+  gate.
+
 ### EED-CCB-2026-0059 RF2 - Magnetic selection edges - 2026-08-30
 
 #### Fixed
