@@ -714,6 +714,7 @@
             <div class="local-course-banner-builder-bulk-action-row mt-3">
                 <button type="button" class="btn btn-danger local-course-banner-builder-bulk-delete-button"
                     data-action="local-course-banner-builder-delete-all-layers"
+                    data-source-preview-async-control="1"
                     data-confirm-title="{{#str}}confirm{{/str}}"
                     data-confirm-message="{{#str}}deletealllayersconfirm, local_course_banner_builder{{/str}}">
                     <i class="fa fa-trash-can me-2" aria-hidden="true"></i>
@@ -721,12 +722,15 @@
                 </button>
                 <button type="button" class="btn btn-danger local-course-banner-builder-bulk-delete-button"
                     data-action="local-course-banner-builder-delete-selected-layers"
+                    data-source-preview-async-control="1"
                     data-modal-title="{{#str}}confirm{{/str}}"
                     data-confirm-message="{{#str}}deleteselectedlayersconfirm, local_course_banner_builder{{/str}}">
                     <i class="fa fa-trash-can me-2" aria-hidden="true"></i>
                     {{#str}}deleteselectedlayers, local_course_banner_builder{{/str}}
                 </button>
-                <button type="submit" class="btn btn-primary local-course-banner-builder-bulk-save-button" form="local-course-banner-builder-bulk-update">
+                <button type="submit" class="btn btn-primary local-course-banner-builder-bulk-save-button"
+                    form="local-course-banner-builder-bulk-update"
+                    data-source-preview-async-control="1">
                     <i class="fa fa-save me-2" aria-hidden="true"></i>
                     {{#str}}savelayerchanges, local_course_banner_builder{{/str}}
                 </button>

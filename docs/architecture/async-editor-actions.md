@@ -46,6 +46,15 @@ affected interface safely.
   and restores focus to the initiating action.
 - The three JSON mutations accept POST only and retain the existing capability,
   sesskey and typed-parameter gates.
+- EED-CCB-2026-0075 additionally binds every single or multi-layer id to the
+  resolved selected source before any storage mutation. A mixed, stale or
+  forged bulk selection is rejected before its first deletion, and a valid
+  batch synchronises affected course banners once after all owned layers have
+  been removed.
+- Save, delete one and delete many participate in the same selected-source
+  busy lock. Successful multi-layer deletion also removes those exact ids from
+  already-loaded layer-edit modal previews before their local controls are
+  resynchronised.
 
 Official references consulted: Moodle 4.5 JavaScript/AJAX guidance and Moodle
 security guidance for sesskeys and state-changing requests.

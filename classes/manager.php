@@ -5419,6 +5419,66 @@ class manager {
     }
 
     /**
+     * Delete one banner element only when it belongs to the selected source.
+     *
+     * Async administration requests carry both a source key and an element id.
+     * Treat the resolved source as the mutation boundary so a stale or forged id
+     * cannot delete a layer from another source.
+     *
+     * @param \stdClass $source
+     * @param int $elementid
+     * @param bool $sync
+     * @return bool Whether the source-owned element was deleted.
+     */
+    public static function delete_source_banner_element(
+        \stdClass $source,
+        int $elementid,
+        bool $sync = true
+    ): bool {
+        $record = self::get_banner_element($elementid);
+        if (!$record || self::get_record_source_key($record) !== (string)$source->sourcekey) {
+            return false;
+        }
+
+        self::delete_banner_element($elementid, false);
+        if ($sync) {
+            self::sync_courses_for_source($source);
+        }
+        return true;
+    }
+
+    /**
+     * Delete selected banner elements only when every id belongs to one source.
+     *
+     * The full selection is validated before the first mutation. This prevents a
+     * mixed or stale request from partially deleting layers, and synchronises the
+     * affected source once after the batch instead of once per element.
+     *
+     * @param \stdClass $source
+     * @param array $elementids
+     * @return int Number of deleted source-owned elements, or zero for an invalid selection.
+     */
+    public static function delete_source_banner_elements(\stdClass $source, array $elementids): int {
+        $elementids = array_values(array_unique(array_filter(array_map('intval', $elementids))));
+        if (empty($elementids)) {
+            return 0;
+        }
+
+        foreach ($elementids as $elementid) {
+            $record = self::get_banner_element($elementid);
+            if (!$record || self::get_record_source_key($record) !== (string)$source->sourcekey) {
+                return 0;
+            }
+        }
+
+        foreach ($elementids as $elementid) {
+            self::delete_banner_element($elementid, false);
+        }
+        self::sync_courses_for_source($source);
+        return count($elementids);
+    }
+
+    /**
      * Delete all content and rules for a category.
      *
      * @param int $categoryid

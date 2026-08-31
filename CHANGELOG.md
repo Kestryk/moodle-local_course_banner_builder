@@ -4,6 +4,14 @@
 
 ### Changed
 
+- Hardened no-reload layer deletion so single and multi-selection requests can
+  mutate only layers owned by the source currently being edited. Bulk deletion
+  now validates the complete selection before changing storage, synchronises
+  the affected source once, refreshes the server-rendered list and preview,
+  and removes deleted layers from already-loaded edit modals.
+- Included Save, delete one and delete many in one shared asynchronous busy
+  lock so a second mutation cannot start while a confirmed deletion is being
+  processed.
 - Added a contained large authoring preview that clones the current source
   renderer into the existing readonly preview modal. Desktop/Mobile switching
   stays local to the modal and cannot submit or change saved banner state.
@@ -19,6 +27,8 @@
 
 ### Validation
 
+- Extended the asynchronous editor contract with source-ownership, shared
+  action-lock and loaded-modal cleanup assertions.
 - Added a focused source contract for the readonly large-preview boundary and
   conditional layer-status stack. Runtime, browser and managed-preview review
   remain separate gates.

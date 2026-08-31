@@ -19954,14 +19954,31 @@ function localCourseBannerBuilderSyncLayerModalAfterContextChange(form) {
 }
 
 function localCourseBannerBuilderRemoveLayerFromLayerModals(layerId) {
-    if (!layerId) {
+    localCourseBannerBuilderRemoveLayersFromLayerModals([layerId]);
+}
+
+/**
+ * Remove deleted source layers from every already-loaded layer modal.
+ *
+ * @param {Array<string|number>} layerIds Deleted layer ids.
+ */
+function localCourseBannerBuilderRemoveLayersFromLayerModals(layerIds) {
+    var deletedIds = {};
+    (layerIds || []).forEach(function (layerId) {
+        if (layerId) {
+            deletedIds[String(layerId)] = true;
+        }
+    });
+    if (!Object.keys(deletedIds).length) {
         return;
     }
-    var escapedLayerId = localCourseBannerBuilderEscapeSelectorId(String(layerId));
     var touchedForms = [];
     Array.prototype.slice.call(document.querySelectorAll(
-        '.modal[id^="local-course-banner-builder-"] [data-preview-layer-id="' + escapedLayerId + '"]'
+        '.modal[id^="local-course-banner-builder-"] [data-preview-layer-id]'
     )).forEach(function (layer) {
+        if (!deletedIds[layer.getAttribute('data-preview-layer-id') || '']) {
+            return;
+        }
         var form = localCourseBannerBuilderGetLayerScope(layer);
         if (form && touchedForms.indexOf(form) === -1) {
             touchedForms.push(form);
@@ -20066,10 +20083,13 @@ function localCourseBannerBuilderDeleteAllLayers(button) {
 
 function localCourseBannerBuilderReplaceSelectedSourceContentFromDeleteResponse(data) {
     if (!data || !data.success || typeof data.html !== 'string') {
-        throw new Error(localCourseBannerBuilderGetJsString(
-            'invaliddeleteselectedlayerresponse',
-            'Invalid delete-selected-layer response'
-        ));
+        throw new Error(
+            data && typeof data.message === 'string' && data.message ? data.message :
+                localCourseBannerBuilderGetJsString(
+                    'invaliddeleteselectedlayerresponse',
+                    'Invalid delete-selected-layer response'
+                )
+        );
     }
     var host = document.querySelector('[data-selected-source-content="1"]');
     if (!host) {
@@ -20099,6 +20119,9 @@ function localCourseBannerBuilderDeleteSelectedLayers(button) {
     if (!selected.length) {
         return;
     }
+    var selectedLayerIds = Array.prototype.map.call(selected, function (input) {
+        return input.value || '';
+    }).filter(Boolean);
     var message = button.getAttribute('data-confirm-message') ||
         localCourseBannerBuilderGetJsString('areyousure', '');
     localCourseBannerBuilderConfirmAction(message).then(function (confirmed) {
@@ -20128,6 +20151,7 @@ function localCourseBannerBuilderDeleteSelectedLayers(button) {
             return response.json();
         }).then(function (data) {
             var host = localCourseBannerBuilderReplaceSelectedSourceContentFromDeleteResponse(data);
+            localCourseBannerBuilderRemoveLayersFromLayerModals(selectedLayerIds);
             localCourseBannerBuilderNotifyAsyncAction(
                 data.message || localCourseBannerBuilderGetJsString('bannerdeleted', 'Layer deleted.'),
                 'success'
