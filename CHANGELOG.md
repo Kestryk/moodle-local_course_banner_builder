@@ -4,6 +4,10 @@
 
 ### Changed
 
+- Reclassified the contained readonly large-preview clone as a disposable
+  prototype and completed the source audit, interaction research and
+  Kit-aligned wireframe for the requested large authoring workspace. No
+  product behavior changed; seven human decisions remain before implementation.
 - Added a contained large authoring preview that clones the current source
   renderer into the existing readonly preview modal. Desktop/Mobile switching
   stays local to the modal and cannot submit or change saved banner state.
@@ -19,6 +23,9 @@
 
 ### Validation
 
+- Added a focused static discovery contract for the existing editor services,
+  disposable-prototype boundary and seven-decision gate. Runtime, browser and
+  managed-preview validation are intentionally not applicable yet.
 - Added a focused source contract for the readonly large-preview boundary and
   conditional layer-status stack. Runtime, browser and managed-preview review
   remain separate gates.

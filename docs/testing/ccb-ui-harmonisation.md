@@ -905,6 +905,40 @@ flag, and the Mustache template emits the stack only for Crop, fixed-centre or
 locked/status rows. This does not change row order, hidden sort values, drag,
 keyboard ordering or any existing status popover.
 
+### Large authoring workspace discovery gate - 2026-08-31
+
+Human review established that the readonly clone above is a disposable
+prototype, not the requested authoring workspace. The source inventory,
+interaction research, structural wireframe and seven recommendations are now
+documented in
+[Large authoring workspace discovery](../architecture/large-authoring-workspace.md).
+There is deliberately no new runtime, browser or managed-preview validation in
+this discovery batch.
+
+After human approval and implementation, the focused validation matrix must
+cover:
+
+- opening from the main selected-source preview only, focus containment, and
+  exact focus return after Close, Escape, Cancel and successful Save;
+- Fit, 100% reset, zoom buttons and pointer-relative Ctrl+wheel while ordinary
+  wheel and page scrolling remain unchanged;
+- correct pointer mapping at every zoom, visible scrollbars and Space+drag pan
+  only while the canvas owns focus;
+- single-layer selection, drag, resize, keyboard nudging, Crop, repeated Keep
+  proportions, undo and redo without viewport state entering document history;
+- visible banner boundaries, persisted off-boundary image coordinates,
+  Save/reopen equality and public clipping;
+- Border and Overlay options using the same fields, strings, validation and
+  persistence as their current editor modals;
+- desktop and approved tablet-threshold layouts, reduced motion, keyboard-only
+  use, stable controls, and no console or RequireJS errors; and
+- the approved Save/Cancel transaction, including no server write before Save
+  and complete opening-state restoration on Cancel or Escape.
+
+These are future acceptance targets, not claims about the current source. The
+tablet threshold, outside-boundary persistence, pan, zoom, snapping, selection
+cardinality and Save lifecycle remain human decisions.
+
 ### Layer-list identity, locked surfaces and selection controls - 2026-08-02
 
 Locked rows now carry one low-contrast striped background on the table row

@@ -178,6 +178,12 @@ mode.
 
 ### EED-CCB-2026-0049 contained large authoring preview
 
+This section records the historical Wave 6 readonly prototype. Human review
+did not accept it as the final authoring product; it must remain disposable and
+must not be extended into an interactive clone. The replacement source audit,
+wireframe and seven-decision gate are documented in
+[Large authoring workspace discovery](large-authoring-workspace.md).
+
 The selected-source authoring canvas exposes an explicit large-preview action
 beside its Desktop/Mobile control. The action clones the current rendered
 source panel into the existing opaque preview modal, then removes forms,
