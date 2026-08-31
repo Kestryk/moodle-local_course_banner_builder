@@ -174,17 +174,34 @@
 }
 
 .local-course-banner-builder-layer-details-accordion-content {
-    box-sizing: border-box;
     display: grid;
     gap: 0.75rem;
-    padding: 0.76rem 0.84rem 0.84rem;
+    padding: 0;
+
+    // Keep spacing on the content rather than on the animated wrapper. A
+    // wrapper with block padding cannot visually reach zero height, which
+    // leaves a short plateau at the end of Motion.collapse before `hidden`
+    // settles the native disclosure.
+    > * {
+        margin-inline: 0.84rem;
+    }
+
+    > :first-child {
+        margin-top: 0.76rem;
+    }
+
+    > :last-child {
+        // Moodle's `mb-0` utility is present on the empty-state paragraph.
+        // The disclosure contract owns this outer spacing while it is open.
+        margin-bottom: 0.84rem !important;
+    }
 
     > .local-course-banner-builder-table-help-icon {
         justify-self: start;
     }
 
     .local-course-banner-builder-border-summary {
-        margin: 0;
+        margin-inline: 0.84rem;
     }
 
     .local-course-banner-builder-border-summary-list > div {
