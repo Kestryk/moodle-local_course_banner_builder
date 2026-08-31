@@ -126,7 +126,7 @@
 }
 
 .local-course-banner-builder-source-preview-controls {
-    align-self: stretch;
+    align-self: start;
     padding: 0.65rem;
     border: 1px solid var(--bs-border-color, #dee2e6);
     border-radius: 0.7rem;
@@ -138,17 +138,16 @@
     box-sizing: border-box;
     width: 100%;
     min-width: 0;
-    height: auto;
-    max-height: none;
-    white-space: normal;
-    overflow-wrap: anywhere;
+    height: var(--local-course-banner-builder-action-height, 2.45rem);
+    min-height: var(--local-course-banner-builder-action-height, 2.45rem);
+    max-height: var(--local-course-banner-builder-action-height, 2.45rem);
+    white-space: nowrap;
 }
 
 .local-course-banner-builder-source-preview-controls .local-course-banner-builder-source-preview-button > span {
-    overflow: visible;
-    text-overflow: clip;
-    white-space: normal;
-    overflow-wrap: anywhere;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .local-course-banner-builder-source-preview-visibility-toggle,
