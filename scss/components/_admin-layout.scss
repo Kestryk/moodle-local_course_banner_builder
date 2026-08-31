@@ -1541,7 +1541,7 @@ html[data-local-course-banner-builder-sticky-runtime="1"]
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(11rem, clamp(11.5rem, 17vw, 15rem));
     align-items: start;
-    gap: clamp(1rem, 2.5vw, 2.25rem);
+    gap: clamp(0.55rem, 1vw, 0.75rem);
     min-width: 0;
 }
 
@@ -1947,7 +1947,8 @@ html[data-local-course-banner-builder-sticky-runtime="1"]
     display: grid;
     grid-template-columns: 1fr;
     align-items: stretch;
-    justify-self: center;
+    align-content: start;
+    justify-self: stretch;
     width: 100%;
     gap: 0.45rem;
 }

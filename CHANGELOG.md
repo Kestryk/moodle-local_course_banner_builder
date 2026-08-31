@@ -82,6 +82,24 @@ many small sections.
 - Added a focused source/build/CSS contract. Runtime validation remains the
   standing managed-preview human gate.
 
+### EED-CCB-2026-0050 RF6 / EED-CCB-2026-0052 RF1 - Layer info and preview action rail - 2026-08-31
+
+#### Fixed
+
+- Kept image Layer infos cells on the same rest, hover and focus surface as
+  their containing layer row, while retaining semantic tints for locked border
+  and overlay rows.
+- Prevented long Layer infos labels and values from colliding at narrow widths
+  or genuine browser zoom by giving both columns a bounded share of the cell.
+- Made Course and Site manager Source Preview side-panel actions use a fixed
+  button height and let the panel occupy the remaining width with a compact
+  gap after the preview.
+
+#### Validation
+
+- Static PHP/SCSS checks and the official generated CSS artifact were updated;
+  browser, runtime and managed-preview validation remain intentionally skipped.
+
 ### EED-CCB-2026-0059 RF2 - Magnetic selection edges - 2026-08-30
 
 #### Fixed
