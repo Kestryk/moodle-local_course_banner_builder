@@ -869,6 +869,21 @@ longer duplicates the type icon or places the lock beside the order text.
 Status badges remain absent from `Banner layer`, preserve their keyboard
 popover hooks, and do not change native drag or selection behavior.
 
+### Large preview and empty Sort-order slot - 2026-08-31
+
+The selected-source editor now opens its current renderer in the existing
+contained Source Preview modal. The clone is readonly, strips every form and
+authoring action, retains Desktop/Mobile simulation locally, and returns focus
+to the launcher on every established close path. A focused source contract
+guards the no-form boundary and the modal-only mode-state exclusion. Runtime
+focus, Escape and responsive review remain part of the managed preview gate.
+
+Ordinary unlocked Image rows no longer render the empty auxiliary status
+container below Sort order. The server exports an explicit status-presence
+flag, and the Mustache template emits the stack only for Crop, fixed-centre or
+locked/status rows. This does not change row order, hidden sort values, drag,
+keyboard ordering or any existing status popover.
+
 ### Layer-list identity, locked surfaces and selection controls - 2026-08-02
 
 Locked rows now carry one low-contrast striped background on the table row
@@ -913,3 +928,9 @@ row separation, Image-to-handle transition, disclosure/help behavior, native
 drag and keyboard ordering, no overflow, no console/request failure and full
 category/profile cleanup. External CDP evidence, manifest and cleanup reports:
 `C:\Users\kj220291\AppData\Local\EasyEdu\artifacts\ccb\layer-object-row\supervised\ccb-layer-object-row-20260803T131117902Z-33196`.
+### Wave 6 generated Motion contract
+
+The RF5 generated-asset check identifies the minified Motion dependency and
+the compiled disclosure-content selector. It does not require the source-level
+identifier `Motion.expand` to survive minification, because the official AMD
+build is allowed to rename local dependency bindings.

@@ -41,7 +41,7 @@ $checks = [ordered]@{
         ($source -match 'editIcon\.className = ''icon fa fa-pen fa-fw'';') -and
         ($source -notmatch 'editIcon\.className = ''fa fa-pen me-2'';'));
     'Every modal close path uses the same source-preview cleanup' =
-        (($source -match '(?s)function localCourseBannerBuilderFinishSourceChainPreviewClose\(modal\).*?sourceChainPreviewRequest = ''''.*?sourceChainPreviewFocusReturned') -and
+        (($source -match '(?s)function localCourseBannerBuilderFinishSourceChainPreviewClose\(modal\).*?sourceChainPreviewFocusReturned.*?sourceChainPreviewRequest = ''''') -and
         ($source -match 'modal\.addEventListener\(''hidden\.bs\.modal'', finishClose\)') -and
         ($source -match '(?s)function localCourseBannerBuilderForceHideModal\(modal\).*?localCourseBannerBuilderFinishSourceChainPreviewClose\(modal\)'));
     'Modal Desktop and Mobile controls remain transient to the modal instance' =

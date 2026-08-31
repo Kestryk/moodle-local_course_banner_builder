@@ -1609,6 +1609,19 @@ html[data-local-course-banner-builder-sticky-runtime="1"]
     font-size: 0.8125rem;
 }
 
+.local-course-banner-builder-source-preview-large-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2rem;
+    padding: 0.35rem 0.7rem;
+    font-size: 0.8125rem;
+
+    .icon {
+        margin: 0;
+    }
+}
+
 .local-course-banner-builder-source-preview-mode-button.is-active {
     border-color: var(--bs-primary, #0f6cbf);
     box-shadow: 0 0 0 0.15rem rgba(15, 108, 191, 0.16);

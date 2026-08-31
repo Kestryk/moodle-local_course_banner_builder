@@ -7825,6 +7825,7 @@ class manager {
             $iscenterfixedlayer = !empty($record->imagecenterfixed);
             $islockedlayer = self::is_border_only_layer($record) || $isoverlaylayer ||
                 $isdynamiclayer || $isaboveoverlaylayer || $isbelowinheritedlayer || $isaboveinheritedlayer;
+            $haslayerstatusindicators = $islockedlayer || $iscroppedlayer || $iscenterfixedlayer;
             $rowclass = 'local-course-banner-builder-layer-row';
             if ($isborderlayer) {
                 $rowclass .= ' local-course-banner-builder-layer-row--border local-course-banner-builder-layer-row--order-locked';
@@ -7885,6 +7886,7 @@ class manager {
                 'isbelowinheritedlayer' => $isbelowinheritedlayer,
                 'isaboveinheritedlayer' => $isaboveinheritedlayer,
                 'iscenterfixedlayer' => $iscenterfixedlayer,
+                'haslayerstatusindicators' => $haslayerstatusindicators,
                 'isreorderable' => !$islockedlayer,
                 'hasorderlockhelp' => $islockedlayer,
                 'orderlocklabel' => $orderlocklabel,

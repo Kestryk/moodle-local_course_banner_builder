@@ -3813,6 +3813,18 @@ html[data-local-course-banner-builder-sticky-runtime="1"] .local-course-banner-b
   font-size: 0.8125rem;
 }
 
+.local-course-banner-builder-source-preview-large-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2rem;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.8125rem;
+}
+.local-course-banner-builder-source-preview-large-button .icon {
+  margin: 0;
+}
+
 .local-course-banner-builder-source-preview-mode-button.is-active {
   border-color: var(--bs-primary, #0f6cbf);
   box-shadow: 0 0 0 0.15rem rgba(15, 108, 191, 0.16);
@@ -18215,6 +18227,9 @@ span[data-flexitour=container].orphan .modal-dialog {
   position: absolute;
   right: 0;
 }
+.local-course-banner-builder-source-chain-preview-modal .local-course-banner-builder-source-chain-preview-modal-footer:empty {
+  display: none;
+}
 .local-course-banner-builder-source-chain-preview-modal .local-course-banner-builder-source-chain-preview-feedback {
   align-items: center;
   background: linear-gradient(180deg, var(--easyedu-empty-bg-start) 0%, var(--easyedu-empty-bg-end) 100%);
@@ -18236,7 +18251,8 @@ span[data-flexitour=container].orphan .modal-dialog {
   color: var(--easyedu-danger);
 }
 
-[data-action=local-course-banner-builder-show-source-chain-preview].is-focus-returned {
+[data-action=local-course-banner-builder-show-source-chain-preview].is-focus-returned,
+[data-action=local-course-banner-builder-show-large-source-preview].is-focus-returned {
   outline: 0.18rem solid color-mix(in srgb, var(--easyedu-primary, #0f6cbf) 58%, transparent);
   outline-offset: 0.14rem;
 }

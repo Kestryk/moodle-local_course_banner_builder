@@ -27,7 +27,8 @@ $checks = [ordered]@{
         ($actionScss -match '(?s)\.local-course-banner-builder-slideshow-admin-preview--large,\s*\.local-course-banner-builder-source-chain-preview-actions\s*\{\s*--local-course-banner-builder-action-gap:\s*0\.5rem;');
     'Official AMD and CSS artifacts contain RF5' =
         (($build.Length -gt 1000) -and
-        ($build -match 'Motion\.expand') -and
+        ($build -match 'local_course_banner_builder/motion') -and
+        ($build -match 'local-course-banner-builder-layer-details-accordion-content') -and
         ($css -match '(?s)\.local-course-banner-builder-layer-details-disclosure-shell\s*\{.*?grid-template-columns:\s*minmax\(0, 1fr\) 1\.35rem') -and
         ($css -match '(?s)\.local-course-banner-builder-source-chain-preview-modal-identity .*?\.icon.*?margin:\s*0'));
 }

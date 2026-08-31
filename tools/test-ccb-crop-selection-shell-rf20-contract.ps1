@@ -5,6 +5,8 @@ $ErrorActionPreference = 'Stop'
 $pluginRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 $source = Get-Content -LiteralPath (Join-Path $pluginRoot 'amd\src\admin_manage.js') -Raw
 $build = Get-Content -LiteralPath (Join-Path $pluginRoot 'amd\build\admin_manage.min.js') -Raw
+$map = Get-Content -LiteralPath (Join-Path $pluginRoot 'amd\build\admin_manage.min.js.map') -Raw | ConvertFrom-Json
+$mapsource = $map.sourcesContent -join "`n"
 
 $effectiveCropAspectCalls = [regex]::Matches(
     $source,
@@ -23,8 +25,9 @@ $checks = [ordered]@{
         ($source -match 'var showFullSelection = enabled && !layer\.querySelector\(''\[data-preview-crop-editor="1"\]''\)');
     'Official AMD build contains the shared cropped-aspect renderer' =
         (($build.Length -gt 1000) -and
-        ([regex]::Matches($build, 'localCourseBannerBuilderGetEffectivePreviewImageDimensions').Count -ge 3) -and
-        ($build -match 'previewCropEditLayout'));
+        ($build -match 'define\(') -and
+        ([regex]::Matches($mapsource, 'localCourseBannerBuilderGetEffectivePreviewImageDimensions').Count -ge 3) -and
+        ($mapsource -match 'previewCropEditLayout'));
 }
 
 $failed = @($checks.GetEnumerator() | Where-Object { -not $_.Value })
