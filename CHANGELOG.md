@@ -58,6 +58,25 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0050 RF8 / EED-CCB-2026-0044 RF1 - 2026-08-31
+
+#### Fixed
+
+- Removed the last Image-cell-specific `!important` surfaces so Layer infos &
+  overrides now receives the exact same table-row background as its sibling
+  cells at rest, hover and keyboard focus. Locked Border and Overlay rows keep
+  their semantic surfaces.
+- Moved Layer infos disclosure spacing from the animated height wrapper to its
+  children, allowing the closing motion to reach zero continuously instead of
+  pausing on the wrapper padding. The shared Motion and reduced-motion
+  lifecycles are unchanged.
+
+#### Validation
+
+- Extended the focused Layer info / preview-panel source contract and rebuilt
+  the official Sass `styles.css`. Runtime, browser and managed-preview review
+  remain separate gates.
+
 ### EED-CCB-2026-0050 RF7 / EED-CCB-2026-0052 RF2 - 2026-08-31
 
 #### Fixed

@@ -16,6 +16,27 @@ menus.
 - configured-source actions must keep icons and labels leading-aligned;
 - no preview, document or modal horizontal overflow is allowed.
 
+## EED-CCB-2026-0050 RF8 / EED-CCB-2026-0044 RF1 - 2026-08-31
+
+This corrective source lot closes the two remaining defects reported on the
+Wave 6 preview without reopening the accepted Border/Overlay or layer-detail
+layout work:
+
+- unlocked Image rows have one background owner for every direct cell. Layer
+  infos & overrides no longer carries an `!important` rest/hover/focus copy,
+  so Boost or another compatible Moodle theme cannot update the row while
+  leaving that single cell on the former colour;
+- the Layer infos disclosure's animated wrapper has no vertical padding. Its
+  children retain the accepted visual spacing, while the wrapper can now move
+  continuously to a real zero-height closing frame.
+
+The shared CCB Motion controller, interruption handling and reduced-motion
+policy are intentionally unchanged. Locked Border and Overlay rows retain the
+existing semantic stripes and tints. The focused source contract remains
+`tools/test-ccb-layer-panel-rf-contract.ps1`; it now rejects a reintroduced
+Image-cell-specific surface and checks the zero-padding animation boundary in
+both Sass source and generated CSS.
+
 ## EED-CCB-2026-0050 RF7 / EED-CCB-2026-0052 RF2 - 2026-08-31
 
 This corrective source lot preserves the accepted RF6 contracts and closes two
