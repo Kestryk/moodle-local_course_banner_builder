@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased - 2026-08-31
+
+### Changed
+
+- Standardised feedback for existing no-reload Course Banner Builder mutations
+  on Moodle's temporary toast surface, matching EasyStud's four-second
+  notifications while preserving the existing busy, focus and fragment
+  replacement contracts.
+- Kept configured-source parent validation visible inside its modal with an
+  accessible alert and returned focus to its Save action after an error.
+
 ## EED-CCB-2026-0058 - 2026-08-30
 
 ### Changed
