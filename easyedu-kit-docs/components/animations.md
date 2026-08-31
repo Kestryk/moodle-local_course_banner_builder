@@ -30,6 +30,10 @@ Reusable motion helpers:
   @include easyedu.action-busy-indicator("data-my-plugin-busy-label");
 }
 
+.my-modal-status {
+  @include easyedu.busy-indicator-ring;
+}
+
 .my-card {
   @include easyedu.transition-standard(background, border-color, box-shadow);
 }
@@ -96,6 +100,8 @@ a second CSS animation.
 - Keep `will-change` temporary. The controller adds and removes it for each run.
 - Busy feedback must remain understandable as static text and an ARIA status
   when rotation is disabled.
+- `busy-indicator-ring` owns the canonical circle geometry, colours and spin.
+  Workspace and modal compositions own only placement and any adjacent label.
 
 ## Timing contract
 

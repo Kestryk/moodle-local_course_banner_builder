@@ -1227,15 +1227,24 @@
     .local-course-banner-builder-bulk-action-row {
         @include easyedu.admin-form-actions;
 
-        .btn,
-        button,
-        input[type="submit"] {
-            @include easyedu.action-row-button;
-        }
-    }
+        .local-course-banner-builder-bulk-delete-button,
+        .local-course-banner-builder-bulk-save-button {
+            @include easyedu.action-button(small);
 
-    .local-course-banner-builder-bulk-save-button {
-        @include easyedu.save-action-button;
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: 0.78rem;
+            font-weight: 600;
+            height: 2.15rem !important;
+            min-height: 2.15rem !important;
+            padding: 0.32rem 0.66rem;
+            white-space: nowrap;
+
+            > .fa {
+                font-size: 0.82rem;
+                width: 0.95rem;
+            }
+        }
     }
 
     .local-course-banner-builder-compact-save-button,
@@ -1439,6 +1448,8 @@
 }
 
 .modal[id^="local-course-banner-builder-"] {
+    @include easyedu.native-modal-loading(".local-course-banner-builder-layer-modal-loading");
+
     .local-course-banner-builder-layer-modal-dialog,
     .local-course-banner-builder-slideshow-modal-dialog {
         @include easyedu.preview-modal-dialog-shell;

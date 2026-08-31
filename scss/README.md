@@ -57,6 +57,9 @@ Current component entry points:
 - `components/_help-bubble.scss`: compact table help bubble.
 - `components/_layer-table.scss`: source layer table and image-detail summaries.
 - `components/_modal-preview-actions.scss`: modal preview side action list.
+- `components/_easyedu-adapter.scss`: CCB adoption of the shared modal busy
+  ring and compact Save/delete action states; product hooks and request
+  lifecycles remain local.
 - `components/_admin-controls.scss`: admin action controls, source visual
   editor controls, layer cards, and source table helpers.
 - `components/_modal-shell.scss`: responsive preview action layout and layer

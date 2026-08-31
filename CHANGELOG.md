@@ -4,6 +4,12 @@
 
 ### Changed
 
+- Unified Source Preview and layer-editor modal loading on the same circular
+  EasyEdu busy indicator already used for bottom-right dynamic operations.
+  Modal request, focus, error and content-replacement lifecycles are unchanged.
+- Standardised the three layer actions below the preview (Save, delete all and
+  delete selected) on one compact typography and hover/focus/pressed/disabled
+  state contract. Their compact fixed geometry remains specific to that panel.
 - Hardened no-reload layer deletion so single and multi-selection requests can
   mutate only layers owned by the source currently being edited. Bulk deletion
   now validates the complete selection before changing storage, synchronises
@@ -27,6 +33,9 @@
 
 ### Validation
 
+- Added a focused source contract for the shared modal loader and the compact
+  three-action state family; rebuilt the official Sass asset. Browser and
+  managed-preview review remain separate gates.
 - Extended the asynchronous editor contract with source-ownership, shared
   action-lock and loaded-modal cleanup assertions.
 - Added a focused source contract for the readonly large-preview boundary and
