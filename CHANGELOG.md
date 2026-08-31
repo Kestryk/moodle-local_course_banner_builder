@@ -50,6 +50,22 @@ many small sections.
   boundary. Runtime validation remains the standing managed-preview human
   gate.
 
+### EED-CCB-2026-0050 RF5 - Source disclosure and Preview polish - 2026-08-31
+
+#### Fixed
+
+- Let Layer infos & overrides opening animate from its actual collapsed height
+  and made its border-box closing motion finish without a padding jump.
+- Reused the Kit caption role for the disclosure title and reserved a separate
+  spaced column for its contextual help control.
+- Centred the Source Preview identity icon and restored the shared icon/text
+  gap on its footer Edit source action.
+
+#### Validation
+
+- Added a focused source/build/CSS contract. Runtime validation remains the
+  standing managed-preview human gate.
+
 ### EED-CCB-2026-0059 RF2 - Magnetic selection edges - 2026-08-30
 
 #### Fixed

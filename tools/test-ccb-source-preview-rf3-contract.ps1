@@ -21,8 +21,9 @@ $checks = [ordered]@{
     'Inherited border and overlay labels use readable Kit text tokens' =
         (($adminLayout -match '(?s)\.local-course-banner-builder-chain-layer-label\s*\{.*?color: var\(--easyedu-text.*?font-weight: var\(--easyedu-font-weight-semibold\)') -and
         ($adminLayout -notmatch 'color: #64748b'));
-    'Layer infos and overrides uses the Kit semibold control weight' =
-        ($actions -match '(?s)\.local-course-banner-builder-layer-details-accordion\s*\{.*?> summary\s*\{.*?font-weight: var\(--easyedu-font-weight-semibold\)');
+    'Layer infos and overrides uses the current named Kit typography role' =
+        (($actions -match '(?s)\.local-course-banner-builder-layer-details-accordion\s*\{.*?> summary\s*\{\s*@include easyedu\.type-caption;.*?font-weight: var\(--easyedu-font-weight-medium\)') -and
+        ($actions -notmatch '(?s)\.local-course-banner-builder-layer-details-accordion\s*\{.*?> summary\s*\{.*?font-weight: var\(--easyedu-font-weight-semibold\)'));
     'Layer miniatures use the canonical checkerboard primitive' =
         (($adminLayout -match '(?s)\.local-course-banner-builder-admin-layer-visual.*?\.local-course-banner-builder-admin-layer-overlay-frame\s*\{.*?@include easyedu\.preview-checkerboard;') -and
         ($adminLayout -notmatch 'background-position: 0 0, 0 0\.35rem'));
