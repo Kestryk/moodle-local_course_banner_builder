@@ -6,14 +6,17 @@ $pluginRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 $source = Get-Content -LiteralPath (Join-Path $pluginRoot 'amd\src\admin_manage.js') -Raw
 $build = Get-Content -LiteralPath (Join-Path $pluginRoot 'amd\build\admin_manage.min.js') -Raw
 $map = Get-Content -LiteralPath (Join-Path $pluginRoot 'amd\build\admin_manage.min.js.map') -Raw | ConvertFrom-Json
-$naturalOuterPlacementCalls = [regex]::Matches(
+$effectiveCropAspectCalls = [regex]::Matches(
     $source,
-    'localCourseBannerBuilderGetEffectivePreviewImageDimensions\(\s*naturalWidth,\s*naturalHeight,\s*cropState,\s*true\s*\)'
+    'localCourseBannerBuilderGetEffectivePreviewImageDimensions\(\s*naturalWidth,\s*naturalHeight,\s*cropState,\s*false\s*\)'
 ).Count
 
 $checks = [ordered]@{
-    'Crop remains an inner-image transform' = $source -match 'Crop is an inner-image transform';
-    'Modal and draft-selection render path retains natural outer dimensions' = $naturalOuterPlacementCalls -eq 1;
+    'Crop remains an inner-image transform' =
+        ($source -match '(?s)function localCourseBannerBuilderApplyCropToImageStyles.*?10000 / crop\.width.*?transform: translate');
+    'Modal selection shell and standalone visual share the effective cropped aspect' = $effectiveCropAspectCalls -eq 2;
+    'No placed renderer reuses the complete-source aspect after Crop' =
+        ($source -notmatch 'localCourseBannerBuilderGetEffectivePreviewImageDimensions\(\s*naturalWidth,\s*naturalHeight,\s*cropState,\s*true\s*\)');
     'Standalone preview shares the persisted Crop aspect for locked placement' =
         ($source -match '(?s)function localCourseBannerBuilderSyncStandalonePreviewLayer\(previewRoot, layer\).*?localCourseBannerBuilderGetEffectivePreviewImageDimensions\(\s*naturalWidth,\s*naturalHeight,\s*cropState,\s*false\s*\)');
     'Crop styles still enlarge and translate the inner image' = ($source -match 'width: .+10000 / crop\.width') -and ($source -match 'transform: translate');

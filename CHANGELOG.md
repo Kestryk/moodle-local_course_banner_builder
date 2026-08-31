@@ -35,6 +35,22 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0043 RF20 - Cropped Keep proportions selection shell - 2026-08-31
+
+#### Fixed
+
+- Kept the blue Crop selection shell aligned with the effective cropped image
+  aspect after a bottom-up Crop followed by **Keep proportions**.
+- Shared the cropped dimensions between the modal placed renderer and the
+  independent draft visual, while retaining the source-coordinate canvas during
+  active Crop editing.
+
+#### Validation
+
+- Added a focused source/build contract and rebuilt the official AMD bundle and
+  source map. Browser, runtime and preview validation remain intentionally
+  skipped for this source-only RF.
+
 ### EED-CCB-2026-0043 RF19 - Stable Crop edit coordinates - 2026-08-31
 
 #### Fixed
