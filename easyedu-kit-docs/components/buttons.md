@@ -88,12 +88,19 @@ only the container layout if translated labels need more room.
 The reusable state contract is:
 
 - `:hover` and `:focus-visible` share the same visual intent.
+- `:active` uses that same lightened state; it must not switch to a darker
+  plugin-local hover or pressed paint.
 - `[aria-expanded="true"]`, `[aria-pressed="true"]`, `.active` and `.is-active`
   represent a selected/open action.
 - `:disabled`, `[aria-disabled="true"]` and `.disabled` must look unavailable
   and should not receive pointer events.
 - Busy/loading states are plugin-owned, but should keep button dimensions
   stable and pair with the kit busy indicators where possible.
+
+Neighbouring compact actions may retain a consumer-owned fixed height when the
+available panel is intentionally dense. Apply `action-button(small)` to every
+member so typography and hover/focus/pressed/disabled behavior stay identical;
+do not create separate Save and Delete interaction rules.
 
 ```html
 <button class="btn btn-outline-secondary my-action" type="button">

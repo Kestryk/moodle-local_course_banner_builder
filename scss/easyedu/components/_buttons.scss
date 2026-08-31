@@ -35,6 +35,7 @@
 ) {
   &:hover,
   &:focus-visible,
+  &:active,
   &[aria-expanded="true"],
   &[aria-pressed="true"],
   &.active,

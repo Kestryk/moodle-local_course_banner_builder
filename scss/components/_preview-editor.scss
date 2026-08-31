@@ -962,27 +962,6 @@
     align-items: center;
 }
 
-.local-course-banner-builder-bulk-action-row .btn,
-.local-course-banner-builder-bulk-save-button,
-.local-course-banner-builder-bulk-delete-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.25rem;
-    width: auto;
-    min-height: 2rem;
-    padding: 0.42rem 0.62rem;
-    font-size: 0.78rem;
-    line-height: 1.2;
-    border-radius: 0.375rem;
-}
-
-.local-course-banner-builder-bulk-action-row .btn > .fa,
-.local-course-banner-builder-bulk-save-button > .fa,
-.local-course-banner-builder-bulk-delete-button > .fa {
-    font-size: 0.82rem;
-}
-
 .local-course-banner-builder-admin--native .local-course-banner-builder-banner-preview-toolbar {
     display: flex;
     justify-content: flex-end;

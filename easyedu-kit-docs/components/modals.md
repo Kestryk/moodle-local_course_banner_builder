@@ -60,6 +60,9 @@ EasyEdu modals use Moodle-compatible markup with a shared visual shell.
   modal root so it opens with the same EasyEdu motion as custom modals.
   If the native body is still resolving, toggle an `is-loading` class and use
   `native-modal-loading()` to harmonise Moodle's `core/loading` template.
+  The mixin uses the canonical `busy-indicator-ring`, so plugin-owned async
+  modal placeholders should consume the same mixin instead of styling a raw
+  Bootstrap spinner independently.
   When a Moodle native modal is created before it becomes visible, temporarily
   add `is-easyedu-animating` after it receives the visible state to replay the
   EasyEdu entrance motion.
@@ -206,6 +209,8 @@ Use this checklist before recreating a modal locally:
   including Moodle native modal bridges.
 - Moodle native loading states use `native-modal-loading` instead of the raw
   default spinner when the modal body resolves asynchronously.
+- Plugin-owned modal placeholders also use `native-modal-loading` with their
+  existing status selector; preserve the status role and request lifecycle.
 - The header icon uses `modal-header-icon`; the icon must be centred both
   visually and by line-height.
 - Close controls use `close-button`; do not leave raw `x` links.
