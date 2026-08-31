@@ -20,7 +20,11 @@
  * @copyright  2026 Kevin Jarniac
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['local_course_banner_builder/motion', 'core/notification'], function (Motion, Notification) {
+define([
+    'local_course_banner_builder/motion',
+    'core/toast',
+    'core/notification'
+], function (Motion, Toast, Notification) {
 
 var localCourseBannerBuilderSourcePreviewModes = {};
 var localCourseBannerBuilderSourcePreviewOrientationMediaQuery = null;
@@ -15255,12 +15259,30 @@ function localCourseBannerBuilderNotifyAsyncAction(message, type) {
     if (!message) {
         return;
     }
-    Notification.addNotification({
-        message: message,
-        type: type,
-        closebutton: true,
-        announce: true
-    });
+    var toastType = type === 'error' ? 'danger' : (type || 'success');
+    // Keep CCB's no-reload feedback in the same short-lived toast family as
+    // EasyStud. The core/notification dependency remains a compatibility
+    // fallback for older Moodle themes where core/toast is not available.
+    if (Toast && typeof Toast.add === 'function') {
+        try {
+            Toast.add(message, {
+                type: toastType,
+                delay: 4000,
+            });
+            return;
+        } catch (error) {
+            // Fall through to Moodle's notification API if the theme's toast
+            // renderer cannot be initialised.
+        }
+    }
+    if (Notification && typeof Notification.addNotification === 'function') {
+        Notification.addNotification({
+            message: message,
+            type: toastType,
+            closebutton: true,
+            announce: true
+        });
+    }
 }
 
 /**
@@ -19080,6 +19102,17 @@ function localCourseBannerBuilderSubmitParentSourceChange(form) {
     }).catch(function(error) {
         localCourseBannerBuilderShowParentSourceChangeError(modal, error.message);
         localCourseBannerBuilderSetParentSourceChangeBusy(modal, false);
+        localCourseBannerBuilderNotifyAsyncAction(
+            error.message || localCourseBannerBuilderGetJsString(
+                'invalidsourceparent',
+                'The selected parent source is no longer valid.'
+            ),
+            'error'
+        );
+        var submit = modal.querySelector('[data-parent-source-change-submit="1"]');
+        if (submit && !submit.disabled) {
+            submit.focus({preventScroll: true});
+        }
     });
 }
 
