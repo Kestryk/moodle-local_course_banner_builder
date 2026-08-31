@@ -2,6 +2,26 @@
 
 Status: Implemented — validation pending
 
+## RF5 measured disclosure and action alignment - 2026-08-31
+
+Human review accepted the Source Preview surface and source-child animation,
+but found the Layer infos & overrides opening invisible, its closing stuttery,
+its title too dark, its help control too close, and two remaining icon/text
+alignment defects in the modal header/footer.
+
+The shared accordion controller had revealed the content before asking
+`Motion.expand` to measure it, so opening started and ended at the same height.
+RF5 leaves the content hidden until Motion performs its own reveal and measure.
+The content uses border-box sizing so its vertical padding is included in the
+collapse-to-zero animation instead of disappearing as a final jump.
+
+The disclosure title reuses the existing compact Kit caption role with medium
+weight. The details panel and help control now occupy separate grid columns
+with an explicit gap. The Source Preview identity resets Moodle's inherited
+icon margin, and the footer action declares the same action gap variables as
+the other preview surfaces. Accepted source-tree motion, inherited wording,
+checkerboards, modal opacity, mode switching and focus return are unchanged.
+
 ## RF4 live-DOM corrective pass - 2026-08-30
 
 The cumulative preview showed that RF3 had styled a body-appended modal without

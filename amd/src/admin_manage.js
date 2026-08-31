@@ -20132,7 +20132,11 @@ function localCourseBannerBuilderEnhanceAccordions(root) {
                 }
                 if (opening) {
                     details.setAttribute('open', 'open');
-                    content.hidden = false;
+                    // Motion.expand must observe the collapsed zero-height
+                    // state before it reveals and measures the content. If we
+                    // unhide first, its start and end heights are identical,
+                    // so opening appears instantaneous while closing still
+                    // animates.
                     Motion.expand(content).then(function () {
                         if (details.dataset.accordionTransitionId !== transitionId) {
                             return;
