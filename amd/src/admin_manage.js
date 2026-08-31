@@ -6912,14 +6912,19 @@ function localCourseBannerBuilderSyncCurrentImagePreview(scope) {
                 }
             }
         }
-        // Crop is an inner-image transform. The modal layer keeps its saved
-        // placement box; only the image inside that box is enlarged and
-        // translated by localCourseBannerBuilderApplyCropToImageStyles().
+        // Once Crop is applied, the modal selection shell and its independent
+        // draft visual must resolve Keep proportions from the same effective
+        // cropped aspect. Using the complete source aspect here while the
+        // standalone visual uses the cropped aspect makes the transparent
+        // selection layer taller (or wider) than the pixels it selects.
+        // Active Crop editing returns above before this renderer runs, so its
+        // full-source coordinate canvas remains independent from this placed
+        // output geometry.
         var effectiveDimensions = localCourseBannerBuilderGetEffectivePreviewImageDimensions(
             naturalWidth,
             naturalHeight,
             cropState,
-            true
+            false
         );
         var renderKeepAspect = keepAspect;
         var placementWidth = effectiveDimensions.width;
