@@ -4,12 +4,24 @@
 
 ### Changed
 
+- Added a contained large authoring preview that clones the current source
+  renderer into the existing readonly preview modal. Desktop/Mobile switching
+  stays local to the modal and cannot submit or change saved banner state.
+- Centred Sort order in ordinary unlocked Image rows by omitting the empty
+  auxiliary-status slot; cropped, fixed, inherited and locked rows retain
+  their existing status and lock indicators.
 - Standardised feedback for existing no-reload Course Banner Builder mutations
   on Moodle's temporary toast surface, matching EasyStud's four-second
   notifications while preserving the existing busy, focus and fragment
   replacement contracts.
 - Kept configured-source parent validation visible inside its modal with an
   accessible alert and returned focus to its Save action after an error.
+
+### Validation
+
+- Added a focused source contract for the readonly large-preview boundary and
+  conditional layer-status stack. Runtime, browser and managed-preview review
+  remain separate gates.
 
 ## EED-CCB-2026-0058 - 2026-08-30
 

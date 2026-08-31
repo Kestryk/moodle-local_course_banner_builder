@@ -1551,6 +1551,10 @@
 
         min-height: 4rem;
         background: #fff;
+
+        &:empty {
+            display: none;
+        }
     }
 
     .local-course-banner-builder-source-chain-preview-feedback {
@@ -1565,7 +1569,8 @@
     }
 }
 
-[data-action="local-course-banner-builder-show-source-chain-preview"].is-focus-returned {
+[data-action="local-course-banner-builder-show-source-chain-preview"].is-focus-returned,
+[data-action="local-course-banner-builder-show-large-source-preview"].is-focus-returned {
     outline: 0.18rem solid color-mix(in srgb, var(--easyedu-primary, #0f6cbf) 58%, transparent);
     outline-offset: 0.14rem;
 }

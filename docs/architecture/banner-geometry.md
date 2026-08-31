@@ -176,6 +176,22 @@ banner output. JavaScript retains the selected mode only in an in-memory map
 for the current source/root lifecycle. A normal page reload starts in desktop
 mode.
 
+### EED-CCB-2026-0049 contained large authoring preview
+
+The selected-source authoring canvas exposes an explicit large-preview action
+beside its Desktop/Mobile control. The action clones the current rendered
+source panel into the existing opaque preview modal, then removes forms,
+save/delete controls, the filmstrip, editor rails and the nested launcher. The
+clone is marked readonly before it is initialised, so layer selection, drag,
+resize, Crop and payload writes remain unavailable.
+
+The clone preserves the source panel's current Desktop/Mobile mode at open.
+Further mode changes are modal-local because modal previews are excluded from
+the in-memory authoring-mode map. Closing with the header control, Escape or
+the backdrop uses the existing modal lifecycle and restores focus to the
+launcher. No new database field, form value, local storage key, public CSS or
+banner renderer is introduced.
+
 Mobile simulation uses a logical width of 390px. Its logical height is
 derived server-side from `banner_geometry::get_format_aspect_ratios()` and the
 already-published public sizing policy:

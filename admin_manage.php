@@ -1713,6 +1713,23 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
             'data-source-preview-async-control' => '1',
         ] + $disabledattributes + $deleteallbuttonattributes);
     $previewmodehelpid = 'local-course-banner-builder-source-preview-mode-help';
+    $largepreviewbutton = html_writer::tag(
+        'button',
+        html_writer::tag('i', '', ['class' => 'icon fa fa-expand fa-fw', 'aria-hidden' => 'true']) .
+            html_writer::span(
+                get_string('slideshowopenlargepreview', 'local_course_banner_builder'),
+                'local-course-banner-builder-source-preview-large-button-label'
+            ),
+        [
+            'type' => 'button',
+            'class' => 'btn btn-outline-secondary local-course-banner-builder-source-preview-large-button',
+            'data-action' => 'local-course-banner-builder-show-large-source-preview',
+            'data-preview-title' => get_string('sourcechainpreviewtitle', 'local_course_banner_builder'),
+            'data-preview-eyebrow' => get_string('pluginname', 'local_course_banner_builder'),
+            'data-close-label' => get_string('closebuttontitle'),
+            'aria-label' => get_string('slideshowopenlargepreview', 'local_course_banner_builder'),
+        ]
+    );
     $previewmodecontrol = html_writer::div(
         html_writer::span(get_string('sourcepreviewmode', 'local_course_banner_builder'),
             'local-course-banner-builder-source-preview-mode-label') .
@@ -1738,6 +1755,7 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
                 'aria-describedby' => $previewmodehelpid,
             ]
         ) .
+        $largepreviewbutton .
         html_writer::div(get_string('sourcepreviewmodehelp', 'local_course_banner_builder'),
             'local-course-banner-builder-source-preview-mode-help', ['id' => $previewmodehelpid]),
         'local-course-banner-builder-source-preview-mode-control',

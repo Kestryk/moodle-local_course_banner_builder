@@ -725,6 +725,16 @@ document.addEventListener('click', function (e) {
         return;
     }
 
+    var largeSourcePreviewButton = e.target.closest(
+        '[data-action="local-course-banner-builder-show-large-source-preview"]'
+    );
+    if (largeSourcePreviewButton) {
+        e.preventDefault();
+        localCourseBannerBuilderDismissOpenPopovers(largeSourcePreviewButton);
+        localCourseBannerBuilderShowLargeSourcePreview(largeSourcePreviewButton);
+        return;
+    }
+
     var togglePreviewBorderButton = e.target.closest('[data-action="local-course-banner-builder-toggle-preview-border"]');
     if (togglePreviewBorderButton) {
         var previewPanel = togglePreviewBorderButton.closest('[data-source-visual-editor="1"]');
@@ -1602,6 +1612,128 @@ function localCourseBannerBuilderEnsureSourceChainPreviewModal() {
 }
 
 /**
+ * Configure the shared readonly preview shell for either preview entry point.
+ *
+ * @param {HTMLElement} modal Preview modal.
+ * @param {HTMLElement} button Preview trigger.
+ * @returns {Object} Modal body and footer.
+ */
+function localCourseBannerBuilderConfigureSourceChainPreviewModal(modal, button) {
+    var body = modal.querySelector('[data-source-chain-preview-modal-body="1"]');
+    var footer = modal.querySelector('[data-source-chain-preview-modal-footer="1"]');
+    var title = modal.querySelector('.local-course-banner-builder-source-chain-preview-modal-title');
+    var eyebrow = modal.querySelector('.local-course-banner-builder-source-chain-preview-modal-eyebrow');
+    var close = modal.querySelector('.local-course-banner-builder-source-chain-preview-modal__close');
+    var previewTitle = button ? button.getAttribute('data-preview-title') : '';
+    var previewEyebrow = button ? button.getAttribute('data-preview-eyebrow') : '';
+    var closeLabel = button ? button.getAttribute('data-close-label') : '';
+    if (title) {
+        title.textContent = previewTitle || localCourseBannerBuilderGetJsString('sourcechainpreviewtitle', 'Source preview');
+    }
+    if (eyebrow) {
+        eyebrow.textContent = previewEyebrow || 'Course Banner Builder';
+    }
+    if (close && closeLabel) {
+        close.setAttribute('aria-label', closeLabel);
+    }
+    modal.localCourseBannerBuilderSourceChainPreviewOpener = button;
+    modal.dataset.sourceChainPreviewFocusReturn = '1';
+    modal.dataset.sourceChainPreviewFocusReturned = '0';
+    if (!modal.dataset.sourceChainPreviewFocusBound) {
+        var finishClose = function() {
+            localCourseBannerBuilderFinishSourceChainPreviewClose(modal);
+        };
+        modal.addEventListener('hidden.bs.modal', finishClose);
+        if (typeof window.jQuery !== 'undefined') {
+            window.jQuery(modal).on('hidden.bs.modal', finishClose);
+        }
+        modal.dataset.sourceChainPreviewFocusBound = '1';
+    }
+    return {body: body, footer: footer};
+}
+
+/**
+ * Clone the live authoring renderer into an isolated readonly modal surface.
+ *
+ * Runtime binding flags are intentionally removed because DOM event listeners
+ * are not copied by cloneNode(). The modal keeps only its local responsive mode
+ * selector; save/delete/editor controls and nested preview launchers are omitted.
+ *
+ * @param {HTMLElement} sourcePanel Live source visual editor.
+ * @returns {HTMLElement} Readonly preview clone.
+ */
+function localCourseBannerBuilderCloneReadonlySourcePreview(sourcePanel) {
+    var panel = sourcePanel.cloneNode(true);
+    Array.prototype.slice.call(panel.querySelectorAll(
+        '.local-course-banner-builder-source-preview-controls,' +
+        '.local-course-banner-builder-source-preview-primary-actions,' +
+        '.local-course-banner-builder-source-preview-bottom-row,' +
+        '.local-course-banner-builder-source-preview-filmstrip,' +
+        '[data-action="local-course-banner-builder-show-large-source-preview"],' +
+        'form'
+    )).forEach(function(node) {
+        node.remove();
+    });
+    panel.removeAttribute('data-source-preview-bound');
+    panel.removeAttribute('data-source-preview-orientation-bound');
+    panel.removeAttribute('data-easyedu-motion-initialised');
+    Array.prototype.slice.call(panel.querySelectorAll('[data-source-preview-mode-bound]')).forEach(function(button) {
+        button.removeAttribute('data-source-preview-mode-bound');
+    });
+    var modeHelp = panel.querySelector('.local-course-banner-builder-source-preview-mode-help[id]');
+    if (modeHelp) {
+        var previousId = modeHelp.id;
+        var modalId = previousId + '-large-' + String(Date.now());
+        modeHelp.id = modalId;
+        Array.prototype.slice.call(panel.querySelectorAll('[aria-describedby]')).forEach(function(control) {
+            if (control.getAttribute('aria-describedby') === previousId) {
+                control.setAttribute('aria-describedby', modalId);
+            }
+        });
+    }
+    panel.setAttribute('data-source-preview-readonly', '1');
+    panel.classList.add('local-course-banner-builder-source-preview-readonly');
+    return panel;
+}
+
+/**
+ * Show the current authoring preview in the contained readonly preview modal.
+ *
+ * The clone is detached from every form and from the source payload. Changing
+ * Desktop/Mobile inside this modal therefore cannot persist or affect the live
+ * authoring preview.
+ *
+ * @param {HTMLElement} button Preview trigger inside the live source editor.
+ * @returns {void}
+ */
+function localCourseBannerBuilderShowLargeSourcePreview(button) {
+    var sourcePanel = button ? button.closest('[data-source-visual-editor="1"]') : null;
+    if (!sourcePanel || localCourseBannerBuilderIsSourcePreviewReadonly(sourcePanel)) {
+        return;
+    }
+    var modal = localCourseBannerBuilderEnsureSourceChainPreviewModal();
+    var shell = localCourseBannerBuilderConfigureSourceChainPreviewModal(modal, button);
+    var body = shell.body;
+    if (!body) {
+        return;
+    }
+    modal.dataset.sourceChainPreviewRequest = 'local-' + String(Date.now()) + Math.random();
+    modal.classList.remove('is-loading');
+    body.classList.remove('is-loading');
+    body.setAttribute('aria-busy', 'false');
+    body.innerHTML = '';
+    if (shell.footer) {
+        shell.footer.innerHTML = '';
+    }
+    var panel = localCourseBannerBuilderCloneReadonlySourcePreview(sourcePanel);
+    body.appendChild(panel);
+    localCourseBannerBuilderClearSourcePreviewSelection(panel);
+    localCourseBannerBuilderShowModal(modal);
+    localCourseBannerBuilderInitSourceVisualEditor(body);
+    localCourseBannerBuilderInitPopovers(body);
+}
+
+/**
  * Complete every source-preview close path with the same transient cleanup.
  *
  * Bootstrap 4, Bootstrap 5 and the local fallback do not share one event
@@ -1644,42 +1776,15 @@ function localCourseBannerBuilderShowSourceChainPreview(button) {
     var url = button ? button.getAttribute('data-preview-url') : '';
     var editUrl = button ? button.getAttribute('data-edit-url') : '';
     var editLabel = button ? button.getAttribute('data-edit-label') : '';
-    var previewTitle = button ? button.getAttribute('data-preview-title') : '';
-    var previewEyebrow = button ? button.getAttribute('data-preview-eyebrow') : '';
-    var closeLabel = button ? button.getAttribute('data-close-label') : '';
     if (!url) {
         return;
     }
     var modal = localCourseBannerBuilderEnsureSourceChainPreviewModal();
-    var body = modal.querySelector('[data-source-chain-preview-modal-body="1"]');
-    var footer = modal.querySelector('[data-source-chain-preview-modal-footer="1"]');
-    var title = modal.querySelector('.local-course-banner-builder-source-chain-preview-modal-title');
-    var eyebrow = modal.querySelector('.local-course-banner-builder-source-chain-preview-modal-eyebrow');
-    var close = modal.querySelector('.local-course-banner-builder-source-chain-preview-modal__close');
-    if (title) {
-        title.textContent = previewTitle || localCourseBannerBuilderGetJsString('sourcechainpreviewtitle', 'Source preview');
-    }
-    if (eyebrow) {
-        eyebrow.textContent = previewEyebrow || 'Course Banner Builder';
-    }
-    if (close && closeLabel) {
-        close.setAttribute('aria-label', closeLabel);
-    }
-    modal.localCourseBannerBuilderSourceChainPreviewOpener = button;
+    var shell = localCourseBannerBuilderConfigureSourceChainPreviewModal(modal, button);
+    var body = shell.body;
+    var footer = shell.footer;
     var requestToken = String(Date.now()) + Math.random();
     modal.dataset.sourceChainPreviewRequest = requestToken;
-    modal.dataset.sourceChainPreviewFocusReturn = '1';
-    modal.dataset.sourceChainPreviewFocusReturned = '0';
-    if (!modal.dataset.sourceChainPreviewFocusBound) {
-        var finishClose = function() {
-            localCourseBannerBuilderFinishSourceChainPreviewClose(modal);
-        };
-        modal.addEventListener('hidden.bs.modal', finishClose);
-        if (typeof window.jQuery !== 'undefined') {
-            window.jQuery(modal).on('hidden.bs.modal', finishClose);
-        }
-        modal.dataset.sourceChainPreviewFocusBound = '1';
-    }
     if (body) {
         modal.classList.add('is-loading');
         body.classList.add('is-loading');
