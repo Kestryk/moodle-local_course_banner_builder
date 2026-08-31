@@ -1502,6 +1502,15 @@
         background: #fff;
         color: var(--easyedu-primary);
         box-shadow: 0 0.18rem 0.48rem rgba(31, 68, 104, 0.08);
+
+        .icon,
+        .fa {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            line-height: 1;
+        }
     }
 
     .local-course-banner-builder-source-chain-preview-modal-heading {
