@@ -1540,7 +1540,10 @@ html[data-local-course-banner-builder-sticky-runtime="1"]
 .local-course-banner-builder-source-preview-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(11rem, clamp(11.5rem, 17vw, 15rem));
-    align-items: start;
+    // The right manager panel is a peer shell of the preview canvas and must
+    // run to the same bottom edge. Its action buttons retain their own fixed
+    // height; only the outer grid item stretches.
+    align-items: stretch;
     gap: clamp(0.55rem, 1vw, 0.75rem);
     min-width: 0;
 }

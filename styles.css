@@ -3747,7 +3747,7 @@ html[data-local-course-banner-builder-sticky-runtime="1"] .local-course-banner-b
 .local-course-banner-builder-source-preview-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(11rem, clamp(11.5rem, 17vw, 15rem));
-  align-items: start;
+  align-items: stretch;
   gap: clamp(0.55rem, 1vw, 0.75rem);
   min-width: 0;
 }
@@ -4617,7 +4617,8 @@ button[data-toggler=drawers][data-target=theme_boost-drawers-blocks] {
 }
 
 .local-course-banner-builder-source-preview-controls {
-  align-self: start;
+  align-self: stretch;
+  min-height: 100%;
   padding: 0.65rem;
   border: 1px solid var(--bs-border-color, #dee2e6);
   border-radius: 0.7rem;

@@ -126,7 +126,10 @@
 }
 
 .local-course-banner-builder-source-preview-controls {
-    align-self: start;
+    // The grid track is defined by the preview canvas. Stretch the shell to
+    // that track while keeping its contents top-aligned below.
+    align-self: stretch;
+    min-height: 100%;
     padding: 0.65rem;
     border: 1px solid var(--bs-border-color, #dee2e6);
     border-radius: 0.7rem;
