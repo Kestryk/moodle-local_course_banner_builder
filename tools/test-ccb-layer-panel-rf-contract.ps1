@@ -6,6 +6,7 @@ $pluginRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 $actionScss = Get-Content -LiteralPath (Join-Path $pluginRoot 'scss\components\_action-contract.scss') -Raw
 $controlScss = Get-Content -LiteralPath (Join-Path $pluginRoot 'scss\components\_admin-controls.scss') -Raw
 $layoutScss = Get-Content -LiteralPath (Join-Path $pluginRoot 'scss\components\_admin-layout.scss') -Raw
+$managerPhp = Get-Content -LiteralPath (Join-Path $pluginRoot 'classes\manager.php') -Raw
 $css = Get-Content -LiteralPath (Join-Path $pluginRoot 'styles.css') -Raw
 
 $checks = [ordered]@{
@@ -19,11 +20,16 @@ $checks = [ordered]@{
         ($controlScss -match 'max-height:\s*var\(--local-course-banner-builder-action-height, 2\.45rem\);'))
     'Preview side panel fills its grid track with a compact gap' =
         (($layoutScss -match 'gap:\s*clamp\(0\.55rem, 1vw, 0\.75rem\);') -and
-        ($layoutScss -match '(?s)\.local-course-banner-builder-source-preview-controls\s*\{.*?justify-self:\s*stretch;'))
+        ($layoutScss -match '(?s)\.local-course-banner-builder-source-preview-layout\s*\{.*?align-items:\s*stretch;') -and
+        ($controlScss -match '(?s)\.local-course-banner-builder-source-preview-controls\s*\{.*?align-self:\s*stretch;'))
+    'Unlocked Image override cells have no generic semantic tint' =
+        ($managerPhp -notmatch 'rgba\(201, 102, 26, 0\.12\)')
     'Official CSS contains the layer and panel contracts' =
         (($css -match 'grid-template-columns:\s*minmax\(0, 1fr\) minmax\(0, 1fr\)') -and
         ($css -match 'max-height:\s*var\(--local-course-banner-builder-action-height, 2\.45rem\)') -and
-        ($css -match 'gap:\s*clamp\(0\.55rem, 1vw, 0\.75rem\)'))
+        ($css -match 'gap:\s*clamp\(0\.55rem, 1vw, 0\.75rem\)') -and
+        ($css -match 'align-items:\s*stretch;') -and
+        ($css -match 'align-self:\s*stretch;'))
 }
 
 $failed = @($checks.GetEnumerator() | Where-Object { -not $_.Value })

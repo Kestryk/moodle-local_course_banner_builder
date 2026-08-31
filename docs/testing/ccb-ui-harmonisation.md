@@ -16,6 +16,24 @@ menus.
 - configured-source actions must keep icons and labels leading-aligned;
 - no preview, document or modal horizontal overflow is allowed.
 
+## EED-CCB-2026-0050 RF7 / EED-CCB-2026-0052 RF2 - 2026-08-31
+
+This corrective source lot preserves the accepted RF6 contracts and closes two
+remaining presentation defects:
+
+- On an unlocked Image layer row, the Layer infos & overrides cell must use
+  exactly the same surface as the row at rest, hover and keyboard focus. The
+  Border and Overlay locked-row semantic tints remain visible.
+- In Course and Site Banner Manager Source Preview, the right-hand panel shell
+  must extend to the same bottom edge as the general preview canvas. Its action
+  buttons keep the existing fixed height and the compact preview-to-panel gap.
+
+The source contract is `tools/test-ccb-layer-panel-rf-contract.ps1`. It checks
+the bounded disclosure columns, the fixed action height, the grid stretch
+relationship, removal of the generic unlocked-Image tint, and the generated
+CSS artifact. The contract is source/build evidence only: no runtime, cache,
+fixture, browser or managed-preview activity is claimed here.
+
 ## EED-CCB-2026-0046 - title-colour dialog - 2026-08-29
 
 The Course, Site and Activity title editors use the same CCB-owned, Kit-shell colour dialog. Their visible swatch does not invoke the operating-system colour picker. The existing HEX input remains the persisted form control and the outer title-editor Save remains the sole persistence action.

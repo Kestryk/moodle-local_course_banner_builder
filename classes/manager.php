@@ -8201,7 +8201,10 @@ class manager {
             }
         }
 
-        return 'background-color: rgba(201, 102, 26, 0.12);';
+        // Unlocked Image rows use the containing row surface. Border and
+        // Overlay rows keep their semantic tint above; a generic fallback
+        // here would paint the Image details cell as a separate panel.
+        return '';
     }
 
     /**

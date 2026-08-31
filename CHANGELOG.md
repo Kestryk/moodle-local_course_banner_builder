@@ -35,6 +35,24 @@ many small sections.
 
 ## Unreleased
 
+### EED-CCB-2026-0050 RF7 / EED-CCB-2026-0052 RF2 - 2026-08-31
+
+#### Fixed
+
+- Removed the legacy generic tint from unlocked Image Layer infos cells, so
+  their rest, hover and focus backgrounds now match the containing row exactly;
+  locked Border and Overlay semantic tints remain unchanged.
+- Stretched the Course/Site manager right preview-panel shell to the full
+  height of the general preview canvas while retaining the fixed action-button
+  height and accepted horizontal gap.
+
+#### Validation
+
+- Rebuilt the official Sass `styles.css` with Dart Sass 1.89.2.
+- Passed the focused Layer info / preview-panel contract, PHP lint and
+  `git diff --check`. Runtime, browser and managed-preview validation remain
+  separate gates.
+
 ### EED-CCB-2026-0043 RF20 - Cropped Keep proportions selection shell - 2026-08-31
 
 #### Fixed
