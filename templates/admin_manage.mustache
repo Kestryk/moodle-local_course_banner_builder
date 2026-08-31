@@ -382,7 +382,8 @@
             </div>
             <div class="modal-body">
                 <p>{{#str}}changesourceparenthelp, local_course_banner_builder{{/str}} <strong data-parent-source-change-description="1"></strong></p>
-                <p class="alert alert-danger" data-parent-source-change-error="1" hidden></p>
+                <p class="alert alert-danger" role="alert" aria-live="assertive"
+                    data-parent-source-change-error="1" hidden></p>
                 <input type="hidden" name="sesskey" data-parent-source-change-sesskey="1">
                 <input type="hidden" name="updatesourceparentfield" value="1">
                 <input type="hidden" name="sourcekey" data-parent-source-change-key="1">
