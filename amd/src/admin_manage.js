@@ -10131,6 +10131,22 @@ function localCourseBannerBuilderSyncStandalonePreviewLayer(previewRoot, layer) 
         imagecropheightpercent: layer.getAttribute('data-preview-crop-height') || '100'
     };
     var cropEditing = !!layer.querySelector('[data-preview-crop-editor="1"]');
+    if (cropEditing && layer.dataset.previewCropEditLayout === '1') {
+        // Crop edit layout deliberately expands the DOM layer back to the
+        // complete source image. Keep-proportion and draft refreshes may update
+        // the saved placement while Crop remains open, but must never render
+        // that placement over this source-coordinate canvas: doing so applies
+        // the Crop percentages a second time and makes a vertical selection
+        // border escape the image. The independent draft visual layer paints
+        // the live placed image; this layer remains the stable Crop canvas.
+        localCourseBannerBuilderUpdateCropSelectionFrame(
+            layer,
+            localCourseBannerBuilderGetPreviewCropState(layer)
+        );
+        localCourseBannerBuilderRefreshCropEditor(layer);
+        localCourseBannerBuilderUpdatePreviewAspectLockButton(layer);
+        return;
+    }
     // The standalone/source preview must use the same effective Crop aspect
     // as the saved public geometry when Keep proportion is enabled. Freeform
     // Crop placement remains unchanged because it deliberately disables that
