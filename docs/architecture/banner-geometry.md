@@ -183,19 +183,18 @@ the established `desktop` / `mobile` data values or introduce persisted state.
 
 ### EED-CCB-2026-0049 contained large authoring preview
 
-The selected-source authoring canvas exposes an explicit large-preview action
-beside its Desktop/Mobile control. The action clones the current rendered
-source panel into the existing opaque preview modal, then removes forms,
-save/delete controls, the filmstrip, editor rails and the nested launcher. The
-clone is marked readonly before it is initialised, so layer selection, drag,
-resize, Crop and payload writes remain unavailable.
+The selected-source authoring canvas exposes a large-editor action beside its
+Desktop/Mobile control. At widths of 1024 px or more, the action moves the one
+live source editor into a dedicated modal shell and leaves its listeners,
+forms, filmstrip, Crop/history controls and payload identity intact. A comment
+placeholder restores that exact node before focus returns on Close, Escape or
+backdrop dismissal. No clone or second stateful renderer is permitted.
 
-The clone preserves the source panel's current Desktop/Mobile mode at open.
-Further mode changes are modal-local because modal previews are excluded from
-the in-memory authoring-mode map. Closing with the header control, Escape or
-the backdrop uses the existing modal lifecycle and restores focus to the
-launcher. No new database field, form value, local storage key, public CSS or
-banner renderer is introduced.
+At narrower widths the shell gives a localised explanation and the standard
+editor remains in place. This first architectural slice changes view
+composition only: it adds no database field, payload field, automatic server
+write, public CSS or banner renderer. The accepted future transaction will
+snapshot the opening document and give Save/Cancel their final semantics.
 
 Mobile simulation uses a logical width of 390px. Its logical height is
 derived server-side from `banner_geometry::get_format_aspect_ratios()` and the

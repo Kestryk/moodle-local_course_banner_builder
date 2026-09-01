@@ -1717,17 +1717,17 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
         'button',
         html_writer::tag('i', '', ['class' => 'icon fa fa-expand fa-fw', 'aria-hidden' => 'true']) .
             html_writer::span(
-                get_string('slideshowopenlargepreview', 'local_course_banner_builder'),
+                get_string('openlargebannereditor', 'local_course_banner_builder'),
                 'local-course-banner-builder-source-preview-large-button-label'
             ),
         [
             'type' => 'button',
             'class' => 'btn btn-outline-secondary local-course-banner-builder-source-preview-large-button',
             'data-action' => 'local-course-banner-builder-show-large-source-preview',
-            'data-preview-title' => get_string('sourcechainpreviewtitle', 'local_course_banner_builder'),
+            'data-preview-title' => get_string('largebannereditortitle', 'local_course_banner_builder'),
             'data-preview-eyebrow' => get_string('pluginname', 'local_course_banner_builder'),
             'data-close-label' => get_string('closebuttontitle'),
-            'aria-label' => get_string('slideshowopenlargepreview', 'local_course_banner_builder'),
+            'aria-label' => get_string('openlargebannereditor', 'local_course_banner_builder'),
         ]
     );
     $previewmodecontrol = html_writer::div(
@@ -2115,6 +2115,7 @@ $PAGE->requires->strings_for_js([
     'invaliddeletealllayersresponse',
     'invaliddeleteselectedlayerresponse',
     'keepaspectpreviewimage',
+    'largeeditorrequiresdesktop',
     'layertype:border',
     'layertype:image',
     'layertype:overlay',

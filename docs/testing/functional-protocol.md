@@ -128,6 +128,7 @@ Status values:
 | SAVE-01 | Save and reload source | All visual settings persist | Behat/Playwright | Blocked |
 | PREV-01 | Resize admin preview | Layout remains usable at desktop/tablet/mobile | Playwright/manual | Manual |
 | PREV-02 | Render final course banner | Position, crop, title, border, and overlay agree with preview | Visual/manual | Manual |
+| PREV-03 | Open the large authoring workspace | At >=1024 px the exact live source editor moves into one contained modal, existing selection/actions remain interactive, Close/Escape/backdrop restore the editor to its original place and focus returns to the launcher. Below 1024 px a localised explanation appears and the normal editor remains usable. No duplicate editor, automatic request or console error occurs. | Static contract plus managed-preview manual review | Slice 1 candidate |
 | THEME-01 | Use standard Moodle theme | Builder and banner retain a complete fallback UI | Behat/Playwright | Blocked |
 | GUIDE-01 | Open guide and navigate slides | Slide state and keyboard navigation remain stable | Playwright | Blocked |
 | GUIDE-02 | Show target in interface | Highlight stays aligned and return panel appears | Playwright | Blocked |
