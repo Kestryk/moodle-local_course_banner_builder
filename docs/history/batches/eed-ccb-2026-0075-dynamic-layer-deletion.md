@@ -47,3 +47,14 @@ one transient toast and return useful focus.
 The source candidate is intended for a controlled Moodle 5.1 preview after its
 clean commit is pushed. Moodle 4.5 executable coverage remains required before
 release because the plugin declares Moodle 4.5 as its minimum version.
+
+## RF1 - Actions-column deletion
+
+Wave 10 human review accepts the no-reload behavior for delete one, selected
+and all beneath the preview. RF1 extends that already-guarded path to each
+direct layer's Delete link in the table Actions column. JavaScript intercepts
+the link only when AMD is available, posts the selected source and layer id to
+the same ownership-checked endpoint, refreshes the authoritative fragment,
+shows the shared busy/toast states and restores focus. The `href` remains the
+no-script fallback, and the clickable action explicitly retains a pointer
+cursor.

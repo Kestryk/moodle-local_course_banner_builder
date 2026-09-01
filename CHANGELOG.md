@@ -1,5 +1,24 @@
 # Changelog
 
+## Unreleased - 2026-09-01
+
+### Changed
+
+- Extended the accepted source-owned asynchronous layer deletion lifecycle to
+  Delete actions in the layer table while retaining their safe link fallback.
+- Applied one final compact typography and Save-style light interaction cascade
+  to the three actions beneath the general preview.
+- Corrected Image, Border and Overlay edit loading so the bounded nested ring,
+  rather than its flex-growing wrapper, owns geometry and animation.
+
+### Validation
+
+- Rebuilt the official Sass and `admin_manage` AMD assets and source map.
+- Passed focused modal/action, asynchronous editor, general-preview and Source
+  Preview contracts plus PHP/JavaScript syntax and `git diff --check`.
+- No browser, fixture, Moodle cache or runtime preview ran in this source
+  worktree.
+
 ## Unreleased - 2026-08-31
 
 ### Changed

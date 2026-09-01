@@ -20,3 +20,21 @@ Date: 2026-08-31
 The official Sass asset and focused source contracts are required for this
 candidate. No runtime, browser, cache or managed-preview operation belongs to
 this source worktree; visual and lifecycle review remains a separate gate.
+
+## RF1 - 2026-09-01
+
+Wave 10 human review accepted Source Preview loading, fixed action height and
+the general states, but exposed two final-cascade failures:
+
+- Save alone still received a later regular-size rule, leaving Delete at
+  0.78 rem and Save at 0.88 rem. All three controls now carry one dedicated
+  compact class with identical final font, weight and line-height; Delete uses
+  the accepted Save-style light hover/focus/pressed treatment.
+- The Image/Border/Overlay loading primitive was applied to a legacy wrapper
+  with `flex: 1`, stretching the ring. The wrapper now only centres the real
+  nested `.spinner-border`, whose bounded shared ring owns geometry. The modal
+  now sets and clears `is-loading` and `aria-busy` through success, error and
+  close teardown.
+
+The RF1 contract rejects the retired flex-growing ring, verifies all three
+common action classes and checks the generated AMD lifecycle.

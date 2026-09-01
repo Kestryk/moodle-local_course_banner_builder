@@ -41,8 +41,6 @@
 // left after the inactive rail reservation.
 .modal[id^="local-course-banner-builder-"][data-layer-modal-loading="1"]
     .local-course-banner-builder-layer-modal-body {
-    display: flex;
-    flex-direction: column;
     padding-right: 1rem;
 }
 
@@ -53,8 +51,7 @@
 
 .modal[id^="local-course-banner-builder-"][data-layer-modal-loading="1"]
     .local-course-banner-builder-layer-modal-loading {
-    flex: 1 1 auto;
-    min-height: 0;
+    align-self: center;
 }
 
 .modal[id^="local-course-banner-builder-"] form.local-course-banner-builder-has-preview-proxy {
