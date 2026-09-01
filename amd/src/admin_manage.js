@@ -689,6 +689,15 @@ document.addEventListener('click', function (e) {
         return;
     }
 
+    var deleteSourceLayerButton = e.target.closest(
+        '[data-action="local-course-banner-builder-delete-source-layer"]'
+    );
+    if (deleteSourceLayerButton) {
+        e.preventDefault();
+        localCourseBannerBuilderDeleteSourceLayer(deleteSourceLayerButton);
+        return;
+    }
+
     var deleteSelectedDraftButton = e.target.closest('[data-action="local-course-banner-builder-delete-selected-draft-preview-layer"]');
     if (deleteSelectedDraftButton) {
         e.preventDefault();
@@ -8544,6 +8553,47 @@ function localCourseBannerBuilderDeleteSelectedPreviewLayer(button) {
     if (!root || !layerId) {
         return;
     }
+    localCourseBannerBuilderDeleteOwnedSourceLayer(
+        button,
+        root.getAttribute('data-sourcekey') || '',
+        layerId,
+        '[data-action="local-course-banner-builder-delete-selected-preview-layer"]'
+    );
+}
+
+/**
+ * Delete one directly owned layer from its table-row action.
+ *
+ * The href remains the no-JavaScript fallback. With AMD active, the request
+ * uses the same source-owned POST endpoint as deletion from the visual editor.
+ *
+ * @param {HTMLElement} button Table-row delete action.
+ * @returns {void}
+ */
+function localCourseBannerBuilderDeleteSourceLayer(button) {
+    var layerId = button ? (button.getAttribute('data-source-layer-id') || '') : '';
+    var sourceKey = button ? (button.getAttribute('data-source-key') || '') : '';
+    if (!button || !layerId || !sourceKey) {
+        return;
+    }
+    localCourseBannerBuilderDeleteOwnedSourceLayer(
+        button,
+        sourceKey,
+        layerId,
+        '[data-action="local-course-banner-builder-delete-source-layer"]'
+    );
+}
+
+/**
+ * Run one source-owned layer deletion through the shared no-reload lifecycle.
+ *
+ * @param {HTMLElement} button Initiating action.
+ * @param {string} sourceKey Resolved source key rendered by the server.
+ * @param {string} layerId Direct layer id rendered by the server.
+ * @param {string} focusSelector Preferred focus target after replacement.
+ * @returns {void}
+ */
+function localCourseBannerBuilderDeleteOwnedSourceLayer(button, sourceKey, layerId, focusSelector) {
     var message = button.getAttribute('data-confirm-message') ||
         localCourseBannerBuilderGetJsString('areyousure', 'Are you sure?');
     localCourseBannerBuilderConfirmAction(message).then(function (confirmed) {
@@ -8557,7 +8607,7 @@ function localCourseBannerBuilderDeleteSelectedPreviewLayer(button) {
         var busyRoot = localCourseBannerBuilderSetAsyncActionBusy(button, true);
         var formData = new FormData();
         formData.append('sesskey', M.cfg.sesskey || '');
-        formData.append('sourcekey', root.getAttribute('data-sourcekey') || '');
+        formData.append('sourcekey', sourceKey);
         formData.append('deletepreviewlayerajax', layerId);
         fetch(window.location.href, {
             method: 'POST',
@@ -8581,7 +8631,7 @@ function localCourseBannerBuilderDeleteSelectedPreviewLayer(button) {
             );
             localCourseBannerBuilderFocusAfterAsyncDelete(
                 host,
-                '[data-action="local-course-banner-builder-delete-selected-preview-layer"]'
+                focusSelector
             );
         }).catch(function (error) {
             window.console.error(error);
@@ -20395,6 +20445,9 @@ function localCourseBannerBuilderShowLayerModalLoading(modal, requestId) {
     spinner.setAttribute('aria-hidden', 'true');
     status.appendChild(spinner);
     body.replaceChildren(status);
+    body.setAttribute('aria-busy', 'true');
+    modal.classList.add('is-loading');
+    modal.setAttribute('aria-busy', 'true');
     modal.dataset.layerModalLoading = '1';
     modal.dataset.layerModalRequest = requestId;
     localCourseBannerBuilderShowModal(modal);
@@ -20515,6 +20568,9 @@ function localCourseBannerBuilderLoadLayerModal(url, modalId) {
         }
 
         localCourseBannerBuilderSafelyPrepareDynamicLayerModal(targetmodal);
+        targetmodal.classList.remove('is-loading');
+        targetmodal.setAttribute('aria-busy', 'false');
+        targetbody.setAttribute('aria-busy', 'false');
         targetmodal.removeAttribute('data-layer-modal-loading');
         targetmodal.removeAttribute('data-layer-modal-request');
         if (!targetmodal.classList.contains('show')) {
@@ -20524,6 +20580,12 @@ function localCourseBannerBuilderLoadLayerModal(url, modalId) {
     }).catch(function (error) {
         window.console.error(error);
         if (requestedModal && requestedModal.dataset.layerModalRequest === requestId) {
+            requestedModal.classList.remove('is-loading');
+            requestedModal.setAttribute('aria-busy', 'false');
+            var requestedBody = requestedModal.querySelector('.modal-body');
+            if (requestedBody) {
+                requestedBody.setAttribute('aria-busy', 'false');
+            }
             requestedModal.removeAttribute('data-layer-modal-loading');
             requestedModal.removeAttribute('data-layer-modal-request');
             localCourseBannerBuilderHideModal(requestedModal);
@@ -20808,10 +20870,13 @@ localCourseBannerBuilderOnReady(function () {
             return;
         }
         window.jQuery(dynamicmodal).on('hidden.bs.modal', function () {
+            dynamicmodal.classList.remove('is-loading');
+            dynamicmodal.setAttribute('aria-busy', 'false');
             dynamicmodal.removeAttribute('data-layer-modal-loading');
             dynamicmodal.removeAttribute('data-layer-modal-request');
             var body = dynamicmodal.querySelector('.modal-body');
             if (body) {
+                body.setAttribute('aria-busy', 'false');
                 body.innerHTML = '';
             }
         });

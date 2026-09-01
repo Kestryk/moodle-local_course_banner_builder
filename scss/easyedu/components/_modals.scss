@@ -83,7 +83,11 @@
 // Style Moodle's native `core/loading` template inside a decorated modal. Add
 // `is-loading` to the decorated modal root while Moodle resolves the native
 // body template, then remove it once the real content is present.
-@mixin native-modal-loading($loading-selector: ".loading-icon", $color: var(--easyedu-primary)) {
+@mixin native-modal-loading(
+  $loading-selector: ".loading-icon",
+  $color: var(--easyedu-primary),
+  $ring-selector: null
+) {
   &.is-loading .modal-body {
     align-items: center;
     display: flex;
@@ -92,22 +96,36 @@
   }
 
   .modal-body #{$loading-selector} {
-    @include animations.busy-indicator-ring;
-
-    display: block;
+    align-items: center;
+    display: flex;
+    justify-content: center;
     margin: 0;
     position: relative;
 
-    .icon,
-    .fa,
-    .spinner-border,
-    img {
-      height: 1px;
-      margin: 0;
-      opacity: 0;
-      overflow: hidden;
-      position: absolute;
-      width: 1px;
+    @if $ring-selector {
+      #{$ring-selector} {
+        @include animations.busy-indicator-ring;
+
+        display: block;
+        flex: 0 0 auto;
+        margin: 0;
+        position: relative;
+      }
+    } @else {
+      @include animations.busy-indicator-ring;
+
+      display: block;
+
+      .icon,
+      .fa,
+      img {
+        height: 1px;
+        margin: 0;
+        opacity: 0;
+        overflow: hidden;
+        position: absolute;
+        width: 1px;
+      }
     }
   }
 }

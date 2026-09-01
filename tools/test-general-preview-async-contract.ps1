@@ -29,7 +29,8 @@ $checks = [ordered]@{
         $source -match 'data-source-preview-async-control' -and
         $source -match 'localCourseBannerBuilderIsAsyncActionBusy\(button\)';
     'Shared confirmation modal remains used by selected and all deletion' =
-        $source -match '(?s)function localCourseBannerBuilderDeleteSelectedPreviewLayer.*?localCourseBannerBuilderConfirmAction' -and
+        $source -match '(?s)function localCourseBannerBuilderDeleteSelectedPreviewLayer.*?localCourseBannerBuilderDeleteOwnedSourceLayer' -and
+        $source -match '(?s)function localCourseBannerBuilderDeleteOwnedSourceLayer.*?localCourseBannerBuilderConfirmAction' -and
         $source -match '(?s)function localCourseBannerBuilderDeleteAllLayers.*?localCourseBannerBuilderConfirmAction';
     'A translated preview-save error string is declared' =
         $english -match '\$string\[''unabletosavepreviewchanges''\]';

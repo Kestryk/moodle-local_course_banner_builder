@@ -1209,6 +1209,10 @@
         white-space: normal;
     }
 
+    [data-action="local-course-banner-builder-delete-source-layer"] {
+        cursor: pointer !important;
+    }
+
     .local-course-banner-builder-inherited-layer-action-cell {
         text-align: center;
         vertical-align: middle;
@@ -1227,15 +1231,19 @@
     .local-course-banner-builder-bulk-action-row {
         @include easyedu.admin-form-actions;
 
-        .local-course-banner-builder-bulk-delete-button,
-        .local-course-banner-builder-bulk-save-button {
+        .local-course-banner-builder-bulk-action-button {
             @include easyedu.action-button(small);
 
             box-sizing: border-box;
-            font-family: inherit;
-            font-size: 0.78rem;
-            font-weight: 600;
+            // Moodle themes can load Bootstrap semantic variants after this
+            // plugin. Lock the one shared text metric on the dedicated CCB
+            // class so Save and both Delete actions keep identical computed
+            // typography regardless of btn-primary/btn-danger specificity.
+            font-family: inherit !important;
+            font-size: 0.78rem !important;
+            font-weight: 600 !important;
             height: 2.15rem !important;
+            line-height: 1.2 !important;
             min-height: 2.15rem !important;
             padding: 0.32rem 0.66rem;
             white-space: nowrap;
@@ -1244,6 +1252,14 @@
                 font-size: 0.82rem;
                 width: 0.95rem;
             }
+        }
+
+        .local-course-banner-builder-bulk-delete-button:hover,
+        .local-course-banner-builder-bulk-delete-button:focus-visible,
+        .local-course-banner-builder-bulk-delete-button:active {
+            background: var(--easyedu-primary-soft) !important;
+            border-color: var(--easyedu-control-focus-border) !important;
+            color: var(--easyedu-primary-strong) !important;
         }
     }
 
@@ -1448,7 +1464,11 @@
 }
 
 .modal[id^="local-course-banner-builder-"] {
-    @include easyedu.native-modal-loading(".local-course-banner-builder-layer-modal-loading");
+    @include easyedu.native-modal-loading(
+        ".local-course-banner-builder-layer-modal-loading",
+        var(--easyedu-primary),
+        ".spinner-border"
+    );
 
     .local-course-banner-builder-layer-modal-dialog,
     .local-course-banner-builder-slideshow-modal-dialog {
