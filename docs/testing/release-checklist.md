@@ -112,7 +112,12 @@ Use the fixture set defined in `functional-protocol.md`.
 - [ ] Verify border, overlay, title, and slideshow z-order.
 - [ ] Save, reload, and compare modal, general preview, and final banner.
 - [ ] Export and import settings/assets on disposable sites.
-- [ ] Verify course overview thumbnails and fallback images.
+- [ ] Verify wide Dashboard and My courses thumbnails with CCB content.
+- [ ] Verify the dedicated 1:1 variant in a legacy square coursebox.
+- [ ] Verify a teacher-managed overview image remains untouched.
+- [ ] Verify missing CCB output leaves Moodle's native image/pattern visible.
+- [ ] Verify below-fold cards load near the viewport without eager replacement.
+- [ ] Verify stale generated wide and square files are retracted after a source change.
 - [ ] Check empty, loading, validation-error, and server-error states.
 
 ## 7. Accessibility and guide

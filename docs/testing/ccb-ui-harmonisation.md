@@ -807,9 +807,20 @@ manifest are at
 The existing CCB-owned preview layout keeps its canvas and control rail as
 separate grid areas. The right rail fills its grid column, while the primary
 save/delete action container fills only the remaining canvas row; changing
-between Desktop authoring and Mobile public simulation does not resize the
+between Desktop preview and Mobile preview does not resize the
 filmstrip/visibility siblings or change the desktop action row. Its controls
 use the shared wrapping/icon contract rather than fixed clipping dimensions.
+
+### Source-preview mode labels — EED-CCB-2026-0076
+
+The two segmented-mode captions originate only from
+`sourcepreviewmodedesktop` and `sourcepreviewmodemobile` in the English and
+French Moodle language packs. `admin_manage.php` renders both through
+`get_string()`; the templates and AMD source/build contain no local caption.
+The focused contract decodes both language files as strict UTF-8, checks the
+four exact translations, rejects the former captions from PHP, Mustache and
+AMD assets, and preserves the `desktop` / `mobile` data values. Because the
+change is language-only, no Sass or AMD rebuild is required.
 
 The existing one-test supervised responsive scenario passed the complete
 five-cell matrix on Moodle 5.1: 1600x900, 1024x768 and 390x844 at 100%, plus

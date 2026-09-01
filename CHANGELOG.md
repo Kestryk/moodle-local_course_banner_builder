@@ -4,6 +4,14 @@
 
 ### Changed
 
+- Replaced the source-preview mode captions with the shorter localised labels
+  **Desktop preview** / **Mobile preview** and **Aperçu ordinateur** /
+  **Aperçu mobile**. The mode values, transient state, preview geometry and
+  public output remain unchanged.
+- Closed the source-level `EED-CCB-2026-0047` course-card audit without a
+  product correction: the existing enhancer already retains distinct wide and
+  square output, teacher-image priority, native Moodle fallback, lazy loading,
+  responsive containment and revisioned generated-file cleanup.
 - Extended the accepted source-owned asynchronous layer deletion lifecycle to
   Delete actions in the layer table while retaining their safe link fallback.
 - Applied one final compact typography and Save-style light interaction cascade
@@ -13,6 +21,14 @@
 
 ### Validation
 
+- Added the `EED-CCB-2026-0076` strict UTF-8 EN/FR source-preview label
+  contract. It also rejects the former captions and hard-coded replacements
+  from PHP, Mustache, AMD source and generated AMD.
+- Added a focused course-card contract over the PHP hook/route, manager,
+  `coursecards` AMD source/build and native-card SCSS/generated CSS. No product
+  or generated asset changed for that static closure.
+- No Sass or AMD rebuild was needed because the renderer already consumes the
+  Moodle language strings and the mode behavior did not change.
 - Rebuilt the official Sass and `admin_manage` AMD assets and source map.
 - Passed focused modal/action, asynchronous editor, general-preview and Source
   Preview contracts plus PHP/JavaScript syntax and `git diff --check`.
