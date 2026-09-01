@@ -1264,7 +1264,6 @@
     }
 
     .local-course-banner-builder-compact-save-button,
-    .local-course-banner-builder-parent-source-save,
     .local-course-banner-builder-source-settings-submit,
     .local-course-banner-builder-source-preview-button[data-source-preview-save-control="1"] {
         @include easyedu.save-action-button;
@@ -1400,6 +1399,15 @@
     .modal-footer > button,
     .modal-footer > input[type="submit"] {
         @include easyedu.action-row-button;
+    }
+
+    // The Parent modal is portalled to document.body while it is open, so its
+    // Save action must consume the existing shared primitive from the modal
+    // scope rather than the administration-root scope above. Keep this after
+    // the generic footer geometry so the shared Save states own the final
+    // consumer cascade without introducing another action variant.
+    .local-course-banner-builder-parent-source-save {
+        @include easyedu.save-action-button;
     }
 
     .local-course-banner-builder-modal-side-panel[data-easyedu-motion-owner="runtime"],

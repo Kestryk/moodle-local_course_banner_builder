@@ -4,6 +4,11 @@
 
 ### Changed
 
+- Corrected the portalled Change parent modal so its Save action consumes the
+  existing shared EasyEdu Save primitive after leaving the administration
+  root. Its Close action now uses the canonical centred icon with the existing
+  shared modal-close primitive; Parent search, persistence and dismissal
+  behavior are unchanged.
 - Replaced the source-preview mode captions with the shorter localised labels
   **Desktop preview** / **Mobile preview** and **Aperçu ordinateur** /
   **Aperçu mobile**. The mode values, transient state, preview geometry and
@@ -21,6 +26,9 @@
 
 ### Validation
 
+- Extended the Parent modal contract with final generated-CSS cascade, shared
+  Close geometry, Save hover/focus and narrow-viewport assertions. Sass was
+  rebuilt; runtime and human review remain separate gates.
 - Added the `EED-CCB-2026-0076` strict UTF-8 EN/FR source-preview label
   contract. It also rejects the former captions and hard-coded replacements
   from PHP, Mustache, AMD source and generated AMD.
