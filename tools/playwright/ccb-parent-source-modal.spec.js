@@ -92,6 +92,53 @@ test('Change parent modal keeps the table informative and rejects a descendant',
         cancelButton.evaluate(button => button.getBoundingClientRect().height),
     ]);
     expect(Math.abs(actionHeights[0] - actionHeights[1])).toBeLessThanOrEqual(1);
+    const closeButton = modal.locator('.local-course-banner-builder-modal__close');
+    await expect(closeButton.locator('.fa-times')).toHaveCount(1);
+    const closeGeometry = await closeButton.evaluate(button => {
+        const icon = button.querySelector('.fa-times');
+        const buttonBox = button.getBoundingClientRect();
+        const iconBox = icon.getBoundingClientRect();
+        return {
+            width: buttonBox.width,
+            height: buttonBox.height,
+            iconCenterOffset: Math.max(
+                Math.abs((buttonBox.left + buttonBox.width / 2) - (iconBox.left + iconBox.width / 2)),
+                Math.abs((buttonBox.top + buttonBox.height / 2) - (iconBox.top + iconBox.height / 2))
+            ),
+        };
+    });
+    expect(Math.abs(closeGeometry.width - closeGeometry.height)).toBeLessThanOrEqual(1);
+    expect(closeGeometry.iconCenterOffset).toBeLessThanOrEqual(1);
+    await saveButton.hover();
+    const saveHover = await saveButton.evaluate(button => {
+        const modalRoot = button.closest('.modal');
+        const reference = document.createElement('span');
+        reference.style.cssText = [
+            'background-color: var(--easyedu-primary-soft)',
+            'border: 1px solid var(--easyedu-control-focus-border)',
+            'color: var(--easyedu-primary-strong)',
+            'position: absolute',
+            'visibility: hidden',
+        ].join(';');
+        modalRoot.appendChild(reference);
+        const actualStyle = window.getComputedStyle(button);
+        const referenceStyle = window.getComputedStyle(reference);
+        const result = {
+            backgroundColor: actualStyle.backgroundColor,
+            borderColor: actualStyle.borderTopColor,
+            color: actualStyle.color,
+            referenceBackground: referenceStyle.backgroundColor,
+            referenceBorder: referenceStyle.borderTopColor,
+            referenceColor: referenceStyle.color,
+        };
+        reference.remove();
+        return result;
+    });
+    expect(saveHover.backgroundColor).toBe(saveHover.referenceBackground);
+    expect(saveHover.borderColor).toBe(saveHover.referenceBorder);
+    expect(saveHover.color).toBe(saveHover.referenceColor);
+    await saveButton.focus();
+    await expect(saveButton).toBeFocused();
     await expect(modal.locator('[data-source-option][data-value="' + environment.validKey + '"]')).toHaveCount(1);
     await expect(modal.locator('[data-source-option][data-value="' + environment.descendantKey + '"]')).toHaveCount(0);
     await page.screenshot({
@@ -199,8 +246,26 @@ test('Change parent modal keeps the table informative and rejects a descendant',
     );
     await expect(selectedTrigger).toBeVisible();
     await expect(selectedTrigger.locator('.fa-pen')).toHaveCount(1);
+    await page.setViewportSize({width: 390, height: 844});
     await selectedTrigger.click();
     await expect(modal).toBeVisible();
+    const narrowGeometry = await modal.evaluate(node => {
+        const modalBox = node.getBoundingClientRect();
+        const closeBox = node.querySelector('.local-course-banner-builder-modal__close').getBoundingClientRect();
+        const saveBox = node.querySelector('[data-parent-source-change-submit="1"]').getBoundingClientRect();
+        return {
+            modalLeft: modalBox.left,
+            modalRight: modalBox.right,
+            closeRight: closeBox.right,
+            saveBottom: saveBox.bottom,
+            viewportWidth: window.innerWidth,
+            viewportHeight: window.innerHeight,
+        };
+    });
+    expect(narrowGeometry.modalLeft).toBeGreaterThanOrEqual(0);
+    expect(narrowGeometry.modalRight).toBeLessThanOrEqual(narrowGeometry.viewportWidth);
+    expect(narrowGeometry.closeRight).toBeLessThanOrEqual(narrowGeometry.viewportWidth);
+    expect(narrowGeometry.saveBottom).toBeLessThanOrEqual(narrowGeometry.viewportHeight);
     await page.screenshot({
         path: artifact(environment, 'selected-source-parent-modal-open.png'),
         fullPage: true,
