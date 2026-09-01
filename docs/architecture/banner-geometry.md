@@ -169,12 +169,17 @@ separate follow-up and is not claimed by this sizing change.
 ## Batch 2E-B administration mobile simulation
 
 The selected source visual editor now has a local, segmented preview control:
-**Desktop authoring** (the default) and **Mobile public simulation**. The
+**Desktop preview** (the default) and **Mobile preview**. The
 control belongs only to `[data-source-visual-editor="1"]`; it does not write a
 Moodle setting, alter source/layer data, touch crop state, or change public
 banner output. JavaScript retains the selected mode only in an in-memory map
 for the current source/root lifecycle. A normal page reload starts in desktop
 mode.
+
+The captions are Moodle language strings rather than mode identifiers. English
+uses **Desktop preview** and **Mobile preview**; French uses **Aperçu
+ordinateur** and **Aperçu mobile**. Translating these captions does not change
+the established `desktop` / `mobile` data values or introduce persisted state.
 
 ### EED-CCB-2026-0049 contained large authoring preview
 

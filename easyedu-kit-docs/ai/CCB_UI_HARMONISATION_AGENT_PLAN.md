@@ -9,8 +9,8 @@ qu'un motif soit confirmé comme réutilisable dans le Kit.
 
 ### Lot A — aperçu général et actions latérales
 
-- Conserver une hauteur de bouton stable entre Desktop authoring et Mobile
-  public simulation ; le changement de mode ne doit pas réduire les boutons.
+- Conserver une hauteur de bouton stable entre Desktop preview et Mobile
+  preview ; le changement de mode ne doit pas réduire les boutons.
 - Faire occuper au panneau d'actions la largeur réellement disponible entre le
   cadre d'aperçu et le bord droit, sans colonne collée ni débordement.
 - Regrouper canvas, mode, filmstrip, visibilité et actions dans des régions
@@ -394,7 +394,7 @@ l’éditeur de taille visible.
   d'ajouter des transitions. Chaque mouvement doit être décoratif, court et
   ne jamais être nécessaire pour comprendre une action.
 - Harmoniser les transitions réellement utiles, en priorité le passage Desktop
-  authoring / Mobile public simulation, la disclosure et les changements d'état
+  preview / Mobile preview, la disclosure et les changements d'état
   de sélection. Respecter `prefers-reduced-motion`, forced colors, le focus et
   les opérations de drag.
 - Ajouter dans les réglages d'administration du plugin une préférence CCB
@@ -415,8 +415,8 @@ moment de leur ouverture.
 #### P2 — preview, actions et boutons (Lots A/B)
 
 - Utiliser pour les boutons latéraux du preview la hauteur compacte jugée
-  acceptable en Mobile authoring, puis la garder identique en Desktop
-  authoring et Mobile public simulation. Le rail d’actions doit remplir toute
+  acceptable en Mobile preview, puis la garder identique en Desktop preview et
+  Mobile preview. Le rail d’actions doit remplir toute
   la largeur disponible entre cadre preview et bord droit, au lieu d’être
   collé au bord.
 - Uniformiser Save, Delete, Delete selected layer, Delete all layers et Save
