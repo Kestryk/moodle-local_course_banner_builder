@@ -4,6 +4,14 @@
 
 ### Changed
 
+- Started `EED-CCB-2026-0049` V1 with a dedicated large authoring shell at
+  desktop widths. The shell portals the one existing live visual-editor node
+  and restores it through an exact placeholder on every close path; it no
+  longer creates a readonly clone or duplicates form ids and listeners.
+- Below 1024 px, the large-editor launcher shows a localised explanation and
+  leaves the standard editor in place. No payload, persistence route, public
+  renderer or server write was added. The future V2 target also includes a
+  large-screen general-preview mode.
 - Corrected the portalled Change parent modal so its Save action consumes the
   existing shared EasyEdu Save primitive after leaving the administration
   root. Its Close action now uses the canonical centred icon with the existing
@@ -26,6 +34,12 @@
 
 ### Validation
 
+- Added a focused live-mount contract covering the no-clone rule, exact DOM
+  restoration, 1024 px gate, localised labels and generated AMD parity. The
+  previous Wave 6 readonly-clone assertions now protect the live shell.
+- Rebuilt the official Sass and `admin_manage` AMD assets and source map for
+  the first large-authoring slice. Zoom/pan, edge snapping, the transactional
+  snapshot and integrated Border/Overlay properties remain separate slices.
 - Extended the Parent modal contract with final generated-CSS cascade, shared
   Close geometry, Save hover/focus and narrow-viewport assertions. Sass was
   rebuilt; runtime and human review remain separate gates.

@@ -29,6 +29,7 @@ define([
 var localCourseBannerBuilderSourcePreviewModes = {};
 var localCourseBannerBuilderSourcePreviewOrientationMediaQuery = null;
 var localCourseBannerBuilderLayerDragState = null;
+var localCourseBannerBuilderLargeSourcePreviewMount = null;
 
 var localCourseBannerBuilderOnReady = function (callback) {
     if (document.readyState === 'loading') {
@@ -1628,6 +1629,11 @@ function localCourseBannerBuilderEnsureSourceChainPreviewModal() {
  * @returns {Object} Modal body and footer.
  */
 function localCourseBannerBuilderConfigureSourceChainPreviewModal(modal, button) {
+    localCourseBannerBuilderRestoreLargeSourcePreviewMount(modal);
+    modal.classList.remove(
+        'local-course-banner-builder-source-chain-preview-modal--authoring',
+        'local-course-banner-builder-source-chain-preview-modal--authoring-unavailable'
+    );
     var body = modal.querySelector('[data-source-chain-preview-modal-body="1"]');
     var footer = modal.querySelector('[data-source-chain-preview-modal-footer="1"]');
     var title = modal.querySelector('.local-course-banner-builder-source-chain-preview-modal-title');
@@ -1662,55 +1668,54 @@ function localCourseBannerBuilderConfigureSourceChainPreviewModal(modal, button)
 }
 
 /**
- * Clone the live authoring renderer into an isolated readonly modal surface.
+ * Restore the one live visual editor to its exact server-rendered position.
  *
- * Runtime binding flags are intentionally removed because DOM event listeners
- * are not copied by cloneNode(). The modal keeps only its local responsive mode
- * selector; save/delete/editor controls and nested preview launchers are omitted.
+ * Moving the existing node keeps its form identity, event listeners, history
+ * and draft payload. Restoring through a placeholder prevents a second editor
+ * or a best-effort insertion point from being introduced.
  *
- * @param {HTMLElement} sourcePanel Live source visual editor.
- * @returns {HTMLElement} Readonly preview clone.
+ * @param {HTMLElement} modal Large authoring modal.
+ * @returns {void}
  */
-function localCourseBannerBuilderCloneReadonlySourcePreview(sourcePanel) {
-    var panel = sourcePanel.cloneNode(true);
-    Array.prototype.slice.call(panel.querySelectorAll(
-        '.local-course-banner-builder-source-preview-controls,' +
-        '.local-course-banner-builder-source-preview-primary-actions,' +
-        '.local-course-banner-builder-source-preview-bottom-row,' +
-        '.local-course-banner-builder-source-preview-filmstrip,' +
-        '[data-action="local-course-banner-builder-show-large-source-preview"],' +
-        'form'
-    )).forEach(function(node) {
-        node.remove();
-    });
-    panel.removeAttribute('data-source-preview-bound');
-    panel.removeAttribute('data-source-preview-orientation-bound');
-    panel.removeAttribute('data-easyedu-motion-initialised');
-    Array.prototype.slice.call(panel.querySelectorAll('[data-source-preview-mode-bound]')).forEach(function(button) {
-        button.removeAttribute('data-source-preview-mode-bound');
-    });
-    var modeHelp = panel.querySelector('.local-course-banner-builder-source-preview-mode-help[id]');
-    if (modeHelp) {
-        var previousId = modeHelp.id;
-        var modalId = previousId + '-large-' + String(Date.now());
-        modeHelp.id = modalId;
-        Array.prototype.slice.call(panel.querySelectorAll('[aria-describedby]')).forEach(function(control) {
-            if (control.getAttribute('aria-describedby') === previousId) {
-                control.setAttribute('aria-describedby', modalId);
-            }
-        });
+function localCourseBannerBuilderRestoreLargeSourcePreviewMount(modal) {
+    var mount = localCourseBannerBuilderLargeSourcePreviewMount;
+    if (!mount || (modal && mount.modal !== modal)) {
+        return;
     }
-    panel.setAttribute('data-source-preview-readonly', '1');
-    panel.classList.add('local-course-banner-builder-source-preview-readonly');
-    return panel;
+    mount.panel.removeAttribute('data-source-preview-large-workspace');
+    if (mount.placeholder.parentNode) {
+        mount.placeholder.parentNode.replaceChild(mount.panel, mount.placeholder);
+    } else if (mount.parent && mount.parent.isConnected) {
+        mount.parent.appendChild(mount.panel);
+    }
+    localCourseBannerBuilderLargeSourcePreviewMount = null;
 }
 
 /**
- * Show the current authoring preview in the contained readonly preview modal.
+ * Focus the large workspace heading after every supported modal show path.
  *
- * The clone is detached from every form and from the source payload. Changing
- * Desktop/Mobile inside this modal therefore cannot persist or affect the live
- * authoring preview.
+ * @param {HTMLElement} modal Large authoring modal.
+ * @returns {void}
+ */
+function localCourseBannerBuilderFocusLargeSourcePreview(modal) {
+    var title = modal ? modal.querySelector('.local-course-banner-builder-source-chain-preview-modal-title') : null;
+    if (!title) {
+        return;
+    }
+    title.setAttribute('tabindex', '-1');
+    window.setTimeout(function() {
+        if (modal.classList.contains('show') || modal.getAttribute('aria-modal') === 'true') {
+            title.focus({preventScroll: true});
+        }
+    }, 0);
+}
+
+/**
+ * Show the current live visual editor in the dedicated large workspace shell.
+ *
+ * This first slice owns only the modal shell and one-node mount lifecycle. The
+ * current document model, controls, history and save payload remain unchanged;
+ * no server write occurs unless the existing Save control is activated.
  *
  * @param {HTMLElement} button Preview trigger inside the live source editor.
  * @returns {void}
@@ -1734,12 +1739,33 @@ function localCourseBannerBuilderShowLargeSourcePreview(button) {
     if (shell.footer) {
         shell.footer.innerHTML = '';
     }
-    var panel = localCourseBannerBuilderCloneReadonlySourcePreview(sourcePanel);
-    body.appendChild(panel);
-    localCourseBannerBuilderClearSourcePreviewSelection(panel);
+    modal.classList.add('local-course-banner-builder-source-chain-preview-modal--authoring');
+    if (document.documentElement.clientWidth < 1024) {
+        modal.classList.add('local-course-banner-builder-source-chain-preview-modal--authoring-unavailable');
+        var unavailable = document.createElement('p');
+        unavailable.className = 'local-course-banner-builder-source-chain-preview-feedback mb-0';
+        unavailable.textContent = localCourseBannerBuilderGetJsString(
+            'largeeditorrequiresdesktop',
+            'The large editor is available from 1024 px. Continue in the standard editor at this width.'
+        );
+        body.appendChild(unavailable);
+        localCourseBannerBuilderShowModal(modal);
+        localCourseBannerBuilderFocusLargeSourcePreview(modal);
+        return;
+    }
+    var placeholder = document.createComment('local-course-banner-builder-large-source-preview-origin');
+    var parent = sourcePanel.parentNode;
+    parent.insertBefore(placeholder, sourcePanel);
+    localCourseBannerBuilderLargeSourcePreviewMount = {
+        modal: modal,
+        panel: sourcePanel,
+        parent: parent,
+        placeholder: placeholder
+    };
+    sourcePanel.setAttribute('data-source-preview-large-workspace', '1');
+    body.appendChild(sourcePanel);
     localCourseBannerBuilderShowModal(modal);
-    localCourseBannerBuilderInitSourceVisualEditor(body);
-    localCourseBannerBuilderInitPopovers(body);
+    localCourseBannerBuilderFocusLargeSourcePreview(modal);
 }
 
 /**
@@ -1760,6 +1786,11 @@ function localCourseBannerBuilderFinishSourceChainPreviewClose(modal) {
     modal.dataset.sourceChainPreviewFocusReturned = '1';
     modal.dataset.sourceChainPreviewRequest = '';
     modal.classList.remove('is-loading', 'is-easyedu-animating');
+    localCourseBannerBuilderRestoreLargeSourcePreviewMount(modal);
+    modal.classList.remove(
+        'local-course-banner-builder-source-chain-preview-modal--authoring',
+        'local-course-banner-builder-source-chain-preview-modal--authoring-unavailable'
+    );
     var body = modal.querySelector('[data-source-chain-preview-modal-body="1"]');
     if (body) {
         body.classList.remove('is-loading');

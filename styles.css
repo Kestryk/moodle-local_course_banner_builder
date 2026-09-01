@@ -5201,15 +5201,15 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
   margin-right: 0;
 }
 
-.local-course-banner-builder-source-chain-preview-modal .local-course-banner-builder-source-preview-layout {
+.local-course-banner-builder-source-chain-preview-modal:not(.local-course-banner-builder-source-chain-preview-modal--authoring) .local-course-banner-builder-source-preview-layout {
   display: block;
 }
 
-.local-course-banner-builder-source-chain-preview-modal .local-course-banner-builder-source-preview-canvas {
+.local-course-banner-builder-source-chain-preview-modal:not(.local-course-banner-builder-source-chain-preview-modal--authoring) .local-course-banner-builder-source-preview-canvas {
   width: 100%;
 }
 
-.local-course-banner-builder-source-chain-preview-modal .local-course-banner-builder-source-preview-surface .local-course-banner-builder-border-preview-frame {
+.local-course-banner-builder-source-chain-preview-modal:not(.local-course-banner-builder-source-chain-preview-modal--authoring) .local-course-banner-builder-source-preview-surface .local-course-banner-builder-border-preview-frame {
   width: 100%;
   max-width: none;
 }
@@ -5436,14 +5436,14 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 
 .local-course-banner-builder-source-preview-readonly .local-course-banner-builder-source-preview-layer,
 .local-course-banner-builder-source-preview-readonly .local-course-banner-builder-source-preview-layer--selected,
-.local-course-banner-builder-source-chain-preview-modal [data-source-preview-frame="1"] .local-course-banner-builder-source-preview-layer,
-.local-course-banner-builder-source-chain-preview-modal [data-source-preview-frame="1"] .local-course-banner-builder-source-preview-layer--selected {
+.local-course-banner-builder-source-chain-preview-modal:not(.local-course-banner-builder-source-chain-preview-modal--authoring) [data-source-preview-frame="1"] .local-course-banner-builder-source-preview-layer,
+.local-course-banner-builder-source-chain-preview-modal:not(.local-course-banner-builder-source-chain-preview-modal--authoring) [data-source-preview-frame="1"] .local-course-banner-builder-source-preview-layer--selected {
   cursor: default;
   pointer-events: none;
 }
 
 .local-course-banner-builder-source-preview-readonly .local-course-banner-builder-preview-resize-handle,
-.local-course-banner-builder-source-chain-preview-modal [data-source-preview-frame="1"] .local-course-banner-builder-preview-resize-handle {
+.local-course-banner-builder-source-chain-preview-modal:not(.local-course-banner-builder-source-chain-preview-modal--authoring) [data-source-preview-frame="1"] .local-course-banner-builder-preview-resize-handle {
   display: none !important;
 }
 
@@ -5492,7 +5492,7 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
 }
 
 .local-course-banner-builder-source-preview-readonly .local-course-banner-builder-source-preview-layer--selected::after,
-.local-course-banner-builder-source-chain-preview-modal [data-source-preview-frame="1"] .local-course-banner-builder-source-preview-layer--selected::after {
+.local-course-banner-builder-source-chain-preview-modal:not(.local-course-banner-builder-source-chain-preview-modal--authoring) [data-source-preview-frame="1"] .local-course-banner-builder-source-preview-layer--selected::after {
   display: none;
 }
 
@@ -18293,6 +18293,37 @@ span[data-flexitour=container].orphan .modal-dialog {
 .local-course-banner-builder-source-chain-preview-modal .local-course-banner-builder-source-chain-preview-feedback--error {
   border-color: color-mix(in srgb, var(--easyedu-danger) 28%, var(--easyedu-empty-border) 72%);
   color: var(--easyedu-danger);
+}
+.local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .modal-dialog {
+  width: calc(100vw - 2rem);
+  max-width: 112rem;
+  margin: 1rem auto;
+}
+.local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-source-chain-preview-modal-content {
+  height: calc(100vh - 2rem);
+  max-height: calc(100vh - 2rem);
+}
+.local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-source-chain-preview-modal-body {
+  display: flex;
+  min-height: 0;
+  padding: clamp(0.65rem, 1vw, 1rem);
+  overflow: auto;
+}
+.local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-source-preview-panel[data-source-preview-large-workspace="1"] {
+  flex: 1 0 auto;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+.local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring [data-source-preview-large-workspace="1"] [data-action=local-course-banner-builder-show-large-source-preview] {
+  display: none;
+}
+.local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring-unavailable .local-course-banner-builder-source-chain-preview-modal-content {
+  height: auto;
+  min-height: 0;
+}
+.local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring-unavailable .local-course-banner-builder-source-chain-preview-modal-body {
+  display: block;
 }
 
 [data-action=local-course-banner-builder-show-source-chain-preview].is-focus-returned,
