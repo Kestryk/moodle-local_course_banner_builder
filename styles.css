@@ -18877,6 +18877,7 @@ span[data-flexitour=container].orphan .modal-dialog {
 }
 
 .local-course-banner-builder-layer-details-accordion-content {
+  box-sizing: border-box;
   display: grid;
   gap: 0.75rem;
   padding: 0;

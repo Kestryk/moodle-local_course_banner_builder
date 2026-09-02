@@ -4,6 +4,8 @@
 
 ### Changed
 
+- Restored the shared border-box contract on the animated Layer infos content
+  so its zero-height close state remains free of a final padding jump.
 - Continued `EED-CCB-2026-0049` with the large editor's view-only viewport:
   it opens in Fit, offers bounded 25–400% zoom and a direct 100% control, and
   exposes native overflow scrolling with Space-drag panning. These transient
