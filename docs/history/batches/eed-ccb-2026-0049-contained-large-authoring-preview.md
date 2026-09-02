@@ -27,20 +27,28 @@ future preview role does not weaken the V1 single-editor rule.
   explanation while the normal editor remains untouched.
 - Keeps the existing Save control as the only possible server write. Slice 1
   intentionally adds no automatic write and no new payload.
+- Adds the Slice 2 transient view controller only inside the large authoring
+  modal: Fit on open, 25–400% zoom, a direct 100% control, native overflow
+  scrollbars and Space-drag panning.
+- Keeps zoom and pan outside the source payload. Closing removes the viewport
+  listeners/observer and restores the untransformed editor through the Slice 1
+  placeholder.
+- Leaves the classic general preview and the standard editor layout untouched.
 
 ## Remaining implementation slices
 
-1. View-only zoom/pan/Fit controller, including canonical pointer-delta proof.
-2. Workspace composition for existing Crop/history/action rail/filmstrip.
-3. Shared Border/Overlay property entry points without copied form state.
-4. Opening snapshot plus explicit Save/Cancel restoration transaction.
-5. Snap expansion to banner centre/edges and the complete accessibility,
+1. Workspace composition for existing Crop/history/action rail/filmstrip.
+2. Shared Border/Overlay property entry points without copied form state.
+3. Opening snapshot plus explicit Save/Cancel restoration transaction.
+4. Snap expansion to banner centre/edges and the complete accessibility,
    reduced-motion, persistence and public-clipping matrix.
 
 ## Validation
 
 - PHP and JavaScript syntax checks.
 - Focused Node and PowerShell source contracts.
+- A dedicated Slice 2 contract for zoom bounds, Fit/100%, pan precedence,
+  cleanup, localisation, generated assets and classic-preview isolation.
 - Sass/source and generated-asset consistency.
 - Browser, runtime and managed-preview checks intentionally deferred to the
   cumulative preview owner.

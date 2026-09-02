@@ -30,6 +30,9 @@ var localCourseBannerBuilderSourcePreviewModes = {};
 var localCourseBannerBuilderSourcePreviewOrientationMediaQuery = null;
 var localCourseBannerBuilderLayerDragState = null;
 var localCourseBannerBuilderLargeSourcePreviewMount = null;
+var localCourseBannerBuilderLargeWorkspaceMinZoom = 25;
+var localCourseBannerBuilderLargeWorkspaceMaxZoom = 400;
+var localCourseBannerBuilderLargeWorkspaceZoomStep = 25;
 
 var localCourseBannerBuilderOnReady = function (callback) {
     if (document.readyState === 'loading') {
@@ -1081,6 +1084,9 @@ document.addEventListener('submit', function (e) {
 }, true);
 
 document.addEventListener('pointerdown', function (e) {
+    if (localCourseBannerBuilderStartLargeWorkspacePan(e)) {
+        return;
+    }
     if (localCourseBannerBuilderStartCropInteraction(e)) {
         return;
     }
@@ -1135,6 +1141,9 @@ document.addEventListener('pointerdown', function (e) {
 });
 
 document.addEventListener('pointerdown', function (e) {
+    if (localCourseBannerBuilderStartLargeWorkspacePan(e)) {
+        return;
+    }
     localCourseBannerBuilderStartCropInteraction(e);
 }, true);
 
@@ -1682,13 +1691,417 @@ function localCourseBannerBuilderRestoreLargeSourcePreviewMount(modal) {
     if (!mount || (modal && mount.modal !== modal)) {
         return;
     }
+    if (mount.cleanupViewport) {
+        mount.cleanupViewport();
+    }
     mount.panel.removeAttribute('data-source-preview-large-workspace');
+    mount.panel.removeAttribute('data-large-workspace-zoom');
     if (mount.placeholder.parentNode) {
         mount.placeholder.parentNode.replaceChild(mount.panel, mount.placeholder);
     } else if (mount.parent && mount.parent.isConnected) {
         mount.parent.appendChild(mount.panel);
     }
+    if (mount.workspace && mount.workspace.parentNode) {
+        mount.workspace.remove();
+    }
     localCourseBannerBuilderLargeSourcePreviewMount = null;
+}
+
+/**
+ * Build one accessible button for the large-workspace view controller.
+ *
+ * @param {string} action Action suffix.
+ * @param {string} label Visible and accessible label.
+ * @param {string} icon Font Awesome icon.
+ * @returns {HTMLButtonElement} View-controller button.
+ */
+function localCourseBannerBuilderCreateLargeWorkspaceButton(action, label, icon) {
+    var button = document.createElement('button');
+    var glyph = document.createElement('i');
+    var text = document.createElement('span');
+    button.type = 'button';
+    button.className = 'btn btn-outline-secondary local-course-banner-builder-large-workspace-control';
+    button.setAttribute('data-large-workspace-action', action);
+    button.setAttribute('aria-label', label);
+    glyph.className = 'icon fa ' + icon + ' fa-fw';
+    glyph.setAttribute('aria-hidden', 'true');
+    text.textContent = label;
+    button.appendChild(glyph);
+    button.appendChild(text);
+    return button;
+}
+
+/**
+ * Keep the scaled stage's scroll geometry aligned with the live editor.
+ *
+ * @param {Object} mount Large-workspace mount state.
+ * @returns {void}
+ */
+function localCourseBannerBuilderSyncLargeWorkspaceStage(mount) {
+    if (!mount || !mount.stage || !mount.panel) {
+        return;
+    }
+    var scale = mount.zoom / 100;
+    var naturalHeight = Math.max(1, mount.panel.offsetHeight);
+    mount.stage.style.width = Math.ceil(mount.baseWidth * scale) + 'px';
+    mount.stage.style.height = Math.ceil(naturalHeight * scale) + 'px';
+}
+
+/**
+ * Apply a bounded view-only zoom while preserving the current viewport centre.
+ *
+ * @param {Object} mount Large-workspace mount state.
+ * @param {number} requestedZoom Requested percentage.
+ * @param {boolean} isFit Whether this value belongs to automatic Fit mode.
+ * @returns {void}
+ */
+function localCourseBannerBuilderSetLargeWorkspaceZoom(mount, requestedZoom, isFit) {
+    if (!mount || !mount.viewport || !mount.workspace) {
+        return;
+    }
+    var previousZoom = mount.zoom || 100;
+    var zoom = Math.max(
+        localCourseBannerBuilderLargeWorkspaceMinZoom,
+        Math.min(localCourseBannerBuilderLargeWorkspaceMaxZoom, Math.round(requestedZoom))
+    );
+    var viewport = mount.viewport;
+    var centreX = viewport.scrollLeft + (viewport.clientWidth / 2);
+    var centreY = viewport.scrollTop + (viewport.clientHeight / 2);
+    var ratio = zoom / previousZoom;
+    mount.zoom = zoom;
+    mount.isFit = !!isFit;
+    mount.workspace.style.setProperty('--local-course-banner-builder-large-workspace-zoom', String(zoom / 100));
+    mount.panel.setAttribute('data-large-workspace-zoom', String(zoom));
+    localCourseBannerBuilderSyncLargeWorkspaceStage(mount);
+    if (mount.range) {
+        mount.range.value = String(zoom);
+        mount.range.setAttribute('aria-valuetext', String(zoom) + '%');
+    }
+    if (mount.output) {
+        mount.output.value = String(zoom) + '%';
+        mount.output.textContent = String(zoom) + '%';
+    }
+    if (mount.fitButton) {
+        mount.fitButton.classList.toggle('is-active', mount.isFit);
+        mount.fitButton.setAttribute('aria-pressed', mount.isFit ? 'true' : 'false');
+    }
+    if (Number.isFinite(ratio) && previousZoom !== zoom) {
+        viewport.scrollLeft = Math.max(0, (centreX * ratio) - (viewport.clientWidth / 2));
+        viewport.scrollTop = Math.max(0, (centreY * ratio) - (viewport.clientHeight / 2));
+    }
+}
+
+/**
+ * Fit the complete live editor inside the available large viewport.
+ *
+ * @param {Object} mount Large-workspace mount state.
+ * @returns {void}
+ */
+function localCourseBannerBuilderFitLargeWorkspace(mount) {
+    if (!mount || !mount.viewport || !mount.panel) {
+        return;
+    }
+    var availableWidth = Math.max(1, mount.viewport.clientWidth - 32);
+    var availableHeight = Math.max(1, mount.viewport.clientHeight - 32);
+    var naturalHeight = Math.max(1, mount.panel.offsetHeight);
+    var fitZoom = Math.min(availableWidth / mount.baseWidth, availableHeight / naturalHeight) * 100;
+    localCourseBannerBuilderSetLargeWorkspaceZoom(mount, fitZoom, true);
+    mount.viewport.scrollLeft = 0;
+    mount.viewport.scrollTop = 0;
+}
+
+/**
+ * End a Space-drag pan without affecting the document's layer geometry.
+ *
+ * @param {Object} mount Large-workspace mount state.
+ * @param {PointerEvent|null} event Pointer completion event.
+ * @returns {void}
+ */
+function localCourseBannerBuilderStopLargeWorkspacePan(mount, event) {
+    if (!mount || !mount.pan) {
+        return;
+    }
+    if (event && mount.viewport.releasePointerCapture) {
+        try {
+            mount.viewport.releasePointerCapture(event.pointerId);
+        } catch (error) {
+            // Pointer capture may already have been released by the browser.
+        }
+    }
+    if (mount.pan.moved) {
+        mount.suppressClick = true;
+        window.setTimeout(function() {
+            if (mount) {
+                mount.suppressClick = false;
+            }
+        }, 0);
+    }
+    mount.pan = null;
+    mount.viewport.classList.remove('is-panning');
+}
+
+/**
+ * Start viewport panning before Crop or layer pointer handlers see the event.
+ *
+ * @param {PointerEvent} event Pointer start event.
+ * @returns {boolean} Whether the large viewport owns this pointer sequence.
+ */
+function localCourseBannerBuilderStartLargeWorkspacePan(event) {
+    var mount = localCourseBannerBuilderLargeSourcePreviewMount;
+    if (!mount || !mount.spacePressed || event.button !== 0 || !mount.viewport.contains(event.target)) {
+        return false;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    if (typeof event.stopImmediatePropagation === 'function') {
+        event.stopImmediatePropagation();
+    }
+    mount.pan = {
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        startScrollLeft: mount.viewport.scrollLeft,
+        startScrollTop: mount.viewport.scrollTop,
+        moved: false
+    };
+    mount.viewport.classList.add('is-panning');
+    if (mount.viewport.setPointerCapture) {
+        try {
+            mount.viewport.setPointerCapture(event.pointerId);
+        } catch (error) {
+            // Document listeners keep panning available without capture.
+        }
+    }
+    return true;
+}
+
+/**
+ * Bind the large workspace's view-only zoom and pan controller.
+ *
+ * @param {Object} mount Large-workspace mount state.
+ * @returns {void}
+ */
+function localCourseBannerBuilderBindLargeWorkspaceViewport(mount) {
+    var interactiveSelector = 'button, input, select, textarea, a, [contenteditable="true"], ' +
+        '[data-source-preview-layer="1"]';
+    var onToolbarClick = function(event) {
+        var button = event.target.closest('[data-large-workspace-action]');
+        if (!button) {
+            return;
+        }
+        event.preventDefault();
+        var action = button.getAttribute('data-large-workspace-action');
+        if (action === 'fit') {
+            localCourseBannerBuilderFitLargeWorkspace(mount);
+        } else if (action === 'actual') {
+            localCourseBannerBuilderSetLargeWorkspaceZoom(mount, 100, false);
+        } else if (action === 'out') {
+            localCourseBannerBuilderSetLargeWorkspaceZoom(
+                mount,
+                mount.zoom - localCourseBannerBuilderLargeWorkspaceZoomStep,
+                false
+            );
+        } else if (action === 'in') {
+            localCourseBannerBuilderSetLargeWorkspaceZoom(
+                mount,
+                mount.zoom + localCourseBannerBuilderLargeWorkspaceZoomStep,
+                false
+            );
+        }
+    };
+    var onRangeInput = function() {
+        localCourseBannerBuilderSetLargeWorkspaceZoom(mount, Number(mount.range.value), false);
+    };
+    var onKeyDown = function(event) {
+        if ((event.code !== 'Space' && event.key !== ' ') || event.repeat || event.ctrlKey || event.altKey || event.metaKey) {
+            return;
+        }
+        if (!mount.modal.contains(event.target) || (event.target.closest && event.target.closest(interactiveSelector))) {
+            return;
+        }
+        mount.spacePressed = true;
+        mount.viewport.classList.add('is-pan-ready');
+        event.preventDefault();
+    };
+    var onKeyUp = function(event) {
+        if (event.code !== 'Space' && event.key !== ' ') {
+            return;
+        }
+        mount.spacePressed = false;
+        mount.viewport.classList.remove('is-pan-ready');
+    };
+    var onPointerMove = function(event) {
+        if (!mount.pan || mount.pan.pointerId !== event.pointerId) {
+            return;
+        }
+        event.preventDefault();
+        var deltaX = event.clientX - mount.pan.startX;
+        var deltaY = event.clientY - mount.pan.startY;
+        mount.pan.moved = mount.pan.moved || Math.abs(deltaX) >= 2 || Math.abs(deltaY) >= 2;
+        mount.viewport.scrollLeft = mount.pan.startScrollLeft - deltaX;
+        mount.viewport.scrollTop = mount.pan.startScrollTop - deltaY;
+    };
+    var onPointerEnd = function(event) {
+        if (!mount.pan || mount.pan.pointerId !== event.pointerId) {
+            return;
+        }
+        localCourseBannerBuilderStopLargeWorkspacePan(mount, event);
+    };
+    var onClick = function(event) {
+        if (!mount.suppressClick) {
+            return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        if (typeof event.stopImmediatePropagation === 'function') {
+            event.stopImmediatePropagation();
+        }
+        mount.suppressClick = false;
+    };
+    var onResize = function() {
+        if (mount.resizeFrame) {
+            window.cancelAnimationFrame(mount.resizeFrame);
+        }
+        mount.resizeFrame = window.requestAnimationFrame(function() {
+            mount.resizeFrame = null;
+            if (mount.isFit) {
+                localCourseBannerBuilderFitLargeWorkspace(mount);
+            } else {
+                localCourseBannerBuilderSyncLargeWorkspaceStage(mount);
+            }
+        });
+    };
+    var onBlur = function() {
+        mount.spacePressed = false;
+        mount.viewport.classList.remove('is-pan-ready');
+        localCourseBannerBuilderStopLargeWorkspacePan(mount, null);
+    };
+    mount.toolbar.addEventListener('click', onToolbarClick);
+    mount.range.addEventListener('input', onRangeInput);
+    document.addEventListener('keydown', onKeyDown, true);
+    document.addEventListener('keyup', onKeyUp, true);
+    document.addEventListener('pointermove', onPointerMove, true);
+    document.addEventListener('pointerup', onPointerEnd, true);
+    document.addEventListener('pointercancel', onPointerEnd, true);
+    mount.viewport.addEventListener('click', onClick, true);
+    window.addEventListener('resize', onResize);
+    window.addEventListener('blur', onBlur);
+    if (typeof window.ResizeObserver === 'function') {
+        mount.resizeObserver = new window.ResizeObserver(onResize);
+        mount.resizeObserver.observe(mount.panel);
+    }
+    mount.cleanupViewport = function() {
+        mount.toolbar.removeEventListener('click', onToolbarClick);
+        mount.range.removeEventListener('input', onRangeInput);
+        document.removeEventListener('keydown', onKeyDown, true);
+        document.removeEventListener('keyup', onKeyUp, true);
+        document.removeEventListener('pointermove', onPointerMove, true);
+        document.removeEventListener('pointerup', onPointerEnd, true);
+        document.removeEventListener('pointercancel', onPointerEnd, true);
+        mount.viewport.removeEventListener('click', onClick, true);
+        window.removeEventListener('resize', onResize);
+        window.removeEventListener('blur', onBlur);
+        if (mount.resizeObserver) {
+            mount.resizeObserver.disconnect();
+        }
+        if (mount.resizeFrame) {
+            window.cancelAnimationFrame(mount.resizeFrame);
+        }
+        localCourseBannerBuilderStopLargeWorkspacePan(mount, null);
+        mount.cleanupViewport = null;
+    };
+}
+
+/**
+ * Create the transient viewport shell around the one live authoring editor.
+ *
+ * @param {HTMLElement} modal Large authoring modal.
+ * @param {HTMLElement} panel Live visual editor.
+ * @param {number} baseWidth Editor width before the portal move.
+ * @returns {Object} Viewport elements and state.
+ */
+function localCourseBannerBuilderCreateLargeWorkspaceViewport(modal, panel, baseWidth) {
+    var workspace = document.createElement('div');
+    var toolbar = document.createElement('div');
+    var viewport = document.createElement('div');
+    var stage = document.createElement('div');
+    var zoomGroup = document.createElement('div');
+    var range = document.createElement('input');
+    var output = document.createElement('output');
+    var hint = document.createElement('span');
+    var toolbarLabel = localCourseBannerBuilderGetJsString('largeeditorviewcontrols', 'Workspace view controls');
+    var viewportLabel = localCourseBannerBuilderGetJsString('largeeditorviewportlabel', 'Large banner editing viewport');
+    var fitLabel = localCourseBannerBuilderGetJsString('largeeditorzoomfit', 'Fit workspace');
+    var actualLabel = localCourseBannerBuilderGetJsString('largeeditorzoomactual', '100%');
+    var zoomOutLabel = localCourseBannerBuilderGetJsString('largeeditorzoomout', 'Zoom out');
+    var zoomInLabel = localCourseBannerBuilderGetJsString('largeeditorzoomin', 'Zoom in');
+    var zoomLabel = localCourseBannerBuilderGetJsString('largeeditorzoomlabel', 'Zoom');
+    var mount = {
+        modal: modal,
+        panel: panel,
+        workspace: workspace,
+        toolbar: toolbar,
+        viewport: viewport,
+        stage: stage,
+        range: range,
+        output: output,
+        baseWidth: Math.max(1024, Math.round(baseWidth || 1280)),
+        zoom: 100,
+        isFit: true,
+        spacePressed: false,
+        pan: null,
+        suppressClick: false
+    };
+    workspace.className = 'local-course-banner-builder-large-workspace';
+    workspace.setAttribute('data-large-workspace', '1');
+    workspace.style.setProperty('--local-course-banner-builder-large-workspace-base-width', mount.baseWidth + 'px');
+    workspace.style.setProperty('--local-course-banner-builder-large-workspace-zoom', '1');
+    toolbar.className = 'local-course-banner-builder-large-workspace-toolbar';
+    toolbar.setAttribute('role', 'toolbar');
+    toolbar.setAttribute('aria-label', toolbarLabel);
+    mount.fitButton = localCourseBannerBuilderCreateLargeWorkspaceButton('fit', fitLabel, 'fa-compress');
+    mount.fitButton.setAttribute('aria-pressed', 'true');
+    toolbar.appendChild(mount.fitButton);
+    toolbar.appendChild(localCourseBannerBuilderCreateLargeWorkspaceButton('actual', actualLabel, 'fa-search'));
+    zoomGroup.className = 'local-course-banner-builder-large-workspace-zoom-group';
+    zoomGroup.setAttribute('role', 'group');
+    zoomGroup.setAttribute('aria-label', zoomLabel);
+    zoomGroup.appendChild(localCourseBannerBuilderCreateLargeWorkspaceButton('out', zoomOutLabel, 'fa-minus'));
+    range.type = 'range';
+    range.className = 'local-course-banner-builder-large-workspace-zoom-range';
+    range.min = String(localCourseBannerBuilderLargeWorkspaceMinZoom);
+    range.max = String(localCourseBannerBuilderLargeWorkspaceMaxZoom);
+    range.step = '5';
+    range.value = '100';
+    range.setAttribute('aria-label', zoomLabel);
+    range.setAttribute('aria-valuetext', '100%');
+    zoomGroup.appendChild(range);
+    output.className = 'local-course-banner-builder-large-workspace-zoom-output';
+    output.value = '100%';
+    output.textContent = '100%';
+    output.setAttribute('aria-live', 'polite');
+    zoomGroup.appendChild(output);
+    zoomGroup.appendChild(localCourseBannerBuilderCreateLargeWorkspaceButton('in', zoomInLabel, 'fa-plus'));
+    toolbar.appendChild(zoomGroup);
+    hint.className = 'local-course-banner-builder-large-workspace-pan-hint';
+    hint.textContent = localCourseBannerBuilderGetJsString(
+        'largeeditorpanhint',
+        'Hold Space and drag to move around the workspace.'
+    );
+    toolbar.appendChild(hint);
+    viewport.className = 'local-course-banner-builder-large-workspace-viewport';
+    viewport.setAttribute('data-large-workspace-viewport', '1');
+    viewport.setAttribute('tabindex', '0');
+    viewport.setAttribute('role', 'region');
+    viewport.setAttribute('aria-label', viewportLabel);
+    stage.className = 'local-course-banner-builder-large-workspace-stage';
+    stage.setAttribute('data-large-workspace-stage', '1');
+    stage.appendChild(panel);
+    viewport.appendChild(stage);
+    workspace.appendChild(toolbar);
+    workspace.appendChild(viewport);
+    localCourseBannerBuilderBindLargeWorkspaceViewport(mount);
+    return mount;
 }
 
 /**
@@ -1753,19 +2166,25 @@ function localCourseBannerBuilderShowLargeSourcePreview(button) {
         localCourseBannerBuilderFocusLargeSourcePreview(modal);
         return;
     }
+    var originalRect = sourcePanel.getBoundingClientRect();
     var placeholder = document.createComment('local-course-banner-builder-large-source-preview-origin');
     var parent = sourcePanel.parentNode;
     parent.insertBefore(placeholder, sourcePanel);
-    localCourseBannerBuilderLargeSourcePreviewMount = {
-        modal: modal,
-        panel: sourcePanel,
-        parent: parent,
-        placeholder: placeholder
-    };
     sourcePanel.setAttribute('data-source-preview-large-workspace', '1');
-    body.appendChild(sourcePanel);
+    var mount = localCourseBannerBuilderCreateLargeWorkspaceViewport(modal, sourcePanel, originalRect.width);
+    mount.parent = parent;
+    mount.placeholder = placeholder;
+    localCourseBannerBuilderLargeSourcePreviewMount = mount;
+    body.appendChild(mount.workspace);
     localCourseBannerBuilderShowModal(modal);
     localCourseBannerBuilderFocusLargeSourcePreview(modal);
+    window.requestAnimationFrame(function() {
+        window.requestAnimationFrame(function() {
+            if (localCourseBannerBuilderLargeSourcePreviewMount === mount) {
+                localCourseBannerBuilderFitLargeWorkspace(mount);
+            }
+        });
+    });
 }
 
 /**

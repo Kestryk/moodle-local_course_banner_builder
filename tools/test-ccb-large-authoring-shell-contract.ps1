@@ -17,7 +17,8 @@ $checks = [ordered]@{
         $php.Contains("get_string('largebannereditortitle', 'local_course_banner_builder')")
     'One live editor is mounted without cloning' =
         $source.Contains('parent.insertBefore(placeholder, sourcePanel)') -and
-        $source.Contains('body.appendChild(sourcePanel)') -and
+        $source.Contains('stage.appendChild(panel)') -and
+        $source.Contains('body.appendChild(mount.workspace)') -and
         -not $source.Contains('sourcePanel.cloneNode(true)')
     'The exact editor position is restored' =
         $source.Contains('mount.placeholder.parentNode.replaceChild(mount.panel, mount.placeholder)') -and
