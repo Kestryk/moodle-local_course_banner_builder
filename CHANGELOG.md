@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased - 2026-09-02
+
+### Changed
+
+- Continued `EED-CCB-2026-0049` with the large editor's view-only viewport:
+  it opens in Fit, offers bounded 25–400% zoom and a direct 100% control, and
+  exposes native overflow scrolling with Space-drag panning. These transient
+  controls change no layer geometry, payload or server state and do not apply
+  to the classic general preview.
+
+### Validation
+
+- Added the Slice 2 viewport contract covering bounds, Fit/100%, Space-drag
+  precedence over Crop/layer gestures, close cleanup, localisation and
+  source/generated asset parity. Runtime and human review remain separate.
+
 ## Unreleased - 2026-09-01
 
 ### Changed

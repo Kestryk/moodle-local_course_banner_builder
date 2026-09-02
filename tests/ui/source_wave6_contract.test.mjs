@@ -30,7 +30,8 @@ test('large authoring workspace mounts the one live editor and restores it', asy
     assert.match(source, /function localCourseBannerBuilderShowLargeSourcePreview\(button\)/u);
     assert.match(source, /function localCourseBannerBuilderRestoreLargeSourcePreviewMount\(modal\)/u);
     assert.match(source, /parent\.insertBefore\(placeholder, sourcePanel\)/u);
-    assert.match(source, /body\.appendChild\(sourcePanel\)/u);
+    assert.match(source, /stage\.appendChild\(panel\)/u);
+    assert.match(source, /body\.appendChild\(mount\.workspace\)/u);
     assert.match(source, /mount\.placeholder\.parentNode\.replaceChild\(mount\.panel, mount\.placeholder\)/u);
     assert.match(source, /localCourseBannerBuilderShowModal\(modal\)/u);
     assert.doesNotMatch(source, /function localCourseBannerBuilderCloneReadonlySourcePreview\(/u);
