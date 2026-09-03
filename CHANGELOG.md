@@ -184,6 +184,12 @@ many small sections.
 
 ## Unreleased
 
+- Corrected the large authoring workspace when the published frame collapsed
+  into a tiny top-left fragment: desktop geometry now follows the canonical
+  banner-format ratio, transient plane/frame dimensions are materialised,
+  undersized zoomed planes stay centred, original frame styles restore exactly
+  and launcher focus returns without an extra post-close delay.
+
 ### EED-CCB-2026-0050 RF8 / EED-CCB-2026-0044 RF1 - 2026-08-31
 
 #### Fixed

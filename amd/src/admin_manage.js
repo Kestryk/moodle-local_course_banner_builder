@@ -1696,6 +1696,11 @@ function localCourseBannerBuilderRestoreLargeSourcePreviewMount(modal) {
     }
     if (mount.frame) {
         mount.frame.removeAttribute('data-large-workspace-published-frame');
+        if (mount.frameInlineStyle === null) {
+            mount.frame.removeAttribute('style');
+        } else {
+            mount.frame.setAttribute('style', mount.frameInlineStyle);
+        }
     }
     if (mount.framePlaceholder && mount.framePlaceholder.parentNode && mount.frame) {
         mount.framePlaceholder.parentNode.replaceChild(mount.frame, mount.framePlaceholder);
@@ -1769,8 +1774,41 @@ function localCourseBannerBuilderSyncLargeWorkspaceStage(mount) {
         return;
     }
     var scale = mount.zoom / 100;
-    mount.stage.style.width = Math.ceil(mount.planeWidth * scale) + 'px';
-    mount.stage.style.height = Math.ceil(mount.planeHeight * scale) + 'px';
+    var scaledPlaneWidth = Math.ceil(mount.planeWidth * scale);
+    var scaledPlaneHeight = Math.ceil(mount.planeHeight * scale);
+    var stageWidth = Math.max(mount.viewport ? mount.viewport.clientWidth : 0, scaledPlaneWidth);
+    var stageHeight = Math.max(mount.viewport ? mount.viewport.clientHeight : 0, scaledPlaneHeight);
+    mount.planeOffsetX = Math.max(0, Math.floor((stageWidth - scaledPlaneWidth) / 2));
+    mount.planeOffsetY = Math.max(0, Math.floor((stageHeight - scaledPlaneHeight) / 2));
+    mount.stage.style.width = stageWidth + 'px';
+    mount.stage.style.height = stageHeight + 'px';
+    mount.plane.style.left = mount.planeOffsetX + 'px';
+    mount.plane.style.top = mount.planeOffsetY + 'px';
+    mount.plane.style.width = mount.planeWidth + 'px';
+    mount.plane.style.height = mount.planeHeight + 'px';
+    if (mount.frame) {
+        mount.frame.style.left = mount.frameOriginX + 'px';
+        mount.frame.style.top = mount.frameOriginY + 'px';
+        mount.frame.style.width = mount.frameWidth + 'px';
+        mount.frame.style.height = mount.frameHeight + 'px';
+    }
+}
+
+/**
+ * Keep the transient published frame aligned with the selected preview mode.
+ *
+ * @param {Object} mount Large-workspace mount state.
+ * @returns {void}
+ */
+function localCourseBannerBuilderSyncLargeWorkspaceFrameMode(mount) {
+    if (!mount || !mount.frame || !mount.panel) {
+        return;
+    }
+    var mobile = mount.panel.getAttribute('data-source-preview-mode') === 'mobile';
+    mount.frameWidth = mobile ? mount.mobileFrameWidth : mount.desktopFrameWidth;
+    mount.frameHeight = mobile ? mount.mobileFrameHeight : mount.desktopFrameHeight;
+    mount.frame.style.width = mount.frameWidth + 'px';
+    mount.frame.style.height = mount.frameHeight + 'px';
 }
 
 /**
@@ -1888,6 +1926,7 @@ function localCourseBannerBuilderFitLargeWorkspace(mount) {
     if (!mount || !mount.viewport || !mount.frame) {
         return;
     }
+    localCourseBannerBuilderSyncLargeWorkspaceFrameMode(mount);
     var availableWidth = Math.max(1, mount.viewport.clientWidth - 32);
     var stageOffsetTop = Math.max(0, mount.stage ? mount.stage.offsetTop : 0);
     var availableHeight = Math.max(1, mount.viewport.clientHeight - stageOffsetTop - 32);
@@ -1897,12 +1936,14 @@ function localCourseBannerBuilderFitLargeWorkspace(mount) {
     mount.viewport.scrollLeft = Math.max(
         0,
         (mount.stage.offsetLeft || 0) +
+            (mount.planeOffsetX || 0) +
             ((mount.frameOriginX + (mount.frameWidth / 2)) * (mount.zoom / 100)) -
             (mount.viewport.clientWidth / 2)
     );
     mount.viewport.scrollTop = Math.max(
         0,
         stageOffsetTop +
+            (mount.planeOffsetY || 0) +
             ((mount.frameOriginY + (mount.frameHeight / 2)) * (mount.zoom / 100)) -
             (mount.viewport.clientHeight / 2)
     );
@@ -2087,6 +2128,7 @@ function localCourseBannerBuilderBindLargeWorkspaceViewport(mount) {
             if (mount.isFit) {
                 localCourseBannerBuilderFitLargeWorkspace(mount);
             } else {
+                localCourseBannerBuilderSyncLargeWorkspaceFrameMode(mount);
                 localCourseBannerBuilderSyncLargeWorkspacePlane(mount);
             }
             var filmstrip = mount.panel.querySelector('[data-source-preview-filmstrip="1"]');
@@ -2165,6 +2207,31 @@ function localCourseBannerBuilderCreateLargeWorkspaceViewport(modal, panel, base
     var initialFrameRect = frame ? frame.getBoundingClientRect() : {width: 1, height: 1};
     var initialFrameWidth = Math.max(1, initialFrameRect.width);
     var initialFrameHeight = Math.max(1, initialFrameRect.height);
+    var desktopRatios = {
+        contentwide: 5,
+        fullwidthtop: 5,
+        fullwidthtopcompact: 8,
+        fullwidthtopinset: 6.1,
+        standard: 4
+    };
+    var bannerFormat = frame ? (frame.getAttribute('data-banner-format') || 'standard') : 'standard';
+    var desktopRatio = desktopRatios[bannerFormat] || desktopRatios.standard;
+    var sourceViewportWidth = Math.max(1, viewport ? viewport.clientWidth : 0);
+    var stableDesktopWidth = Math.min(
+        1320,
+        Math.max(initialFrameWidth, Math.min(Math.max(sourceViewportWidth - 32, 640), 1320))
+    );
+    var stableDesktopHeight = stableDesktopWidth / desktopRatio;
+    var stableMobileWidth = 390;
+    var stableMobileHeight = frame ? parseFloat(
+        frame.style.getPropertyValue('--local-course-banner-builder-source-preview-logical-height')
+    ) : 0;
+    if (!Number.isFinite(stableMobileHeight) || stableMobileHeight <= 0) {
+        stableMobileHeight = stableMobileWidth / desktopRatio;
+    }
+    var initialModeIsMobile = panel.getAttribute('data-source-preview-mode') === 'mobile';
+    initialFrameWidth = initialModeIsMobile ? stableMobileWidth : stableDesktopWidth;
+    initialFrameHeight = initialModeIsMobile ? stableMobileHeight : stableDesktopHeight;
     var stage = document.createElement('div');
     var plane = document.createElement('div');
     var publishedLabel = document.createElement('span');
@@ -2202,6 +2269,13 @@ function localCourseBannerBuilderCreateLargeWorkspaceViewport(modal, panel, base
         frameHeight: initialFrameHeight,
         frameOriginX: initialFrameWidth,
         frameOriginY: initialFrameHeight,
+        desktopFrameWidth: stableDesktopWidth,
+        desktopFrameHeight: stableDesktopHeight,
+        mobileFrameWidth: stableMobileWidth,
+        mobileFrameHeight: stableMobileHeight,
+        planeOffsetX: 0,
+        planeOffsetY: 0,
+        frameInlineStyle: frame ? frame.getAttribute('style') : null,
         viewportAttributes: {
             tabindex: viewport.getAttribute('tabindex'),
             role: viewport.getAttribute('role'),
@@ -2275,6 +2349,8 @@ function localCourseBannerBuilderCreateLargeWorkspaceViewport(modal, panel, base
         mount.framePlaceholder = document.createComment('local-course-banner-builder-large-workspace-frame-origin');
         frame.parentNode.insertBefore(mount.framePlaceholder, frame);
         frame.setAttribute('data-large-workspace-published-frame', '1');
+        frame.style.width = initialFrameWidth + 'px';
+        frame.style.height = initialFrameHeight + 'px';
         plane.appendChild(frame);
     }
     plane.appendChild(publishedLabel);
@@ -2415,7 +2491,7 @@ function localCourseBannerBuilderFinishSourceChainPreviewClose(modal) {
                 opener.classList.remove('is-focus-returned');
             }, {once: true});
         }
-    }, 260);
+    }, 0);
 }
 
 /**
