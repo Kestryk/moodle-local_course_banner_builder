@@ -1276,9 +1276,10 @@
         font-family: inherit !important;
         font-size: 0.78rem !important;
         font-weight: 600 !important;
-        height: 2.15rem !important;
+        height: 2.45rem !important;
         line-height: 1.2 !important;
-        min-height: 2.15rem;
+        min-height: 2.45rem;
+        padding-inline: 0.85rem;
 
         &.btn-danger:not(:disabled):hover,
         &.btn-danger:not(:disabled):focus-visible,
@@ -1747,13 +1748,43 @@
         .local-course-banner-builder-large-workspace-toolbar {
             display: flex;
             align-items: center;
-            flex-wrap: nowrap;
+            flex-wrap: wrap;
             gap: 0.3rem;
             padding: 0.32rem;
             border: 1px solid color-mix(in srgb, var(--easyedu-primary, #0f6cbf) 22%, #fff);
             border-radius: 0.65rem;
             background: var(--easyedu-surface, #fff);
             box-shadow: 0 0.2rem 0.65rem rgba(31, 42, 55, 0.08);
+        }
+
+        [data-source-preview-large-workspace="1"]
+        > .local-course-banner-builder-source-visual-editor-heading {
+            display: none;
+        }
+
+        .local-course-banner-builder-large-workspace-primary-actions {
+            flex: 0 0 auto;
+            flex-wrap: nowrap;
+            width: auto;
+            margin-inline-start: auto;
+            padding: 0;
+            border: 0;
+            background: transparent;
+
+            .local-course-banner-builder-source-preview-primary-action {
+                flex: 0 0 auto;
+                width: auto;
+                min-width: 0;
+                height: 1.9rem !important;
+                min-height: 1.9rem;
+                padding: 0.22rem 0.55rem;
+                white-space: nowrap;
+
+                > span {
+                    white-space: nowrap;
+                    overflow-wrap: normal;
+                }
+            }
         }
 
         .local-course-banner-builder-large-workspace-control {
@@ -1811,14 +1842,6 @@
             font-variant-numeric: tabular-nums;
             font-weight: 600;
             text-align: center;
-        }
-
-        .local-course-banner-builder-large-workspace-pan-hint {
-            flex: 1 1 auto;
-            min-width: 8rem;
-            color: var(--easyedu-text-muted, #5f6f82);
-            font-size: var(--easyedu-font-size-help, 0.82rem);
-            text-align: end;
         }
 
         .local-course-banner-builder-large-workspace-viewport {

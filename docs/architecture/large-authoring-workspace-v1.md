@@ -150,3 +150,18 @@ rendering, the classic general preview or the one-live-editor rule. Focus is
 returned immediately after modal teardown rather than after a second visual
 delay. Browser acceptance remains required because source contracts cannot
 prove the final painted geometry or focus indicator.
+
+## Wave 18 action-toolbar correction
+
+The large shell relocates only the existing primary Save/Delete action group
+beside Fit and zoom while it is open. A placeholder restores that exact DOM
+node on every close path, so listeners, disabled states and the classic editor
+layout are neither duplicated nor rewritten. The nested `Source visual
+editor` heading is hidden only under the large-workspace marker because the
+modal header already names the surface.
+
+The persistent pan instruction is removed from the toolbar; the viewport's
+accessible label and the documented direct-grid and Space-drag gestures remain
+authoritative. Outside the large workspace, the general-preview actions regain
+their roomier shared height. Genuine Edit/Delete descendants of draggable
+layer rows keep a pointer cursor instead of inheriting the row drag affordance.

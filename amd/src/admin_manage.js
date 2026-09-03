@@ -1705,6 +1705,10 @@ function localCourseBannerBuilderRestoreLargeSourcePreviewMount(modal) {
     if (mount.framePlaceholder && mount.framePlaceholder.parentNode && mount.frame) {
         mount.framePlaceholder.parentNode.replaceChild(mount.frame, mount.framePlaceholder);
     }
+    if (mount.primaryActionsPlaceholder && mount.primaryActionsPlaceholder.parentNode && mount.primaryActions) {
+        mount.primaryActions.classList.remove('local-course-banner-builder-large-workspace-primary-actions');
+        mount.primaryActionsPlaceholder.parentNode.replaceChild(mount.primaryActions, mount.primaryActionsPlaceholder);
+    }
     if (mount.viewport) {
         mount.viewport.classList.remove('local-course-banner-builder-large-workspace-viewport');
         mount.viewport.removeAttribute('data-large-workspace-viewport');
@@ -2238,7 +2242,7 @@ function localCourseBannerBuilderCreateLargeWorkspaceViewport(modal, panel, base
     var zoomGroup = document.createElement('div');
     var range = document.createElement('input');
     var zoomInput = document.createElement('input');
-    var hint = document.createElement('span');
+    var primaryActions = panel.querySelector('.local-course-banner-builder-source-preview-primary-actions');
     var toolbarLabel = localCourseBannerBuilderGetJsString('largeeditorviewcontrols', 'Workspace view controls');
     var viewportLabel = localCourseBannerBuilderGetJsString('largeeditorviewportlabel', 'Large banner editing viewport');
     var fitLabel = localCourseBannerBuilderGetJsString('largeeditorzoomfit', 'Fit workspace');
@@ -2276,6 +2280,8 @@ function localCourseBannerBuilderCreateLargeWorkspaceViewport(modal, panel, base
         planeOffsetX: 0,
         planeOffsetY: 0,
         frameInlineStyle: frame ? frame.getAttribute('style') : null,
+        primaryActions: primaryActions,
+        primaryActionsPlaceholder: null,
         viewportAttributes: {
             tabindex: viewport.getAttribute('tabindex'),
             role: viewport.getAttribute('role'),
@@ -2326,12 +2332,14 @@ function localCourseBannerBuilderCreateLargeWorkspaceViewport(modal, panel, base
     mount.zoomInButton = localCourseBannerBuilderCreateLargeWorkspaceButton('in', zoomInLabel, 'fa-plus', true);
     zoomGroup.appendChild(mount.zoomInButton);
     toolbar.appendChild(zoomGroup);
-    hint.className = 'local-course-banner-builder-large-workspace-pan-hint';
-    hint.textContent = localCourseBannerBuilderGetJsString(
-        'largeeditorpanhint',
-        'Hold Space and drag to move around the workspace.'
-    );
-    toolbar.appendChild(hint);
+    if (primaryActions && primaryActions.parentNode) {
+        mount.primaryActionsPlaceholder = document.createComment(
+            'local-course-banner-builder-large-workspace-primary-actions-origin'
+        );
+        primaryActions.parentNode.insertBefore(mount.primaryActionsPlaceholder, primaryActions);
+        primaryActions.classList.add('local-course-banner-builder-large-workspace-primary-actions');
+        toolbar.appendChild(primaryActions);
+    }
     viewport.classList.add('local-course-banner-builder-large-workspace-viewport');
     viewport.setAttribute('data-large-workspace-viewport', '1');
     viewport.setAttribute('tabindex', '0');
