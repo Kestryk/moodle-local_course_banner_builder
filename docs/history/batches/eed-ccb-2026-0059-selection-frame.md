@@ -29,6 +29,14 @@ indicator remains transient and disappears with the selection or hidden layer.
 No EasyEdu UI Kit or Platform source changes are needed: this is a CCB-owned
 transient preview affordance using the existing local selection primitive.
 
+## RF3 initial-render synchronisation
+
+Dynamic Image modal preparation already used the shared selection primitive,
+but its first useful geometry could arrive only after the initial modal layout.
+RF3 explicitly synchronises the frame on both post-load animation frames. The
+visible Image editor therefore no longer requires a canvas click to align its
+selection indicator. Crop state and transform calculations are unchanged.
+
 ## Validation
 
 Source-only validation for this batch:

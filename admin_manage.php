@@ -1691,14 +1691,16 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
         ]);
     $previewprimaryactions = html_writer::tag('button', $buttoncontent('fa-save', get_string('savepreviewchanges', 'local_course_banner_builder')), [
             'type' => 'submit',
-            'class' => 'btn btn-primary local-course-banner-builder-source-preview-button',
+            'class' => 'btn btn-primary local-course-banner-builder-source-preview-button ' .
+                'local-course-banner-builder-source-preview-primary-action',
             'form' => 'local-course-banner-builder-source-preview-save-form',
             'data-source-preview-async-control' => '1',
             'data-source-preview-save-control' => '1',
         ] + $disabledattributes) .
         html_writer::tag('button', $buttoncontent('fa-trash-can', get_string('deleteselectedlayer', 'local_course_banner_builder')), [
             'type' => 'button',
-            'class' => 'btn btn-danger local-course-banner-builder-source-preview-button',
+            'class' => 'btn btn-danger local-course-banner-builder-source-preview-button ' .
+                'local-course-banner-builder-source-preview-primary-action',
             'data-action' => 'local-course-banner-builder-delete-selected-preview-layer',
             'data-confirm-message' => get_string('deleteselectedlayersconfirm', 'local_course_banner_builder'),
             'data-source-preview-async-control' => '1',
@@ -1706,7 +1708,8 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
         ]) .
         html_writer::tag('button', $buttoncontent('fa-trash-can', get_string('deletealllayers', 'local_course_banner_builder')), [
             'type' => 'button',
-            'class' => 'btn btn-danger local-course-banner-builder-source-preview-button',
+            'class' => 'btn btn-danger local-course-banner-builder-source-preview-button ' .
+                'local-course-banner-builder-source-preview-primary-action',
             'data-action' => 'local-course-banner-builder-delete-all-layers',
             'data-confirm-title' => get_string('confirm', 'moodle'),
             'data-confirm-message' => get_string('deletealllayersconfirm', 'local_course_banner_builder'),
@@ -2781,9 +2784,13 @@ if ($updatesourceparentfield && $_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Content-Type: application/json; charset=utf-8');
         $selectedhtml = '';
         if ($selectedsource && (string)$selectedsource->sourcekey === (string)$targetsource->sourcekey) {
+            $selectedcontext = \local_course_banner_builder\manager::export_selected_source($targetsource);
+            $selectedcontext['sourcevisualeditorhtml'] = local_course_banner_builder_render_source_visual_editor(
+                $targetsource
+            );
             $selectedhtml = $OUTPUT->render_from_template(
                 'local_course_banner_builder/admin_selected',
-                \local_course_banner_builder\manager::export_selected_source($targetsource)
+                $selectedcontext
             );
         }
         echo json_encode([

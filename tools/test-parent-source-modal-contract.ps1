@@ -21,7 +21,10 @@ $checks = [ordered]@{
     'Parent modal body owns vertical scrolling' = $styles -match '#local-course-banner-builder-change-source-parent-modal[\s\S]*\.modal-body \{[\s\S]*overflow-y: auto;';
     'Close control uses the shared Kit primitive' = $styles -match '\.local-course-banner-builder-modal__close \{[\s\S]*@include easyedu\.modal-close-button\(small\);';
     'Portalled Parent Save consumes the existing shared Kit primitive' =
-        $styles -match '(?s)\.modal\[id\^="local-course-banner-builder-"\].+?\.local-course-banner-builder-parent-source-save\s*\{\s*@include easyedu\.save-action-button;';
+        $styles -match '(?s)\.modal\[id\^="local-course-banner-builder-"\].+?\.local-course-banner-builder-parent-source-save\s*\{\s*@include easyedu\.save-action-button\(small\);';
+    'Parent footer uses the compact shared modal-action geometry' =
+        $template -match 'modal-footer local-course-banner-builder-parent-source-footer' -and
+        $styles -match '(?s)\.modal\[id\^="local-course-banner-builder-"\].+?\.local-course-banner-builder-parent-source-footer\s*>\s*\.btn\s*\{\s*@include easyedu\.action-row-button\(small\);';
     'Compiled Parent Save cascade follows generic modal-footer geometry' =
         $genericFooterIndex -ge 0 -and $parentSaveIndex -gt $genericFooterIndex;
     'Parent Save is no longer trapped below the administration root' =

@@ -17234,6 +17234,56 @@ span[data-flexitour=container].orphan .modal-dialog {
 .local-course-banner-builder-admin--native .local-course-banner-builder-source-preview-button[data-source-preview-save-control="1"] > .fa:is(.fa-save, .fa-floppy-o, .fa-floppy-disk) {
   flex: 0 0 1em;
 }
+.local-course-banner-builder-admin--native .local-course-banner-builder-source-preview-primary-actions .local-course-banner-builder-source-preview-primary-action {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.4rem;
+  justify-content: center;
+  line-height: 1.2;
+  font-size: 0.78rem;
+  min-height: 1.9rem;
+  min-width: 1.9rem;
+  padding: 0.22rem 0.5rem;
+  font-family: inherit !important;
+  font-size: 0.78rem !important;
+  font-weight: 600 !important;
+  height: 2.15rem !important;
+  line-height: 1.2 !important;
+  min-height: 2.15rem;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-source-preview-primary-actions .local-course-banner-builder-source-preview-primary-action:hover, .local-course-banner-builder-admin--native .local-course-banner-builder-source-preview-primary-actions .local-course-banner-builder-source-preview-primary-action:focus-visible, .local-course-banner-builder-admin--native .local-course-banner-builder-source-preview-primary-actions .local-course-banner-builder-source-preview-primary-action:active, .local-course-banner-builder-admin--native .local-course-banner-builder-source-preview-primary-actions .local-course-banner-builder-source-preview-primary-action[aria-expanded=true], .local-course-banner-builder-admin--native .local-course-banner-builder-source-preview-primary-actions .local-course-banner-builder-source-preview-primary-action[aria-pressed=true], .local-course-banner-builder-admin--native .local-course-banner-builder-source-preview-primary-actions .local-course-banner-builder-source-preview-primary-action.active, .local-course-banner-builder-admin--native .local-course-banner-builder-source-preview-primary-actions .local-course-banner-builder-source-preview-primary-action.is-active {
+  background: var(--easyedu-primary-soft);
+  border-color: var(--easyedu-control-focus-border);
+  color: var(--easyedu-primary-strong);
+  outline: 0;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-source-preview-primary-actions .local-course-banner-builder-source-preview-primary-action:focus-visible {
+  border-color: var(--easyedu-control-focus-border);
+  box-shadow: 0 0 0 var(--easyedu-focus-ring-width) var(--easyedu-focus-ring);
+  outline: var(--easyedu-focus-outline-width) solid transparent;
+  outline-offset: var(--easyedu-focus-outline-offset);
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-source-preview-primary-actions .local-course-banner-builder-source-preview-primary-action:disabled, .local-course-banner-builder-admin--native .local-course-banner-builder-source-preview-primary-actions .local-course-banner-builder-source-preview-primary-action[aria-disabled=true], .local-course-banner-builder-admin--native .local-course-banner-builder-source-preview-primary-actions .local-course-banner-builder-source-preview-primary-action.disabled {
+  background: var(--easyedu-surface-soft);
+  border-color: var(--easyedu-card-border);
+  color: var(--easyedu-text-muted);
+  cursor: not-allowed;
+  opacity: 0.62;
+  pointer-events: none;
+  transform: none;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-source-preview-primary-actions .local-course-banner-builder-source-preview-primary-action .fa {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 auto;
+  justify-content: center;
+  line-height: 1;
+}
+.local-course-banner-builder-admin--native .local-course-banner-builder-source-preview-primary-actions .local-course-banner-builder-source-preview-primary-action.btn-danger:not(:disabled):hover, .local-course-banner-builder-admin--native .local-course-banner-builder-source-preview-primary-actions .local-course-banner-builder-source-preview-primary-action.btn-danger:not(:disabled):focus-visible, .local-course-banner-builder-admin--native .local-course-banner-builder-source-preview-primary-actions .local-course-banner-builder-source-preview-primary-action.btn-danger:not(:disabled):active {
+  background: var(--easyedu-primary-soft) !important;
+  border-color: var(--easyedu-control-focus-border) !important;
+  color: var(--easyedu-primary-strong) !important;
+}
 .local-course-banner-builder-admin--native .local-course-banner-builder-empty-layer-list,
 .local-course-banner-builder-admin--native .local-course-banner-builder-empty-source-list {
   align-items: center;
@@ -17827,9 +17877,9 @@ span[data-flexitour=container].orphan .modal-dialog {
   display: inline-flex;
   height: var(--easyedu-control-height, 2.5rem) !important;
   min-height: var(--easyedu-control-height, 2.5rem) !important;
+  padding-block: 0.36rem !important;
   justify-content: center;
   line-height: 1.2;
-  padding-block: 0.36rem !important;
 }
 .modal[id^=local-course-banner-builder-] .local-course-banner-builder-parent-source-save,
 .modal.local-course-banner-builder-confirm-action-modal .local-course-banner-builder-parent-source-save {
@@ -17838,11 +17888,11 @@ span[data-flexitour=container].orphan .modal-dialog {
   gap: 0.4rem;
   justify-content: center;
   line-height: 1.2;
-  font-size: 0.88rem;
-  min-height: var(--easyedu-control-height);
-  min-width: var(--easyedu-control-height);
-  padding: 0.36rem 0.75rem;
-  min-height: var(--easyedu-control-height);
+  font-size: 0.78rem;
+  min-height: 1.9rem;
+  min-width: 1.9rem;
+  padding: 0.22rem 0.5rem;
+  min-height: 1.9rem;
   white-space: nowrap;
 }
 .modal[id^=local-course-banner-builder-] .local-course-banner-builder-parent-source-save:hover, .modal[id^=local-course-banner-builder-] .local-course-banner-builder-parent-source-save:focus-visible, .modal[id^=local-course-banner-builder-] .local-course-banner-builder-parent-source-save:active, .modal[id^=local-course-banner-builder-] .local-course-banner-builder-parent-source-save[aria-expanded=true], .modal[id^=local-course-banner-builder-] .local-course-banner-builder-parent-source-save[aria-pressed=true], .modal[id^=local-course-banner-builder-] .local-course-banner-builder-parent-source-save.active, .modal[id^=local-course-banner-builder-] .local-course-banner-builder-parent-source-save.is-active,
@@ -17888,6 +17938,21 @@ span[data-flexitour=container].orphan .modal-dialog {
 .modal[id^=local-course-banner-builder-] .local-course-banner-builder-parent-source-save > .fa:is(.fa-save, .fa-floppy-o, .fa-floppy-disk),
 .modal.local-course-banner-builder-confirm-action-modal .local-course-banner-builder-parent-source-save > .fa:is(.fa-save, .fa-floppy-o, .fa-floppy-disk) {
   flex: 0 0 1em;
+}
+.modal[id^=local-course-banner-builder-] .local-course-banner-builder-parent-source-footer > .btn,
+.modal.local-course-banner-builder-confirm-action-modal .local-course-banner-builder-parent-source-footer > .btn {
+  font-size: 0.78rem;
+  min-height: 1.9rem;
+  min-width: 1.9rem;
+  padding: 0.22rem 0.5rem;
+  align-items: center;
+  box-sizing: border-box;
+  display: inline-flex;
+  height: 1.9rem !important;
+  min-height: 1.9rem !important;
+  padding-block: 0.22rem !important;
+  justify-content: center;
+  line-height: 1.2;
 }
 .modal[id^=local-course-banner-builder-] .local-course-banner-builder-modal-side-panel[data-easyedu-motion-owner=runtime],
 .modal[id^=local-course-banner-builder-] .local-course-banner-builder-preview-opacity-panel[data-easyedu-motion-owner=runtime],
@@ -18088,6 +18153,9 @@ span[data-flexitour=container].orphan .modal-dialog {
   min-height: 0;
   overscroll-behavior: contain;
   position: relative;
+}
+.modal[id^=local-course-banner-builder-] .local-course-banner-builder-layer-modal-body.is-content-revealed {
+  animation: easyedu-content-open 0.24s var(--easyedu-motion-ease) both;
 }
 .modal[id^=local-course-banner-builder-] .local-course-banner-builder-layer-modal-footer,
 .modal[id^=local-course-banner-builder-] .local-course-banner-builder-slideshow-modal-footer {
@@ -18321,20 +18389,64 @@ span[data-flexitour=container].orphan .modal-dialog {
 .local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-large-workspace-toolbar {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-  padding: 0.45rem;
+  flex-wrap: nowrap;
+  gap: 0.3rem;
+  padding: 0.32rem;
   border: 1px solid color-mix(in srgb, var(--easyedu-primary, #0f6cbf) 22%, #fff);
   border-radius: 0.65rem;
   background: var(--easyedu-surface, #fff);
   box-shadow: 0 0.2rem 0.65rem rgba(31, 42, 55, 0.08);
 }
 .local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-large-workspace-control {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.4rem;
+  justify-content: center;
+  line-height: 1.2;
+  font-size: 0.78rem;
+  min-height: 1.9rem;
+  min-width: 1.9rem;
+  padding: 0.22rem 0.5rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 2.25rem;
-  gap: 0.28rem;
+  flex: 0 0 auto;
+  min-height: 1.9rem;
+  gap: 0.22rem;
+  white-space: nowrap;
+}
+.local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-large-workspace-control:hover, .local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-large-workspace-control:focus-visible, .local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-large-workspace-control:active, .local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-large-workspace-control[aria-expanded=true], .local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-large-workspace-control[aria-pressed=true], .local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-large-workspace-control.active, .local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-large-workspace-control.is-active {
+  background: var(--easyedu-primary-soft);
+  border-color: var(--easyedu-control-focus-border);
+  color: var(--easyedu-primary-strong);
+  outline: 0;
+}
+.local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-large-workspace-control:focus-visible {
+  border-color: var(--easyedu-control-focus-border);
+  box-shadow: 0 0 0 var(--easyedu-focus-ring-width) var(--easyedu-focus-ring);
+  outline: var(--easyedu-focus-outline-width) solid transparent;
+  outline-offset: var(--easyedu-focus-outline-offset);
+}
+.local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-large-workspace-control:disabled, .local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-large-workspace-control[aria-disabled=true], .local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-large-workspace-control.disabled {
+  background: var(--easyedu-surface-soft);
+  border-color: var(--easyedu-card-border);
+  color: var(--easyedu-text-muted);
+  cursor: not-allowed;
+  opacity: 0.62;
+  pointer-events: none;
+  transform: none;
+}
+.local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-large-workspace-control .fa {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 auto;
+  justify-content: center;
+  line-height: 1;
+}
+.local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-large-workspace-control--icon {
+  min-width: 1.9rem;
+  padding-inline: 0.35rem;
+  width: 1.9rem;
 }
 .local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-large-workspace-control.is-active, .local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-large-workspace-control[aria-pressed=true] {
   border-color: var(--easyedu-primary, #0f6cbf);
@@ -18348,23 +18460,30 @@ span[data-flexitour=container].orphan .modal-dialog {
 .local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-large-workspace-zoom-group {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  min-width: min(100%, 18rem);
+  flex: 0 1 17rem;
+  gap: 0.25rem;
+  min-width: 10rem;
 }
 .local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-large-workspace-zoom-range {
-  flex: 1 1 9rem;
-  min-width: 7rem;
+  flex: 1 1 6rem;
+  min-width: 3.5rem;
   accent-color: var(--easyedu-primary, #0f6cbf);
 }
-.local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-large-workspace-zoom-output {
-  min-width: 3.6rem;
+.local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-large-workspace-zoom-input {
+  flex: 0 0 4.25rem;
+  width: 4.25rem;
+  height: 1.9rem;
+  min-height: 1.9rem;
+  padding: 0.16rem 0.3rem;
   color: var(--easyedu-text, #1f2937);
+  font-size: 0.78rem;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
   text-align: center;
 }
 .local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-large-workspace-pan-hint {
-  flex: 1 1 15rem;
+  flex: 1 1 auto;
+  min-width: 8rem;
   color: var(--easyedu-text-muted, #5f6f82);
   font-size: var(--easyedu-font-size-help, 0.82rem);
   text-align: end;
@@ -18419,6 +18538,15 @@ span[data-flexitour=container].orphan .modal-dialog {
   overflow: auto;
 }
 
+body.easyedu-motion-disabled .local-course-banner-builder-layer-modal-body.is-content-revealed {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .local-course-banner-builder-layer-modal-body.is-content-revealed {
+    animation: none;
+  }
+}
 @media (max-width: 1279.98px) {
   .local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-large-workspace-pan-hint {
     flex-basis: 100%;
