@@ -2089,6 +2089,10 @@ function localCourseBannerBuilderBindLargeWorkspaceViewport(mount) {
             } else {
                 localCourseBannerBuilderSyncLargeWorkspacePlane(mount);
             }
+            var filmstrip = mount.panel.querySelector('[data-source-preview-filmstrip="1"]');
+            if (filmstrip) {
+                localCourseBannerBuilderUpdateSourcePreviewFilmstripNav(filmstrip);
+            }
         });
     };
     var onBlur = function() {
@@ -2365,6 +2369,10 @@ function localCourseBannerBuilderShowLargeSourcePreview(button) {
             if (localCourseBannerBuilderLargeSourcePreviewMount === mount) {
                 localCourseBannerBuilderFitLargeWorkspace(mount);
                 localCourseBannerBuilderSyncSourcePreviewSelectionOutline(mount.panel);
+                var filmstrip = mount.panel.querySelector('[data-source-preview-filmstrip="1"]');
+                if (filmstrip) {
+                    localCourseBannerBuilderUpdateSourcePreviewFilmstripNav(filmstrip);
+                }
             }
         });
     });

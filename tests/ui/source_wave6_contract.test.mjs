@@ -67,3 +67,15 @@ test('large authoring workspace isolates one published frame inside a checkerboa
     assert.match(adapter, /\[data-large-workspace-published-frame="1"\]/u);
     assert.doesNotMatch(adapter, /\.local-course-banner-builder-source-preview-panel\[data-source-preview-large-workspace="1"\][^{]*\{[^}]*transform: scale/u);
 });
+
+test('large authoring workspace keeps a majority scene and an independently scrolling dock', async() => {
+    const source = await read('amd/src/admin_manage.js');
+    const adapter = await read('scss/components/_easyedu-adapter.scss');
+
+    assert.match(adapter, /grid-template-columns: minmax\(0, 1fr\) minmax\(12rem, clamp\(12rem, 16vw, 16rem\)\)/u);
+    assert.match(adapter, /grid-template-rows: minmax\(18rem, 1fr\) auto auto auto/u);
+    assert.match(adapter, /\.local-course-banner-builder-source-preview-controls \{[\s\S]*?overflow-y: auto;[\s\S]*?scrollbar-gutter: stable;/u);
+    assert.match(adapter, /\.local-course-banner-builder-source-preview-controls[\s\S]*?\.local-course-banner-builder-source-preview-button \{[\s\S]*?max-height: var\(--local-course-banner-builder-action-height, 2\.45rem\);/u);
+    assert.match(source, /localCourseBannerBuilderUpdateSourcePreviewFilmstripNav\(filmstrip\)/u);
+    assert.doesNotMatch(adapter, /data-source-preview-large-workspace="1"[^}]*?\.local-course-banner-builder-large-workspace-plane[^}]*?grid-template-columns/u);
+});
