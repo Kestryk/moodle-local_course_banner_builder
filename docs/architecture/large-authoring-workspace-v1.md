@@ -134,3 +134,19 @@ properties, new snaps and V2 remain outside the slice.
 - no viewport transform or state on the classic general preview;
 - source and generated AMD/CSS must be rebuilt together;
 - managed preview and browser evidence remain separate from static readiness.
+
+## Wave 17 RF2 render correction
+
+The first human review exposed a runtime geometry collapse: the moved banner
+could remain as a tiny top-left fragment while the plane and published boundary
+were not visibly usable. RF2 now derives desktop frame height from the
+authoritative banner-format ratio, materialises frame and plane geometry on the
+transient nodes, and centres a scaled plane whenever it is smaller than the
+viewport. The original inline frame style is captured before the move and
+restored exactly on close.
+
+This correction does not change stored layer coordinates, Crop data, public
+rendering, the classic general preview or the one-live-editor rule. Focus is
+returned immediately after modal teardown rather than after a second visual
+delay. Browser acceptance remains required because source contracts cannot
+prove the final painted geometry or focus indicator.

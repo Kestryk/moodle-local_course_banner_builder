@@ -79,3 +79,16 @@ test('large authoring workspace keeps a majority scene and an independently scro
     assert.match(source, /localCourseBannerBuilderUpdateSourcePreviewFilmstripNav\(filmstrip\)/u);
     assert.doesNotMatch(adapter, /data-source-preview-large-workspace="1"[^}]*?\.local-course-banner-builder-large-workspace-plane[^}]*?grid-template-columns/u);
 });
+
+test('large authoring workspace materialises and centres stable published geometry', async() => {
+    const source = await read('amd/src/admin_manage.js');
+
+    assert.match(source, /var desktopRatios = \{/u);
+    assert.match(source, /var stableDesktopHeight = stableDesktopWidth \/ desktopRatio/u);
+    assert.match(source, /function localCourseBannerBuilderSyncLargeWorkspaceFrameMode\(mount\)/u);
+    assert.match(source, /mount\.mobileFrameWidth : mount\.desktopFrameWidth/u);
+    assert.match(source, /mount\.plane\.style\.width = mount\.planeWidth \+ 'px'/u);
+    assert.match(source, /mount\.frame\.style\.width = mount\.frameWidth \+ 'px'/u);
+    assert.match(source, /Math\.floor\(\(stageWidth - scaledPlaneWidth\) \/ 2\)/u);
+    assert.match(source, /frameInlineStyle: frame \? frame\.getAttribute\('style'\) : null/u);
+});
