@@ -36,6 +36,7 @@ $checks = [ordered]@{
         $source.Contains('mount.resizeObserver.observe(mount.panel)')
     'Fit and 100 percent recenter the canonical published frame' =
         $source.Contains('function localCourseBannerBuilderCenterLargeWorkspaceFrame(mount)') -and
+        $source.Contains('var viewportRect = mount.viewport.getBoundingClientRect()') -and
         ([regex]::Matches($source, 'localCourseBannerBuilderCenterLargeWorkspaceFrame\(mount\);')).Count -ge 2
     'A scaled plane smaller than the viewport remains centred and visible' =
         $source.Contains('Math.floor((stageWidth - scaledPlaneWidth) / 2)') -and

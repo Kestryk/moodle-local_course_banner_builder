@@ -21,8 +21,11 @@ const login = async(page, env) => {
     }
     await page.locator('#username').fill(env.username);
     await page.locator('#password').fill(env.password);
-    await page.locator('#loginbtn').click();
-    await expect(page).not.toHaveURL(/\/login\//);
+    await Promise.all([
+        page.waitForURL(url => !/\/login\//.test(url.pathname), {waitUntil: 'domcontentloaded'}),
+        page.locator('#loginbtn').click(),
+    ]);
+    await page.waitForLoadState('load');
 };
 
 const geometry = async page => page.evaluate(() => {
@@ -48,7 +51,12 @@ const geometry = async page => page.evaluate(() => {
             planeWidth: workspace.style.getPropertyValue('--local-course-banner-builder-large-workspace-plane-width'),
             planeHeight: workspace.style.getPropertyValue('--local-course-banner-builder-large-workspace-plane-height'),
         } : null,
-        viewportClient: viewport ? {width: viewport.clientWidth, height: viewport.clientHeight} : null,
+        viewportClient: viewport ? {
+            left: viewport.clientLeft,
+            top: viewport.clientTop,
+            width: viewport.clientWidth,
+            height: viewport.clientHeight,
+        } : null,
         viewport: rect(viewport),
         stage: rect(stage),
         plane: rect(plane),
