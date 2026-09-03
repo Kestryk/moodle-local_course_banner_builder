@@ -94,6 +94,28 @@ selection, resize and Crop pointer ownership. These changes exist only under
 the large-authoring modal selector; the classic general preview remains
 unchanged.
 
+## Slice 3B: large-scene and dock composition
+
+The accepted workspace wireframe is expressed with the existing editor nodes:
+the transient Fit/zoom toolbar stays fixed at the top, the flexible majority
+track belongs to the checkerboard viewport, and the established source-control
+panel forms a bounded right dock. The dock remains outside the plane transform,
+uses the complete available height and scrolls vertically without moving the
+scene. Its buttons retain their fixed control height instead of stretching with
+the dock.
+
+Inside the left track, the viewport receives the flexible height. The existing
+visibility/action rail, horizontal filmstrip and Save/Delete row remain below
+it in their current DOM order and keep their accepted typography, Motion and
+business hooks. Filmstrip overflow controls are recalculated after the live
+editor enters the modal and whenever its workspace geometry changes.
+
+This slice uses CSS composition around the same
+`[data-source-visual-editor="1"]`; it introduces no secondary dock state and
+moves no additional product control out of that root. The classic general
+preview, server payload, final Save/Cancel transaction, Border/Overlay direct
+properties, new snaps and V2 remain outside the slice.
+
 ## Source contract
 
 - exactly one `[data-source-visual-editor="1"]` root;
@@ -104,6 +126,10 @@ unchanged.
 - Space-drag changes only viewport scroll offsets;
 - a plain primary drag pans only when its target is the empty plane or stage;
 - layer, selection, resize and Crop targets never start direct plane pan;
+- the flexible scene and independently scrolling right dock remain descendants
+  of the one live editor;
+- dock buttons retain their fixed height and the filmstrip recalculates after
+  mount and workspace resize;
 - numeric zoom is clamped to the same 25-400% endpoints as range/buttons;
 - no viewport transform or state on the classic general preview;
 - source and generated AMD/CSS must be rebuilt together;

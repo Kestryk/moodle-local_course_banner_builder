@@ -4,6 +4,14 @@
 
 ### Changed
 
+- Continued `EED-CCB-2026-0049` with Slice 3B's accepted workspace
+  composition: the checkerboard viewport owns the flexible majority of the
+  large modal, while the existing source controls form a bounded, full-height,
+  independently scrolling right dock whose buttons retain fixed dimensions.
+- Kept the existing visibility rail, filmstrip and Save/Delete row below the
+  scene, and now recalculates filmstrip overflow navigation after large-editor
+  mount and workspace resize. No classic-preview, payload or persistence path
+  changed.
 - Continued `EED-CCB-2026-0049` with Slice 3A: the large editor now places the
   one live published frame inside a CSS-only checkerboard work plane, exposes
   the public clipping boundary with a localised label, centres that frame in
@@ -29,6 +37,9 @@
 
 ### Validation
 
+- Added a focused Slice 3B contract covering flexible scene ownership, bounded
+  independent dock scrolling, invariant button height, filmstrip recalculation
+  and preservation of the single-editor/frame/plane contracts.
 - Added a focused Slice 3A contract for single-node frame movement and exact
   restoration, CSS-only grid composition, frame-based Fit, bounded layer
   extents, direct empty-grid pan, UTF-8 labels and source/generated parity.
