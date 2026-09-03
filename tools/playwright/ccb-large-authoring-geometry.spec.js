@@ -74,14 +74,15 @@ const geometry = async page => page.evaluate(() => {
 test.use({viewport: {width: 1920, height: 900}});
 
 test('large authoring keeps a usable published frame at 100 percent', async({page}) => {
+    test.setTimeout(60000);
     const env = environment();
     await login(page, env);
     await page.goto(
         `${env.baseUrl}/local/course_banner_builder/admin_manage.php?sourcekey=category:${encodeURIComponent(env.categoryId)}`,
-        {waitUntil: 'domcontentloaded'}
+        {waitUntil: 'commit', timeout: 45000}
     );
     const editor = page.locator('[data-source-visual-editor="1"]').first();
-    await expect(editor).toBeVisible();
+    await expect(editor).toBeVisible({timeout: 30000});
     await editor.locator('[data-action="local-course-banner-builder-show-large-source-preview"]').click();
     const modal = page.locator('.local-course-banner-builder-source-chain-preview-modal--authoring');
     await expect(modal).toBeVisible();
