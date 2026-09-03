@@ -298,9 +298,13 @@
         line-height: 1;
     }
 
-    // Preserve a normal pointer over interactive descendants of draggable rows.
-    .local-course-banner-builder-layer-row[draggable="true"] :is(input, select, button, a) {
+    // Preserve text/control behaviour without inheriting the row drag cursor.
+    .local-course-banner-builder-layer-row[draggable="true"] :is(input, select) {
         cursor: auto;
+    }
+
+    .local-course-banner-builder-layer-row[draggable="true"] :is(button:not(:disabled), a[href]) {
+        cursor: pointer;
     }
 
     @media (prefers-reduced-motion: reduce) {

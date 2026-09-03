@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased - 2026-09-03
+
+### Changed
+
+- Moved the live Save/Delete action group beside Fit and zoom in the large
+  editor, with exact DOM restoration on close; removed its redundant pan hint
+  and nested editor heading without changing the classic preview.
+- Restored roomier primary actions in the classic general preview and a pointer
+  cursor on genuine Edit/Delete controls inside draggable layer rows.
+
 ## Unreleased - 2026-09-02
 
 ### Changed

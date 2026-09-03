@@ -1795,7 +1795,8 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
                 : 'sourcevisualeditor',
             'local_course_banner_builder'
         ), [
-            'class' => 'h6 local-course-banner-builder-table-title mb-3',
+            'class' => 'h6 local-course-banner-builder-table-title ' .
+                'local-course-banner-builder-source-visual-editor-heading mb-3',
         ]) .
         $orientationhint .
         html_writer::div(

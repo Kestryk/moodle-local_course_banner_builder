@@ -92,3 +92,21 @@ test('large authoring workspace materialises and centres stable published geomet
     assert.match(source, /Math\.floor\(\(stageWidth - scaledPlaneWidth\) \/ 2\)/u);
     assert.match(source, /frameInlineStyle: frame \? frame\.getAttribute\('style'\) : null/u);
 });
+
+test('large authoring workspace owns compact primary actions without changing the classic editor', async() => {
+    const php = await read('admin_manage.php');
+    const source = await read('amd/src/admin_manage.js');
+    const adapter = await read('scss/components/_easyedu-adapter.scss');
+    const rows = await read('scss/components/_layer-object-row.scss');
+
+    assert.match(php, /local-course-banner-builder-source-visual-editor-heading/u);
+    assert.match(source, /primaryActionsPlaceholder: null/u);
+    assert.match(source, /primaryActions\.parentNode\.insertBefore\(mount\.primaryActionsPlaceholder, primaryActions\)/u);
+    assert.match(source, /toolbar\.appendChild\(primaryActions\)/u);
+    assert.match(source, /mount\.primaryActionsPlaceholder\.parentNode\.replaceChild\(mount\.primaryActions, mount\.primaryActionsPlaceholder\)/u);
+    assert.doesNotMatch(source, /hint\.textContent = localCourseBannerBuilderGetJsString/u);
+    assert.match(adapter, /> \.local-course-banner-builder-source-visual-editor-heading \{\s*display: none;/u);
+    assert.match(adapter, /\.local-course-banner-builder-large-workspace-primary-actions \{[\s\S]*?margin-inline-start: auto;/u);
+    assert.match(adapter, /height: 2\.45rem !important;[\s\S]*?min-height: 2\.45rem;/u);
+    assert.match(rows, /:is\(button:not\(:disabled\), a\[href\]\) \{\s*cursor: pointer;/u);
+});
