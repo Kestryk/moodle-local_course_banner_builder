@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased - 2026-09-03 (Wave 20 corrective)
+
+### Fixed
+
+- Prevents the large editor from replacing its canonical banner dimensions
+  with a transient `1 x 1px` hidden-modal measurement during startup.
+- Uses the documented 1600 px authoring width, waits for usable modal geometry,
+  retries Fit after the real shown event and recentres both Fit and 100% while
+  leaving the classic general preview unchanged.
+
 ## Unreleased - 2026-09-03 (Wave 19)
 
 ### Fixed

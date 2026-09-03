@@ -1827,12 +1827,18 @@ function localCourseBannerBuilderSyncLargeWorkspaceFrameMode(mount) {
  */
 function localCourseBannerBuilderSyncLargeWorkspacePlane(mount) {
     if (!mount || !mount.frame || !mount.plane) {
-        return;
+        return false;
     }
     var scale = Math.max(0.01, (mount.zoom || 100) / 100);
     var frameRect = mount.frame.getBoundingClientRect();
-    var frameWidth = Math.max(1, mount.frame.offsetWidth || (frameRect.width / scale));
-    var frameHeight = Math.max(1, mount.frame.offsetHeight || (frameRect.height / scale));
+    var frameWidth = Math.max(1, mount.frameWidth || mount.desktopFrameWidth || 1);
+    var frameHeight = Math.max(1, mount.frameHeight || mount.desktopFrameHeight || 1);
+    var minimumMeasuredWidth = Math.min(32, frameWidth * scale * 0.25);
+    var minimumMeasuredHeight = Math.min(32, frameHeight * scale * 0.25);
+    if (!mount.frame.isConnected || frameRect.width < minimumMeasuredWidth ||
+            frameRect.height < minimumMeasuredHeight) {
+        return false;
+    }
     var minX = 0;
     var minY = 0;
     var maxX = frameWidth;
@@ -1850,8 +1856,6 @@ function localCourseBannerBuilderSyncLargeWorkspacePlane(mount) {
     var planeTop = Math.max(-10 * frameHeight, minY - frameHeight);
     var planeRight = Math.min(11 * frameWidth, maxX + frameWidth);
     var planeBottom = Math.min(11 * frameHeight, maxY + frameHeight);
-    mount.frameWidth = frameWidth;
-    mount.frameHeight = frameHeight;
     mount.frameOriginX = -planeLeft;
     mount.frameOriginY = -planeTop;
     mount.planeWidth = Math.max(frameWidth, planeRight - planeLeft);
@@ -1863,6 +1867,7 @@ function localCourseBannerBuilderSyncLargeWorkspacePlane(mount) {
     mount.workspace.style.setProperty('--local-course-banner-builder-large-workspace-plane-width', mount.planeWidth + 'px');
     mount.workspace.style.setProperty('--local-course-banner-builder-large-workspace-plane-height', mount.planeHeight + 'px');
     localCourseBannerBuilderSyncLargeWorkspaceStage(mount);
+    return true;
 }
 
 /**
@@ -1921,6 +1926,33 @@ function localCourseBannerBuilderSetLargeWorkspaceZoom(mount, requestedZoom, isF
 }
 
 /**
+ * Centre the published banner frame in the scrollable workspace viewport.
+ *
+ * @param {Object} mount Large-workspace mount state.
+ * @returns {void}
+ */
+function localCourseBannerBuilderCenterLargeWorkspaceFrame(mount) {
+    if (!mount || !mount.viewport || !mount.stage) {
+        return;
+    }
+    var scale = mount.zoom / 100;
+    mount.viewport.scrollLeft = Math.max(
+        0,
+        (mount.stage.offsetLeft || 0) +
+            (mount.planeOffsetX || 0) +
+            ((mount.frameOriginX + (mount.frameWidth / 2)) * scale) -
+            (mount.viewport.clientWidth / 2)
+    );
+    mount.viewport.scrollTop = Math.max(
+        0,
+        (mount.stage.offsetTop || 0) +
+            (mount.planeOffsetY || 0) +
+            ((mount.frameOriginY + (mount.frameHeight / 2)) * scale) -
+            (mount.viewport.clientHeight / 2)
+    );
+}
+
+/**
  * Fit the complete live editor inside the available large viewport.
  *
  * @param {Object} mount Large-workspace mount state.
@@ -1928,29 +1960,66 @@ function localCourseBannerBuilderSetLargeWorkspaceZoom(mount, requestedZoom, isF
  */
 function localCourseBannerBuilderFitLargeWorkspace(mount) {
     if (!mount || !mount.viewport || !mount.frame) {
-        return;
+        return false;
+    }
+    var viewportWidth = mount.viewport.clientWidth;
+    var viewportHeight = mount.viewport.clientHeight;
+    if (viewportWidth < 64 || viewportHeight < 64) {
+        return false;
     }
     localCourseBannerBuilderSyncLargeWorkspaceFrameMode(mount);
-    var availableWidth = Math.max(1, mount.viewport.clientWidth - 32);
+    var availableWidth = viewportWidth - 32;
     var stageOffsetTop = Math.max(0, mount.stage ? mount.stage.offsetTop : 0);
-    var availableHeight = Math.max(1, mount.viewport.clientHeight - stageOffsetTop - 32);
-    localCourseBannerBuilderSyncLargeWorkspacePlane(mount);
+    var availableHeight = viewportHeight - stageOffsetTop - 32;
+    if (availableWidth < 32 || availableHeight < 32 || !localCourseBannerBuilderSyncLargeWorkspacePlane(mount)) {
+        return false;
+    }
     var fitZoom = Math.min(availableWidth / mount.frameWidth, availableHeight / mount.frameHeight) * 100;
+    if (!Number.isFinite(fitZoom) || fitZoom <= 0) {
+        return false;
+    }
     localCourseBannerBuilderSetLargeWorkspaceZoom(mount, fitZoom, true);
-    mount.viewport.scrollLeft = Math.max(
-        0,
-        (mount.stage.offsetLeft || 0) +
-            (mount.planeOffsetX || 0) +
-            ((mount.frameOriginX + (mount.frameWidth / 2)) * (mount.zoom / 100)) -
-            (mount.viewport.clientWidth / 2)
-    );
-    mount.viewport.scrollTop = Math.max(
-        0,
-        stageOffsetTop +
-            (mount.planeOffsetY || 0) +
-            ((mount.frameOriginY + (mount.frameHeight / 2)) * (mount.zoom / 100)) -
-            (mount.viewport.clientHeight / 2)
-    );
+    localCourseBannerBuilderCenterLargeWorkspaceFrame(mount);
+    return true;
+}
+
+/**
+ * Retry the initial Fit only while the workspace still owns Fit mode.
+ *
+ * Bootstrap can emit its visible geometry after the launcher click's first
+ * frames. A bounded retry avoids ever converting that transient zero layout
+ * into the document's authoritative frame size.
+ *
+ * @param {Object} mount Large-workspace mount state.
+ * @returns {void}
+ */
+function localCourseBannerBuilderScheduleLargeWorkspaceFit(mount) {
+    if (!mount || mount.fitFrame || mount.fitTimer || !mount.isFit) {
+        return;
+    }
+    mount.fitFrame = window.requestAnimationFrame(function() {
+        mount.fitFrame = null;
+        if (localCourseBannerBuilderLargeSourcePreviewMount !== mount || !mount.isFit) {
+            return;
+        }
+        if (localCourseBannerBuilderFitLargeWorkspace(mount)) {
+            mount.fitRetryCount = 0;
+            localCourseBannerBuilderSyncSourcePreviewSelectionOutline(mount.panel);
+            var filmstrip = mount.panel.querySelector('[data-source-preview-filmstrip="1"]');
+            if (filmstrip) {
+                localCourseBannerBuilderUpdateSourcePreviewFilmstripNav(filmstrip);
+            }
+            return;
+        }
+        if (mount.fitRetryCount >= 10) {
+            return;
+        }
+        mount.fitRetryCount += 1;
+        mount.fitTimer = window.setTimeout(function() {
+            mount.fitTimer = null;
+            localCourseBannerBuilderScheduleLargeWorkspaceFit(mount);
+        }, 50);
+    });
 }
 
 /**
@@ -2044,6 +2113,7 @@ function localCourseBannerBuilderBindLargeWorkspaceViewport(mount) {
             localCourseBannerBuilderFitLargeWorkspace(mount);
         } else if (action === 'actual') {
             localCourseBannerBuilderSetLargeWorkspaceZoom(mount, 100, false);
+            localCourseBannerBuilderCenterLargeWorkspaceFrame(mount);
         } else if (action === 'out') {
             localCourseBannerBuilderSetLargeWorkspaceZoom(
                 mount,
@@ -2130,7 +2200,7 @@ function localCourseBannerBuilderBindLargeWorkspaceViewport(mount) {
         mount.resizeFrame = window.requestAnimationFrame(function() {
             mount.resizeFrame = null;
             if (mount.isFit) {
-                localCourseBannerBuilderFitLargeWorkspace(mount);
+                localCourseBannerBuilderScheduleLargeWorkspaceFit(mount);
             } else {
                 localCourseBannerBuilderSyncLargeWorkspaceFrameMode(mount);
                 localCourseBannerBuilderSyncLargeWorkspacePlane(mount);
@@ -2159,9 +2229,10 @@ function localCourseBannerBuilderBindLargeWorkspaceViewport(mount) {
     mount.viewport.addEventListener('click', onClick, true);
     window.addEventListener('resize', onResize);
     window.addEventListener('blur', onBlur);
-    if (mount.frame && typeof window.ResizeObserver === 'function') {
+    if (mount.viewport && typeof window.ResizeObserver === 'function') {
         mount.resizeObserver = new window.ResizeObserver(onResize);
-        mount.resizeObserver.observe(mount.frame);
+        mount.resizeObserver.observe(mount.viewport);
+        mount.resizeObserver.observe(mount.panel);
     }
     if (typeof window.MutationObserver === 'function') {
         mount.modeObserver = new window.MutationObserver(onResize);
@@ -2189,6 +2260,18 @@ function localCourseBannerBuilderBindLargeWorkspaceViewport(mount) {
         }
         if (mount.resizeFrame) {
             window.cancelAnimationFrame(mount.resizeFrame);
+        }
+        if (mount.fitFrame) {
+            window.cancelAnimationFrame(mount.fitFrame);
+        }
+        if (mount.fitTimer) {
+            window.clearTimeout(mount.fitTimer);
+        }
+        if (mount.fitAfterShow) {
+            mount.modal.removeEventListener('shown.bs.modal', mount.fitAfterShow);
+            if (typeof window.jQuery !== 'undefined') {
+                window.jQuery(mount.modal).off('shown.bs.modal', mount.fitAfterShow);
+            }
         }
         localCourseBannerBuilderStopLargeWorkspacePan(mount, null);
         mount.cleanupViewport = null;
@@ -2220,11 +2303,7 @@ function localCourseBannerBuilderCreateLargeWorkspaceViewport(modal, panel, base
     };
     var bannerFormat = frame ? (frame.getAttribute('data-banner-format') || 'standard') : 'standard';
     var desktopRatio = desktopRatios[bannerFormat] || desktopRatios.standard;
-    var sourceViewportWidth = Math.max(1, viewport ? viewport.clientWidth : 0);
-    var stableDesktopWidth = Math.min(
-        1320,
-        Math.max(initialFrameWidth, Math.min(Math.max(sourceViewportWidth - 32, 640), 1320))
-    );
+    var stableDesktopWidth = 1600;
     var stableDesktopHeight = stableDesktopWidth / desktopRatio;
     var stableMobileWidth = 390;
     var stableMobileHeight = frame ? parseFloat(
@@ -2279,6 +2358,10 @@ function localCourseBannerBuilderCreateLargeWorkspaceViewport(modal, panel, base
         mobileFrameHeight: stableMobileHeight,
         planeOffsetX: 0,
         planeOffsetY: 0,
+        fitFrame: null,
+        fitTimer: null,
+        fitRetryCount: 0,
+        fitAfterShow: null,
         frameInlineStyle: frame ? frame.getAttribute('style') : null,
         primaryActions: primaryActions,
         primaryActionsPlaceholder: null,
@@ -2446,17 +2529,23 @@ function localCourseBannerBuilderShowLargeSourcePreview(button) {
     mount.placeholder = placeholder;
     localCourseBannerBuilderLargeSourcePreviewMount = mount;
     body.appendChild(mount.workspace);
+    mount.fitAfterShow = function() {
+        modal.removeEventListener('shown.bs.modal', mount.fitAfterShow);
+        if (typeof window.jQuery !== 'undefined') {
+            window.jQuery(modal).off('shown.bs.modal', mount.fitAfterShow);
+        }
+        localCourseBannerBuilderScheduleLargeWorkspaceFit(mount);
+    };
+    modal.addEventListener('shown.bs.modal', mount.fitAfterShow, {once: true});
+    if (typeof window.jQuery !== 'undefined') {
+        window.jQuery(modal).one('shown.bs.modal', mount.fitAfterShow);
+    }
     localCourseBannerBuilderShowModal(modal);
     localCourseBannerBuilderFocusLargeSourcePreview(modal);
     window.requestAnimationFrame(function() {
         window.requestAnimationFrame(function() {
             if (localCourseBannerBuilderLargeSourcePreviewMount === mount) {
-                localCourseBannerBuilderFitLargeWorkspace(mount);
-                localCourseBannerBuilderSyncSourcePreviewSelectionOutline(mount.panel);
-                var filmstrip = mount.panel.querySelector('[data-source-preview-filmstrip="1"]');
-                if (filmstrip) {
-                    localCourseBannerBuilderUpdateSourcePreviewFilmstripNav(filmstrip);
-                }
+                localCourseBannerBuilderScheduleLargeWorkspaceFit(mount);
             }
         });
     });

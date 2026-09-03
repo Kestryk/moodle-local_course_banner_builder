@@ -53,6 +53,24 @@ future preview role does not weaken the V1 single-editor rule.
 - Browser, runtime and managed-preview checks intentionally deferred to the
   cumulative preview owner.
 
+## RF4 geometry correction - 2026-09-03
+
+A managed-browser measurement on the cumulative Wave 19 runtime proved that
+the modal's transient hidden state could make `getBoundingClientRect()` return
+zero. The plane synchroniser converted that absence of layout into a real
+`1 x 1px` frame and overwrote the stable values; selecting 100% therefore
+scaled a one-pixel document rather than the banner.
+
+RF4 makes the documented 1600 px canonical authoring width authoritative,
+derives its height from the selected format ratio and refuses to mutate plane
+geometry until the viewport and frame have usable measurements. Initial Fit
+is retried after `shown.bs.modal` and through a viewport/panel ResizeObserver;
+all frames, timers, observers and event hooks are removed on close. Fit and the
+100% shortcut share one frame-centering routine.
+
+This repair changes no source payload, Crop/layer coordinates, server write,
+public renderer, mobile fallback or classic general-preview DOM/style.
+
 ## Non-regression boundary
 
 No persistence schema, public renderer, source payload, Crop state, layer

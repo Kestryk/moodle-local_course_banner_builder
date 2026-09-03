@@ -33,7 +33,7 @@ $checks = [ordered]@{
         $source.Contains('event.target === mount.plane || event.target === mount.stage') -and
         -not $source.Contains('directBackground')
     'First large-workspace frame synchronises selection after Fit' =
-        $source -match '(?s)localCourseBannerBuilderFitLargeWorkspace\(mount\);\s*localCourseBannerBuilderSyncSourcePreviewSelectionOutline\(mount\.panel\);'
+        $source -match '(?s)if \(localCourseBannerBuilderFitLargeWorkspace\(mount\)\) \{.*?localCourseBannerBuilderSyncSourcePreviewSelectionOutline\(mount\.panel\);'
     'Parent Save refreshes configured sources and selected preview' =
         $php.Contains("`$selectedcontext['sourcevisualeditorhtml']") -and
         $source.Contains("localCourseBannerBuilderReplaceConfiguredSourcesTable(data.tablehtml || '')") -and

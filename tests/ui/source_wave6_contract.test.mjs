@@ -85,11 +85,16 @@ test('large authoring workspace materialises and centres stable published geomet
 
     assert.match(source, /var desktopRatios = \{/u);
     assert.match(source, /var stableDesktopHeight = stableDesktopWidth \/ desktopRatio/u);
+    assert.match(source, /var stableDesktopWidth = 1600/u);
     assert.match(source, /function localCourseBannerBuilderSyncLargeWorkspaceFrameMode\(mount\)/u);
     assert.match(source, /mount\.mobileFrameWidth : mount\.desktopFrameWidth/u);
     assert.match(source, /mount\.plane\.style\.width = mount\.planeWidth \+ 'px'/u);
     assert.match(source, /mount\.frame\.style\.width = mount\.frameWidth \+ 'px'/u);
     assert.match(source, /Math\.floor\(\(stageWidth - scaledPlaneWidth\) \/ 2\)/u);
+    assert.match(source, /function localCourseBannerBuilderCenterLargeWorkspaceFrame\(mount\)/u);
+    assert.match(source, /modal\.addEventListener\('shown\.bs\.modal', mount\.fitAfterShow, \{once: true\}\)/u);
+    assert.match(source, /mount\.resizeObserver\.observe\(mount\.viewport\)/u);
+    assert.doesNotMatch(source, /mount\.frameWidth = frameWidth;/u);
     assert.match(source, /frameInlineStyle: frame \? frame\.getAttribute\('style'\) : null/u);
 });
 
