@@ -4393,11 +4393,6 @@ button[data-toggler=drawers][data-target=theme_boost-drawers-blocks] {
   padding-right: calc(var(--local-course-banner-builder-modal-action-rail-width) + 1.75rem);
 }
 
-.modal[id^=local-course-banner-builder-][data-layer-modal-reveal-pending="1"] .local-course-banner-builder-layer-modal-body {
-  opacity: 0.38;
-  transform: translateY(-0.04rem);
-}
-
 .modal[id^=local-course-banner-builder-][data-layer-modal-loading="1"] .local-course-banner-builder-layer-modal-body {
   padding-right: 1rem;
 }
@@ -4489,12 +4484,6 @@ button[data-toggler=drawers][data-target=theme_boost-drawers-blocks] {
     width: 100%;
     max-height: none;
     margin-top: 0.75rem;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .modal[id^=local-course-banner-builder-][data-layer-modal-reveal-pending="1"] .local-course-banner-builder-layer-modal-body {
-    opacity: 1;
-    transform: none;
   }
 }
 /* stylelint-disable -- Complex Moodle admin/preview styles intentionally use modern CSS and targeted overrides. */
@@ -18166,9 +18155,6 @@ span[data-flexitour=container].orphan .modal-dialog {
   overscroll-behavior: contain;
   position: relative;
 }
-.modal[id^=local-course-banner-builder-] .local-course-banner-builder-layer-modal-body.is-content-revealed {
-  animation: easyedu-content-open 0.24s var(--easyedu-motion-ease) both;
-}
 .modal[id^=local-course-banner-builder-] .local-course-banner-builder-layer-modal-footer,
 .modal[id^=local-course-banner-builder-] .local-course-banner-builder-slideshow-modal-footer {
   background: var(--easyedu-surface);
@@ -18671,15 +18657,6 @@ span[data-flexitour=container].orphan .modal-dialog {
   overflow: auto;
 }
 
-body.easyedu-motion-disabled .local-course-banner-builder-layer-modal-body.is-content-revealed {
-  animation: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .local-course-banner-builder-layer-modal-body.is-content-revealed {
-    animation: none;
-  }
-}
 @media (max-width: 1279.98px) {
   .local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-large-workspace-pan-hint {
     flex-basis: 100%;

@@ -36,15 +36,6 @@
     padding-right: calc(var(--local-course-banner-builder-modal-action-rail-width) + 1.75rem);
 }
 
-// Hold freshly inserted modal content at the shared reveal start state for one
-// painted frame. Otherwise a cached prefetch can paint fully opaque content
-// before the reveal class and make the transition flash or run backwards.
-.modal[id^="local-course-banner-builder-"][data-layer-modal-reveal-pending="1"]
-    .local-course-banner-builder-layer-modal-body {
-    opacity: 0.38;
-    transform: translateY(-0.04rem);
-}
-
 // A loading modal has no action rail. Restore symmetric body padding so the
 // status spinner is centered in the available modal surface, not in the space
 // left after the inactive rail reservation.
@@ -162,13 +153,5 @@
         width: 100%;
         max-height: none;
         margin-top: 0.75rem;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .modal[id^="local-course-banner-builder-"][data-layer-modal-reveal-pending="1"]
-        .local-course-banner-builder-layer-modal-body {
-        opacity: 1;
-        transform: none;
     }
 }

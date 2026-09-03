@@ -52,10 +52,11 @@ users receive the content immediately without animation.
 
 Edit-button pointer/focus prefetch remains enabled, but a cached response can
 otherwise remove the loader before the browser paints it. RF3 gives the already
-accepted loading ring a bounded 180 ms minimum presentation. Fresh content is
-inserted in a `data-layer-modal-reveal-pending` start state for one painted
-frame, then the existing Kit `content-reveal` mixin runs once.
+accepted loading ring the shared 100 ms fast-motion presentation. Fresh content
+is inserted through `Motion.swap` with the same 160 ms, 0.15 rem and 0.28
+opacity entrance as Desktop/Mobile preview changes.
 
 This prevents a fully opaque pre-animation flash without changing modal
 geometry, request caching, form preparation, persistence or the Source Preview
-loader. Reduced-motion users receive the final content immediately.
+loader. The delay and reveal are both bypassed when shared motion is disabled
+or reduced motion is requested.

@@ -21124,7 +21124,7 @@ function localCourseBannerBuilderEnhanceAccordions(root) {
 
 var localCourseBannerBuilderLayerModalRequestCache = {};
 var localCourseBannerBuilderLayerModalCacheLifetime = 30000;
-var localCourseBannerBuilderLayerModalMinimumLoadingTime = 180;
+var localCourseBannerBuilderLayerModalMinimumLoadingTime = Motion.timing.fast;
 
 function localCourseBannerBuilderRequestLayerModal(url) {
     var now = Date.now();
@@ -21166,8 +21166,8 @@ function localCourseBannerBuilderShowLayerModalLoading(modal, requestId) {
     if (!body) {
         return;
     }
-    body.classList.remove('is-content-revealed');
-    modal.removeAttribute('data-layer-modal-reveal-pending');
+    Motion.cancel(body);
+    modal.removeAttribute('data-layer-modal-phase');
     var status = document.createElement('div');
     status.className = 'local-course-banner-builder-layer-modal-loading';
     status.setAttribute('role', 'status');
@@ -21189,29 +21189,35 @@ function localCourseBannerBuilderShowLayerModalLoading(modal, requestId) {
 }
 
 /**
- * Reveal freshly loaded layer-modal content once the shared loader is gone.
+ * Replace the loader and reveal freshly loaded content through shared Motion.
  *
  * @param {HTMLElement|null} modal Layer modal.
- * @return {void}
+ * @param {string} html Fresh modal-body HTML.
+ * @return {Promise<boolean>}
  */
-function localCourseBannerBuilderRevealLayerModalContent(modal) {
+function localCourseBannerBuilderRevealLayerModalContent(modal, html) {
     var body = modal ? modal.querySelector('.modal-body') : null;
     if (!body) {
-        return;
+        return Promise.resolve(false);
     }
-    body.classList.remove('is-content-revealed');
     var revealId = String(Date.now()) + '-' + String(Math.random());
     modal.dataset.layerModalRevealId = revealId;
-    modal.dataset.layerModalRevealPending = '1';
-    window.requestAnimationFrame(function() {
-        window.requestAnimationFrame(function() {
-            if (!body.isConnected || modal.getAttribute('aria-busy') === 'true' ||
-                    modal.dataset.layerModalRevealId !== revealId) {
-                return;
-            }
-            modal.removeAttribute('data-layer-modal-reveal-pending');
-            body.classList.add('is-content-revealed');
-        });
+    modal.dataset.layerModalPhase = 'revealing';
+    return Motion.swap(body, function() {
+        if (body.isConnected && modal.dataset.layerModalRevealId === revealId) {
+            body.innerHTML = html;
+        }
+    }, {
+        exit: false,
+        resize: false,
+        enterDuration: Motion.timing.normal,
+        distance: '0.15rem',
+        swapOpacity: 0.28,
+    }).then(function(completed) {
+        if (modal.dataset.layerModalRevealId === revealId) {
+            modal.dataset.layerModalPhase = 'ready';
+        }
+        return completed;
     });
 }
 
@@ -21242,7 +21248,10 @@ function localCourseBannerBuilderLoadLayerModal(url, modalId) {
 
     localCourseBannerBuilderRequestLayerModal(url).then(function (response) {
         var elapsed = Date.now() - loadingStarted;
-        var remaining = requestedModal ? Math.max(
+        var shouldHoldLoader = requestedModal &&
+            requestedModal.dataset.layerModalRequest === requestId &&
+            Motion.isEnabled(requestedModal);
+        var remaining = shouldHoldLoader ? Math.max(
             0,
             localCourseBannerBuilderLayerModalMinimumLoadingTime - elapsed
         ) : 0;
@@ -21293,9 +21302,7 @@ function localCourseBannerBuilderLoadLayerModal(url, modalId) {
         if (fetchedtitle && targettitle) {
             targettitle.textContent = fetchedtitle.textContent;
         }
-        targetmodal.dataset.layerModalRevealPending = '1';
-        targetbody.classList.remove('is-content-revealed');
-        targetbody.innerHTML = fetchedbody.innerHTML;
+        localCourseBannerBuilderRevealLayerModalContent(targetmodal, fetchedbody.innerHTML);
 
         var form = targetbody.querySelector('form.mform');
         if (form && fetchedmodal.id === 'local-course-banner-builder-edit-image-layer-modal') {
@@ -21357,7 +21364,6 @@ function localCourseBannerBuilderLoadLayerModal(url, modalId) {
         if (!targetmodal.classList.contains('show')) {
             localCourseBannerBuilderShowModal(targetmodal);
         }
-        localCourseBannerBuilderRevealLayerModalContent(targetmodal);
         localCourseBannerBuilderRefreshLoadedLayerModal(targetmodal);
     }).catch(function (error) {
         window.console.error(error);
@@ -21370,7 +21376,7 @@ function localCourseBannerBuilderLoadLayerModal(url, modalId) {
             }
             requestedModal.removeAttribute('data-layer-modal-loading');
             requestedModal.removeAttribute('data-layer-modal-request');
-            requestedModal.removeAttribute('data-layer-modal-reveal-pending');
+            requestedModal.removeAttribute('data-layer-modal-phase');
             localCourseBannerBuilderHideModal(requestedModal);
         }
     });
@@ -21657,12 +21663,12 @@ localCourseBannerBuilderOnReady(function () {
             dynamicmodal.setAttribute('aria-busy', 'false');
             dynamicmodal.removeAttribute('data-layer-modal-loading');
             dynamicmodal.removeAttribute('data-layer-modal-request');
-            dynamicmodal.removeAttribute('data-layer-modal-reveal-pending');
+            dynamicmodal.removeAttribute('data-layer-modal-phase');
             dynamicmodal.removeAttribute('data-layer-modal-reveal-id');
             var body = dynamicmodal.querySelector('.modal-body');
             if (body) {
+                Motion.cancel(body);
                 body.setAttribute('aria-busy', 'false');
-                body.classList.remove('is-content-revealed');
                 body.innerHTML = '';
             }
         });
