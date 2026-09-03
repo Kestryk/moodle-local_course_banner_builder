@@ -6,31 +6,32 @@ $ErrorActionPreference = 'Stop'
 
 $source = Get-Content -Raw -LiteralPath (Join-Path $PluginRoot 'amd/src/admin_manage.js')
 $build = Get-Content -Raw -LiteralPath (Join-Path $PluginRoot 'amd/build/admin_manage.min.js')
-$scss = Get-Content -Raw -LiteralPath (Join-Path $PluginRoot 'scss/components/_modal-preview-actions.scss')
-$css = Get-Content -Raw -LiteralPath (Join-Path $PluginRoot 'styles.css')
-
 $checks = [ordered]@{
-    'Cached responses retain one bounded visible loading interval' =
-        $source.Contains('localCourseBannerBuilderLayerModalMinimumLoadingTime = 180') -and
+    'Cached responses retain the shared fast loading interval' =
+        $source.Contains('localCourseBannerBuilderLayerModalMinimumLoadingTime = Motion.timing.fast') -and
         $source.Contains('localCourseBannerBuilderLayerModalMinimumLoadingTime - elapsed')
+    'Reduced or disabled motion bypasses the loading hold' =
+        $source.Contains('Motion.isEnabled(requestedModal)') -and
+        $source.Contains('var remaining = shouldHoldLoader ? Math.max(')
     'The existing prefetch and request cache remain active' =
         $source.Contains('localCourseBannerBuilderPrefetchLayerModal') -and
         $source.Contains('localCourseBannerBuilderLayerModalRequestCache')
-    'Fresh content enters a pending reveal state before insertion' =
-        $source -match "targetmodal\.dataset\.layerModalRevealPending = '1';\s*targetbody\.classList\.remove\('is-content-revealed'\);\s*targetbody\.innerHTML"
-    'Reveal waits for a painted frame and current reveal token' =
-        $source.Contains('modal.dataset.layerModalRevealId !== revealId') -and
-        $source.Contains("body.classList.add('is-content-revealed')")
-    'Close and failure paths remove transient reveal state' =
-        $source.Contains("removeAttribute('data-layer-modal-reveal-pending')") -and
+    'Fresh content consumes the shared Motion swap entrance' =
+        $source -match '(?s)Motion\.swap\(body,.*?exit:\s*false,.*?resize:\s*false,.*?enterDuration:\s*Motion\.timing\.normal,.*?distance:\s*''0\.15rem'',.*?swapOpacity:\s*0\.28'
+    'Reveal mutation remains guarded by the current token' =
+        $source.Contains('modal.dataset.layerModalRevealId === revealId') -and
+        $source.Contains('body.innerHTML = html')
+    'Close and failure paths clear or cancel transient reveal state' =
+        $source.Contains("removeAttribute('data-layer-modal-phase')") -and
+        $source.Contains('Motion.cancel(body)') -and
         $source.Contains("removeAttribute('data-layer-modal-reveal-id')")
-    'Pending content uses the shared reveal start geometry' =
-        $scss -match '(?s)data-layer-modal-reveal-pending="1".*?opacity:\s*0\.38;.*?transform:\s*translateY\(-0\.04rem\);'
-    'Reduced motion bypasses pending movement and opacity' =
-        $scss -match '(?s)prefers-reduced-motion:\s*reduce.*?data-layer-modal-reveal-pending="1".*?opacity:\s*1;.*?transform:\s*none;'
-    'Generated assets contain the complete lifecycle' =
-        $build.Contains('layerModalRevealPending') -and
-        $css.Contains('[data-layer-modal-reveal-pending="1"]')
+    'The superseded CSS reveal lifecycle is absent' =
+        -not $source.Contains('is-content-revealed') -and
+        -not $source.Contains('layerModalRevealPending')
+    'Generated AMD contains the shared lifecycle' =
+        $build.Contains('layerModalPhase') -and
+        $build.Contains('.swap(') -and
+        $build.Contains('.isEnabled(')
 }
 
 $failed = @($checks.GetEnumerator() | Where-Object { -not $_.Value })

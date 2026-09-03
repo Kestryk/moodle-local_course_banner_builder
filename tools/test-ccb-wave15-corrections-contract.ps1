@@ -52,16 +52,14 @@ $checks = [ordered]@{
     'Row Edit and Delete retain pointer cursors' =
         $actions -match '(?s)\.local-course-banner-builder-layer-actions-cell.*?:is\(button:not\(:disabled\), a\[href\]\)\s*\{\s*cursor:\s*pointer;' -and
         $adapter -match '(?s)\[data-action="local-course-banner-builder-delete-source-layer"\]\s*\{\s*cursor:\s*pointer\s*!important;'
-    'Layer modal content reveals after loading with reduced-motion bypass' =
-        $source.Contains('function localCourseBannerBuilderRevealLayerModalContent(modal)') -and
-        $source.Contains("body.classList.add('is-content-revealed')") -and
-        $adapter.Contains('@include easyedu.content-reveal(0.24s)') -and
-        $adapter.Contains('@media (prefers-reduced-motion: reduce)') -and
-        $css.Contains('.local-course-banner-builder-layer-modal-body.is-content-revealed')
+    'Layer modal content reveals through shared Motion with automatic reduced-motion bypass' =
+        $source.Contains('function localCourseBannerBuilderRevealLayerModalContent(modal, html)') -and
+        $source -match '(?s)Motion\.swap\(body,.*?exit:\s*false,.*?enterDuration:\s*Motion\.timing\.normal,.*?swapOpacity:\s*0\.28' -and
+        $source.Contains('Motion.isEnabled(requestedModal)')
     'Image selection outline synchronises on both post-load layout frames' =
         $source -match '(?s)function localCourseBannerBuilderRefreshLoadedLayerModal\(modal\).*?requestAnimationFrame.*?localCourseBannerBuilderSyncModalPreviewSelectionOutline\(form\).*?requestAnimationFrame.*?localCourseBannerBuilderSyncModalPreviewSelectionOutline\(form\)'
     'Generated assets contain Wave 15 hooks' =
-        $build.Contains('is-content-revealed') -and
+        $build.Contains('layerModalPhase') -and
         $build.Contains('local-course-banner-builder-source-preview-primary-action') -and
         $css.Contains('local-course-banner-builder-parent-source-footer')
 }

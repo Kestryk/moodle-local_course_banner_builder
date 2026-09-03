@@ -4,12 +4,12 @@
 
 ### Fixed
 
-- Keeps the accepted shared layer-modal loading ring visible long enough to be
-  perceived even when pointer/focus prefetch has already cached the response.
-- Gives freshly inserted Image, Border and Overlay content one painted shared
-  reveal start state before the existing Kit content-reveal animation, avoiding
-  the previous opaque flash/reversed-looking transition; reduced motion remains
-  immediate.
+- Keeps the accepted shared layer-modal loading ring visible for the shared
+  fast-motion interval when pointer/focus prefetch has cached the response.
+- Reveals freshly inserted Image, Border and Overlay content through the same
+  `Motion.swap` entrance used by Desktop/Mobile preview changes, avoiding the
+  previous opaque flash/reversed-looking transition. Motion-disabled and
+  reduced-motion users receive both replacement and content immediately.
 
 ## Unreleased - 2026-09-03
 

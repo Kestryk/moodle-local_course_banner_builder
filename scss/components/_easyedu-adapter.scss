@@ -1521,10 +1521,6 @@
         @include easyedu.preview-modal-body-shell;
     }
 
-    .local-course-banner-builder-layer-modal-body.is-content-revealed {
-        @include easyedu.content-reveal(0.24s);
-    }
-
     .local-course-banner-builder-layer-modal-footer,
     .local-course-banner-builder-slideshow-modal-footer {
         @include easyedu.preview-modal-footer-shell;
@@ -1949,16 +1945,6 @@
             display: block;
             overflow: auto;
         }
-    }
-}
-
-body.easyedu-motion-disabled .local-course-banner-builder-layer-modal-body.is-content-revealed {
-    animation: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .local-course-banner-builder-layer-modal-body.is-content-revealed {
-        animation: none;
     }
 }
 
