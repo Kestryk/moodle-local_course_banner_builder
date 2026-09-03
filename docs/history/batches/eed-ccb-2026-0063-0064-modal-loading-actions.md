@@ -38,3 +38,12 @@ the general states, but exposed two final-cascade failures:
 
 The RF1 contract rejects the retired flex-growing ring, verifies all three
 common action classes and checks the generated AMD lifecycle.
+
+## RF2 - 2026-09-02
+
+Both selected-source action families now finish on the same 0.78 rem type,
+1.2 line-height and fixed 2.15 rem geometry. Destructive actions reuse the
+accepted Save-style light interaction state, while row Edit and Delete retain
+pointer cursors. After the accepted Image/Border/Overlay loader is removed,
+the loaded body receives one 0.24 second shared content reveal; reduced-motion
+users receive the content immediately without animation.

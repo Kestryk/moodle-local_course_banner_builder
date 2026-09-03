@@ -4,6 +4,13 @@
 
 ### Changed
 
+- Prepared the Wave 15 CCB correction candidate: compact and truthful large-
+  workspace zoom controls, Space-owned pan, first-paint selection alignment,
+  compact Parent actions with standard busy feedback and preview refresh,
+  identical preview-action typography, a reduced-motion-safe layer-modal
+  content reveal and immediate Image-editor selection-frame synchronisation.
+- Kept the classic general preview, Crop geometry, routes, capabilities,
+  sesskeys and persisted layer geometry outside these visual/lifecycle fixes.
 - Restored the shared border-box contract on the animated Layer infos content
   so its zero-height close state remains free of a final padding jump.
 - Continued `EED-CCB-2026-0049` with the large editor's view-only viewport:
@@ -14,6 +21,9 @@
 
 ### Validation
 
+- Added a focused Wave 15 source/generated contract. The separate CCB 0078
+  source audit found no CCB ownership of Moodle's Course settings Filepicker;
+  shared runtime JavaScript delivery evidence is still required.
 - Added the Slice 2 viewport contract covering bounds, Fit/100%, Space-drag
   precedence over Crop/layer gestures, close cleanup, localisation and
   source/generated asset parity. Runtime and human review remain separate.

@@ -1715,7 +1715,7 @@ function localCourseBannerBuilderRestoreLargeSourcePreviewMount(modal) {
  * @param {string} icon Font Awesome icon.
  * @returns {HTMLButtonElement} View-controller button.
  */
-function localCourseBannerBuilderCreateLargeWorkspaceButton(action, label, icon) {
+function localCourseBannerBuilderCreateLargeWorkspaceButton(action, label, icon, iconOnly) {
     var button = document.createElement('button');
     var glyph = document.createElement('i');
     var text = document.createElement('span');
@@ -1723,9 +1723,15 @@ function localCourseBannerBuilderCreateLargeWorkspaceButton(action, label, icon)
     button.className = 'btn btn-outline-secondary local-course-banner-builder-large-workspace-control';
     button.setAttribute('data-large-workspace-action', action);
     button.setAttribute('aria-label', label);
+    if (iconOnly) {
+        button.classList.add('local-course-banner-builder-large-workspace-control--icon');
+    }
     glyph.className = 'icon fa ' + icon + ' fa-fw';
     glyph.setAttribute('aria-hidden', 'true');
     text.textContent = label;
+    if (iconOnly) {
+        text.className = 'sr-only';
+    }
     button.appendChild(glyph);
     button.appendChild(text);
     return button;
@@ -1760,6 +1766,9 @@ function localCourseBannerBuilderSetLargeWorkspaceZoom(mount, requestedZoom, isF
         return;
     }
     var previousZoom = mount.zoom || 100;
+    if (!Number.isFinite(requestedZoom)) {
+        requestedZoom = previousZoom;
+    }
     var zoom = Math.max(
         localCourseBannerBuilderLargeWorkspaceMinZoom,
         Math.min(localCourseBannerBuilderLargeWorkspaceMaxZoom, Math.round(requestedZoom))
@@ -1777,13 +1786,21 @@ function localCourseBannerBuilderSetLargeWorkspaceZoom(mount, requestedZoom, isF
         mount.range.value = String(zoom);
         mount.range.setAttribute('aria-valuetext', String(zoom) + '%');
     }
-    if (mount.output) {
-        mount.output.value = String(zoom) + '%';
-        mount.output.textContent = String(zoom) + '%';
+    if (mount.zoomInput) {
+        mount.zoomInput.value = String(zoom);
+        mount.zoomInput.setAttribute('aria-valuetext', String(zoom) + '%');
     }
     if (mount.fitButton) {
         mount.fitButton.classList.toggle('is-active', mount.isFit);
         mount.fitButton.setAttribute('aria-pressed', mount.isFit ? 'true' : 'false');
+    }
+    if (mount.zoomOutButton) {
+        mount.zoomOutButton.disabled = zoom <= localCourseBannerBuilderLargeWorkspaceMinZoom;
+        mount.zoomOutButton.setAttribute('aria-disabled', mount.zoomOutButton.disabled ? 'true' : 'false');
+    }
+    if (mount.zoomInButton) {
+        mount.zoomInButton.disabled = zoom >= localCourseBannerBuilderLargeWorkspaceMaxZoom;
+        mount.zoomInButton.setAttribute('aria-disabled', mount.zoomInButton.disabled ? 'true' : 'false');
     }
     if (Number.isFinite(ratio) && previousZoom !== zoom) {
         viewport.scrollLeft = Math.max(0, (centreX * ratio) - (viewport.clientWidth / 2));
@@ -1848,7 +1865,7 @@ function localCourseBannerBuilderStopLargeWorkspacePan(mount, event) {
  */
 function localCourseBannerBuilderStartLargeWorkspacePan(event) {
     var mount = localCourseBannerBuilderLargeSourcePreviewMount;
-    if (!mount || !mount.spacePressed || event.button !== 0 || !mount.viewport.contains(event.target)) {
+    if (!mount || mount.pan || !mount.spacePressed || event.button !== 0 || !mount.viewport.contains(event.target)) {
         return false;
     }
     event.preventDefault();
@@ -1864,6 +1881,11 @@ function localCourseBannerBuilderStartLargeWorkspacePan(event) {
         startScrollTop: mount.viewport.scrollTop,
         moved: false
     };
+    mount.isFit = false;
+    if (mount.fitButton) {
+        mount.fitButton.classList.remove('is-active');
+        mount.fitButton.setAttribute('aria-pressed', 'false');
+    }
     mount.viewport.classList.add('is-panning');
     if (mount.viewport.setPointerCapture) {
         try {
@@ -1882,8 +1904,7 @@ function localCourseBannerBuilderStartLargeWorkspacePan(event) {
  * @returns {void}
  */
 function localCourseBannerBuilderBindLargeWorkspaceViewport(mount) {
-    var interactiveSelector = 'button, input, select, textarea, a, [contenteditable="true"], ' +
-        '[data-source-preview-layer="1"]';
+    var textEntrySelector = 'button, input, select, textarea, a, [contenteditable="true"]';
     var onToolbarClick = function(event) {
         var button = event.target.closest('[data-large-workspace-action]');
         if (!button) {
@@ -1912,11 +1933,27 @@ function localCourseBannerBuilderBindLargeWorkspaceViewport(mount) {
     var onRangeInput = function() {
         localCourseBannerBuilderSetLargeWorkspaceZoom(mount, Number(mount.range.value), false);
     };
+    var onZoomInputCommit = function() {
+        var value = mount.zoomInput.value.trim();
+        localCourseBannerBuilderSetLargeWorkspaceZoom(
+            mount,
+            value === '' ? mount.zoom : Number(value),
+            false
+        );
+    };
+    var onZoomInputKeyDown = function(event) {
+        if (event.key !== 'Enter') {
+            return;
+        }
+        event.preventDefault();
+        onZoomInputCommit();
+        mount.zoomInput.select();
+    };
     var onKeyDown = function(event) {
         if ((event.code !== 'Space' && event.key !== ' ') || event.repeat || event.ctrlKey || event.altKey || event.metaKey) {
             return;
         }
-        if (!mount.modal.contains(event.target) || (event.target.closest && event.target.closest(interactiveSelector))) {
+        if (!mount.modal.contains(event.target) || (event.target.closest && event.target.closest(textEntrySelector))) {
             return;
         }
         mount.spacePressed = true;
@@ -1978,6 +2015,9 @@ function localCourseBannerBuilderBindLargeWorkspaceViewport(mount) {
     };
     mount.toolbar.addEventListener('click', onToolbarClick);
     mount.range.addEventListener('input', onRangeInput);
+    mount.zoomInput.addEventListener('change', onZoomInputCommit);
+    mount.zoomInput.addEventListener('blur', onZoomInputCommit);
+    mount.zoomInput.addEventListener('keydown', onZoomInputKeyDown);
     document.addEventListener('keydown', onKeyDown, true);
     document.addEventListener('keyup', onKeyUp, true);
     document.addEventListener('pointermove', onPointerMove, true);
@@ -1993,6 +2033,9 @@ function localCourseBannerBuilderBindLargeWorkspaceViewport(mount) {
     mount.cleanupViewport = function() {
         mount.toolbar.removeEventListener('click', onToolbarClick);
         mount.range.removeEventListener('input', onRangeInput);
+        mount.zoomInput.removeEventListener('change', onZoomInputCommit);
+        mount.zoomInput.removeEventListener('blur', onZoomInputCommit);
+        mount.zoomInput.removeEventListener('keydown', onZoomInputKeyDown);
         document.removeEventListener('keydown', onKeyDown, true);
         document.removeEventListener('keyup', onKeyUp, true);
         document.removeEventListener('pointermove', onPointerMove, true);
@@ -2027,7 +2070,7 @@ function localCourseBannerBuilderCreateLargeWorkspaceViewport(modal, panel, base
     var stage = document.createElement('div');
     var zoomGroup = document.createElement('div');
     var range = document.createElement('input');
-    var output = document.createElement('output');
+    var zoomInput = document.createElement('input');
     var hint = document.createElement('span');
     var toolbarLabel = localCourseBannerBuilderGetJsString('largeeditorviewcontrols', 'Workspace view controls');
     var viewportLabel = localCourseBannerBuilderGetJsString('largeeditorviewportlabel', 'Large banner editing viewport');
@@ -2044,7 +2087,7 @@ function localCourseBannerBuilderCreateLargeWorkspaceViewport(modal, panel, base
         viewport: viewport,
         stage: stage,
         range: range,
-        output: output,
+        zoomInput: zoomInput,
         baseWidth: Math.max(1024, Math.round(baseWidth || 1280)),
         zoom: 100,
         isFit: true,
@@ -2059,14 +2102,15 @@ function localCourseBannerBuilderCreateLargeWorkspaceViewport(modal, panel, base
     toolbar.className = 'local-course-banner-builder-large-workspace-toolbar';
     toolbar.setAttribute('role', 'toolbar');
     toolbar.setAttribute('aria-label', toolbarLabel);
-    mount.fitButton = localCourseBannerBuilderCreateLargeWorkspaceButton('fit', fitLabel, 'fa-compress');
+    mount.fitButton = localCourseBannerBuilderCreateLargeWorkspaceButton('fit', fitLabel, 'fa-compress', true);
     mount.fitButton.setAttribute('aria-pressed', 'true');
     toolbar.appendChild(mount.fitButton);
-    toolbar.appendChild(localCourseBannerBuilderCreateLargeWorkspaceButton('actual', actualLabel, 'fa-search'));
+    toolbar.appendChild(localCourseBannerBuilderCreateLargeWorkspaceButton('actual', actualLabel, 'fa-search', false));
     zoomGroup.className = 'local-course-banner-builder-large-workspace-zoom-group';
     zoomGroup.setAttribute('role', 'group');
     zoomGroup.setAttribute('aria-label', zoomLabel);
-    zoomGroup.appendChild(localCourseBannerBuilderCreateLargeWorkspaceButton('out', zoomOutLabel, 'fa-minus'));
+    mount.zoomOutButton = localCourseBannerBuilderCreateLargeWorkspaceButton('out', zoomOutLabel, 'fa-minus', true);
+    zoomGroup.appendChild(mount.zoomOutButton);
     range.type = 'range';
     range.className = 'local-course-banner-builder-large-workspace-zoom-range';
     range.min = String(localCourseBannerBuilderLargeWorkspaceMinZoom);
@@ -2076,12 +2120,18 @@ function localCourseBannerBuilderCreateLargeWorkspaceViewport(modal, panel, base
     range.setAttribute('aria-label', zoomLabel);
     range.setAttribute('aria-valuetext', '100%');
     zoomGroup.appendChild(range);
-    output.className = 'local-course-banner-builder-large-workspace-zoom-output';
-    output.value = '100%';
-    output.textContent = '100%';
-    output.setAttribute('aria-live', 'polite');
-    zoomGroup.appendChild(output);
-    zoomGroup.appendChild(localCourseBannerBuilderCreateLargeWorkspaceButton('in', zoomInLabel, 'fa-plus'));
+    zoomInput.type = 'number';
+    zoomInput.className = 'form-control local-course-banner-builder-large-workspace-zoom-input';
+    zoomInput.min = String(localCourseBannerBuilderLargeWorkspaceMinZoom);
+    zoomInput.max = String(localCourseBannerBuilderLargeWorkspaceMaxZoom);
+    zoomInput.step = '5';
+    zoomInput.value = '100';
+    zoomInput.inputMode = 'numeric';
+    zoomInput.setAttribute('aria-label', zoomLabel);
+    zoomInput.setAttribute('aria-valuetext', '100%');
+    zoomGroup.appendChild(zoomInput);
+    mount.zoomInButton = localCourseBannerBuilderCreateLargeWorkspaceButton('in', zoomInLabel, 'fa-plus', true);
+    zoomGroup.appendChild(mount.zoomInButton);
     toolbar.appendChild(zoomGroup);
     hint.className = 'local-course-banner-builder-large-workspace-pan-hint';
     hint.textContent = localCourseBannerBuilderGetJsString(
@@ -2182,6 +2232,7 @@ function localCourseBannerBuilderShowLargeSourcePreview(button) {
         window.requestAnimationFrame(function() {
             if (localCourseBannerBuilderLargeSourcePreviewMount === mount) {
                 localCourseBannerBuilderFitLargeWorkspace(mount);
+                localCourseBannerBuilderSyncSourcePreviewSelectionOutline(mount.panel);
             }
         });
     });
@@ -2216,13 +2267,15 @@ function localCourseBannerBuilderFinishSourceChainPreviewClose(modal) {
         body.setAttribute('aria-busy', 'false');
     }
     var opener = modal.localCourseBannerBuilderSourceChainPreviewOpener;
-    if (opener && document.contains(opener)) {
-        opener.classList.add('is-focus-returned');
-        opener.focus();
-        opener.addEventListener('blur', function clearReturnedFocus() {
-            opener.classList.remove('is-focus-returned');
-        }, {once: true});
-    }
+    window.setTimeout(function() {
+        if (opener && document.contains(opener)) {
+            opener.classList.add('is-focus-returned');
+            opener.focus({preventScroll: true});
+            opener.addEventListener('blur', function clearReturnedFocus() {
+                opener.classList.remove('is-focus-returned');
+            }, {once: true});
+        }
+    }, 260);
 }
 
 /**
@@ -15817,10 +15870,11 @@ function localCourseBannerBuilderGetJsString(key, fallback) {
  *
  * @param {HTMLElement} button Action button.
  * @param {boolean} busy Whether the request is active.
+ * @param {HTMLElement|null} rootOverride Explicit administration root for portalled modal controls.
  * @return {HTMLElement|null} Administration root.
  */
-function localCourseBannerBuilderSetAsyncActionBusy(button, busy) {
-    var root = button ? button.closest('.local-course-banner-builder-admin') : null;
+function localCourseBannerBuilderSetAsyncActionBusy(button, busy, rootOverride) {
+    var root = rootOverride || (button ? button.closest('.local-course-banner-builder-admin') : null);
     if (!root) {
         return null;
     }
@@ -19667,6 +19721,8 @@ function localCourseBannerBuilderSubmitParentSourceChange(form) {
         error.hidden = true;
         error.textContent = '';
     }
+    var adminRoot = document.querySelector('.local-course-banner-builder-admin');
+    localCourseBannerBuilderSetAsyncActionBusy(null, true, adminRoot);
     localCourseBannerBuilderSetParentSourceChangeBusy(modal, true);
     fetch(form.getAttribute('action') || window.location.href, {
         method: 'POST',
@@ -19718,6 +19774,8 @@ function localCourseBannerBuilderSubmitParentSourceChange(form) {
         if (submit && !submit.disabled) {
             submit.focus({preventScroll: true});
         }
+    }).finally(function() {
+        localCourseBannerBuilderSetAsyncActionBusy(null, false, adminRoot);
     });
 }
 
@@ -20883,6 +20941,7 @@ function localCourseBannerBuilderShowLayerModalLoading(modal, requestId) {
     if (!body) {
         return;
     }
+    body.classList.remove('is-content-revealed');
     var status = document.createElement('div');
     status.className = 'local-course-banner-builder-layer-modal-loading';
     status.setAttribute('role', 'status');
@@ -20903,14 +20962,35 @@ function localCourseBannerBuilderShowLayerModalLoading(modal, requestId) {
     localCourseBannerBuilderShowModal(modal);
 }
 
+/**
+ * Reveal freshly loaded layer-modal content once the shared loader is gone.
+ *
+ * @param {HTMLElement|null} modal Layer modal.
+ * @return {void}
+ */
+function localCourseBannerBuilderRevealLayerModalContent(modal) {
+    var body = modal ? modal.querySelector('.modal-body') : null;
+    if (!body) {
+        return;
+    }
+    body.classList.remove('is-content-revealed');
+    window.requestAnimationFrame(function() {
+        if (body.isConnected && modal.getAttribute('aria-busy') !== 'true') {
+            body.classList.add('is-content-revealed');
+        }
+    });
+}
+
 function localCourseBannerBuilderRefreshLoadedLayerModal(modal) {
     var form = modal ? modal.querySelector('form.mform') : null;
     window.requestAnimationFrame(function () {
         localCourseBannerBuilderRefreshCurrentPreviewLayer(form);
         localCourseBannerBuilderSyncBorderPreview(form);
         localCourseBannerBuilderSyncContextPreviewVisibility(form);
+        localCourseBannerBuilderSyncModalPreviewSelectionOutline(form);
         window.requestAnimationFrame(function () {
             localCourseBannerBuilderSyncBorderPreview(form);
+            localCourseBannerBuilderSyncModalPreviewSelectionOutline(form);
         });
     });
 }
@@ -21026,6 +21106,7 @@ function localCourseBannerBuilderLoadLayerModal(url, modalId) {
         if (!targetmodal.classList.contains('show')) {
             localCourseBannerBuilderShowModal(targetmodal);
         }
+        localCourseBannerBuilderRevealLayerModalContent(targetmodal);
         localCourseBannerBuilderRefreshLoadedLayerModal(targetmodal);
     }).catch(function (error) {
         window.console.error(error);
@@ -21327,6 +21408,7 @@ localCourseBannerBuilderOnReady(function () {
             var body = dynamicmodal.querySelector('.modal-body');
             if (body) {
                 body.setAttribute('aria-busy', 'false');
+                body.classList.remove('is-content-revealed');
                 body.innerHTML = '';
             }
         });

@@ -57,6 +57,20 @@ Opening snapshot/final Save/Cancel semantics, workspace composition,
 boundary snapping and shared Border/Overlay property entry points remain
 separate slices.
 
+## Wave 15 viewport correction
+
+The transient controller now keeps its complete control row compact, exposes a
+bounded numeric zoom entry and disables only the endpoint action that cannot
+move further. Manual zoom remains manual across viewport resize; Fit remains
+the only resize-following mode. Empty numeric input restores the current zoom
+instead of unexpectedly selecting the minimum.
+
+Space plus primary drag remains the sole pan gesture. A plain primary drag on
+the canvas is intentionally left to the existing selection, layer movement and
+Crop engine because an empty-region direct-pan contract has not yet received
+runtime proof. The selected Image outline is synchronised immediately after
+the first Fit paint, and modal close retains the explicit focus-return cue.
+
 ## Source contract
 
 - exactly one `[data-source-visual-editor="1"]` root;
@@ -65,6 +79,8 @@ separate slices.
 - large mount only at 1024 px or wider;
 - Fit on open, manual zoom bounded to 25–400%, and a direct 100% control;
 - Space-drag changes only viewport scroll offsets;
+- ordinary canvas drag never starts viewport pan without Space;
+- numeric zoom is clamped to the same 25-400% endpoints as range/buttons;
 - no viewport transform or state on the classic general preview;
 - source and generated AMD/CSS must be rebuilt together;
 - managed preview and browser evidence remain separate from static readiness.

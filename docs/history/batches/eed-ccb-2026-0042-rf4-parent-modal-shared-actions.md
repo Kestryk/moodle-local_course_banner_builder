@@ -37,6 +37,15 @@ Crop, layer editing and the CCB 0049 authoring workspace are outside this lot.
 - No fixture, browser, cache purge or runtime preview belongs to the source
   worktree. The existing leased Parent scenario remains the later preview gate.
 
+## RF5 compact transaction feedback
+
+The portalled footer now applies the shared small action geometry after the
+generic modal rule, so Save and Cancel cannot be enlarged by the later
+Bootstrap-facing cascade. Save toggles the administration root's established
+bottom-end busy feedback. A successful response also returns and rehydrates
+the complete selected-source fragment, keeping its general preview visible and
+current without changing the guarded Parent endpoint, sesskey or capability.
+
 ## Allowlist
 
 - `templates/admin_manage.mustache`

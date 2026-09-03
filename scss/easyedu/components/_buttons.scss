@@ -131,10 +131,14 @@
 // Primary Save/Apply action for modal and form footers. The consumer retains
 // its Bootstrap semantic class and submit/action hook; this mixin owns only
 // the shared height, icon slot, alignment and interactive states.
-@mixin save-action-button {
-  @include action-button(regular);
+@mixin save-action-button($size: regular) {
+  @include action-button($size);
 
-  min-height: var(--easyedu-control-height);
+  @if $size == small {
+    min-height: 1.9rem;
+  } @else {
+    min-height: var(--easyedu-control-height);
+  }
   white-space: nowrap;
 
   > .fa:is(.fa-save, .fa-floppy-o, .fa-floppy-disk) {
@@ -270,17 +274,23 @@
 // Canonical sizing for neighbouring completion actions. This deliberately
 // leaves Bootstrap/Moodle colours and interaction semantics to the consumer;
 // it only guarantees that primary and secondary actions share one geometry.
-@mixin action-row-button {
-  @include button-size(regular);
+@mixin action-row-button($size: regular) {
+  @include button-size($size);
 
   align-items: center;
   box-sizing: border-box;
   display: inline-flex;
-  height: var(--easyedu-control-height, 2.5rem) !important;
-  min-height: var(--easyedu-control-height, 2.5rem) !important;
+  @if $size == small {
+    height: 1.9rem !important;
+    min-height: 1.9rem !important;
+    padding-block: 0.22rem !important;
+  } @else {
+    height: var(--easyedu-control-height, 2.5rem) !important;
+    min-height: var(--easyedu-control-height, 2.5rem) !important;
+    padding-block: 0.36rem !important;
+  }
   justify-content: center;
   line-height: 1.2;
-  padding-block: 0.36rem !important;
 }
 
 @mixin admin-primary-nav {
