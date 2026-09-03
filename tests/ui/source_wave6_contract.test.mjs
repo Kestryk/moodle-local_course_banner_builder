@@ -30,7 +30,7 @@ test('large authoring workspace mounts the one live editor and restores it', asy
     assert.match(source, /function localCourseBannerBuilderShowLargeSourcePreview\(button\)/u);
     assert.match(source, /function localCourseBannerBuilderRestoreLargeSourcePreviewMount\(modal\)/u);
     assert.match(source, /parent\.insertBefore\(placeholder, sourcePanel\)/u);
-    assert.match(source, /stage\.appendChild\(panel\)/u);
+    assert.match(source, /workspace\.appendChild\(panel\)/u);
     assert.match(source, /body\.appendChild\(mount\.workspace\)/u);
     assert.match(source, /mount\.placeholder\.parentNode\.replaceChild\(mount\.panel, mount\.placeholder\)/u);
     assert.match(source, /localCourseBannerBuilderShowModal\(modal\)/u);
@@ -50,4 +50,20 @@ test('large authoring workspace hides its nested launcher and keeps the footer e
     assert.match(adapter, /\[data-source-preview-large-workspace="1"\][\s\S]*?\[data-action="local-course-banner-builder-show-large-source-preview"\][\s\S]*?display: none;/u);
     assert.match(adapter, /\.local-course-banner-builder-source-chain-preview-modal-footer \{[\s\S]*?&:empty \{\s*display: none;/u);
     assert.match(adapter, /\[data-action="local-course-banner-builder-show-large-source-preview"\]\.is-focus-returned/u);
+});
+
+test('large authoring workspace isolates one published frame inside a checkerboard plane', async() => {
+    const source = await read('amd/src/admin_manage.js');
+    const adapter = await read('scss/components/_easyedu-adapter.scss');
+
+    assert.match(source, /frame\.parentNode\.insertBefore\(mount\.framePlaceholder, frame\)/u);
+    assert.match(source, /mount\.framePlaceholder\.parentNode\.replaceChild\(mount\.frame, mount\.framePlaceholder\)/u);
+    assert.match(source, /plane\.appendChild\(frame\)/u);
+    assert.match(source, /workspace\.appendChild\(panel\)/u);
+    assert.match(source, /availableWidth \/ mount\.frameWidth/u);
+    assert.match(source, /event\.target === mount\.plane \|\| event\.target === mount\.stage/u);
+    assert.doesNotMatch(source, /frame\.cloneNode\(/u);
+    assert.match(adapter, /\.local-course-banner-builder-large-workspace-plane[\s\S]*?transform: scale\(var\(--local-course-banner-builder-large-workspace-zoom\)\)/u);
+    assert.match(adapter, /\[data-large-workspace-published-frame="1"\]/u);
+    assert.doesNotMatch(adapter, /\.local-course-banner-builder-source-preview-panel\[data-source-preview-large-workspace="1"\][^{]*\{[^}]*transform: scale/u);
 });

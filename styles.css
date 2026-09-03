@@ -18386,6 +18386,24 @@ span[data-flexitour=container].orphan .modal-dialog {
   min-height: 0;
   gap: 0.65rem;
 }
+.local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-source-preview-panel[data-source-preview-large-workspace="1"] {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+}
+.local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring [data-source-preview-large-workspace="1"] .local-course-banner-builder-source-preview-layout {
+  min-height: 0;
+  height: 100%;
+}
+.local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring [data-source-preview-large-workspace="1"] .local-course-banner-builder-source-preview-canvas {
+  display: grid;
+  grid-template-rows: auto minmax(18rem, 1fr) auto auto auto;
+  min-height: 0;
+}
 .local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-large-workspace-toolbar {
   display: flex;
   align-items: center;
@@ -18492,9 +18510,10 @@ span[data-flexitour=container].orphan .modal-dialog {
   position: relative;
   min-width: 0;
   min-height: 0;
+  height: 100%;
   overflow: auto;
   overscroll-behavior: contain;
-  padding: 1rem;
+  padding: 0;
   border: 1px solid color-mix(in srgb, var(--easyedu-primary, #0f6cbf) 24%, #fff);
   border-radius: 0.7rem;
   background-color: color-mix(in srgb, var(--easyedu-primary, #0f6cbf) 4%, #fff);
@@ -18516,15 +18535,50 @@ span[data-flexitour=container].orphan .modal-dialog {
   position: relative;
   min-width: 1px;
   min-height: 1px;
-  margin-inline: auto;
 }
-.local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-source-preview-panel[data-source-preview-large-workspace="1"] {
-  width: var(--local-course-banner-builder-large-workspace-base-width);
-  max-width: none;
-  min-width: 0;
-  margin: 0;
+.local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-large-workspace-plane {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: var(--local-course-banner-builder-large-workspace-plane-width);
+  height: var(--local-course-banner-builder-large-workspace-plane-height);
   transform: scale(var(--local-course-banner-builder-large-workspace-zoom));
   transform-origin: top left;
+  background-color: color-mix(in srgb, var(--easyedu-primary, #0f6cbf) 3%, #fff);
+  background-image: linear-gradient(to right, rgba(15, 108, 191, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(15, 108, 191, 0.1) 1px, transparent 1px), linear-gradient(to right, rgba(15, 108, 191, 0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(15, 108, 191, 0.04) 1px, transparent 1px);
+  background-position: -1px -1px;
+  background-size: 5rem 5rem, 5rem 5rem, 1rem 1rem, 1rem 1rem;
+  cursor: grab;
+}
+.local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-large-workspace-plane > [data-large-workspace-published-frame="1"] {
+  position: absolute;
+  top: var(--local-course-banner-builder-large-workspace-frame-y);
+  left: var(--local-course-banner-builder-large-workspace-frame-x);
+  width: var(--local-course-banner-builder-large-workspace-frame-width);
+  height: var(--local-course-banner-builder-large-workspace-frame-height);
+  max-width: none;
+  margin: 0;
+  overflow: visible;
+  outline: 0.2rem solid color-mix(in srgb, var(--easyedu-primary, #0f6cbf) 78%, #fff);
+  outline-offset: 0.22rem;
+  box-shadow: 0 0 0 0.45rem rgba(255, 255, 255, 0.82), 0 0.35rem 1rem rgba(31, 42, 55, 0.18);
+  cursor: default;
+}
+.local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring .local-course-banner-builder-large-workspace-published-label {
+  position: absolute;
+  z-index: 9300;
+  top: calc(var(--local-course-banner-builder-large-workspace-frame-y) - 2rem);
+  left: var(--local-course-banner-builder-large-workspace-frame-x);
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.5rem;
+  padding: 0.18rem 0.48rem;
+  border-radius: 0.4rem;
+  background: var(--easyedu-primary, #0f6cbf);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.15;
+  pointer-events: none;
 }
 .local-course-banner-builder-source-chain-preview-modal.local-course-banner-builder-source-chain-preview-modal--authoring [data-source-preview-large-workspace="1"] [data-action=local-course-banner-builder-show-large-source-preview] {
   display: none;

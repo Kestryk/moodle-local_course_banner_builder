@@ -4,6 +4,14 @@
 
 ### Changed
 
+- Continued `EED-CCB-2026-0049` with Slice 3A: the large editor now places the
+  one live published frame inside a CSS-only checkerboard work plane, exposes
+  the public clipping boundary with a localised label, centres that frame in
+  Fit, and keeps toolbar/property controls outside the zoom transform.
+- Added direct primary-drag panning on proven empty grid while preserving
+  Space-drag from the complete viewport and existing layer, resize, selection
+  and Crop pointer ownership. The plane follows existing out-of-frame layer
+  extents within the persisted `-1000..1000` offset contract.
 - Prepared the Wave 15 CCB correction candidate: compact and truthful large-
   workspace zoom controls, Space-owned pan, first-paint selection alignment,
   compact Parent actions with standard busy feedback and preview refresh,
@@ -21,6 +29,9 @@
 
 ### Validation
 
+- Added a focused Slice 3A contract for single-node frame movement and exact
+  restoration, CSS-only grid composition, frame-based Fit, bounded layer
+  extents, direct empty-grid pan, UTF-8 labels and source/generated parity.
 - Added a focused Wave 15 source/generated contract. The separate CCB 0078
   source audit found no CCB ownership of Moodle's Course settings Filepicker;
   shared runtime JavaScript delivery evidence is still required.

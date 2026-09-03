@@ -2119,6 +2119,7 @@ $PAGE->requires->strings_for_js([
     'invaliddeleteselectedlayerresponse',
     'keepaspectpreviewimage',
     'largeeditorpanhint',
+    'largeeditorpublishedarea',
     'largeeditorrequiresdesktop',
     'largeeditorviewcontrols',
     'largeeditorviewportlabel',
