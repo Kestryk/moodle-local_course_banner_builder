@@ -52,6 +52,12 @@ and layer order. Calculated fields include target scales, projected layer box,
 normalized coordinates, effective media crop/fit box, title safe width and
 frame bounds, and projected border thickness.
 
+The large authoring workspace uses the same canonical 1600 px desktop width;
+the selected display ratio derives its visible frame height. Browser
+measurements decide only when the modal is ready and how Fit projects that
+canonical frame. A hidden or zero-size measurement must never replace the
+canonical document dimensions.
+
 Rotation is reserved in the returned contract but currently only accepts zero:
 CCB has no supported persisted rotation control. Crop uses the existing stored
 percentage convention: `x`/`y` are clamped inside a 1-100% width/height crop.
