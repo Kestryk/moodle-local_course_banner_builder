@@ -35,7 +35,9 @@ $checks = [ordered]@{
     'Viewport styling is limited to the authoring modal' =
         $scss.Contains('&.local-course-banner-builder-source-chain-preview-modal--authoring') -and
         $scss.Contains('.local-course-banner-builder-large-workspace-viewport') -and
-        $scss.Contains('transform: scale(var(--local-course-banner-builder-large-workspace-zoom))')
+        $scss.Contains('.local-course-banner-builder-large-workspace-plane') -and
+        $scss.Contains('transform: scale(var(--local-course-banner-builder-large-workspace-zoom))') -and
+        -not ($scss -match '\.local-course-banner-builder-source-preview-panel\[data-source-preview-large-workspace="1"\]\s*\{[^}]*transform:\s*scale')
     'Every view control is localised in English and French' =
         $php.Contains("'largeeditorviewcontrols'") -and
         $en.Contains("`$string['largeeditorpanhint']") -and

@@ -71,6 +71,29 @@ Crop engine because an empty-region direct-pan contract has not yet received
 runtime proof. The selected Image outline is synchronised immediately after
 the first Fit paint, and modal close retains the explicit focus-return cue.
 
+## Slice 3A: elastic grid plane and published frame
+
+The large authoring viewport now owns a CSS-only checkerboard plane around the
+one live published banner frame. The frame is moved through its own exact
+placeholder inside the already-portalled editor; it is never cloned and is
+restored before the editor itself returns to the standard page position. A
+localised **Published area** label and outline make the public clipping boundary
+explicit while layers using the existing `-1000..1000` offset contract remain
+visible outside it.
+
+Zoom is applied only to the logical plane. The modal toolbar, source controls
+and property panel keep their normal dimensions, and Fit targets and centres
+the published frame rather than the complete editor panel. The plane grows to
+cover the current layer extents plus one banner of working margin, capped by
+the persisted offset contract; its grid is painted with CSS gradients rather
+than repeated DOM nodes.
+
+A primary-button drag on proven empty grid pans the viewport directly. Space
+plus drag continues to pan from anywhere in the viewport, preserving layer,
+selection, resize and Crop pointer ownership. These changes exist only under
+the large-authoring modal selector; the classic general preview remains
+unchanged.
+
 ## Source contract
 
 - exactly one `[data-source-visual-editor="1"]` root;
@@ -79,7 +102,8 @@ the first Fit paint, and modal close retains the explicit focus-return cue.
 - large mount only at 1024 px or wider;
 - Fit on open, manual zoom bounded to 25–400%, and a direct 100% control;
 - Space-drag changes only viewport scroll offsets;
-- ordinary canvas drag never starts viewport pan without Space;
+- a plain primary drag pans only when its target is the empty plane or stage;
+- layer, selection, resize and Crop targets never start direct plane pan;
 - numeric zoom is clamped to the same 25-400% endpoints as range/buttons;
 - no viewport transform or state on the classic general preview;
 - source and generated AMD/CSS must be rebuilt together;

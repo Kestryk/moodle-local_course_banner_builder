@@ -1,9 +1,13 @@
 [CmdletBinding()]
 param(
-    [string]$PluginRoot = (Split-Path -Parent $PSScriptRoot)
+    [string]$PluginRoot = ''
 )
 
 $ErrorActionPreference = 'Stop'
+
+if ([string]::IsNullOrWhiteSpace($PluginRoot)) {
+    $PluginRoot = Split-Path -Parent $PSScriptRoot
+}
 
 $source = Get-Content -Raw -LiteralPath (Join-Path $PluginRoot 'amd/src/admin_manage.js')
 $build = Get-Content -Raw -LiteralPath (Join-Path $PluginRoot 'amd/build/admin_manage.min.js')
@@ -24,8 +28,9 @@ $checks = [ordered]@{
         $source.Contains('mount.zoomOutButton.disabled = zoom <= localCourseBannerBuilderLargeWorkspaceMinZoom') -and
         $source.Contains('mount.zoomInButton.disabled = zoom >= localCourseBannerBuilderLargeWorkspaceMaxZoom') -and
         $source.Contains("mount.zoomInButton = localCourseBannerBuilderCreateLargeWorkspaceButton('in'")
-    'Pan remains Space-owned and cannot intercept an ordinary canvas click' =
-        $source.Contains('!mount.spacePressed || event.button !== 0') -and
+    'Pan remains gesture-owned and cannot intercept a layer or control click' =
+        $source.Contains('(!mount.spacePressed && !isEmptyPlane)') -and
+        $source.Contains('event.target === mount.plane || event.target === mount.stage') -and
         -not $source.Contains('directBackground')
     'First large-workspace frame synchronises selection after Fit' =
         $source -match '(?s)localCourseBannerBuilderFitLargeWorkspace\(mount\);\s*localCourseBannerBuilderSyncSourcePreviewSelectionOutline\(mount\.panel\);'
