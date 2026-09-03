@@ -1936,19 +1936,22 @@ function localCourseBannerBuilderCenterLargeWorkspaceFrame(mount) {
         return;
     }
     var scale = mount.zoom / 100;
+    var viewportRect = mount.viewport.getBoundingClientRect();
+    var viewportCentreWidth = Math.max(1, viewportRect.width || mount.viewport.clientWidth) / 2;
+    var viewportCentreHeight = Math.max(1, viewportRect.height || mount.viewport.clientHeight) / 2;
     mount.viewport.scrollLeft = Math.max(
         0,
         (mount.stage.offsetLeft || 0) +
             (mount.planeOffsetX || 0) +
             ((mount.frameOriginX + (mount.frameWidth / 2)) * scale) -
-            (mount.viewport.clientWidth / 2)
+            viewportCentreWidth
     );
     mount.viewport.scrollTop = Math.max(
         0,
         (mount.stage.offsetTop || 0) +
             (mount.planeOffsetY || 0) +
             ((mount.frameOriginY + (mount.frameHeight / 2)) * scale) -
-            (mount.viewport.clientHeight / 2)
+            viewportCentreHeight
     );
 }
 
