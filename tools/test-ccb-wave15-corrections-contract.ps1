@@ -44,10 +44,11 @@ $checks = [ordered]@{
     'Parent footer actions consume compact shared geometry after generic modal rules' =
         $template.Contains('local-course-banner-builder-parent-source-footer') -and
         $adapter -match '(?s)\.modal\[id\^="local-course-banner-builder-"\].*?\.local-course-banner-builder-parent-source-save\s*\{\s*@include easyedu\.save-action-button\(small\);.*?\.local-course-banner-builder-parent-source-footer\s*>\s*\.btn\s*\{\s*@include easyedu\.action-row-button\(small\);'
-    'Both preview action families share compact typography and light states' =
+    'Both preview action families share typography and light states with intentional geometry' =
         ([regex]::Matches($php, "local-course-banner-builder-source-preview-primary-action'")).Count -eq 3 -and
         ([regex]::Matches($selected, 'local-course-banner-builder-bulk-action-button')).Count -eq 3 -and
-        $adapter -match '(?s)\.local-course-banner-builder-source-preview-primary-action.*?font-size:\s*0\.78rem\s*!important;.*?height:\s*2\.15rem\s*!important;.*?line-height:\s*1\.2\s*!important;.*?\.btn-danger:not\(:disabled\):hover'
+        $adapter -match '(?s)\.local-course-banner-builder-bulk-action-button.*?font-size:\s*0\.78rem\s*!important;.*?height:\s*2\.15rem\s*!important;.*?\.local-course-banner-builder-bulk-delete-button:hover' -and
+        $adapter -match '(?s)\.local-course-banner-builder-source-preview-primary-action.*?font-size:\s*0\.78rem\s*!important;.*?height:\s*2\.45rem\s*!important;.*?line-height:\s*1\.2\s*!important;.*?\.btn-danger:not\(:disabled\):hover'
     'Row Edit and Delete retain pointer cursors' =
         $actions -match '(?s)\.local-course-banner-builder-layer-actions-cell.*?:is\(button:not\(:disabled\), a\[href\]\)\s*\{\s*cursor:\s*pointer;' -and
         $adapter -match '(?s)\[data-action="local-course-banner-builder-delete-source-layer"\]\s*\{\s*cursor:\s*pointer\s*!important;'

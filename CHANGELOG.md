@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased - 2026-09-03 (Wave 19)
+
+### Fixed
+
+- Keeps the accepted shared layer-modal loading ring visible long enough to be
+  perceived even when pointer/focus prefetch has already cached the response.
+- Gives freshly inserted Image, Border and Overlay content one painted shared
+  reveal start state before the existing Kit content-reveal animation, avoiding
+  the previous opaque flash/reversed-looking transition; reduced motion remains
+  immediate.
+
 ## Unreleased - 2026-09-03
 
 ### Changed

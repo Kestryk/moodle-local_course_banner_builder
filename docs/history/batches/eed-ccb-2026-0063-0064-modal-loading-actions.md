@@ -47,3 +47,15 @@ accepted Save-style light interaction state, while row Edit and Delete retain
 pointer cursors. After the accepted Image/Border/Overlay loader is removed,
 the loaded body receives one 0.24 second shared content reveal; reduced-motion
 users receive the content immediately without animation.
+
+## RF3 - 2026-09-03
+
+Edit-button pointer/focus prefetch remains enabled, but a cached response can
+otherwise remove the loader before the browser paints it. RF3 gives the already
+accepted loading ring a bounded 180 ms minimum presentation. Fresh content is
+inserted in a `data-layer-modal-reveal-pending` start state for one painted
+frame, then the existing Kit `content-reveal` mixin runs once.
+
+This prevents a fully opaque pre-animation flash without changing modal
+geometry, request caching, form preparation, persistence or the Source Preview
+loader. Reduced-motion users receive the final content immediately.

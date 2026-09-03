@@ -21124,6 +21124,7 @@ function localCourseBannerBuilderEnhanceAccordions(root) {
 
 var localCourseBannerBuilderLayerModalRequestCache = {};
 var localCourseBannerBuilderLayerModalCacheLifetime = 30000;
+var localCourseBannerBuilderLayerModalMinimumLoadingTime = 180;
 
 function localCourseBannerBuilderRequestLayerModal(url) {
     var now = Date.now();
@@ -21166,6 +21167,7 @@ function localCourseBannerBuilderShowLayerModalLoading(modal, requestId) {
         return;
     }
     body.classList.remove('is-content-revealed');
+    modal.removeAttribute('data-layer-modal-reveal-pending');
     var status = document.createElement('div');
     status.className = 'local-course-banner-builder-layer-modal-loading';
     status.setAttribute('role', 'status');
@@ -21198,10 +21200,18 @@ function localCourseBannerBuilderRevealLayerModalContent(modal) {
         return;
     }
     body.classList.remove('is-content-revealed');
+    var revealId = String(Date.now()) + '-' + String(Math.random());
+    modal.dataset.layerModalRevealId = revealId;
+    modal.dataset.layerModalRevealPending = '1';
     window.requestAnimationFrame(function() {
-        if (body.isConnected && modal.getAttribute('aria-busy') !== 'true') {
+        window.requestAnimationFrame(function() {
+            if (!body.isConnected || modal.getAttribute('aria-busy') === 'true' ||
+                    modal.dataset.layerModalRevealId !== revealId) {
+                return;
+            }
+            modal.removeAttribute('data-layer-modal-reveal-pending');
             body.classList.add('is-content-revealed');
-        }
+        });
     });
 }
 
@@ -21225,11 +21235,26 @@ function localCourseBannerBuilderLoadLayerModal(url, modalId) {
     }
     var requestId = String(Date.now()) + '-' + String(Math.random());
     var requestedModal = modalId ? document.getElementById(modalId) : null;
+    var loadingStarted = Date.now();
     if (requestedModal) {
         localCourseBannerBuilderShowLayerModalLoading(requestedModal, requestId);
     }
 
     localCourseBannerBuilderRequestLayerModal(url).then(function (response) {
+        var elapsed = Date.now() - loadingStarted;
+        var remaining = requestedModal ? Math.max(
+            0,
+            localCourseBannerBuilderLayerModalMinimumLoadingTime - elapsed
+        ) : 0;
+        if (!remaining) {
+            return response;
+        }
+        return new Promise(function(resolve) {
+            window.setTimeout(function() {
+                resolve(response);
+            }, remaining);
+        });
+    }).then(function (response) {
         var html = response;
         var parser = new DOMParser();
         var doc = parser.parseFromString(html, 'text/html');
@@ -21268,6 +21293,8 @@ function localCourseBannerBuilderLoadLayerModal(url, modalId) {
         if (fetchedtitle && targettitle) {
             targettitle.textContent = fetchedtitle.textContent;
         }
+        targetmodal.dataset.layerModalRevealPending = '1';
+        targetbody.classList.remove('is-content-revealed');
         targetbody.innerHTML = fetchedbody.innerHTML;
 
         var form = targetbody.querySelector('form.mform');
@@ -21343,6 +21370,7 @@ function localCourseBannerBuilderLoadLayerModal(url, modalId) {
             }
             requestedModal.removeAttribute('data-layer-modal-loading');
             requestedModal.removeAttribute('data-layer-modal-request');
+            requestedModal.removeAttribute('data-layer-modal-reveal-pending');
             localCourseBannerBuilderHideModal(requestedModal);
         }
     });
@@ -21629,6 +21657,8 @@ localCourseBannerBuilderOnReady(function () {
             dynamicmodal.setAttribute('aria-busy', 'false');
             dynamicmodal.removeAttribute('data-layer-modal-loading');
             dynamicmodal.removeAttribute('data-layer-modal-request');
+            dynamicmodal.removeAttribute('data-layer-modal-reveal-pending');
+            dynamicmodal.removeAttribute('data-layer-modal-reveal-id');
             var body = dynamicmodal.querySelector('.modal-body');
             if (body) {
                 body.setAttribute('aria-busy', 'false');
