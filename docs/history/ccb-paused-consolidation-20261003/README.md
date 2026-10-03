@@ -4,11 +4,11 @@ This branch is the single private continuation point for the paused Course
 Banner Builder work. It is intentionally based on `cf6cb34`, not on the
 public `main` branch.
 
-The source worktrees listed below remain untouched while this record is
-prepared. Their uncommitted tracked changes are captured as binary-safe Git
-patches under `patches/`; untracked files are copied under `untracked/` with
-their original relative paths. This preserves each lot without forcing
-incompatible product behaviour into the current checkpoint.
+The source worktrees listed below were captured before their historical
+directories were retired. Their uncommitted tracked changes are preserved as
+binary-safe Git patches under `patches/`; untracked files are copied under
+`untracked/` with their original relative paths. This preserves each lot
+without forcing incompatible product behaviour into the current checkpoint.
 
 ## Included source lots
 
