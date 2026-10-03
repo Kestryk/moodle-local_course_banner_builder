@@ -1,0 +1,7 @@
+// Async editor action feedback owned by EED-CCB-2026-0013.
+
+@use "../easyedu" as easyedu;
+
+.local-course-banner-builder-admin {
+    @include easyedu.action-busy-indicator("data-easyedu-action-busy-label");
+}

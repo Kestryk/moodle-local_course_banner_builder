@@ -1,0 +1,34 @@
+diff --git a/amd/src/admin_manage.js b/amd/src/admin_manage.js
+index ee50f54..4aa0426 100644
+--- a/amd/src/admin_manage.js
++++ b/amd/src/admin_manage.js
+@@ -4478,10 +4478,12 @@ function localCourseBannerBuilderApplyCropEditor(control, sourceMode) {
+         return;
+     }
+     var crop = localCourseBannerBuilderGetPreviewCropState(layer);
+-    // A modal crop changes the visible source rectangle, never its placement.
+-    // Keep the session placement even after a real crop gesture; source-editor
+-    // callers deliberately retain their existing box-derived behaviour.
+-    var cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState(layer, !sourceMode);
++    // An accepted crop defines both the visible source rectangle and the
++    // resulting outer geometry.  Derive placement from the selected crop box
++    // in both editors so the modal has the same semantics as the main preview;
++    // retaining the pre-crop session placement would expand the result back to
++    // the original image size.
++    var cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState(layer, false);
+     localCourseBannerBuilderSetPreviewCropState(layer, {
+         imagecropenabled: crop.enabled,
+         imagecropleftpercent: crop.left,
+diff --git a/tools/test-ccb-crop-history-contract.ps1 b/tools/test-ccb-crop-history-contract.ps1
+index 4fa2f58..dcd9da6 100644
+--- a/tools/test-ccb-crop-history-contract.ps1
++++ b/tools/test-ccb-crop-history-contract.ps1
+@@ -28,6 +28,8 @@ $checks = [ordered]@{
+         ($source -match '(?s)function localCourseBannerBuilderRestoreDraftTransformationHistory\(form, snapshot\).*?availableIndexes.*?settings\[index\] && settings\[index\]\.deleted.*?localCourseBannerBuilderRenderDraftUploadPreview\(form\)');
+     'Fit leaves Crop fields outside its replacement patch' =
+         ($source -match '(?s)function localCourseBannerBuilderApplyFitToLayerFormPreview\(form\).*?Fit changes outer placement only; it deliberately preserves Crop fields\.');
++    'Modal Crop derives outer geometry from the accepted selection in parity with the main preview' =
++        ($source -match '(?s)function localCourseBannerBuilderApplyCropEditor\(control, sourceMode\).*?var cropSelectionState = localCourseBannerBuilderGetCropSelectionCustomState\(layer, false\);');
+     'Draft selection records a history boundary before switching' =
+         ($source -match '(?s)function localCourseBannerBuilderSelectDraftPreviewLayer\(form, index\).*?localCourseBannerBuilderPushModalPreviewHistory\(form\).*?localCourseBannerBuilderCommitActiveDraftCropBeforeSwitch\(form\)');
+     'Undo and redo are inverse chronological stack operations' =

@@ -1,0 +1,142 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 68bcc9b..012578c 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -8,6 +8,19 @@ many small sections.
+ 
+ ## Unreleased
+ 
++### Source thumbnails architecture - 2026-08-14
++
++#### Added
++
++- Added the non-breaking source-level native-thumbnail rule contract. Existing
++  sources remain enabled by default; a later bounded rendering batch will use
++  the rule for wide Moodle cards and square courseboxes.
++
++#### Documentation
++
++- Documented source-thumbnail inheritance, teacher-image precedence, native
++  fallback, migration safety and the future CCB Transfer boundary.
++
+ ### Guide CCB advanced - 2026-08-12
+ 
+ #### Fixed
+diff --git a/classes/manager.php b/classes/manager.php
+index 011ebcd..39b2bce 100644
+--- a/classes/manager.php
++++ b/classes/manager.php
+@@ -508,6 +508,7 @@ class manager {
+             'sourceparentkey' => '',
+             'sourceisroot' => 0,
+             'sourceinheritchildren' => 0,
++            'thumbnailenabled' => 1,
+             'timemodified' => 0,
+         ];
+         return $record;
+@@ -3165,6 +3166,9 @@ class manager {
+         if (!self::table_field_exists('local_course_banner_builder_order', 'sourceinheritchildren')) {
+             unset($record->sourceinheritchildren);
+         }
++        if (!self::table_field_exists('local_course_banner_builder_order', 'thumbnailenabled')) {
++            unset($record->thumbnailenabled);
++        }
+ 
+         $record->id = $DB->insert_record('local_course_banner_builder_order', $record);
+         return self::normalise_source_settings($record, $source);
+@@ -8144,6 +8148,42 @@ class manager {
+         return empty($categoryrecords) ? $customfieldrecords : $categoryrecords;
+     }
+ 
++    /**
++     * Get the effective thumbnail layer specifications for a course.
++     *
++     * This contract is intentionally separate from the existing public-banner
++     * resolution. A later rendering batch will consume it after its native
++     * card and coursebox surfaces have been allocated. Until then, the current
++     * generated-thumbnail behaviour remains unchanged.
++     *
++     * @param \stdClass $course
++     * @return array
++     */
++    public static function get_thumbnail_layer_specs_for_course(\stdClass $course): array {
++        $layerspecs = self::get_enabled_category_elements_for_course($course);
++        return array_values(array_filter($layerspecs, static function (array $layerspec): bool {
++            $source = $layerspec['source'] ?? null;
++            return $source instanceof \stdClass && self::source_thumbnail_enabled($source);
++        }));
++    }
++
++    /**
++     * Whether a source contributes to derived native course thumbnails.
++     *
++     * Missing storage is treated as enabled so older databases and all existing
++     * configured sources preserve their historical output through the upgrade.
++     *
++     * @param \stdClass $source
++     * @return bool
++     */
++    public static function source_thumbnail_enabled(\stdClass $source): bool {
++        if (!self::table_field_exists('local_course_banner_builder_order', 'thumbnailenabled')) {
++            return true;
++        }
++
++        return !empty(self::get_source_settings($source)->thumbnailenabled);
++    }
++
+     /**
+      * Get the first matching custom-field-value source with active image layers.
+      *
+diff --git a/db/install.xml b/db/install.xml
+index ae9001c..528087a 100644
+--- a/db/install.xml
++++ b/db/install.xml
+@@ -82,6 +82,7 @@
+         <FIELD NAME="sourceparentkey" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+         <FIELD NAME="sourceisroot" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
+         <FIELD NAME="sourceinheritchildren" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
++        <FIELD NAME="thumbnailenabled" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="1" COMMENT="Whether this source contributes to native course thumbnails"/>
+         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+       </FIELDS>
+       <KEYS>
+diff --git a/db/upgrade.php b/db/upgrade.php
+index 98f9ee8..a842b47 100644
+--- a/db/upgrade.php
++++ b/db/upgrade.php
+@@ -829,5 +829,24 @@ function xmldb_local_course_banner_builder_upgrade(int $oldversion): bool {
+         upgrade_plugin_savepoint(true, 2026061100, 'local', 'course_banner_builder');
+     }
+ 
++    if ($oldversion < 2026081400) {
++        $table = new xmldb_table('local_course_banner_builder_order');
++        $field = new xmldb_field(
++            'thumbnailenabled',
++            XMLDB_TYPE_INTEGER,
++            '1',
++            null,
++            XMLDB_NOTNULL,
++            null,
++            '1',
++            'sourceinheritchildren'
++        );
++        if (!$dbman->field_exists($table, $field)) {
++            $dbman->add_field($table, $field);
++        }
++
++        upgrade_plugin_savepoint(true, 2026081400, 'local', 'course_banner_builder');
++    }
++
+     return true;
+ }
+diff --git a/version.php b/version.php
+index 6547e8b..31af430 100644
+--- a/version.php
++++ b/version.php
+@@ -26,6 +26,6 @@ defined('MOODLE_INTERNAL') || die();
+ 
+ $plugin->component = 'local_course_banner_builder';
+ $plugin->release = '0.6.23';
+-$plugin->version = 2026061100;
++$plugin->version = 2026081400;
+ $plugin->requires = 2024100700;
+ $plugin->maturity = MATURITY_BETA;

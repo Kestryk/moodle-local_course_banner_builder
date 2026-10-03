@@ -1,0 +1,65 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 5740266..1b9bad4 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -12,6 +12,9 @@ many small sections.
+ 
+ #### Tests
+ 
++- Made Slideshow matrix captures wait for the open modal's transitions and
++  fonts to settle, preventing early CDP captures from showing an in-progress
++  transparent opening state.
+ - Extended the isolated Slideshow check into the Course/Site administration
+   preview matrix at desktop, tablet and mobile widths. It records external CDP
+   captures, all side-panel groups and geometry evidence for labels, title,
+diff --git a/docs/testing/ccb-slideshow-rendering.md b/docs/testing/ccb-slideshow-rendering.md
+index a79a17b..e1b8eee 100644
+--- a/docs/testing/ccb-slideshow-rendering.md
++++ b/docs/testing/ccb-slideshow-rendering.md
+@@ -51,6 +51,9 @@ captures an external CDP image for each, and proves that the labels, title,
+ body and action remain visible, non-empty and inside each preview on all four
+ edges. It also
+ records the two contexts and the nine side-panel option groups per context.
++Before every capture, the runner waits for the opened Bootstrap modal to have
++no active transition and for its fonts to be ready. A `.show` class by itself
++is not sufficient evidence that the visual state has settled.
+ 
+ This is an administration-preview matrix. It does not claim public-runtime
+ coverage with live Forum, Assignment, Quiz or Site-announcement slides: the
+diff --git a/tools/playwright/ccb-slideshow-rendering.spec.js b/tools/playwright/ccb-slideshow-rendering.spec.js
+index b413d11..c87e6ba 100644
+--- a/tools/playwright/ccb-slideshow-rendering.spec.js
++++ b/tools/playwright/ccb-slideshow-rendering.spec.js
+@@ -76,6 +76,24 @@ const expectRenderableGeometry = (geometry) => {
+     }
+ };
+ 
++const waitForSettledModal = async(page, modal) => {
++    await expect(modal).toBeVisible();
++    await expect.poll(async() => modal.evaluate((node) => {
++        const dialog = node.querySelector('.modal-dialog');
++        const content = node.querySelector('.modal-content');
++        if (!dialog || !content || !node.classList.contains('show')) {
++            return false;
++        }
++        const dialogRect = dialog.getBoundingClientRect();
++        const contentStyle = window.getComputedStyle(content);
++        const activeAnimations = node.getAnimations({subtree: true}).some((animation) =>
++            animation.playState === 'pending' || animation.playState === 'running');
++        return dialogRect.width > 0 && dialogRect.height > 0 &&
++            contentStyle.opacity === '1' && !activeAnimations;
++    }), {timeout: 3000}).toBeTruthy();
++    await page.evaluate(() => document.fonts.ready);
++};
++
+ const environment = () => {
+     const required = [
+         'EASYEDU_MOODLE_URL',
+@@ -161,6 +179,7 @@ test('CCB Slideshow rendering matrix keeps course and site previews readable', a
+                 await editButtons.nth(index).click();
+                 const modal = page.locator('.local-course-banner-builder-slideshow-preview-modal.show');
+                 await expect(modal).toHaveCount(1);
++                await waitForSettledModal(page, modal);
+                 const preview = modal.locator('[data-slideshow-overlay-preview="1"][data-slideshow-preview-editor="1"]');
+                 await expect(preview).toHaveCount(1);
+                 const geometry = await previewGeometry(preview);

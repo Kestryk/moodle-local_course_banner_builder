@@ -1,0 +1,737 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 6239b91..2002e8a 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -8,6 +8,24 @@ many small sections.
+ 
+ ## Unreleased
+ 
++### EED-NAV-2026-0011 - CCB consumer foundations - 2026-08-29
++
++#### Changed
++
++- Adopted the Navigation/Guide surface foundations from UI Kit
++  `e38d52f73c592944a13315762281b5e2415104a8`: shared drawer and resting
++  Guide-launcher tokens, UI typography roles, and a fixed compact header above
++  one vertically scrollable Navigation body.
++- Preserved all CCB routes, labels, permissions, Guide content, targets,
++  progression, AMD adapters and product markup outside the structural scroll
++  wrapper.
++
++#### Validation
++
++- Source-only consumer batch: generated CSS and focused static contracts are
++  built and checked without preview, cache, runtime lease, fixture or browser
++  activity. Consumer visual proof remains a separate authorized gate.
++
+ ### EED-CCB-2026-0050 - 2026-08-29
+ 
+ #### Fixed
+diff --git a/docs/navigation.md b/docs/navigation.md
+index 8184c27..c8054f5 100644
+--- a/docs/navigation.md
++++ b/docs/navigation.md
+@@ -10,6 +10,14 @@ rail correction `1c59db687f21ea698bccb769537ae39638f0fd8c` (following
+ the Guide engine or content, EasyStud destinations, or Focus and Loading
+ components.
+ 
++`EED-NAV-2026-0011` then adopts only the Navigation/Guide surface foundations
++published by `EED-KIT-2026-0006` at
++`e38d52f73c592944a13315762281b5e2415104a8`. The consumer keeps every CCB
++route, label, permission, Guide slide, target, progression rule and AMD
++adapter unchanged. The adopted delta is limited to shared tokens, Navigation
++and Guide SCSS, the compact-panel scroll wrapper, generated CSS and static
++contract evidence.
++
+ Course Banner Builder declares Moodle 4.5 as its compatibility floor in
+ `version.php`. The adapter keeps the plugin's existing AMD architecture; it
+ does not make an unrelated JavaScript migration.
+@@ -97,6 +105,18 @@ layer `1066`. The local portal adapter raises only a portalled CCB Guide modal
+ above that panel. Raising a z-index without the portal is not sufficient,
+ because a transformed ancestor creates a separate stacking context.
+ 
++The compact panel header is a non-scrolling surface with its own divider and
++safe-area padding. Participant, Guide and destination sections share one
++`data-easyedu-navigation-panel-scroll` body beneath it. This keeps the close
++control reachable while long or localized navigation content scrolls without
++moving the header. The drawer surface, border and shadow use the public Kit
++0006 tokens; section and item labels use the shared UI typography roles.
++
++The Guide launcher now has a subtle bordered resting surface before its
++existing gradient hover/focus treatment. This is presentation only: its
++button, accessible name, portal, Guide root and product lifecycle are
++unchanged.
++
+ `admin_transfer.php` uses the same rail but has no Guide root, so the Guide
+ slot remains absent there.
+ 
+@@ -131,6 +151,9 @@ desktop and at 390 px:
+   and its expanded state shows the complete localized CCB label;
+ - a compact Guide opens in a viewport overlay above the panel, closes cleanly
+   and has no console error or overflow; and
++- the compact header and close action remain fixed while the single body below
++  them owns vertical scrolling, including long labels and safe-area padding;
++  and
+ - the two format links open their existing format modal flow, and the existing
+   reset confirmation still works from its temporary generic-utility location.
+ 
+diff --git a/easyedu-kit-docs/ai/COMPONENT_CONTRACT.md b/easyedu-kit-docs/ai/COMPONENT_CONTRACT.md
+index 986766d..7ba977c 100644
+--- a/easyedu-kit-docs/ai/COMPONENT_CONTRACT.md
++++ b/easyedu-kit-docs/ai/COMPONENT_CONTRACT.md
+@@ -136,13 +136,21 @@ Must:
+   scrolling is required;
+ - keep the guide launcher and first navigation action reachable at
+   `scrollLeft = 0`;
+-- validate the first and last actions at the exact responsive breakpoint.
++- validate the first and last actions at the exact responsive breakpoint;
++- keep the compact panel viewport-sized, its safe-area header fixed and its
++  `.easyedu-navigation__panel-scroll` body independently scrollable;
++- apply the shared UI font and medium destination weight in desktop and compact
++  Navigation, with long trigger text contained by the dedicated label slot;
++- keep a visible neutral Guide launcher border at rest and reuse the shared
++  close/focus states in EasyStud, CCB and future consumers.
+ 
+ Must not:
+ 
+ - combine centred flex justification with content wider than its scrollport;
+ - hide the scrollbar unless keyboard and pointer users can still reach every
+-  navigation action.
++  navigation action;
++- add EasyStud- or CCB-specific selectors to the Navigation/Guide surface
++  primitive, or fork its drawer header/body structure between consumers.
+ 
+ ## Guide: show in interface selector
+ 
+diff --git a/easyedu-kit-docs/ai/IMPLEMENTATION_CHECKLIST.md b/easyedu-kit-docs/ai/IMPLEMENTATION_CHECKLIST.md
+index 09e545d..ddcf16e 100644
+--- a/easyedu-kit-docs/ai/IMPLEMENTATION_CHECKLIST.md
++++ b/easyedu-kit-docs/ai/IMPLEMENTATION_CHECKLIST.md
+@@ -70,6 +70,16 @@ Use this checklist for every UI task in EasyEdu plugins.
+       preview-side accordion mixins.
+ - [ ] At compact breakpoints, verify horizontally scrollable administration
+       navigation starts with its guide launcher and first action fully visible.
++- [ ] Keep the compact drawer header at the safe-area top while only the
++      dedicated panel body scrolls.
++- [ ] Use the shared UI family and medium destination weight in desktop and
++      compact Navigation.
++- [ ] Keep long trigger labels inside their text slot without clipping the icon
++      or exceeding the viewport.
++- [ ] Preserve the Guide launcher's visible resting boundary and shared hover,
++      focus-visible, forced-colours and reduced-motion states.
++- [ ] Keep product routes, Guide targets and completion predicates local while
++      consuming the same Navigation/Guide surface primitive.
+ 
+ ## 4. Guide-specific checklist
+ 
+diff --git a/easyedu-kit-docs/components/README.md b/easyedu-kit-docs/components/README.md
+index a7442b2..f22f436 100644
+--- a/easyedu-kit-docs/components/README.md
++++ b/easyedu-kit-docs/components/README.md
+@@ -14,3 +14,7 @@ Each component document follows the same structure:
+ 
+ The kit is intentionally mixin-first. Plugins own their selectors and include
+ EasyEdu component styles under plugin-specific roots.
++
++Navigation consumers must also follow the shared
++[`Navigation, drawer and Guide surfaces`](navigation-guide-surfaces.md)
++contract while keeping routes and Guide content product-owned.
+diff --git a/easyedu-kit-docs/components/guide.md b/easyedu-kit-docs/components/guide.md
+index a39ae5b..1a5455b 100644
+--- a/easyedu-kit-docs/components/guide.md
++++ b/easyedu-kit-docs/components/guide.md
+@@ -1,5 +1,10 @@
+ # Guide
+ 
++When Guide is composed with shared Navigation, its visible resting launcher,
++drawer slot, typography and focus/close parity are governed by
++[`navigation-guide-surfaces.md`](navigation-guide-surfaces.md). Consumers keep
++their own copy, routes, targets and completion rules.
++
+ The EasyEdu guide kit has two layers:
+ 
+ - `guide-shell`: modal, launcher, slides, basic navigation, highlight and basic
+diff --git a/easyedu-kit-docs/tokens.md b/easyedu-kit-docs/tokens.md
+index 3b8ff85..5a8a94f 100644
+--- a/easyedu-kit-docs/tokens.md
++++ b/easyedu-kit-docs/tokens.md
+@@ -29,6 +29,8 @@ are the primary contract for Moodle theme overrides.
+ - Motion: duration and easing.
+ - Typography: one inherited UI family, a short title/body scale, four weights
+   and shared title/body line heights.
++- Navigation drawer: `--easyedu-navigation-drawer-{surface|border|shadow}`.
++- Guide resting launcher: `--easyedu-guide-launcher-resting-{surface|border}`.
+ 
+ ## Typography tokens
+ 
+diff --git a/scss/README.md b/scss/README.md
+index fa0016b..3bbe510 100644
+--- a/scss/README.md
++++ b/scss/README.md
+@@ -18,7 +18,11 @@ Embedded EasyEdu UI kit:
+ - Base version: `v0.4.38`; CCB also semantically adopts only the visual
+   foundations needed by `EED-CCB-2026-0042` from UI Kit `v0.4.48` commit
+   `6dec8785262d9b006feeb21ea313949ef8fac01c` (neutral checkerboard, modal
+-  close, Save and edit-pencil mixins). It is not a wholesale Kit sync.
++  close, Save and edit-pencil mixins), plus the Navigation/Guide surface
++  foundations from `EED-KIT-2026-0006` commit
++  `e38d52f73c592944a13315762281b5e2415104a8`. The latter adds only public
++  drawer/launcher tokens, shared shell typography and the fixed-header scroll
++  body. Neither adoption is a wholesale Kit sync.
+ - Source: `git@github.com:Kestryk/easyedu-ui-kit.git`
+ - Synced folders:
+   - `scss/easyedu/`: shared SCSS tokens and opt-in component mixins.
+diff --git a/scss/easyedu/_tokens.scss b/scss/easyedu/_tokens.scss
+index 78f8ac1..48b2208 100644
+--- a/scss/easyedu/_tokens.scss
++++ b/scss/easyedu/_tokens.scss
+@@ -39,6 +39,11 @@
+   );
+   --easyedu-navigation-guide-border: color-mix(in srgb, var(--easyedu-accent) 28%, var(--easyedu-card-border) 72%);
+   --easyedu-navigation-guide-shadow: 0 0.4rem 1rem rgba(22, 45, 68, 0.12);
++  --easyedu-navigation-drawer-surface: var(--easyedu-surface);
++  --easyedu-navigation-drawer-border: var(--easyedu-card-border);
++  --easyedu-navigation-drawer-shadow: 0.8rem 0 2rem rgba(31, 42, 55, 0.16);
++  --easyedu-guide-launcher-resting-surface: color-mix(in srgb, var(--easyedu-surface) 94%, var(--easyedu-primary-soft) 6%);
++  --easyedu-guide-launcher-resting-border: color-mix(in srgb, var(--easyedu-primary) 22%, var(--easyedu-card-border) 78%);
+   --easyedu-radius: 0.75rem;
+   --easyedu-radius-sm: 0.5rem;
+   --easyedu-radius-lg: 1rem;
+diff --git a/scss/easyedu/components/_guide.scss b/scss/easyedu/components/_guide.scss
+index f44758f..2d62c7b 100644
+--- a/scss/easyedu/components/_guide.scss
++++ b/scss/easyedu/components/_guide.scss
+@@ -8,8 +8,8 @@
+ 
+ @mixin guide-launcher-button {
+   align-items: center;
+-  background: transparent;
+-  border: 0;
++  background: var(--easyedu-guide-launcher-resting-surface);
++  border: 0.0625rem solid var(--easyedu-guide-launcher-resting-border);
+   border-radius: 0.9rem;
+   color: #fff;
+   display: inline-flex;
+@@ -18,7 +18,7 @@
+   min-height: 2.55rem;
+   justify-content: center;
+   line-height: 1;
+-  padding: 0;
++  padding: 0.16rem;
+   position: relative;
+   text-decoration: none;
+   transition: box-shadow 0.16s ease, transform 0.16s ease;
+@@ -72,6 +72,8 @@
+   }
+ 
+   &:hover {
++    background: var(--easyedu-surface);
++    border-color: color-mix(in srgb, var(--easyedu-primary) 38%, var(--easyedu-card-border) 62%);
+     box-shadow: none;
+     color: var(--easyedu-accent);
+     outline: 0;
+@@ -80,6 +82,8 @@
+   }
+ 
+   &:focus {
++    background: var(--easyedu-surface);
++    border-color: var(--easyedu-control-focus-border);
+     box-shadow: none;
+     color: var(--easyedu-accent);
+     outline: 0;
+diff --git a/scss/easyedu/components/_navigation.scss b/scss/easyedu/components/_navigation.scss
+index 2215a06..02d49b6 100644
+--- a/scss/easyedu/components/_navigation.scss
++++ b/scss/easyedu/components/_navigation.scss
+@@ -1,6 +1,7 @@
+ @use "buttons";
+ @use "guide";
+ @use "responsive";
++@use "typography";
+ 
+ // Canonical navigation composition for EasyEdu plugin surfaces.
+ //
+@@ -354,6 +355,8 @@
+     @include buttons.admin-primary-nav-action;
+ 
+     & {
++      font-family: var(--easyedu-font-family-ui);
++      font-weight: var(--easyedu-font-weight-medium);
+       gap: 0.5rem;
+     }
+ 
+@@ -392,8 +395,11 @@
+     border: 1px solid var(--easyedu-card-border);
+     border-radius: 0 999px 999px 0;
+     box-shadow: 0 0.125rem 0.25rem rgba(35, 53, 72, 0.16);
++    box-sizing: border-box;
+     color: var(--easyedu-primary-strong);
+     display: inline-flex;
++    font-family: var(--easyedu-font-family-ui);
++    font-weight: var(--easyedu-font-weight-medium);
+     gap: 0;
+     inline-size: var(--easyedu-touch-target-min);
+     inset-block-start: clamp(
+@@ -445,9 +451,15 @@
+     max-inline-size: 0;
+     opacity: 0;
+     overflow: hidden;
++    text-overflow: ellipsis;
+     transition:
+       max-inline-size var(--easyedu-motion-fast) var(--easyedu-motion-ease),
+       opacity var(--easyedu-motion-fast) var(--easyedu-motion-ease);
++    white-space: nowrap;
++  }
++
++  .easyedu-navigation__trigger > [aria-hidden="true"] {
++    flex: 0 0 auto;
+   }
+ 
+   .easyedu-navigation__trigger:hover .easyedu-navigation__trigger-label,
+@@ -465,9 +477,18 @@
+   .easyedu-navigation__panel {
+     @include responsive.mobile-primary-nav-panel(var(--easyedu-navigation-layer-panel));
+ 
++    background: var(--easyedu-navigation-drawer-surface);
++    block-size: 100dvh;
+     border: 0;
+-    border-inline-end: 0.0625rem solid var(--easyedu-card-border);
++    border-inline-end: 0.0625rem solid var(--easyedu-navigation-drawer-border);
++    box-shadow: var(--easyedu-navigation-drawer-shadow);
++    gap: 0;
++    max-block-size: 100dvh;
+     max-width: var(--easyedu-navigation-panel-max-width);
++    min-block-size: 0;
++    overflow: hidden;
++    overscroll-behavior: none;
++    padding: 0;
+     width: var(--easyedu-navigation-panel-width);
+ 
+     &[aria-hidden="true"] {
+@@ -479,6 +500,23 @@
+     }
+   }
+ 
++  .easyedu-navigation__panel-scroll {
++    display: flex;
++    flex: 1 1 auto;
++    flex-direction: column;
++    min-block-size: 0;
++    overflow-x: hidden;
++    overflow-y: auto;
++    overscroll-behavior: contain;
++    padding-block-end: calc(0.8rem + env(safe-area-inset-bottom));
++    scrollbar-gutter: stable;
++  }
++
++  .easyedu-navigation__panel-scroll > .easyedu-navigation__sections,
++  .easyedu-navigation__panel-scroll > .easyedu-navigation__empty {
++    margin: 0.8rem 1rem 0;
++  }
++
+   .easyedu-navigation__guide-slot,
+   .easyedu-navigation__participant-slot { margin: 0.8rem 0 0; }
+ 
+@@ -586,19 +624,21 @@
+   .easyedu-navigation__panel-header {
+     align-items: center;
+     background: var(--easyedu-surface);
++    border-bottom: 0.0625rem solid var(--easyedu-navigation-drawer-border);
+     display: flex;
+     flex: 0 0 auto;
+     gap: 0.75rem;
+     justify-content: space-between;
++    min-block-size: calc(var(--easyedu-touch-target-min) + 1rem + env(safe-area-inset-top));
++    padding: calc(0.5rem + env(safe-area-inset-top)) 1rem 0.5rem;
+     position: sticky;
+     top: 0;
+     z-index: 1;
+   }
+ 
+   .easyedu-navigation__panel-title {
+-    color: var(--easyedu-text);
+-    font-size: var(--easyedu-font-size-section-title);
+-    font-weight: var(--easyedu-font-weight-strong);
++    @include typography.type-section-title;
++
+     margin: 0;
+   }
+ 
+@@ -621,9 +661,8 @@
+   }
+ 
+   .easyedu-navigation__section-title {
+-    color: var(--easyedu-text-muted);
+-    font-size: var(--easyedu-font-size-eyebrow);
+-    font-weight: var(--easyedu-font-weight-strong);
++    @include typography.type-eyebrow;
++
+     letter-spacing: 0.045em;
+     margin: 0;
+     text-transform: uppercase;
+@@ -647,6 +686,9 @@
+   .easyedu-navigation__panel .easyedu-navigation__item {
+     @include responsive.mobile-navigation-link;
+ 
++    font-family: var(--easyedu-font-family-ui);
++    font-weight: var(--easyedu-font-weight-medium);
++
+     &[aria-disabled="true"],
+     &:disabled {
+       cursor: not-allowed;
+@@ -751,7 +793,7 @@
+   [dir="rtl"] & .easyedu-navigation__panel,
+   &[dir="rtl"] .easyedu-navigation__panel {
+     inset: 0 0 0 auto;
+-    border-inline-end: 0.0625rem solid var(--easyedu-card-border);
++    border-inline-end: 0.0625rem solid var(--easyedu-navigation-drawer-border);
+     transform: translateX(105%);
+ 
+     &.is-open {
+diff --git a/styles.css b/styles.css
+index b9e721e..bd74c73 100644
+--- a/styles.css
++++ b/styles.css
+@@ -8139,6 +8139,11 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
+   );
+   --easyedu-navigation-guide-border: color-mix(in srgb, var(--easyedu-accent) 28%, var(--easyedu-card-border) 72%);
+   --easyedu-navigation-guide-shadow: 0 0.4rem 1rem rgba(22, 45, 68, 0.12);
++  --easyedu-navigation-drawer-surface: var(--easyedu-surface);
++  --easyedu-navigation-drawer-border: var(--easyedu-card-border);
++  --easyedu-navigation-drawer-shadow: 0.8rem 0 2rem rgba(31, 42, 55, 0.16);
++  --easyedu-guide-launcher-resting-surface: color-mix(in srgb, var(--easyedu-surface) 94%, var(--easyedu-primary-soft) 6%);
++  --easyedu-guide-launcher-resting-border: color-mix(in srgb, var(--easyedu-primary) 22%, var(--easyedu-card-border) 78%);
+   --easyedu-radius: 0.75rem;
+   --easyedu-radius-sm: 0.5rem;
+   --easyedu-radius-lg: 1rem;
+@@ -9478,8 +9483,8 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
+ .local-course-banner-builder-easyedu-guide .easyedu-guide__launcher,
+ .path-admin-local-course_banner_builder .easyedu-guide .easyedu-guide__launcher {
+   align-items: center;
+-  background: transparent;
+-  border: 0;
++  background: var(--easyedu-guide-launcher-resting-surface);
++  border: 0.0625rem solid var(--easyedu-guide-launcher-resting-border);
+   border-radius: 0.9rem;
+   color: #fff;
+   display: inline-flex;
+@@ -9488,7 +9493,7 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
+   min-height: 2.55rem;
+   justify-content: center;
+   line-height: 1;
+-  padding: 0;
++  padding: 0.16rem;
+   position: relative;
+   text-decoration: none;
+   transition: box-shadow 0.16s ease, transform 0.16s ease;
+@@ -9542,6 +9547,8 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
+ }
+ .local-course-banner-builder-easyedu-guide .easyedu-guide__launcher:hover,
+ .path-admin-local-course_banner_builder .easyedu-guide .easyedu-guide__launcher:hover {
++  background: var(--easyedu-surface);
++  border-color: color-mix(in srgb, var(--easyedu-primary) 38%, var(--easyedu-card-border) 62%);
+   box-shadow: none;
+   color: var(--easyedu-accent);
+   outline: 0;
+@@ -9550,6 +9557,8 @@ tr[data-source-chain-level] > td.local-course-banner-builder-hierarchy-cell::aft
+ }
+ .local-course-banner-builder-easyedu-guide .easyedu-guide__launcher:focus,
+ .path-admin-local-course_banner_builder .easyedu-guide .easyedu-guide__launcher:focus {
++  background: var(--easyedu-surface);
++  border-color: var(--easyedu-control-focus-border);
+   box-shadow: none;
+   color: var(--easyedu-accent);
+   outline: 0;
+@@ -13030,6 +13039,11 @@ span[data-flexitour=container].orphan .modal-dialog {
+   );
+   --easyedu-navigation-guide-border: color-mix(in srgb, var(--easyedu-accent) 28%, var(--easyedu-card-border) 72%);
+   --easyedu-navigation-guide-shadow: 0 0.4rem 1rem rgba(22, 45, 68, 0.12);
++  --easyedu-navigation-drawer-surface: var(--easyedu-surface);
++  --easyedu-navigation-drawer-border: var(--easyedu-card-border);
++  --easyedu-navigation-drawer-shadow: 0.8rem 0 2rem rgba(31, 42, 55, 0.16);
++  --easyedu-guide-launcher-resting-surface: color-mix(in srgb, var(--easyedu-surface) 94%, var(--easyedu-primary-soft) 6%);
++  --easyedu-guide-launcher-resting-border: color-mix(in srgb, var(--easyedu-primary) 22%, var(--easyedu-card-border) 78%);
+   --easyedu-radius: 0.75rem;
+   --easyedu-radius-sm: 0.5rem;
+   --easyedu-radius-lg: 1rem;
+@@ -13785,8 +13799,8 @@ span[data-flexitour=container].orphan .modal-dialog {
+ }
+ .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-guide-launcher] {
+   align-items: center;
+-  background: transparent;
+-  border: 0;
++  background: var(--easyedu-guide-launcher-resting-surface);
++  border: 0.0625rem solid var(--easyedu-guide-launcher-resting-border);
+   border-radius: 0.9rem;
+   color: #fff;
+   display: inline-flex;
+@@ -13795,7 +13809,7 @@ span[data-flexitour=container].orphan .modal-dialog {
+   min-height: 2.55rem;
+   justify-content: center;
+   line-height: 1;
+-  padding: 0;
++  padding: 0.16rem;
+   position: relative;
+   text-decoration: none;
+   transition: box-shadow 0.16s ease, transform 0.16s ease;
+@@ -13841,6 +13855,8 @@ span[data-flexitour=container].orphan .modal-dialog {
+   line-height: 1.2;
+ }
+ .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-guide-launcher]:hover {
++  background: var(--easyedu-surface);
++  border-color: color-mix(in srgb, var(--easyedu-primary) 38%, var(--easyedu-card-border) 62%);
+   box-shadow: none;
+   color: var(--easyedu-accent);
+   outline: 0;
+@@ -13848,6 +13864,8 @@ span[data-flexitour=container].orphan .modal-dialog {
+   transform: translateY(-0.08rem);
+ }
+ .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-guide-launcher]:focus {
++  background: var(--easyedu-surface);
++  border-color: var(--easyedu-control-focus-border);
+   box-shadow: none;
+   color: var(--easyedu-accent);
+   outline: 0;
+@@ -14062,6 +14080,8 @@ span[data-flexitour=container].orphan .modal-dialog {
+   outline-offset: var(--easyedu-focus-outline-offset);
+ }
+ .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item {
++  font-family: var(--easyedu-font-family-ui);
++  font-weight: var(--easyedu-font-weight-medium);
+   gap: 0.5rem;
+ }
+ .local-course-banner-builder-admin--native .easyedu-navigation [data-easyedu-navigation-desktop] .easyedu-navigation__item > .easyedu-navigation__item-icon {
+@@ -14203,8 +14223,11 @@ span[data-flexitour=container].orphan .modal-dialog {
+   border: 1px solid var(--easyedu-card-border);
+   border-radius: 0 999px 999px 0;
+   box-shadow: 0 0.125rem 0.25rem rgba(35, 53, 72, 0.16);
++  box-sizing: border-box;
+   color: var(--easyedu-primary-strong);
+   display: inline-flex;
++  font-family: var(--easyedu-font-family-ui);
++  font-weight: var(--easyedu-font-weight-medium);
+   gap: 0;
+   inline-size: var(--easyedu-touch-target-min);
+   inset-block-start: clamp(var(--easyedu-navigation-trigger-safe-edge), 50dvh, 100dvh - var(--easyedu-navigation-trigger-safe-edge));
+@@ -14244,7 +14267,12 @@ span[data-flexitour=container].orphan .modal-dialog {
+   max-inline-size: 0;
+   opacity: 0;
+   overflow: hidden;
++  text-overflow: ellipsis;
+   transition: max-inline-size var(--easyedu-motion-fast) var(--easyedu-motion-ease), opacity var(--easyedu-motion-fast) var(--easyedu-motion-ease);
++  white-space: nowrap;
++}
++.local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__trigger > [aria-hidden=true] {
++  flex: 0 0 auto;
+ }
+ .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__trigger:hover .easyedu-navigation__trigger-label,
+ .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__trigger:focus-visible .easyedu-navigation__trigger-label {
+@@ -14276,9 +14304,18 @@ span[data-flexitour=container].orphan .modal-dialog {
+   transition: transform var(--easyedu-motion-normal) ease;
+   width: 88vw;
+   z-index: var(--easyedu-navigation-layer-panel);
++  background: var(--easyedu-navigation-drawer-surface);
++  block-size: 100dvh;
+   border: 0;
+-  border-inline-end: 0.0625rem solid var(--easyedu-card-border);
++  border-inline-end: 0.0625rem solid var(--easyedu-navigation-drawer-border);
++  box-shadow: var(--easyedu-navigation-drawer-shadow);
++  gap: 0;
++  max-block-size: 100dvh;
+   max-width: var(--easyedu-navigation-panel-max-width);
++  min-block-size: 0;
++  overflow: hidden;
++  overscroll-behavior: none;
++  padding: 0;
+   width: var(--easyedu-navigation-panel-width);
+ }
+ .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__panel.is-open {
+@@ -14290,6 +14327,21 @@ span[data-flexitour=container].orphan .modal-dialog {
+ .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__panel[aria-hidden=false] {
+   visibility: visible;
+ }
++.local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__panel-scroll {
++  display: flex;
++  flex: 1 1 auto;
++  flex-direction: column;
++  min-block-size: 0;
++  overflow-x: hidden;
++  overflow-y: auto;
++  overscroll-behavior: contain;
++  padding-block-end: calc(0.8rem + env(safe-area-inset-bottom));
++  scrollbar-gutter: stable;
++}
++.local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__panel-scroll > .easyedu-navigation__sections,
++.local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__panel-scroll > .easyedu-navigation__empty {
++  margin: 0.8rem 1rem 0;
++}
+ .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__guide-slot,
+ .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__participant-slot {
+   margin: 0.8rem 0 0;
+@@ -14382,18 +14434,25 @@ span[data-flexitour=container].orphan .modal-dialog {
+ .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__panel-header {
+   align-items: center;
+   background: var(--easyedu-surface);
++  border-bottom: 0.0625rem solid var(--easyedu-navigation-drawer-border);
+   display: flex;
+   flex: 0 0 auto;
+   gap: 0.75rem;
+   justify-content: space-between;
++  min-block-size: calc(var(--easyedu-touch-target-min) + 1rem + env(safe-area-inset-top));
++  padding: calc(0.5rem + env(safe-area-inset-top)) 1rem 0.5rem;
+   position: sticky;
+   top: 0;
+   z-index: 1;
+ }
+ .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__panel-title {
++  font-family: var(--easyedu-font-family-ui);
++  font-weight: var(--easyedu-font-weight-regular);
++  letter-spacing: 0;
+   color: var(--easyedu-text);
+   font-size: var(--easyedu-font-size-section-title);
+-  font-weight: var(--easyedu-font-weight-strong);
++  font-weight: var(--easyedu-font-weight-semibold);
++  line-height: var(--easyedu-line-height-title);
+   margin: 0;
+ }
+ .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__close {
+@@ -14441,9 +14500,14 @@ span[data-flexitour=container].orphan .modal-dialog {
+   padding-top: 0;
+ }
+ .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__section-title {
++  font-family: var(--easyedu-font-family-ui);
++  font-weight: var(--easyedu-font-weight-regular);
++  letter-spacing: 0;
+   color: var(--easyedu-text-muted);
+   font-size: var(--easyedu-font-size-eyebrow);
+   font-weight: var(--easyedu-font-weight-strong);
++  line-height: 1.3;
++  text-transform: uppercase;
+   letter-spacing: 0.045em;
+   margin: 0;
+   text-transform: uppercase;
+@@ -14477,6 +14541,8 @@ span[data-flexitour=container].orphan .modal-dialog {
+   text-decoration: none !important;
+   transition: background-color var(--easyedu-motion-fast) ease, border-color var(--easyedu-motion-fast) ease, box-shadow var(--easyedu-motion-fast) ease, color var(--easyedu-motion-fast) ease, transform var(--easyedu-motion-fast) ease;
+   width: 100%;
++  font-family: var(--easyedu-font-family-ui);
++  font-weight: var(--easyedu-font-weight-medium);
+ }
+ .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__panel .easyedu-navigation__item > .fa:first-child {
+   align-items: center;
+@@ -14594,7 +14660,7 @@ span[data-flexitour=container].orphan .modal-dialog {
+ }
+ [dir=rtl] .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__panel, .local-course-banner-builder-admin--native .easyedu-navigation[dir=rtl] .easyedu-navigation__panel {
+   inset: 0 0 0 auto;
+-  border-inline-end: 0.0625rem solid var(--easyedu-card-border);
++  border-inline-end: 0.0625rem solid var(--easyedu-navigation-drawer-border);
+   transform: translateX(105%);
+ }
+ [dir=rtl] .local-course-banner-builder-admin--native .easyedu-navigation .easyedu-navigation__panel.is-open, .local-course-banner-builder-admin--native .easyedu-navigation[dir=rtl] .easyedu-navigation__panel.is-open {
+@@ -17495,6 +17561,11 @@ span[data-flexitour=container].orphan .modal-dialog {
+   );
+   --easyedu-navigation-guide-border: color-mix(in srgb, var(--easyedu-accent) 28%, var(--easyedu-card-border) 72%);
+   --easyedu-navigation-guide-shadow: 0 0.4rem 1rem rgba(22, 45, 68, 0.12);
++  --easyedu-navigation-drawer-surface: var(--easyedu-surface);
++  --easyedu-navigation-drawer-border: var(--easyedu-card-border);
++  --easyedu-navigation-drawer-shadow: 0.8rem 0 2rem rgba(31, 42, 55, 0.16);
++  --easyedu-guide-launcher-resting-surface: color-mix(in srgb, var(--easyedu-surface) 94%, var(--easyedu-primary-soft) 6%);
++  --easyedu-guide-launcher-resting-border: color-mix(in srgb, var(--easyedu-primary) 22%, var(--easyedu-card-border) 78%);
+   --easyedu-radius: 0.75rem;
+   --easyedu-radius-sm: 0.5rem;
+   --easyedu-radius-lg: 1rem;
+diff --git a/templates/easyedu_navigation.mustache b/templates/easyedu_navigation.mustache
+index ea0680e..36b879f 100644
+--- a/templates/easyedu_navigation.mustache
++++ b/templates/easyedu_navigation.mustache
+@@ -87,25 +87,27 @@
+             </button>
+         </header>
+ 
+-        <div class="easyedu-navigation__participant-slot" data-easyedu-navigation-participant-slot="1"></div>
+-        <div class="easyedu-navigation__guide-slot" data-easyedu-navigation-guide-slot="1"></div>
++        <div class="easyedu-navigation__panel-scroll" data-easyedu-navigation-panel-scroll="1">
++            <div class="easyedu-navigation__participant-slot" data-easyedu-navigation-participant-slot="1"></div>
++            <div class="easyedu-navigation__guide-slot" data-easyedu-navigation-guide-slot="1"></div>
+ 
+-        {{#hasitems}}
+-        <div class="easyedu-navigation__sections">
+-            {{#sections}}
+-            <section class="easyedu-navigation__section" data-easyedu-navigation-section="{{id}}">
+-                <h3 class="easyedu-navigation__section-title">{{label}}</h3>
+-                <ul class="easyedu-navigation__items">
+-                    {{#items}}
+-                        {{> local_course_banner_builder/easyedu_navigation_items }}
+-                    {{/items}}
+-                </ul>
+-            </section>
+-            {{/sections}}
++            {{#hasitems}}
++            <div class="easyedu-navigation__sections">
++                {{#sections}}
++                <section class="easyedu-navigation__section" data-easyedu-navigation-section="{{id}}">
++                    <h3 class="easyedu-navigation__section-title">{{label}}</h3>
++                    <ul class="easyedu-navigation__items">
++                        {{#items}}
++                            {{> local_course_banner_builder/easyedu_navigation_items }}
++                        {{/items}}
++                    </ul>
++                </section>
++                {{/sections}}
++            </div>
++            {{/hasitems}}
++            {{^hasitems}}
++            <p class="easyedu-navigation__empty">{{emptylabel}}</p>
++            {{/hasitems}}
+         </div>
+-        {{/hasitems}}
+-        {{^hasitems}}
+-        <p class="easyedu-navigation__empty">{{emptylabel}}</p>
+-        {{/hasitems}}
+     </aside>
+ </div>
+diff --git a/tests/ui/easyedu_navigation_contract.test.mjs b/tests/ui/easyedu_navigation_contract.test.mjs
+index cf73fd5..238a7d8 100644
+--- a/tests/ui/easyedu_navigation_contract.test.mjs
++++ b/tests/ui/easyedu_navigation_contract.test.mjs
+@@ -45,6 +45,40 @@ test('expanded trigger width accommodates the CCB localized label', async() => {
+     assert.match(tokens, /--easyedu-navigation-trigger-expanded-width:\s*22rem;/u);
+     assert.match(navigation, /inline-size:\s*min\([\s\S]*?var\(--easyedu-navigation-trigger-expanded-width\)/u);
+ });
++
++test('compact Navigation keeps a fixed header above one scroll body', async() => {
++    const template = await read('templates/easyedu_navigation.mustache');
++    const navigation = await read('scss/easyedu/components/_navigation.scss');
++
++    assert.match(template, /<header class="easyedu-navigation__panel-header">[\s\S]*?<\/header>\s*<div class="easyedu-navigation__panel-scroll" data-easyedu-navigation-panel-scroll="1">/u);
++    assert.match(template, /easyedu-navigation__panel-scroll[\s\S]*?data-easyedu-navigation-participant-slot[\s\S]*?data-easyedu-navigation-guide-slot[\s\S]*?easyedu-navigation__sections/u);
++    assert.match(navigation, /\.easyedu-navigation__panel-scroll \{[\s\S]*?overflow-y:\s*auto;[\s\S]*?overscroll-behavior:\s*contain;/u);
++    assert.match(navigation, /\.easyedu-navigation__panel-header \{[\s\S]*?border-bottom:[\s\S]*?position:\s*sticky;/u);
++});
++
++test('Navigation and Guide consume the Kit 0006 surface tokens and typography roles', async() => {
++    const tokens = await read('scss/easyedu/_tokens.scss');
++    const guide = await read('scss/easyedu/components/_guide.scss');
++    const navigation = await read('scss/easyedu/components/_navigation.scss');
++    const documentation = await read('easyedu-kit-docs/components/navigation-guide-surfaces.md');
++    const componentContract = await read('easyedu-kit-docs/ai/COMPONENT_CONTRACT.md');
++
++    assert.match(tokens, /--easyedu-navigation-drawer-surface:/u);
++    assert.match(tokens, /--easyedu-navigation-drawer-border:/u);
++    assert.match(tokens, /--easyedu-navigation-drawer-shadow:/u);
++    assert.match(tokens, /--easyedu-guide-launcher-resting-surface:/u);
++    assert.match(tokens, /--easyedu-guide-launcher-resting-border:/u);
++    assert.match(guide, /background:\s*var\(--easyedu-guide-launcher-resting-surface\);/u);
++    assert.match(guide, /border:\s*0\.0625rem solid var\(--easyedu-guide-launcher-resting-border\);/u);
++    assert.match(navigation, /@use "typography";/u);
++    assert.match(navigation, /@include typography\.type-section-title;/u);
++    assert.match(navigation, /@include typography\.type-eyebrow;/u);
++    assert.match(documentation, /Strict EasyStud and CCB parity/u);
++    assert.match(documentation, /independently scrolls/u);
++    assert.match(documentation, /product Guide copy, target keys, real-action completion and persistence/u);
++    assert.match(componentContract, /\.easyedu-navigation__panel-scroll/u);
++});
++
+ test('CCB desktop destinations compose the framed EasyStud Kit rail', async() => {
+     const navigation = await read('scss/easyedu/components/_navigation.scss');
+     const adapter = await read('scss/components/_easyedu-adapter.scss');
