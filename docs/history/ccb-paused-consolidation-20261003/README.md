@@ -23,6 +23,15 @@ without forcing incompatible product behaviour into the current checkpoint.
 | Crop geometry | `work/port4719pg3/eed-ccb-2026-0043-rf8-crop-geometry` | `057f775` | Patch snapshot. The current checkpoint contains a later crop invariant; retain this source delta for comparison. |
 | Navigation consumer | `work/port4719pg3/eed-nav-2026-0011-ccb-consumer-20260829` | `940aac3` | Patch and untracked component documentation. |
 
+## Detached AMD build checkouts
+
+Nine detached build checkouts also contained generated AMD artifacts and, in
+some cases, an AMD source file. Their complete tracked deltas are retained
+under `toolchain-patches/`. Three `0002-label-amd` copies were byte-identical;
+all three paths are recorded in `toolchain-patches/README.md` but one canonical
+patch is sufficient for recovery. These snapshots are evidence only: rebuild
+generated AMD from a selected source candidate before any future preview.
+
 ## Resume rule
 
 Apply one patch at a time in a dedicated feature branch, inspect conflicts
