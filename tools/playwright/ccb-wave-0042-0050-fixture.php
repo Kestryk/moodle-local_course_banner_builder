@@ -1,4 +1,19 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * Disposable fixture for the EED-CCB-2026-0042-0050 cumulative wave.
  *
@@ -6,6 +21,10 @@
  * ordinary image layers and one dynamic layer so the cumulative scenario owns
  * its source tree, IMG-08 edit target and source-preview data. Cleanup removes
  * every category, CCB element and draft file recorded in its manifest.
+ *
+ * @package    local_course_banner_builder
+ * @copyright  2026 Kevin Jarniac
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define('CLI_SCRIPT', true);
 
@@ -158,9 +177,9 @@ if ($command === 'setup') {
         ]);
     } catch (Throwable $exception) {
         try {
-$removefixture($manifest, false);
-        } catch (Throwable $cleanupException) {
-debugging($cleanupException->getMessage(), DEBUG_DEVELOPER); 
+            $removefixture($manifest, false);
+        } catch (Throwable $cleanupexception) {
+            debugging($cleanupexception->getMessage(), DEBUG_DEVELOPER);
         }
         throw $exception;
     }

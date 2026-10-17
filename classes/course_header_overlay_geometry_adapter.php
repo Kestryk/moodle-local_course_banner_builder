@@ -5,6 +5,14 @@
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace local_course_banner_builder;
 
@@ -133,19 +141,31 @@ final class course_header_overlay_geometry_adapter {
         ];
     }
 
-    /** @return string */
+    /**
+     * Normalise format.
+     *
+     * @return string
+     */
     private static function normalise_format(string $format): string {
         $formats = banner_geometry::get_format_aspect_ratios();
         return array_key_exists($format, $formats) ? $format : 'standard';
     }
 
-    /** @return string */
+    /**
+     * Normalise fitmode.
+     *
+     * @return string
+     */
     private static function normalise_fitmode(string $fitmode): string {
         return in_array($fitmode, [self::FIT_BANNER, self::FIT_COVER, self::FIT_ORIGINAL, self::FIT_CUSTOM], true) ?
             $fitmode : self::FIT_ORIGINAL;
     }
 
-    /** @return array{enabled:bool,x:float,y:float,width:float,height:float} */
+    /**
+     * Normalise legacy crop.
+     *
+     * @return array{enabled:bool,x:float,y:float,width:float,height:float}
+     */
     private static function normalise_legacy_crop(array $record): array {
         if (empty($record['imagecropenabled'])) {
             return banner_geometry::normalise_crop([]);
@@ -158,7 +178,11 @@ final class course_header_overlay_geometry_adapter {
         ]);
     }
 
-    /** @return array{width:int,height:int} */
+    /**
+     * Get effective dimensions.
+     *
+     * @return array{width:int,height:int}
+     */
     private static function get_effective_dimensions(int $width, int $height, array $crop): array {
         $width = max(1, $width ?: (int)banner_geometry::CANVAS_WIDTH);
         $height = max(1, $height ?: (int)banner_geometry::CANVAS_HEIGHT);
@@ -168,7 +192,11 @@ final class course_header_overlay_geometry_adapter {
         ];
     }
 
-    /** @return array{width:float,height:float} */
+    /**
+     * Get legacy box percentages.
+     *
+     * @return array{width:float,height:float}
+     */
     private static function get_legacy_box_percentages(
         array $record,
         string $fitmode,
@@ -203,7 +231,11 @@ final class course_header_overlay_geometry_adapter {
         ];
     }
 
-    /** @return array{width:float,height:float} */
+    /**
+     * Get contained box percentages.
+     *
+     * @return array{width:float,height:float}
+     */
     private static function get_contained_box_percentages(int $width, int $height, float $banneraspect): array {
         if ($width <= 0 || $height <= 0) {
             return ['width' => 100.0, 'height' => 100.0];
@@ -215,7 +247,11 @@ final class course_header_overlay_geometry_adapter {
         return ['width' => 100.0 * ($imageaspect / $banneraspect), 'height' => 100.0];
     }
 
-    /** @return array{x:float,y:float} */
+    /**
+     * Get top left position percentages.
+     *
+     * @return array{x:float,y:float}
+     */
     private static function get_top_left_position_percentages(array $record, float $width, float $height): array {
         $anchor = self::normalise_anchor((string)($record['positionanchor'] ?? 'center'));
         $top = self::percentage($record, 'offsettoppercent', 0.0, -1000.0, 1000.0);
@@ -239,7 +275,11 @@ final class course_header_overlay_geometry_adapter {
         };
     }
 
-    /** @return array{x:float,y:float} */
+    /**
+     * Get anchor centre.
+     *
+     * @return array{x:float,y:float}
+     */
     private static function get_anchor_centre(
         string $anchor,
         float $top,
@@ -264,13 +304,21 @@ final class course_header_overlay_geometry_adapter {
         };
     }
 
-    /** @return string */
+    /**
+     * Normalise anchor.
+     *
+     * @return string
+     */
     private static function normalise_anchor(string $anchor): string {
         $anchors = ['center', 'top', 'bottom', 'left', 'right', 'top-left', 'top-right', 'bottom-left', 'bottom-right'];
         return in_array($anchor, $anchors, true) ? $anchor : 'center';
     }
 
-    /** @return string */
+    /**
+     * Get geometry fit.
+     *
+     * @return string
+     */
     private static function get_geometry_fit(string $fitmode, bool $keepaspect): string {
         if ($fitmode === self::FIT_CUSTOM && $keepaspect) {
             return 'contain';
@@ -278,7 +326,11 @@ final class course_header_overlay_geometry_adapter {
         return 'fill';
     }
 
-    /** @return string */
+    /**
+     * Get css object fit.
+     *
+     * @return string
+     */
     private static function get_css_object_fit(string $fitmode, bool $keepaspect, bool $hasimage): string {
         if ($fitmode === self::FIT_ORIGINAL) {
             return 'none';
@@ -292,7 +344,11 @@ final class course_header_overlay_geometry_adapter {
         return 'fill';
     }
 
-    /** @return string */
+    /**
+     * Get css object position.
+     *
+     * @return string
+     */
     private static function get_css_object_position(string $anchor): string {
         return match ($anchor) {
             'top' => 'center top',
@@ -307,12 +363,20 @@ final class course_header_overlay_geometry_adapter {
         };
     }
 
-    /** @return float */
+    /**
+     * Percentage.
+     *
+     * @return float
+     */
     private static function percentage(array $record, string $field, float $default, float $min, float $max): float {
         return max($min, min($max, self::number($record, $field, $default)));
     }
 
-    /** @return float */
+    /**
+     * Number.
+     *
+     * @return float
+     */
     private static function number(array $record, string $field, float $default): float {
         if (!array_key_exists($field, $record)) {
             return $default;
@@ -321,17 +385,29 @@ final class course_header_overlay_geometry_adapter {
         return is_numeric($value) && is_finite((float)$value) ? (float)$value : 0.0;
     }
 
-    /** @return int */
+    /**
+     * Positive integer.
+     *
+     * @return int
+     */
     private static function positive_integer($value): int {
         return is_numeric($value) && is_finite((float)$value) ? max(0, (int)$value) : 0;
     }
 
-    /** @return string */
+    /**
+     * Format percentage.
+     *
+     * @return string
+     */
     private static function format_percentage(float $value): string {
         return rtrim(rtrim(sprintf('%.6F', $value), '0'), '.') . '%';
     }
 
-    /** @return string */
+    /**
+     * Format opacity.
+     *
+     * @return string
+     */
     private static function format_opacity(float $value): string {
         return rtrim(rtrim(sprintf('%.3F', max(0.0, min(1.0, $value))), '0'), '.') ?: '0';
     }

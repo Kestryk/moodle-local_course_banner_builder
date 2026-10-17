@@ -10,6 +10,9 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace local_course_banner_builder;
 
@@ -169,7 +172,11 @@ final class banner_geometry {
         return [self::POLICY_PREVIEW, self::POLICY_PUBLIC_BANNER, self::POLICY_THUMBNAIL];
     }
 
-    /** @param mixed $value @return float */
+    /**
+     * Number.
+     *
+     * @param mixed $value @return float
+     */
     private static function number($value, string $name): float {
         if (!is_numeric($value) || !is_finite((float)$value)) {
             throw new \InvalidArgumentException('Expected a finite number for ' . $name . '.');
@@ -177,7 +184,11 @@ final class banner_geometry {
         return (float)$value;
     }
 
-    /** @param mixed $value @return float */
+    /**
+     * Positive number.
+     *
+     * @param mixed $value @return float
+     */
     private static function positive_number($value, string $name): float {
         $number = self::number($value, $name);
         if ($number <= 0.0) {
@@ -186,7 +197,11 @@ final class banner_geometry {
         return $number;
     }
 
-    /** @param mixed $value @return float */
+    /**
+     * Nonnegative number.
+     *
+     * @param mixed $value @return float
+     */
     private static function nonnegative_number($value, string $name): float {
         $number = self::number($value, $name);
         if ($number < 0.0) {
@@ -195,7 +210,11 @@ final class banner_geometry {
         return $number;
     }
 
-    /** @return array{x:float,y:float} */
+    /**
+     * Normalise origin.
+     *
+     * @return array{x:float,y:float}
+     */
     private static function normalise_origin($origin): array {
         if (!is_array($origin)) {
             throw new \InvalidArgumentException('Layer transform origin must be an array.');
@@ -226,7 +245,11 @@ final class banner_geometry {
         ];
     }
 
-    /** @return array<string, float|string|bool> */
+    /**
+     * Project image fit.
+     *
+     * @return array<string, float|string|bool>
+     */
     private static function project_image_fit(array $image, array $crop, string $fit, array $layer): array {
         $sourcewidth = self::positive_number($image['width'] ?? self::CANVAS_WIDTH, 'image.width');
         $sourceheight = self::positive_number($image['height'] ?? self::CANVAS_HEIGHT, 'image.height');
@@ -263,7 +286,11 @@ final class banner_geometry {
         ];
     }
 
-    /** @return array<string, float> */
+    /**
+     * Project border.
+     *
+     * @return array<string, float>
+     */
     private static function project_border(array $border, string $policy, float $targetheight): array {
         $sourcepercent = max(0.0, min(100.0, self::number($border['thicknesspercent'] ?? 0.0, 'border.thicknesspercent')));
         $projectedpercent = $sourcepercent;
@@ -277,7 +304,11 @@ final class banner_geometry {
         ];
     }
 
-    /** @return array<string, float|bool|string|int> */
+    /**
+     * Project title.
+     *
+     * @return array<string, float|bool|string|int>
+     */
     private static function project_title(array $title, float $targetwidth, float $targetheight, array $border): array {
         $x = self::number($title['x'] ?? self::CANVAS_WIDTH / 2, 'title.x');
         $y = self::number($title['y'] ?? self::CANVAS_HEIGHT / 2, 'title.y');
@@ -317,7 +348,11 @@ final class banner_geometry {
         ];
     }
 
-    /** @return float */
+    /**
+     * Round.
+     *
+     * @return float
+     */
     private static function round(float $value): float {
         return round($value, self::ROUNDING_PRECISION);
     }

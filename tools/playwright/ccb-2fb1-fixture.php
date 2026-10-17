@@ -1,9 +1,28 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * CCB Batch 2F-B.1 fixture authority helper.
  *
  * This is intentionally a Moodle CLI bootstrap: all mutations go through
  * Moodle category/course APIs or the CCB manager, never through SQL strings.
+ *
+ * @package    local_course_banner_builder
+ * @copyright  2026 Kevin Jarniac
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define('CLI_SCRIPT', true);
 require(__DIR__ . '/../../../../config.php');
@@ -46,7 +65,7 @@ $snapshot = static function () use ($DB, $gettitleconfig, $courseid, $stablecate
     $source = \local_course_banner_builder\manager::resolve_source(
         \local_course_banner_builder\manager::get_category_source_key($stablecategoryid)
     );
-    $sourceSettings = $source ? (array)\local_course_banner_builder\manager::get_source_settings($source) : [];
+    $sourcesettings = $source ? (array)\local_course_banner_builder\manager::get_source_settings($source) : [];
     $elements = $source ? count(\local_course_banner_builder\manager::get_source_elements($source)) : 0;
     return [
         'course' => (array)$course,
@@ -56,7 +75,7 @@ $snapshot = static function () use ($DB, $gettitleconfig, $courseid, $stablecate
         'activityTitle' => $gettitleconfig('activity'),
         'coursebanneractivitiesenabled' => (int)(bool)get_config('local_course_banner_builder', 'coursebanneractivitiesenabled'),
         'coursebannerenabled' => (int)(bool)get_config('local_course_banner_builder', 'coursebannerenabled'),
-        'stableSourceSettings' => $sourceSettings,
+        'stableSourceSettings' => $sourcesettings,
         'stableSourceElementCount' => $elements,
         'capturedAt' => gmdate('c'),
     ];
@@ -125,10 +144,10 @@ if ($command === 'cleanup') {
         move_courses([$courseid], $stablecategoryid);
     }
     $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
-    $capturedCourse = (object)$manifest['course'];
-    $course->fullname = $capturedCourse->fullname;
-    $course->format = $capturedCourse->format;
-    $course->showgrades = $capturedCourse->showgrades;
+    $capturedcourse = (object)$manifest['course'];
+    $course->fullname = $capturedcourse->fullname;
+    $course->format = $capturedcourse->format;
+    $course->showgrades = $capturedcourse->showgrades;
     update_course($course);
 
     foreach (['course', 'activity'] as $context) {
@@ -153,7 +172,7 @@ if ($command === 'cleanup') {
     $exists = $DB->record_exists('course_categories', ['id' => $temporaryid]);
     $elements = $temporaryid > 0 ? $DB->count_records('local_course_banner_builder_elements', ['categoryid' => $temporaryid]) : 0;
     $finalcourse = $DB->get_record('course', ['id' => $courseid], 'id,category,fullname,format,showgrades', MUST_EXIST);
-    if ((int)$finalcourse->category !== $stablecategoryid || $finalcourse->fullname !== $capturedCourse->fullname || $exists || $elements !== 0) {
+    if ((int)$finalcourse->category !== $stablecategoryid || $finalcourse->fullname !== $capturedcourse->fullname || $exists || $elements !== 0) {
         throw new \moodle_exception('Independent fixture cleanup verification failed.');
     }
     $emit([
@@ -170,9 +189,9 @@ if ($command === 'cleanup') {
 
 if ($command === 'verify') {
     $course = $DB->get_record('course', ['id' => $courseid], 'id,category,fullname', MUST_EXIST);
-    $categoryExists = $categoryid > 0 && $DB->record_exists('course_categories', ['id' => $categoryid]);
+    $categoryexists = $categoryid > 0 && $DB->record_exists('course_categories', ['id' => $categoryid]);
     $elements = $categoryid > 0 ? $DB->count_records('local_course_banner_builder_elements', ['categoryid' => $categoryid]) : 0;
-    $emit(['course' => (array)$course, 'temporaryCategoryExists' => $categoryExists, 'temporaryElements' => $elements]);
+    $emit(['course' => (array)$course, 'temporaryCategoryExists' => $categoryexists, 'temporaryElements' => $elements]);
     exit(0);
 }
 

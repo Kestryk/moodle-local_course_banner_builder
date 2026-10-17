@@ -5,6 +5,14 @@
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -12,9 +20,17 @@ use local_course_banner_builder\hook_callbacks;
 
 /**
  * Covers the public native-banner sizing rules emitted after compiled CSS.
+ *
+ * @package    local_course_banner_builder
+ * @copyright  2026 Kevin Jarniac
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class local_course_banner_builder_hook_callbacks_runtime_css_test extends advanced_testcase {
-    /** Return the protected runtime stylesheet without changing public hooks. */
+    /**
+     * Return the protected runtime stylesheet without changing public hooks.
+     *
+     * @return string
+     */
     protected function runtime_css(): string {
         $reflection = new ReflectionMethod(hook_callbacks::class, 'get_course_banner_runtime_css');
         $reflection->setAccessible(true);
@@ -51,7 +67,11 @@ final class local_course_banner_builder_hook_callbacks_runtime_css_test extends 
         $this->assertMatchesRegularExpression($pattern, $css);
     }
 
-    /** @return array */
+    /**
+     * Provide the nonstandard format cases.
+     *
+     * @return array
+     */
     public static function nonstandard_format_provider(): array {
         return [
             'content wide' => ['contentwide', '5 / 1', 280],

@@ -1,3 +1,5 @@
+- 2026-10-18 Codechecker : compléter les docblocks/en-têtes et normaliser les fixtures PHP sans modifier leurs instructions ni leurs données ; gardes de bootstrap laissées à arbitrer.
+
 - 2026-10-18 Codechecker : normalisation mécanique des espaces et appels PHP ; jetons exécutables et rendu conservés, sans publication.
 
 # Changelog

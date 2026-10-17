@@ -1,10 +1,29 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * CCB Batch 2A geometry fixture authority helper.
  *
  * All fixture writes use Moodle APIs or the CCB manager. Course 11 is moved to
  * the disposable category for the public/admin comparison and is restored to
  * its captured authoritative category during cleanup.
+ *
+ * @package    local_course_banner_builder
+ * @copyright  2026 Kevin Jarniac
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define('CLI_SCRIPT', true);
 require(__DIR__ . '/../../../../config.php');
@@ -67,7 +86,7 @@ $snapshot = static function () use ($DB, $gettitleconfig, $courseid, $stablecate
     // CLI runner may execute while an authenticated browser session is active;
     // direct DB reads are sufficient for these immutable authorities and avoid
     // manager helpers that resolve the current Moodle user.
-    $sourceSettings = $DB->get_record(
+    $sourcesettings = $DB->get_record(
         'local_course_banner_builder_order',
         ['categoryid' => $stablecategoryid],
         '*',
@@ -87,7 +106,7 @@ $snapshot = static function () use ($DB, $gettitleconfig, $courseid, $stablecate
             'plugin' => 'local_course_banner_builder', 'name' => 'coursebannerenabled',
         ], IGNORE_MISSING),
         'coursebannerformat' => \local_course_banner_builder\manager::get_course_banner_format(),
-        'stableSourceSettings' => $sourceSettings ? (array)$sourceSettings : [],
+        'stableSourceSettings' => $sourcesettings ? (array)$sourcesettings : [],
         'stableSourceElementCount' => $elements,
         'capturedAt' => gmdate('c'),
     ];
@@ -158,8 +177,8 @@ if ($command === 'setup') {
                 }
                 \local_course_banner_builder\manager::delete_category_content((int)$category->id, true);
                 $category->delete_full(false);
-            } catch (\Throwable $cleanupException) {
-                debugging('CCB 2A setup cleanup failed: ' . $cleanupException->getMessage(), DEBUG_DEVELOPER);
+            } catch (\Throwable $cleanupexception) {
+                debugging('CCB 2A setup cleanup failed: ' . $cleanupexception->getMessage(), DEBUG_DEVELOPER);
             }
         }
         throw $exception;
@@ -174,7 +193,7 @@ if ($command === 'cleanup') {
     $manifestjson = preg_replace('/^\xEF\xBB\xBF/', '', file_get_contents($manifestpath));
     $manifest = json_decode($manifestjson, true, 512, JSON_THROW_ON_ERROR);
     $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
-    $capturedCourse = (object)$manifest['course'];
+    $capturedcourse = (object)$manifest['course'];
     if ((int)$course->category !== $stablecategoryid) {
         if ((int)$course->category !== (int)($manifest['temporary']['categoryid'] ?? 0)) {
             throw new \moodle_exception('Stable fixture is in an unexpected category.');
@@ -183,9 +202,9 @@ if ($command === 'cleanup') {
         $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
         rebuild_course_cache($courseid, true);
     }
-    $course->fullname = $capturedCourse->fullname;
-    $course->format = $capturedCourse->format;
-    $course->showgrades = $capturedCourse->showgrades;
+    $course->fullname = $capturedcourse->fullname;
+    $course->format = $capturedcourse->format;
+    $course->showgrades = $capturedcourse->showgrades;
     update_course($course);
 
     foreach (['course', 'activity'] as $context) {
@@ -240,7 +259,7 @@ if ($command === 'cleanup') {
     $finalbannerformat = \local_course_banner_builder\manager::get_course_banner_format();
     if (
         (int)$finalcourse->category !== $stablecategoryid ||
-            $finalcourse->fullname !== $capturedCourse->fullname || $exists || $elements !== 0 ||
+            $finalcourse->fullname !== $capturedcourse->fullname || $exists || $elements !== 0 ||
             $finalbannerformat !== (string)$manifest['coursebannerformat']
     ) {
         throw new \moodle_exception('Independent geometry fixture cleanup verification failed.');
@@ -270,12 +289,12 @@ if ($command === 'set-format') {
 
 if ($command === 'verify') {
     $course = $DB->get_record('course', ['id' => $courseid], 'id,category,fullname', MUST_EXIST);
-    $categoryExists = $categoryid > 0 && $DB->record_exists('course_categories', ['id' => $categoryid]);
+    $categoryexists = $categoryid > 0 && $DB->record_exists('course_categories', ['id' => $categoryid]);
     $elements = $categoryid > 0 ? $DB->count_records(
         'local_course_banner_builder_elements',
         ['categoryid' => $categoryid]
     ) : 0;
-    $emit(['course' => (array)$course, 'temporaryCategoryExists' => $categoryExists,
+    $emit(['course' => (array)$course, 'temporaryCategoryExists' => $categoryexists,
         'temporaryElements' => $elements]);
     exit(0);
 }

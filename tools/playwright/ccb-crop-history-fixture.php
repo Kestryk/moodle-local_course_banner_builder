@@ -1,4 +1,19 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * Disposable two-image fixture for the CROP-08 transformation-history scenario.
  *
@@ -8,27 +23,24 @@
  * adds or deletes a Filemanager file itself.
  *
  * @package local_course_banner_builder
+ *
+ * @copyright  2026 Kevin Jarniac
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 define('CLI_SCRIPT', true);
-
 $command = $argv[1] ?? '';
 $moodleroot = $argv[2] ?? '';
 $manifestpath = $argv[3] ?? '';
-
 if ($moodleroot === '' || !is_file(rtrim($moodleroot, '/\\') . '/config.php')) {
     throw new RuntimeException('A valid Moodle root is required.');
 }
 require(rtrim($moodleroot, '/\\') . '/config.php');
-
 global $DB, $USER;
 $USER = get_admin();
-
 $prefix = 'CCB QA CROP-08 ';
 $emit = static function (array $value): void {
     echo json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR), PHP_EOL;
 };
-
 $removefixture = static function (array $manifest) use ($prefix): array {
     global $DB, $USER;
     $draftitemids = array_unique(array_filter([
@@ -62,7 +74,6 @@ $removefixture = static function (array $manifest) use ($prefix): array {
         'remainingElements' => 0,
     ];
 };
-
 if ($command === 'setup') {
     $category = null;
     try {
@@ -87,11 +98,13 @@ if ($command === 'setup') {
         if (!$source) {
             throw new moodle_exception('Unable to resolve disposable CROP-08 source.');
         }
-
         $fs = get_file_storage();
         $usercontext = context_user::instance($USER->id);
         $draftitemid = file_get_unused_draft_itemid();
-        $firstsvg = '<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900"><rect width="1600" height="900" fill="#155e75"/><circle cx="450" cy="450" r="300" fill="#facc15"/></svg>';
+        $firstsvg = '<svg xmlns="http://www.w3.org/2000/svg" width="1600" ' .
+            'height="900"><rect width="1600" height="900" ' .
+            'fill="#155e75"/><circle cx="450" cy="450" r="300" ' .
+            'fill="#facc15"/></svg>';
         $fs->create_file_from_string([
             'contextid' => $usercontext->id,
             'component' => 'user',
@@ -129,7 +142,10 @@ if ($command === 'setup') {
         if (!$element || (int)$element->fileitemid < 1) {
             throw new moodle_exception('Unable to create the CROP-08 image layer.');
         }
-        $secondsvg = '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200"><rect width="1200" height="1200" fill="#7c3aed"/><path d="M150 1000 L600 160 L1050 1000Z" fill="#fef3c7"/></svg>';
+        $secondsvg = '<svg xmlns="http://www.w3.org/2000/svg" width="1200" ' .
+            'height="1200"><rect width="1200" height="1200" ' .
+            'fill="#7c3aed"/><path d="M150 1000 L600 160 L1050 1000Z" ' .
+            'fill="#fef3c7"/></svg>';
         $fs->create_file_from_string([
             'contextid' => context_system::instance()->id,
             'component' => 'local_course_banner_builder',
@@ -169,7 +185,6 @@ if ($command === 'setup') {
     }
     exit(0);
 }
-
 if ($command === 'cleanup') {
     if ($manifestpath === '' || !is_file($manifestpath)) {
         throw new moodle_exception('Missing CROP-08 fixture manifest.');
@@ -179,5 +194,4 @@ if ($command === 'cleanup') {
     $emit($removefixture($manifest));
     exit(0);
 }
-
 throw new moodle_exception('Unknown CROP-08 fixture command.');

@@ -1,9 +1,28 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * Disposable CCB layer-row visual validation fixture.
  *
  * Creates an isolated category source containing two reorderable image layers
  * and one dynamic locked layer. Cleanup removes the complete category source.
+ *
+ * @package    local_course_banner_builder
+ * @copyright  2026 Kevin Jarniac
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define('CLI_SCRIPT', true);
 require(__DIR__ . '/../../../../config.php');
@@ -151,8 +170,8 @@ if ($command === 'setup') {
             try {
                 \local_course_banner_builder\manager::delete_category_content((int)$category->id, true);
                 $category->delete_full(false);
-            } catch (\Throwable $cleanupException) {
-                debugging('CCB object-row fixture setup cleanup failed: ' . $cleanupException->getMessage(), DEBUG_DEVELOPER);
+            } catch (\Throwable $cleanupexception) {
+                debugging('CCB object-row fixture setup cleanup failed: ' . $cleanupexception->getMessage(), DEBUG_DEVELOPER);
             }
         }
         throw $exception;

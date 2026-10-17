@@ -1,9 +1,28 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * Add idempotent, readable CCB visual-review layers to the active course source.
  *
  * This is a supervised Moodle 5.1 fixture helper. It appends only layers whose
  * names are not already present; it never replaces or deletes existing layers.
+ *
+ * @package    local_course_banner_builder
+ * @copyright  2026 Kevin Jarniac
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define('CLI_SCRIPT', true);
 
@@ -47,6 +66,7 @@ $fixtures = [
   <text x="800" y="320" fill="#ffd166" font-family="Arial, sans-serif" font-size="34" font-weight="700" text-anchor="middle">SOURCE CATEGORY 3 • BASE LAYER</text>
 </svg>
 SVG
+,
     ],
     [
         'name' => 'CCB QA readable - alignment markers - 100 200',
@@ -66,6 +86,7 @@ SVG
   <text x="800" y="256" fill="#ffd166" font-family="Arial, sans-serif" font-size="30" font-weight="700" text-anchor="middle">ZOOM CHECK: 100% • 200%</text>
 </svg>
 SVG
+,
     ],
     [
         'name' => 'CCB QA readable - contrast label - activity context',
@@ -79,6 +100,7 @@ SVG
   <text x="800" y="260" fill="#b9f3ff" font-family="Arial, sans-serif" font-size="34" text-anchor="middle">Activity title stays semantic • image remains decorative</text>
 </svg>
 SVG
+,
     ],
 ];
 
