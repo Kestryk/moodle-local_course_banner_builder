@@ -114,32 +114,38 @@ $PAGE->requires->js_call_amd('local_course_banner_builder/easyedu_guide', 'init'
  */
 function local_course_banner_builder_clean_slideshow_values(array $values): array {
     $clean = [];
-    foreach (['enabled', 'forums', 'siteannouncements', 'assignments', 'quizzes', 'autoplay', 'arrows', 'dots',
+    foreach (
+        ['enabled', 'forums', 'siteannouncements', 'assignments', 'quizzes', 'autoplay', 'arrows', 'dots',
         'titlebold', 'titleitalic', 'titleunderline', 'titlestrike', 'titleallcaps',
         'bodybold', 'bodyitalic', 'bodyunderline', 'bodystrike', 'bodyallcaps',
         'actionbold', 'actionitalic', 'actionunderline', 'actionstrike', 'actionallcaps',
-        'labelbold', 'labelitalic', 'labelunderline', 'labelstrike', 'labelallcaps'] as $field) {
+        'labelbold', 'labelitalic', 'labelunderline', 'labelstrike', 'labelallcaps'] as $field
+    ) {
         $clean[$field] = empty($values[$field]) ? 0 : 1;
     }
-    foreach (['delay', 'maxslides', 'siteannouncementdays', 'overlayopacity', 'titlefontsize', 'bodyfontsize', 'actionsize', 'actionwidth',
+    foreach (
+        ['delay', 'maxslides', 'siteannouncementdays', 'overlayopacity', 'titlefontsize', 'bodyfontsize', 'actionsize', 'actionwidth',
         'actionheight', 'labelsize', 'labeltextsize',
         'actionopacity', 'actionborderwidth', 'actionradius', 'actionpadding',
         'actionshadowopacity', 'actionshadowblur', 'actionshadowdistance', 'actionshadowdirection',
         'labelopacity', 'labelborderwidth', 'labelradius', 'labelpadding',
-        'labelshadowopacity', 'labelshadowblur', 'labelshadowdistance', 'labelshadowdirection'] as $field) {
+        'labelshadowopacity', 'labelshadowblur', 'labelshadowdistance', 'labelshadowdirection'] as $field
+    ) {
         $clean[$field] = clean_param($values[$field] ?? 0, PARAM_INT);
     }
     $clean['bodylineheight'] = clean_param($values['bodylineheight'] ?? 0, PARAM_FLOAT);
     foreach (['titlex', 'titley', 'bodyx', 'bodyy', 'actionx', 'actiony', 'labelx', 'labely'] as $field) {
         $clean[$field] = clean_param($values[$field] ?? 0, PARAM_FLOAT);
     }
-    foreach (['overlaycolor', 'titlecolor', 'bodycolor', 'titlefontfamily', 'bodyfontfamily',
+    foreach (
+        ['overlaycolor', 'titlecolor', 'bodycolor', 'titlefontfamily', 'bodyfontfamily',
         'actionbackgroundcolor', 'actionbordercolor', 'actionshadowcolor', 'actionfontfamily', 'actiontextcolor',
         'labelbackgroundcolor', 'labelbordercolor', 'labelshadowcolor', 'labelfontfamily', 'labeltextcolor',
         'label_forums_background', 'label_forums_text',
         'label_siteannouncements_background', 'label_siteannouncements_text',
         'label_assignments_background', 'label_assignments_text',
-        'label_quizzes_background', 'label_quizzes_text'] as $field) {
+        'label_quizzes_background', 'label_quizzes_text'] as $field
+    ) {
         $clean[$field] = clean_param($values[$field] ?? '', PARAM_TEXT);
     }
     foreach (manager::get_default_slideshow_label_colors() as $type => $defaults) {
@@ -503,7 +509,8 @@ function local_course_banner_builder_render_slideshow_banner_format_modal(
         'modal-body'
     );
     $form .= html_writer::div(
-        html_writer::tag('button',
+        html_writer::tag(
+            'button',
             html_writer::tag('i', '', ['class' => 'fa fa-save me-2', 'aria-hidden' => 'true']) .
                 html_writer::span(get_string('savebannerformat', 'local_course_banner_builder')),
             ['type' => 'submit', 'class' => 'btn btn-primary local-course-banner-builder-source-settings-submit']
@@ -572,7 +579,8 @@ function local_course_banner_builder_slideshow_toggle(
             'value' => $checked ? 1 : 0,
             'id' => $id,
         ]);
-        $html .= html_writer::tag('button',
+        $html .= html_writer::tag(
+            'button',
             html_writer::tag('i', '', [
                 'class' => 'fa ' . ($checked ? 'fa-toggle-on' : 'fa-toggle-off') . ' me-2',
                 'aria-hidden' => 'true',
@@ -740,8 +748,10 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
     $bannerformat = manager::normalise_banner_format($bannerformat);
     $formatclass = 'local-course-banner-builder-slideshow-admin-preview--format-' .
         preg_replace('/[^a-z0-9_-]+/i', '', $bannerformat);
-    $contextlabel = get_string($context === manager::SLIDESHOW_CONTEXT_SITE ? 'slideshowsitebanner' : 'slideshowcoursebanner',
-        'local_course_banner_builder');
+    $contextlabel = get_string(
+        $context === manager::SLIDESHOW_CONTEXT_SITE ? 'slideshowsitebanner' : 'slideshowcoursebanner',
+        'local_course_banner_builder'
+    );
     $labelcolors = $config['labelcolors'] ?? manager::get_default_slideshow_label_colors();
     $titlefontsize = max(25, min(100, (int)($config['titlefontsize'] ?? manager::SLIDESHOW_DEFAULT_TITLE_FONT_PERCENT)));
     $bodyfontsize = max(25, min(100, (int)($config['bodyfontsize'] ?? manager::SLIDESHOW_DEFAULT_BODY_FONT_PERCENT)));
@@ -829,8 +839,10 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
     $actiony = (float)($config['actiony'] ?? manager::SLIDESHOW_DEFAULT_ACTION_Y);
     $labelx = (float)($config['labelx'] ?? manager::SLIDESHOW_DEFAULT_LABEL_X);
     $labely = (float)($config['labely'] ?? manager::SLIDESHOW_DEFAULT_LABEL_Y);
-    if ($bannerformat === manager::BANNER_FORMAT_FULLWIDTH_TOP_COMPACT &&
-            abs($labely - manager::SLIDESHOW_DEFAULT_LABEL_Y) < 0.001) {
+    if (
+        $bannerformat === manager::BANNER_FORMAT_FULLWIDTH_TOP_COMPACT &&
+            abs($labely - manager::SLIDESHOW_DEFAULT_LABEL_Y) < 0.001
+    ) {
         $labely = 18.0;
     }
     $previewstyle = '--local-course-banner-builder-slideshow-overlay-rgb: ' .
@@ -1265,11 +1277,15 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
         return $html . html_writer::end_tag('select');
     };
     $cornerswitch = static function (string $target, string $inputname, string $current): string {
-        $html = html_writer::div(get_string('slideshowtogglecorners', 'local_course_banner_builder'),
-            'local-course-banner-builder-slideshow-side-title');
+        $html = html_writer::div(
+            get_string('slideshowtogglecorners', 'local_course_banner_builder'),
+            'local-course-banner-builder-slideshow-side-title'
+        );
         $html .= html_writer::start_div('btn-group local-course-banner-builder-slideshow-corner-buttons', ['role' => 'group']);
-        foreach ([manager::SLIDESHOW_CORNER_ROUNDED => 'slideshowcornersrounded',
-            manager::SLIDESHOW_CORNER_SQUARE => 'slideshowcornerssquare'] as $value => $stringkey) {
+        foreach (
+            [manager::SLIDESHOW_CORNER_ROUNDED => 'slideshowcornersrounded',
+            manager::SLIDESHOW_CORNER_SQUARE => 'slideshowcornerssquare'] as $value => $stringkey
+        ) {
             $html .= html_writer::tag('button', get_string($stringkey, 'local_course_banner_builder'), [
                 'type' => 'button',
                 'class' => 'btn btn-sm ' . ($current === $value ? 'btn-primary active' : 'btn-outline-secondary'),
@@ -1289,14 +1305,18 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
         return $html;
     };
     $orientationbuttons = static function (string $current): string {
-        $html = html_writer::div(get_string('slideshowlabelorientation', 'local_course_banner_builder'),
-            'local-course-banner-builder-slideshow-side-title');
+        $html = html_writer::div(
+            get_string('slideshowlabelorientation', 'local_course_banner_builder'),
+            'local-course-banner-builder-slideshow-side-title'
+        );
         $html .= html_writer::start_div('btn-group local-course-banner-builder-slideshow-label-orientation-buttons', [
             'role' => 'group',
             'data-slideshow-label-orientation-buttons' => '1',
         ]);
-        foreach ([manager::SLIDESHOW_LABEL_ORIENTATION_ROW => 'slideshowlabelorientationrow',
-            manager::SLIDESHOW_LABEL_ORIENTATION_COLUMN => 'slideshowlabelorientationcolumn'] as $value => $stringkey) {
+        foreach (
+            [manager::SLIDESHOW_LABEL_ORIENTATION_ROW => 'slideshowlabelorientationrow',
+            manager::SLIDESHOW_LABEL_ORIENTATION_COLUMN => 'slideshowlabelorientationcolumn'] as $value => $stringkey
+        ) {
             $html .= html_writer::tag('button', get_string($stringkey, 'local_course_banner_builder'), [
                 'type' => 'button',
                 'class' => 'btn btn-sm ' . ($current === $value ? 'btn-primary active' : 'btn-outline-secondary'),
@@ -1306,16 +1326,20 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
         return $html . html_writer::end_div();
     };
     $alignmentbuttons = static function (string $current, string $target = 'label'): string {
-        $html = html_writer::div(get_string('slideshowlabelalignment', 'local_course_banner_builder'),
-            'local-course-banner-builder-slideshow-side-title');
+        $html = html_writer::div(
+            get_string('slideshowlabelalignment', 'local_course_banner_builder'),
+            'local-course-banner-builder-slideshow-side-title'
+        );
         $html .= html_writer::start_div('btn-group local-course-banner-builder-slideshow-label-alignment-buttons', [
             'role' => 'group',
         ]);
-        foreach ([
+        foreach (
+            [
             manager::SLIDESHOW_ALIGN_LEFT => ['fa-align-left', 'slideshowalignleft'],
             manager::SLIDESHOW_ALIGN_CENTER => ['fa-align-center', 'slideshowaligncenter'],
             manager::SLIDESHOW_ALIGN_RIGHT => ['fa-align-right', 'slideshowalignright'],
-        ] as $value => $definition) {
+            ] as $value => $definition
+        ) {
             $html .= html_writer::tag('button', html_writer::tag('i', '', [
                 'class' => 'fa ' . $definition[0],
                 'aria-hidden' => 'true',
@@ -1384,7 +1408,8 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
                 html_writer::tag('p', get_string('slideshowpreviewmeta', 'local_course_banner_builder'), [
                     'class' => 'local-course-banner-builder-slideshow-meta',
                 ]) .
-                html_writer::tag('p',
+                html_writer::tag(
+                    'p',
                     get_string('slideshowpreviewbody', 'local_course_banner_builder') .
                         html_writer::empty_tag('br') .
                         get_string('slideshowpreviewbodyline2', 'local_course_banner_builder'),
@@ -1423,7 +1448,8 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
     $modal .= html_writer::start_div($slideshowmodaldialogclass, ['role' => 'document']);
     $modal .= html_writer::start_div('modal-content');
     $modal .= html_writer::start_div('modal-header d-flex align-items-center');
-    $modal .= html_writer::tag('h5',
+    $modal .= html_writer::tag(
+        'h5',
         get_string('slideshowlargepreview', 'local_course_banner_builder') . ' - ' . $contextlabel,
         ['class' => 'modal-title flex-grow-1']
     );
@@ -1435,7 +1461,8 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
         'aria-label' => get_string('closebuttontitle'),
     ]);
     $modal .= html_writer::end_div();
-    $modalpreview = html_writer::div($previewcontent,
+    $modalpreview = html_writer::div(
+        $previewcontent,
         'local-course-banner-builder-slideshow-admin-preview local-course-banner-builder-slideshow-admin-preview--large ' .
             $formatclass,
         [
@@ -1547,145 +1574,355 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
         $sidepanelbutton('overlay', 'fa-adjust', get_string('slideshowoverlaysettings', 'local_course_banner_builder')) .
         $sidepanel(
             'titletext',
-            $slidercontrol('titlefontsizeproxy', get_string('slideshowtitletext', 'local_course_banner_builder'),
-                $titlefontsize, 25, 100, '--local-course-banner-builder-slideshow-title-font-size', '%', 'titlefontsize') .
+            $slidercontrol(
+                'titlefontsizeproxy',
+                get_string('slideshowtitletext', 'local_course_banner_builder'),
+                $titlefontsize,
+                25,
+                100,
+                '--local-course-banner-builder-slideshow-title-font-size',
+                '%',
+                'titlefontsize'
+            ) .
             $proxyfontcontrol('titlefontfamily', get_string('slideshowtitlefontfamily', 'local_course_banner_builder'), $titlefontfamily) .
             $proxycolorcontrol('titlecolor', get_string('slideshowtitlecolor', 'local_course_banner_builder'), $titlecolor) .
-            html_writer::div(get_string('slideshowtextformat', 'local_course_banner_builder'),
-                'local-course-banner-builder-slideshow-side-title') .
+            html_writer::div(
+                get_string('slideshowtextformat', 'local_course_banner_builder'),
+                'local-course-banner-builder-slideshow-side-title'
+            ) .
             $textstyletoolbar('title', $titlestyles)
         ) .
         $sidepanelbutton('titletext', 'fa-heading', get_string('slideshowtitletext', 'local_course_banner_builder')) .
         $sidepanel(
             'bodytext',
-            $slidercontrol('bodyfontsizeproxy', get_string('slideshowbodytext', 'local_course_banner_builder'),
-                $bodyfontsize, 25, 100, '--local-course-banner-builder-slideshow-body-font-size', '%', 'bodyfontsize') .
-            $slidercontrol('bodylineheight', get_string('slideshowbodylineheight', 'local_course_banner_builder'),
-                $bodylineheight, 80, 200, '--local-course-banner-builder-slideshow-body-line-height',
-                '%', null, (float)$styledefaults['bodylineheight'], 0.1) .
+            $slidercontrol(
+                'bodyfontsizeproxy',
+                get_string('slideshowbodytext', 'local_course_banner_builder'),
+                $bodyfontsize,
+                25,
+                100,
+                '--local-course-banner-builder-slideshow-body-font-size',
+                '%',
+                'bodyfontsize'
+            ) .
+            $slidercontrol(
+                'bodylineheight',
+                get_string('slideshowbodylineheight', 'local_course_banner_builder'),
+                $bodylineheight,
+                80,
+                200,
+                '--local-course-banner-builder-slideshow-body-line-height',
+                '%',
+                null,
+                (float)$styledefaults['bodylineheight'],
+                0.1
+            ) .
             $proxyfontcontrol('bodyfontfamily', get_string('slideshowbodyfontfamily', 'local_course_banner_builder'), $bodyfontfamily) .
             $proxycolorcontrol('bodycolor', get_string('slideshowbodycolor', 'local_course_banner_builder'), $bodycolor) .
-            html_writer::div(get_string('slideshowtextformat', 'local_course_banner_builder'),
-                'local-course-banner-builder-slideshow-side-title') .
+            html_writer::div(
+                get_string('slideshowtextformat', 'local_course_banner_builder'),
+                'local-course-banner-builder-slideshow-side-title'
+            ) .
             $textstyletoolbar('body', $bodystyles)
         ) .
         $sidepanelbutton('bodytext', 'fa-align-left', get_string('slideshowbodytext', 'local_course_banner_builder')) .
         $sidepanel(
             'buttonshape',
-            $slidercontrol('actionopacity', get_string('slideshowbuttonopacity', 'local_course_banner_builder'),
-                $stylenumber('actionopacity'), 0, 100, '--local-course-banner-builder-slideshow-action-opacity',
-                '', null, (int)$styledefaults['actionopacity']) .
-            $slidercontrol('actionwidthproxy', get_string('slideshowviewbuttonwidth', 'local_course_banner_builder'),
-                $actionwidth, 25, 100, '--local-course-banner-builder-slideshow-action-width', '%', 'actionwidth',
-                manager::SLIDESHOW_DEFAULT_ACTION_WIDTH_PERCENT) .
-            $slidercontrol('actionborderwidth', get_string('slideshowbuttonborderwidth', 'local_course_banner_builder'),
-                $stylenumber('actionborderwidth'), 0, 20, '--local-course-banner-builder-slideshow-action-border-width',
-                'px', null, (int)$styledefaults['actionborderwidth']) .
+            $slidercontrol(
+                'actionopacity',
+                get_string('slideshowbuttonopacity', 'local_course_banner_builder'),
+                $stylenumber('actionopacity'),
+                0,
+                100,
+                '--local-course-banner-builder-slideshow-action-opacity',
+                '',
+                null,
+                (int)$styledefaults['actionopacity']
+            ) .
+            $slidercontrol(
+                'actionwidthproxy',
+                get_string('slideshowviewbuttonwidth', 'local_course_banner_builder'),
+                $actionwidth,
+                25,
+                100,
+                '--local-course-banner-builder-slideshow-action-width',
+                '%',
+                'actionwidth',
+                manager::SLIDESHOW_DEFAULT_ACTION_WIDTH_PERCENT
+            ) .
+            $slidercontrol(
+                'actionborderwidth',
+                get_string('slideshowbuttonborderwidth', 'local_course_banner_builder'),
+                $stylenumber('actionborderwidth'),
+                0,
+                20,
+                '--local-course-banner-builder-slideshow-action-border-width',
+                'px',
+                null,
+                (int)$styledefaults['actionborderwidth']
+            ) .
             $cornerswitch('action', 'actioncorners', $actioncorners) .
-            $slidercontrol('actionradius', get_string('slideshowbuttoncornerradius', 'local_course_banner_builder'),
-                $stylenumber('actionradius'), 0, 120, '--local-course-banner-builder-slideshow-action-radius',
-                'px', null, (int)$styledefaults['actionradius']) .
-            $slidercontrol('actionpadding', get_string('slideshowbuttonpadding', 'local_course_banner_builder'),
-                $stylenumber('actionpadding'), 0, 48, '--local-course-banner-builder-slideshow-action-padding',
-                'px', null, (int)$styledefaults['actionpadding']) .
-            $colorcontrol('actionbackgroundcolor', get_string('slideshowbuttonbackgroundcolor', 'local_course_banner_builder'),
-                $stylestring('actionbackgroundcolor'), '--local-course-banner-builder-slideshow-action-background',
-                (string)$styledefaults['actionbackgroundcolor']) .
-            $colorcontrol('actionbordercolor', get_string('slideshowbuttonbordercolor', 'local_course_banner_builder'),
-                $stylestring('actionbordercolor'), '--local-course-banner-builder-slideshow-action-border-color',
-                (string)$styledefaults['actionbordercolor'])
+            $slidercontrol(
+                'actionradius',
+                get_string('slideshowbuttoncornerradius', 'local_course_banner_builder'),
+                $stylenumber('actionradius'),
+                0,
+                120,
+                '--local-course-banner-builder-slideshow-action-radius',
+                'px',
+                null,
+                (int)$styledefaults['actionradius']
+            ) .
+            $slidercontrol(
+                'actionpadding',
+                get_string('slideshowbuttonpadding', 'local_course_banner_builder'),
+                $stylenumber('actionpadding'),
+                0,
+                48,
+                '--local-course-banner-builder-slideshow-action-padding',
+                'px',
+                null,
+                (int)$styledefaults['actionpadding']
+            ) .
+            $colorcontrol(
+                'actionbackgroundcolor',
+                get_string('slideshowbuttonbackgroundcolor', 'local_course_banner_builder'),
+                $stylestring('actionbackgroundcolor'),
+                '--local-course-banner-builder-slideshow-action-background',
+                (string)$styledefaults['actionbackgroundcolor']
+            ) .
+            $colorcontrol(
+                'actionbordercolor',
+                get_string('slideshowbuttonbordercolor', 'local_course_banner_builder'),
+                $stylestring('actionbordercolor'),
+                '--local-course-banner-builder-slideshow-action-border-color',
+                (string)$styledefaults['actionbordercolor']
+            )
         ) .
         $sidepanelbutton('buttonshape', 'fa-square', get_string('slideshowbuttonshape', 'local_course_banner_builder')) .
         $sidepanel(
             'buttonshadow',
-            $slidercontrol('actionshadowopacity', get_string('slideshowbuttonshadowopacity', 'local_course_banner_builder'),
-                $stylenumber('actionshadowopacity'), 0, 100,
-                '--local-course-banner-builder-slideshow-action-shadow-opacity', '', null,
-                (int)$styledefaults['actionshadowopacity']) .
-            $slidercontrol('actionshadowblur', get_string('slideshowbuttonshadowblur', 'local_course_banner_builder'),
-                $stylenumber('actionshadowblur'), 0, 80,
-                '--local-course-banner-builder-slideshow-action-shadow-blur', 'px', null,
-                (int)$styledefaults['actionshadowblur']) .
-            $slidercontrol('actionshadowdistance', get_string('slideshowbuttonshadowdistance', 'local_course_banner_builder'),
-                $stylenumber('actionshadowdistance'), 0, 60,
-                '--local-course-banner-builder-slideshow-action-shadow-distance', '', null,
-                (int)$styledefaults['actionshadowdistance']) .
-            $slidercontrol('actionshadowdirection', get_string('slideshowbuttonshadowdirection', 'local_course_banner_builder'),
-                $stylenumber('actionshadowdirection'), 0, 360,
-                '--local-course-banner-builder-slideshow-action-shadow-direction', '', null,
-                (int)$styledefaults['actionshadowdirection']) .
-            $colorcontrol('actionshadowcolor', get_string('slideshowbuttonshadowcolor', 'local_course_banner_builder'),
-                $stylestring('actionshadowcolor'), '--local-course-banner-builder-slideshow-action-shadow-color',
-                (string)$styledefaults['actionshadowcolor'])
+            $slidercontrol(
+                'actionshadowopacity',
+                get_string('slideshowbuttonshadowopacity', 'local_course_banner_builder'),
+                $stylenumber('actionshadowopacity'),
+                0,
+                100,
+                '--local-course-banner-builder-slideshow-action-shadow-opacity',
+                '',
+                null,
+                (int)$styledefaults['actionshadowopacity']
+            ) .
+            $slidercontrol(
+                'actionshadowblur',
+                get_string('slideshowbuttonshadowblur', 'local_course_banner_builder'),
+                $stylenumber('actionshadowblur'),
+                0,
+                80,
+                '--local-course-banner-builder-slideshow-action-shadow-blur',
+                'px',
+                null,
+                (int)$styledefaults['actionshadowblur']
+            ) .
+            $slidercontrol(
+                'actionshadowdistance',
+                get_string('slideshowbuttonshadowdistance', 'local_course_banner_builder'),
+                $stylenumber('actionshadowdistance'),
+                0,
+                60,
+                '--local-course-banner-builder-slideshow-action-shadow-distance',
+                '',
+                null,
+                (int)$styledefaults['actionshadowdistance']
+            ) .
+            $slidercontrol(
+                'actionshadowdirection',
+                get_string('slideshowbuttonshadowdirection', 'local_course_banner_builder'),
+                $stylenumber('actionshadowdirection'),
+                0,
+                360,
+                '--local-course-banner-builder-slideshow-action-shadow-direction',
+                '',
+                null,
+                (int)$styledefaults['actionshadowdirection']
+            ) .
+            $colorcontrol(
+                'actionshadowcolor',
+                get_string('slideshowbuttonshadowcolor', 'local_course_banner_builder'),
+                $stylestring('actionshadowcolor'),
+                '--local-course-banner-builder-slideshow-action-shadow-color',
+                (string)$styledefaults['actionshadowcolor']
+            )
         ) .
         $sidepanelbutton('buttonshadow', 'fa-clone', get_string('slideshowbuttonshadow', 'local_course_banner_builder')) .
         $sidepanel(
             'buttontext',
-            $slidercontrol('actionsizeproxy', get_string('slideshowbuttontextsize', 'local_course_banner_builder'),
-                $actionsize, 25, 100, '--local-course-banner-builder-slideshow-action-font-size', '%', 'actionsize',
-                manager::SLIDESHOW_DEFAULT_ACTION_SIZE_PERCENT) .
-            $fontcontrol('actionfontfamily', get_string('slideshowbuttonfontfamily', 'local_course_banner_builder'),
-                $stylestring('actionfontfamily'), '--local-course-banner-builder-slideshow-action-font-family',
-                (string)$styledefaults['actionfontfamily']) .
-            $colorcontrol('actiontextcolor', get_string('slideshowbuttontextcolor', 'local_course_banner_builder'),
-                $stylestring('actiontextcolor'), '--local-course-banner-builder-slideshow-action-text-color',
-                (string)$styledefaults['actiontextcolor']) .
-            html_writer::div(get_string('slideshowtextformat', 'local_course_banner_builder'),
-                'local-course-banner-builder-slideshow-side-title') .
+            $slidercontrol(
+                'actionsizeproxy',
+                get_string('slideshowbuttontextsize', 'local_course_banner_builder'),
+                $actionsize,
+                25,
+                100,
+                '--local-course-banner-builder-slideshow-action-font-size',
+                '%',
+                'actionsize',
+                manager::SLIDESHOW_DEFAULT_ACTION_SIZE_PERCENT
+            ) .
+            $fontcontrol(
+                'actionfontfamily',
+                get_string('slideshowbuttonfontfamily', 'local_course_banner_builder'),
+                $stylestring('actionfontfamily'),
+                '--local-course-banner-builder-slideshow-action-font-family',
+                (string)$styledefaults['actionfontfamily']
+            ) .
+            $colorcontrol(
+                'actiontextcolor',
+                get_string('slideshowbuttontextcolor', 'local_course_banner_builder'),
+                $stylestring('actiontextcolor'),
+                '--local-course-banner-builder-slideshow-action-text-color',
+                (string)$styledefaults['actiontextcolor']
+            ) .
+            html_writer::div(
+                get_string('slideshowtextformat', 'local_course_banner_builder'),
+                'local-course-banner-builder-slideshow-side-title'
+            ) .
             $textstylebuttons('action', $actionstyles)
         ) .
         $sidepanelbutton('buttontext', 'fa-font', get_string('slideshowbuttontext', 'local_course_banner_builder')) .
         $sidepanel(
             'labelshape',
-            $slidercontrol('labelopacity', get_string('slideshowlabelsopacity', 'local_course_banner_builder'),
-                $stylenumber('labelopacity'), 0, 100, '--local-course-banner-builder-slideshow-label-opacity',
-                '', null, (int)$styledefaults['labelopacity']) .
-            $slidercontrol('labelsizeproxy', get_string('slideshowlabelsize', 'local_course_banner_builder'),
-                $labelsize, 25, 100, '--local-course-banner-builder-slideshow-label-font-size', '%', 'labelsize',
-                manager::SLIDESHOW_DEFAULT_LABEL_SIZE_PERCENT) .
+            $slidercontrol(
+                'labelopacity',
+                get_string('slideshowlabelsopacity', 'local_course_banner_builder'),
+                $stylenumber('labelopacity'),
+                0,
+                100,
+                '--local-course-banner-builder-slideshow-label-opacity',
+                '',
+                null,
+                (int)$styledefaults['labelopacity']
+            ) .
+            $slidercontrol(
+                'labelsizeproxy',
+                get_string('slideshowlabelsize', 'local_course_banner_builder'),
+                $labelsize,
+                25,
+                100,
+                '--local-course-banner-builder-slideshow-label-font-size',
+                '%',
+                'labelsize',
+                manager::SLIDESHOW_DEFAULT_LABEL_SIZE_PERCENT
+            ) .
             $orientationbuttons($labelorientation) .
             $alignmentbuttons($labelalign) .
-            $slidercontrol('labelborderwidth', get_string('slideshowlabelsborderwidth', 'local_course_banner_builder'),
-                $stylenumber('labelborderwidth'), 0, 20, '--local-course-banner-builder-slideshow-label-border-width',
-                'px', null, (int)$styledefaults['labelborderwidth']) .
+            $slidercontrol(
+                'labelborderwidth',
+                get_string('slideshowlabelsborderwidth', 'local_course_banner_builder'),
+                $stylenumber('labelborderwidth'),
+                0,
+                20,
+                '--local-course-banner-builder-slideshow-label-border-width',
+                'px',
+                null,
+                (int)$styledefaults['labelborderwidth']
+            ) .
             $cornerswitch('label', 'labelcorners', $labelcorners) .
-            $slidercontrol('labelradius', get_string('slideshowlabelscornerradius', 'local_course_banner_builder'),
-                $stylenumber('labelradius'), 0, 120, '--local-course-banner-builder-slideshow-label-radius',
-                'px', null, (int)$styledefaults['labelradius']) .
-            $slidercontrol('labelpadding', get_string('slideshowlabelspadding', 'local_course_banner_builder'),
-                $stylenumber('labelpadding'), 0, 48, '--local-course-banner-builder-slideshow-label-padding',
-                'px', null, (int)$styledefaults['labelpadding'])
+            $slidercontrol(
+                'labelradius',
+                get_string('slideshowlabelscornerradius', 'local_course_banner_builder'),
+                $stylenumber('labelradius'),
+                0,
+                120,
+                '--local-course-banner-builder-slideshow-label-radius',
+                'px',
+                null,
+                (int)$styledefaults['labelradius']
+            ) .
+            $slidercontrol(
+                'labelpadding',
+                get_string('slideshowlabelspadding', 'local_course_banner_builder'),
+                $stylenumber('labelpadding'),
+                0,
+                48,
+                '--local-course-banner-builder-slideshow-label-padding',
+                'px',
+                null,
+                (int)$styledefaults['labelpadding']
+            )
         ) .
         $sidepanelbutton('labelshape', 'fa-tags', get_string('slideshowlabelsshape', 'local_course_banner_builder')) .
         $sidepanel(
             'labelshadow',
-            $slidercontrol('labelshadowopacity', get_string('slideshowlabelsshadowopacity', 'local_course_banner_builder'),
-                $stylenumber('labelshadowopacity'), 0, 100,
-                '--local-course-banner-builder-slideshow-label-shadow-opacity', '', null,
-                (int)$styledefaults['labelshadowopacity']) .
-            $slidercontrol('labelshadowblur', get_string('slideshowlabelsshadowblur', 'local_course_banner_builder'),
-                $stylenumber('labelshadowblur'), 0, 80,
-                '--local-course-banner-builder-slideshow-label-shadow-blur', 'px', null,
-                (int)$styledefaults['labelshadowblur']) .
-            $slidercontrol('labelshadowdistance', get_string('slideshowlabelsshadowdistance', 'local_course_banner_builder'),
-                $stylenumber('labelshadowdistance'), 0, 60,
-                '--local-course-banner-builder-slideshow-label-shadow-distance', '', null,
-                (int)$styledefaults['labelshadowdistance']) .
-            $slidercontrol('labelshadowdirection', get_string('slideshowlabelsshadowdirection', 'local_course_banner_builder'),
-                $stylenumber('labelshadowdirection'), 0, 360,
-                '--local-course-banner-builder-slideshow-label-shadow-direction', '', null,
-                (int)$styledefaults['labelshadowdirection'])
+            $slidercontrol(
+                'labelshadowopacity',
+                get_string('slideshowlabelsshadowopacity', 'local_course_banner_builder'),
+                $stylenumber('labelshadowopacity'),
+                0,
+                100,
+                '--local-course-banner-builder-slideshow-label-shadow-opacity',
+                '',
+                null,
+                (int)$styledefaults['labelshadowopacity']
+            ) .
+            $slidercontrol(
+                'labelshadowblur',
+                get_string('slideshowlabelsshadowblur', 'local_course_banner_builder'),
+                $stylenumber('labelshadowblur'),
+                0,
+                80,
+                '--local-course-banner-builder-slideshow-label-shadow-blur',
+                'px',
+                null,
+                (int)$styledefaults['labelshadowblur']
+            ) .
+            $slidercontrol(
+                'labelshadowdistance',
+                get_string('slideshowlabelsshadowdistance', 'local_course_banner_builder'),
+                $stylenumber('labelshadowdistance'),
+                0,
+                60,
+                '--local-course-banner-builder-slideshow-label-shadow-distance',
+                '',
+                null,
+                (int)$styledefaults['labelshadowdistance']
+            ) .
+            $slidercontrol(
+                'labelshadowdirection',
+                get_string('slideshowlabelsshadowdirection', 'local_course_banner_builder'),
+                $stylenumber('labelshadowdirection'),
+                0,
+                360,
+                '--local-course-banner-builder-slideshow-label-shadow-direction',
+                '',
+                null,
+                (int)$styledefaults['labelshadowdirection']
+            )
         ) .
         $sidepanelbutton('labelshadow', 'fa-clone', get_string('slideshowlabelsshadow', 'local_course_banner_builder')) .
         $sidepanel(
             'labeltext',
-            $slidercontrol('labeltextsize', get_string('slideshowlabeltextsize', 'local_course_banner_builder'),
-                $labeltextsize, 25, 160, '--local-course-banner-builder-slideshow-label-text-scale', '%', null, 100) .
-            $fontcontrol('labelfontfamily', get_string('slideshowlabelsfontfamily', 'local_course_banner_builder'),
-                $stylestring('labelfontfamily'), '--local-course-banner-builder-slideshow-label-font-family',
-                (string)$styledefaults['labelfontfamily']) .
-            html_writer::div(get_string('slideshowtextformat', 'local_course_banner_builder'),
-                'local-course-banner-builder-slideshow-side-title') .
+            $slidercontrol(
+                'labeltextsize',
+                get_string('slideshowlabeltextsize', 'local_course_banner_builder'),
+                $labeltextsize,
+                25,
+                160,
+                '--local-course-banner-builder-slideshow-label-text-scale',
+                '%',
+                null,
+                100
+            ) .
+            $fontcontrol(
+                'labelfontfamily',
+                get_string('slideshowlabelsfontfamily', 'local_course_banner_builder'),
+                $stylestring('labelfontfamily'),
+                '--local-course-banner-builder-slideshow-label-font-family',
+                (string)$styledefaults['labelfontfamily']
+            ) .
+            html_writer::div(
+                get_string('slideshowtextformat', 'local_course_banner_builder'),
+                'local-course-banner-builder-slideshow-side-title'
+            ) .
             $textstylebuttons('label', $labelstyles)
         ) .
         $sidepanelbutton('labeltext', 'fa-font', get_string('slideshowlabelstext', 'local_course_banner_builder')),
@@ -1718,11 +1955,13 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
             'data-default-value' => number_format($default, 3, '.', ''),
         ]);
     }
-    foreach ([
+    foreach (
+        [
         ['titlealign', $titlealign, 'title', manager::SLIDESHOW_DEFAULT_TITLE_ALIGN],
         ['bodyalign', $bodyalign, 'body', manager::SLIDESHOW_DEFAULT_BODY_ALIGN],
         ['labelalign', $labelalign, 'label', manager::SLIDESHOW_DEFAULT_LABEL_ALIGN],
-    ] as [$name, $value, $target, $default]) {
+        ] as [$name, $value, $target, $default]
+    ) {
         $controls .= html_writer::empty_tag('input', [
             'type' => 'hidden',
             'name' => $name,
@@ -1778,7 +2017,8 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
         'data-slideshow-overlay-opacity' => '1',
         'data-default-value' => (string)(int)(manager::SLIDESHOW_DEFAULT_OVERLAY_OPACITY * 100),
     ]);
-    $controls .= html_writer::div($opacity . '%',
+    $controls .= html_writer::div(
+        $opacity . '%',
         'text-muted local-course-banner-builder-slideshow-opacity-output ' .
             'local-course-banner-builder-slideshow-overlay-opacity-output ' .
             'local-course-banner-builder-slideshow-overlay-control',
@@ -1973,8 +2213,10 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
     ]);
     $controls .= html_writer::div(get_string('slideshowviewbuttoncorners', 'local_course_banner_builder'), 'local-course-banner-builder-slideshow-text-title');
     $controls .= html_writer::start_div('btn-group local-course-banner-builder-slideshow-corner-buttons', ['role' => 'group']);
-    foreach ([manager::SLIDESHOW_CORNER_ROUNDED => 'slideshowcornersrounded',
-        manager::SLIDESHOW_CORNER_SQUARE => 'slideshowcornerssquare'] as $value => $stringkey) {
+    foreach (
+        [manager::SLIDESHOW_CORNER_ROUNDED => 'slideshowcornersrounded',
+        manager::SLIDESHOW_CORNER_SQUARE => 'slideshowcornerssquare'] as $value => $stringkey
+    ) {
         $controls .= html_writer::tag('button', get_string($stringkey, 'local_course_banner_builder'), [
             'type' => 'button',
             'class' => 'btn btn-sm ' . ($actioncorners === $value ? 'btn-primary active' : 'btn-outline-secondary'),
@@ -2029,8 +2271,10 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
         'role' => 'group',
         'data-slideshow-label-orientation-buttons' => '1',
     ]);
-    foreach ([manager::SLIDESHOW_LABEL_ORIENTATION_ROW => 'slideshowlabelorientationrow',
-        manager::SLIDESHOW_LABEL_ORIENTATION_COLUMN => 'slideshowlabelorientationcolumn'] as $value => $stringkey) {
+    foreach (
+        [manager::SLIDESHOW_LABEL_ORIENTATION_ROW => 'slideshowlabelorientationrow',
+        manager::SLIDESHOW_LABEL_ORIENTATION_COLUMN => 'slideshowlabelorientationcolumn'] as $value => $stringkey
+    ) {
         $controls .= html_writer::tag('button', get_string($stringkey, 'local_course_banner_builder'), [
             'type' => 'button',
             'class' => 'btn btn-sm ' . ($labelorientation === $value ? 'btn-primary active' : 'btn-outline-secondary'),
@@ -2047,8 +2291,10 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
     ]);
     $controls .= html_writer::div(get_string('slideshowlabelcorners', 'local_course_banner_builder'), 'local-course-banner-builder-slideshow-text-title');
     $controls .= html_writer::start_div('btn-group local-course-banner-builder-slideshow-corner-buttons', ['role' => 'group']);
-    foreach ([manager::SLIDESHOW_CORNER_ROUNDED => 'slideshowcornersrounded',
-        manager::SLIDESHOW_CORNER_SQUARE => 'slideshowcornerssquare'] as $value => $stringkey) {
+    foreach (
+        [manager::SLIDESHOW_CORNER_ROUNDED => 'slideshowcornersrounded',
+        manager::SLIDESHOW_CORNER_SQUARE => 'slideshowcornerssquare'] as $value => $stringkey
+    ) {
         $controls .= html_writer::tag('button', get_string($stringkey, 'local_course_banner_builder'), [
             'type' => 'button',
             'class' => 'btn btn-sm ' . ($labelcorners === $value ? 'btn-primary active' : 'btn-outline-secondary'),
@@ -2152,14 +2398,34 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
             s($stylergb((string)($colors['shadow'] ?? $defaults['shadow']))) . ';';
         $controls .= html_writer::start_div('local-course-banner-builder-slideshow-label-color-row');
         $controls .= html_writer::div(get_string($labelkey, 'local_course_banner_builder'), 'local-course-banner-builder-slideshow-label-color-title');
-        $controls .= $labelcolourfield($type, 'background', get_string('slideshowlabelbackground', 'local_course_banner_builder'),
-            $colors, $defaults);
-        $controls .= $labelcolourfield($type, 'text', get_string('slideshowlabeltext', 'local_course_banner_builder'),
-            $colors, $defaults);
-        $controls .= $labelcolourfield($type, 'border', get_string('slideshowlabelsbordercolor', 'local_course_banner_builder'),
-            $colors, $defaults);
-        $controls .= $labelcolourfield($type, 'shadow', get_string('slideshowlabelsshadowcolor', 'local_course_banner_builder'),
-            $colors, $defaults);
+        $controls .= $labelcolourfield(
+            $type,
+            'background',
+            get_string('slideshowlabelbackground', 'local_course_banner_builder'),
+            $colors,
+            $defaults
+        );
+        $controls .= $labelcolourfield(
+            $type,
+            'text',
+            get_string('slideshowlabeltext', 'local_course_banner_builder'),
+            $colors,
+            $defaults
+        );
+        $controls .= $labelcolourfield(
+            $type,
+            'border',
+            get_string('slideshowlabelsbordercolor', 'local_course_banner_builder'),
+            $colors,
+            $defaults
+        );
+        $controls .= $labelcolourfield(
+            $type,
+            'shadow',
+            get_string('slideshowlabelsshadowcolor', 'local_course_banner_builder'),
+            $colors,
+            $defaults
+        );
         $samplecontent = '';
         if (!empty($sampleiconcomponents[$type])) {
             $samplecontent .= html_writer::empty_tag('img', [
@@ -2185,7 +2451,8 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
     $modalbody .= html_writer::div($controls, 'local-course-banner-builder-slideshow-modal-settings');
     $modal .= html_writer::div($modalbody, 'modal-body local-course-banner-builder-title-modal-body local-course-banner-builder-slideshow-modal-body');
     $modal .= html_writer::div(
-        html_writer::tag('button',
+        html_writer::tag(
+            'button',
             html_writer::tag('i', '', ['class' => 'fa fa-rotate-left me-2', 'aria-hidden' => 'true']) .
                 html_writer::span(get_string('slideshowdefaultoverlaysettings', 'local_course_banner_builder')),
             [
@@ -2194,7 +2461,8 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
                 'class' => 'btn btn-outline-secondary local-course-banner-builder-compact-save-button',
             ]
         ) .
-        html_writer::tag('button',
+        html_writer::tag(
+            'button',
             html_writer::tag('i', '', ['class' => 'fa fa-rotate-left me-2', 'aria-hidden' => 'true']) .
                 html_writer::span(get_string('slideshowdefaulttextsettings', 'local_course_banner_builder')),
             [
@@ -2203,7 +2471,8 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
                 'class' => 'btn btn-outline-secondary local-course-banner-builder-compact-save-button',
             ]
         ) .
-        html_writer::tag('button',
+        html_writer::tag(
+            'button',
             html_writer::tag('i', '', ['class' => 'fa fa-rotate-left me-2', 'aria-hidden' => 'true']) .
                 html_writer::span(get_string('slideshowdefaultlabelsettings', 'local_course_banner_builder')),
             [
@@ -2212,7 +2481,8 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
                 'class' => 'btn btn-outline-secondary local-course-banner-builder-compact-save-button',
             ]
         ) .
-        html_writer::tag('button',
+        html_writer::tag(
+            'button',
             html_writer::tag('i', '', ['class' => 'fa fa-rotate-left me-2', 'aria-hidden' => 'true']) .
                 html_writer::span(get_string('slideshowdefaultallsettings', 'local_course_banner_builder')),
             [
@@ -2221,7 +2491,8 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
                 'class' => 'btn btn-outline-secondary local-course-banner-builder-compact-save-button',
             ]
         ) .
-        html_writer::tag('button',
+        html_writer::tag(
+            'button',
             html_writer::tag('i', '', ['class' => 'fa fa-save me-2', 'aria-hidden' => 'true']) .
                 html_writer::span(get_string('saveslideshowsettings', 'local_course_banner_builder')),
             ['type' => 'submit', 'class' => 'btn btn-primary local-course-banner-builder-compact-save-button']
@@ -2232,7 +2503,8 @@ function local_course_banner_builder_render_slideshow_overlay_settings(array $co
 
     return html_writer::div(
         html_writer::div(
-            html_writer::tag('button',
+            html_writer::tag(
+                'button',
                 html_writer::tag('i', '', ['class' => 'fa fa-palette me-2', 'aria-hidden' => 'true']) .
                     html_writer::span(get_string('slideshoweditappearancefor', 'local_course_banner_builder', $contextlabel)),
                 [
@@ -2416,7 +2688,8 @@ function local_course_banner_builder_render_slideshow_form(string $context): str
     $content .= local_course_banner_builder_render_slideshow_overlay_settings($config, $context);
 
     $content .= html_writer::div(
-        html_writer::tag('button',
+        html_writer::tag(
+            'button',
             html_writer::tag('i', '', ['class' => 'fa fa-rotate-left me-2', 'aria-hidden' => 'true']) .
                 html_writer::span(get_string('slideshowdefaultsettingsfor', 'local_course_banner_builder', $title)),
             [
@@ -2758,7 +3031,8 @@ echo html_writer::div(
     'local-course-banner-builder-slideshow-admin-grid'
 );
 echo html_writer::div(
-    html_writer::tag('button',
+    html_writer::tag(
+        'button',
         html_writer::tag('i', '', ['class' => 'fa fa-save me-2', 'aria-hidden' => 'true']) .
             html_writer::span(get_string('saveslideshowsettings', 'local_course_banner_builder')),
         [

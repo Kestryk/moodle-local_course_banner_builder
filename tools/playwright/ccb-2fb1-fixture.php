@@ -28,7 +28,7 @@ $titlefields = [
     'shadowdistance', 'shadowdirection', 'overlayopacity', 'activitytitlemode',
 ];
 
-$gettitleconfig = static function(string $context) use ($titlefields): array {
+$gettitleconfig = static function (string $context) use ($titlefields): array {
     $result = [];
     foreach ($titlefields as $field) {
         $name = 'bannertitle_' . $context . '_' . $field;
@@ -40,7 +40,7 @@ $gettitleconfig = static function(string $context) use ($titlefields): array {
     return $result;
 };
 
-$snapshot = static function() use ($DB, $gettitleconfig, $courseid, $stablecategoryid): array {
+$snapshot = static function () use ($DB, $gettitleconfig, $courseid, $stablecategoryid): array {
     $course = $DB->get_record('course', ['id' => $courseid], 'id,category,fullname,format,showgrades', MUST_EXIST);
     $cm = $DB->get_record('course_modules', ['id' => 12, 'course' => $courseid], 'id,course', MUST_EXIST);
     $source = \local_course_banner_builder\manager::resolve_source(
@@ -62,7 +62,7 @@ $snapshot = static function() use ($DB, $gettitleconfig, $courseid, $stablecateg
     ];
 };
 
-$emit = static function(array $value): void {
+$emit = static function (array $value): void {
     echo json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR), PHP_EOL;
 };
 

@@ -25,11 +25,11 @@ global $DB, $USER;
 $USER = get_admin();
 
 $prefix = 'CCB QA CROP-08 ';
-$emit = static function(array $value): void {
+$emit = static function (array $value): void {
     echo json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR), PHP_EOL;
 };
 
-$removefixture = static function(array $manifest) use ($prefix): array {
+$removefixture = static function (array $manifest) use ($prefix): array {
     global $DB, $USER;
     $draftitemids = array_unique(array_filter([
         (int)($manifest['draftitemid'] ?? 0),

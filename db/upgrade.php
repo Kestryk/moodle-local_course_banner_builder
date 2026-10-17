@@ -97,8 +97,16 @@ function xmldb_local_course_banner_builder_upgrade(int $oldversion): bool {
 
     if ($oldversion < 2026041800) {
         $table = new xmldb_table('local_course_banner_order');
-        $field = new xmldb_field('compositionmode', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null,
-            'cumulative', 'coursecustomfieldid');
+        $field = new xmldb_field(
+            'compositionmode',
+            XMLDB_TYPE_CHAR,
+            '20',
+            null,
+            XMLDB_NOTNULL,
+            null,
+            'cumulative',
+            'coursecustomfieldid'
+        );
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
@@ -113,14 +121,30 @@ function xmldb_local_course_banner_builder_upgrade(int $oldversion): bool {
     if ($oldversion < 2026041801) {
         $table = new xmldb_table('local_course_banner_order');
 
-        $field = new xmldb_field('fitmode', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null,
-            'bannerfit', 'compositionmode');
+        $field = new xmldb_field(
+            'fitmode',
+            XMLDB_TYPE_CHAR,
+            '20',
+            null,
+            XMLDB_NOTNULL,
+            null,
+            'bannerfit',
+            'compositionmode'
+        );
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
 
-        $field = new xmldb_field('fitapplyscope', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null,
-            'self', 'fitmode');
+        $field = new xmldb_field(
+            'fitapplyscope',
+            XMLDB_TYPE_CHAR,
+            '20',
+            null,
+            XMLDB_NOTNULL,
+            null,
+            'self',
+            'fitmode'
+        );
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
@@ -150,8 +174,16 @@ function xmldb_local_course_banner_builder_upgrade(int $oldversion): bool {
             $dbman->add_field($elementstable, $field);
         }
 
-        $field = new xmldb_field('sourcetype', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, 'category',
-            'customfieldvalue');
+        $field = new xmldb_field(
+            'sourcetype',
+            XMLDB_TYPE_CHAR,
+            '20',
+            null,
+            XMLDB_NOTNULL,
+            null,
+            'category',
+            'customfieldvalue'
+        );
         if (!$dbman->field_exists($elementstable, $field)) {
             $dbman->add_field($elementstable, $field);
         }
@@ -178,14 +210,30 @@ function xmldb_local_course_banner_builder_upgrade(int $oldversion): bool {
             $dbman->change_field_notnull($ordertable, $field);
         }
 
-        $field = new xmldb_field('customfieldvalue', XMLDB_TYPE_TEXT, null, null, null, null, null,
-            'coursecustomfieldid');
+        $field = new xmldb_field(
+            'customfieldvalue',
+            XMLDB_TYPE_TEXT,
+            null,
+            null,
+            null,
+            null,
+            null,
+            'coursecustomfieldid'
+        );
         if (!$dbman->field_exists($ordertable, $field)) {
             $dbman->add_field($ordertable, $field);
         }
 
-        $field = new xmldb_field('sourcetype', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, 'category',
-            'customfieldvalue');
+        $field = new xmldb_field(
+            'sourcetype',
+            XMLDB_TYPE_CHAR,
+            '20',
+            null,
+            XMLDB_NOTNULL,
+            null,
+            'category',
+            'customfieldvalue'
+        );
         if (!$dbman->field_exists($ordertable, $field)) {
             $dbman->add_field($ordertable, $field);
         }
@@ -195,8 +243,16 @@ function xmldb_local_course_banner_builder_upgrade(int $oldversion): bool {
             $dbman->add_field($ordertable, $field);
         }
 
-        $field = new xmldb_field('customfieldpriority', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, 'category',
-            'fitapplyscope');
+        $field = new xmldb_field(
+            'customfieldpriority',
+            XMLDB_TYPE_CHAR,
+            '20',
+            null,
+            XMLDB_NOTNULL,
+            null,
+            'category',
+            'fitapplyscope'
+        );
         if (!$dbman->field_exists($ordertable, $field)) {
             $dbman->add_field($ordertable, $field);
         }
@@ -247,8 +303,16 @@ function xmldb_local_course_banner_builder_upgrade(int $oldversion): bool {
             new xmldb_field('borderopacity', XMLDB_TYPE_NUMBER, '10, 2', null, XMLDB_NOTNULL, null, '1', 'borderwidth'),
             new xmldb_field('borderfade', XMLDB_TYPE_NUMBER, '10, 2', null, XMLDB_NOTNULL, null, '0', 'borderopacity'),
             new xmldb_field('borderstyle', XMLDB_TYPE_CHAR, '10', null, XMLDB_NOTNULL, null, 'solid', 'borderfade'),
-            new xmldb_field('bordersides', XMLDB_TYPE_CHAR, '32', null, XMLDB_NOTNULL, null, 'top,right,bottom,left',
-                'borderstyle'),
+            new xmldb_field(
+                'bordersides',
+                XMLDB_TYPE_CHAR,
+                '32',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                'top,right,bottom,left',
+                'borderstyle'
+            ),
         ];
 
         foreach ($fields as $field) {
@@ -310,8 +374,16 @@ function xmldb_local_course_banner_builder_upgrade(int $oldversion): bool {
 
     if ($oldversion < 2026042301) {
         $table = new xmldb_table('local_course_banner_elements');
-        $field = new xmldb_field('dynamicimagesizeenabled', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0',
-            'customsizekeepaspect');
+        $field = new xmldb_field(
+            'dynamicimagesizeenabled',
+            XMLDB_TYPE_INTEGER,
+            '1',
+            null,
+            XMLDB_NOTNULL,
+            null,
+            '0',
+            'customsizekeepaspect'
+        );
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }

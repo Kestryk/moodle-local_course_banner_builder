@@ -1316,11 +1316,13 @@ class manager {
      */
     protected static function normalise_slideshow_alignment(string $alignment): string {
         $alignment = strtolower(trim($alignment));
-        if (in_array($alignment, [
+        if (
+            in_array($alignment, [
             self::SLIDESHOW_ALIGN_LEFT,
             self::SLIDESHOW_ALIGN_CENTER,
             self::SLIDESHOW_ALIGN_RIGHT,
-        ], true)) {
+            ], true)
+        ) {
             return $alignment;
         }
 
@@ -1660,7 +1662,8 @@ class manager {
             'local_course_banner_builder'
         );
         $styledefaults = self::get_default_slideshow_style_values();
-        foreach ([
+        foreach (
+            [
             'actionopacity' => [0, 100],
             'actionborderwidth' => [0, 20],
             'actionradius' => [0, 120],
@@ -1678,14 +1681,16 @@ class manager {
             'labelshadowdistance' => [0, 60],
             'labelshadowdirection' => [0, 360],
             'bodylineheight' => [80, 200],
-        ] as $field => $bounds) {
+            ] as $field => $bounds
+        ) {
             set_config(
                 $prefix . $field,
                 max($bounds[0], min($bounds[1], (int)($values[$field] ?? $styledefaults[$field]))),
                 'local_course_banner_builder'
             );
         }
-        foreach ([
+        foreach (
+            [
             'actionbackgroundcolor',
             'actionbordercolor',
             'actionshadowcolor',
@@ -1694,7 +1699,8 @@ class manager {
             'labelbordercolor',
             'labelshadowcolor',
             'labeltextcolor',
-        ] as $field) {
+            ] as $field
+        ) {
             set_config(
                 $prefix . $field,
                 self::normalise_slideshow_overlay_color((string)($values[$field] ?? $styledefaults[$field])),
@@ -1758,11 +1764,13 @@ class manager {
             self::normalise_slideshow_alignment((string)($values['labelalign'] ?? self::SLIDESHOW_DEFAULT_LABEL_ALIGN)),
             'local_course_banner_builder'
         );
-        foreach (['titlebold', 'titleitalic', 'titleunderline', 'titlestrike',
+        foreach (
+            ['titlebold', 'titleitalic', 'titleunderline', 'titlestrike',
             'titleallcaps', 'bodybold', 'bodyitalic', 'bodyunderline', 'bodystrike',
             'bodyallcaps', 'actionbold', 'actionitalic', 'actionunderline', 'actionstrike',
             'actionallcaps', 'labelbold', 'labelitalic', 'labelunderline', 'labelstrike',
-            'labelallcaps'] as $field) {
+            'labelallcaps'] as $field
+        ) {
             set_config($prefix . $field, empty($values[$field]) ? 0 : 1, 'local_course_banner_builder');
         }
         set_config(
@@ -2053,8 +2061,10 @@ class manager {
         $bannerformat = $context === self::SLIDESHOW_CONTEXT_SITE ?
             self::get_site_banner_format() :
             self::get_course_banner_format();
-        if ($bannerformat === self::BANNER_FORMAT_FULLWIDTH_TOP_COMPACT &&
-                abs($labely - self::SLIDESHOW_DEFAULT_LABEL_Y) < 0.001) {
+        if (
+            $bannerformat === self::BANNER_FORMAT_FULLWIDTH_TOP_COMPACT &&
+                abs($labely - self::SLIDESHOW_DEFAULT_LABEL_Y) < 0.001
+        ) {
             $labely = 18.0;
         }
 
@@ -4173,8 +4183,10 @@ class manager {
     protected static function get_explicit_source_descendants(\stdClass $source): array {
         global $DB;
 
-        if (empty($source->sourcekey) || !self::table_field_exists('local_course_banner_builder_order', 'sourceparentkey') ||
-                !self::table_field_exists('local_course_banner_builder_order', 'sourcekey')) {
+        if (
+            empty($source->sourcekey) || !self::table_field_exists('local_course_banner_builder_order', 'sourceparentkey') ||
+                !self::table_field_exists('local_course_banner_builder_order', 'sourcekey')
+        ) {
             return [];
         }
 
@@ -4422,14 +4434,18 @@ class manager {
     protected static function convert_above_inherited_layers_to_above_border(\stdClass $source, int $excludeid = 0): void {
         global $DB;
 
-        if (!self::table_field_exists('local_course_banner_builder_elements', 'imageaboveinheritedenabled') ||
-                !self::table_field_exists('local_course_banner_builder_elements', 'dynamicimagesizeenabled')) {
+        if (
+            !self::table_field_exists('local_course_banner_builder_elements', 'imageaboveinheritedenabled') ||
+                !self::table_field_exists('local_course_banner_builder_elements', 'dynamicimagesizeenabled')
+        ) {
             return;
         }
 
         foreach (self::get_source_elements($source) as $record) {
-            if ((int)$record->id === $excludeid || empty($record->imageaboveinheritedenabled) ||
-                    !self::get_banner_image_file($record)) {
+            if (
+                (int)$record->id === $excludeid || empty($record->imageaboveinheritedenabled) ||
+                    !self::get_banner_image_file($record)
+            ) {
                 continue;
             }
             $record->imageaboveinheritedenabled = 0;
@@ -4895,47 +4911,65 @@ class manager {
                 $record->{$property} = self::normalise_percentage((float)($data->{$property} ?? 0), -1000.0, 1000.0);
             }
         }
-        if (self::table_field_exists('local_course_banner_builder_elements', 'customwidthpercent') &&
-                property_exists($data, 'customwidthpercent')) {
+        if (
+            self::table_field_exists('local_course_banner_builder_elements', 'customwidthpercent') &&
+                property_exists($data, 'customwidthpercent')
+        ) {
             $record->customwidthpercent = self::normalise_percentage(
                 (float)($data->customwidthpercent ?? 100),
                 0.0,
                 self::CUSTOM_SIZE_PERCENT_MAX
             );
         }
-        if (self::table_field_exists('local_course_banner_builder_elements', 'customheightpercent') &&
-                property_exists($data, 'customheightpercent')) {
+        if (
+            self::table_field_exists('local_course_banner_builder_elements', 'customheightpercent') &&
+                property_exists($data, 'customheightpercent')
+        ) {
             $record->customheightpercent = self::normalise_percentage(
                 (float)($data->customheightpercent ?? 100),
                 0.0,
                 self::CUSTOM_SIZE_PERCENT_MAX
             );
         }
-        if (self::table_field_exists('local_course_banner_builder_elements', 'customsizekeepaspect') &&
-                property_exists($data, 'customsizekeepaspect')) {
+        if (
+            self::table_field_exists('local_course_banner_builder_elements', 'customsizekeepaspect') &&
+                property_exists($data, 'customsizekeepaspect')
+        ) {
             $record->customsizekeepaspect = empty($data->customsizekeepaspect) ? 0 : 1;
         }
-        if (self::table_field_exists('local_course_banner_builder_elements', 'dynamicimagesizeenabled') &&
-                property_exists($data, 'dynamicimagesizeenabled')) {
+        if (
+            self::table_field_exists('local_course_banner_builder_elements', 'dynamicimagesizeenabled') &&
+                property_exists($data, 'dynamicimagesizeenabled')
+        ) {
             $record->dynamicimagesizeenabled = empty($data->dynamicimagesizeenabled) ? 0 : 1;
         }
-        if (self::table_field_exists('local_course_banner_builder_elements', 'imagecenterfixed') &&
-                property_exists($data, 'imagecenterfixed')) {
+        if (
+            self::table_field_exists('local_course_banner_builder_elements', 'imagecenterfixed') &&
+                property_exists($data, 'imagecenterfixed')
+        ) {
             $record->imagecenterfixed = empty($data->imagecenterfixed) ? 0 : 1;
         }
-        if (self::table_field_exists('local_course_banner_builder_elements', 'imageaboveoverlayenabled') &&
-                property_exists($data, 'imageaboveoverlayenabled')) {
+        if (
+            self::table_field_exists('local_course_banner_builder_elements', 'imageaboveoverlayenabled') &&
+                property_exists($data, 'imageaboveoverlayenabled')
+        ) {
             $record->imageaboveoverlayenabled = empty($data->imageaboveoverlayenabled) ? 0 : 1;
         }
-        if (self::table_field_exists('local_course_banner_builder_elements', 'imagebelowinheritedenabled') &&
-                property_exists($data, 'imagebelowinheritedenabled')) {
+        if (
+            self::table_field_exists('local_course_banner_builder_elements', 'imagebelowinheritedenabled') &&
+                property_exists($data, 'imagebelowinheritedenabled')
+        ) {
             $record->imagebelowinheritedenabled = empty($data->imagebelowinheritedenabled) ? 0 : 1;
         }
-        if (self::table_field_exists('local_course_banner_builder_elements', 'imageaboveinheritedenabled') &&
-                property_exists($data, 'imageaboveinheritedenabled')) {
+        if (
+            self::table_field_exists('local_course_banner_builder_elements', 'imageaboveinheritedenabled') &&
+                property_exists($data, 'imageaboveinheritedenabled')
+        ) {
             $record->imageaboveinheritedenabled = empty($data->imageaboveinheritedenabled) ? 0 : 1;
-            if (!empty($record->imageaboveinheritedenabled) &&
-                    (self::source_has_border_layer($source) || self::source_has_overlay_layer($source))) {
+            if (
+                !empty($record->imageaboveinheritedenabled) &&
+                    (self::source_has_border_layer($source) || self::source_has_overlay_layer($source))
+            ) {
                 $record->imageaboveinheritedenabled = 0;
                 $record->dynamicimagesizeenabled = 1;
             }
@@ -4965,8 +4999,10 @@ class manager {
                 $record->imageaboveinheritedenabled = 0;
             }
         }
-        if (self::table_field_exists('local_course_banner_builder_elements', 'imageopacity') &&
-                property_exists($data, 'imageopacity')) {
+        if (
+            self::table_field_exists('local_course_banner_builder_elements', 'imageopacity') &&
+                property_exists($data, 'imageopacity')
+        ) {
             $imageopacity = $data->imageopacity ?? 100;
             $imageopacity = $imageopacity === '' || !is_numeric($imageopacity) ? 100 : (float)$imageopacity;
             $record->imageopacity = self::normalise_unit_float($imageopacity / 100, 1);
@@ -5004,12 +5040,16 @@ class manager {
         if (self::table_field_exists('local_course_banner_builder_elements', 'borderstyle') && property_exists($data, 'borderstyle')) {
             $record->borderstyle = self::normalise_border_style((string)($data->borderstyle ?? self::BORDER_STYLE_SOLID));
         }
-        if (self::table_field_exists('local_course_banner_builder_elements', 'borderdashlength') &&
-                property_exists($data, 'borderdashlength')) {
+        if (
+            self::table_field_exists('local_course_banner_builder_elements', 'borderdashlength') &&
+                property_exists($data, 'borderdashlength')
+        ) {
             $record->borderdashlength = max(4, min(80, (int)round((float)($data->borderdashlength ?? 24))));
         }
-        if (self::table_field_exists('local_course_banner_builder_elements', 'bordersides') &&
-                (property_exists($data, 'bordersidesvalue') || property_exists($data, 'bordersidesgroup'))) {
+        if (
+            self::table_field_exists('local_course_banner_builder_elements', 'bordersides') &&
+                (property_exists($data, 'bordersidesvalue') || property_exists($data, 'bordersidesgroup'))
+        ) {
             $sides = self::extract_border_sides_from_form_data($data);
             self::debug_log('save_source_banner_sides', [
                 'sourcekey' => $source->sourcekey ?? '',
@@ -5018,16 +5058,22 @@ class manager {
             ]);
             $record->bordersides = implode(',', self::normalise_border_sides($sides));
         }
-        if (self::table_field_exists('local_course_banner_builder_elements', 'borderinnerrounded') &&
-                property_exists($data, 'borderinnerrounded')) {
+        if (
+            self::table_field_exists('local_course_banner_builder_elements', 'borderinnerrounded') &&
+                property_exists($data, 'borderinnerrounded')
+        ) {
             $record->borderinnerrounded = empty($data->borderinnerrounded) ? 0 : 1;
         }
-        if (self::table_field_exists('local_course_banner_builder_elements', 'overlayenabled') &&
-                property_exists($data, 'overlayenabled')) {
+        if (
+            self::table_field_exists('local_course_banner_builder_elements', 'overlayenabled') &&
+                property_exists($data, 'overlayenabled')
+        ) {
             $record->overlayenabled = empty($data->overlayenabled) ? 0 : 1;
         }
-        if (self::table_field_exists('local_course_banner_builder_elements', 'overlaytarget') &&
-                property_exists($data, 'overlaytarget')) {
+        if (
+            self::table_field_exists('local_course_banner_builder_elements', 'overlaytarget') &&
+                property_exists($data, 'overlaytarget')
+        ) {
             $record->overlaytarget = self::normalise_overlay_target((string)($data->overlaytarget ?? self::OVERLAY_TARGET_BOTH));
         }
         if (!empty($record->overlayenabled) && self::is_site_source($source)) {
@@ -5305,31 +5351,45 @@ class manager {
                 $defaultvalue = in_array($side, ['top', 'left'], true) ? 0 : 0;
                 $record->{$property} = self::normalise_percentage((float)($layer[$property] ?? $defaultvalue), -1000.0, 1000.0);
             }
-            if (self::table_field_exists('local_course_banner_builder_elements', 'customsizekeepaspect') &&
-                    array_key_exists('customsizekeepaspect', $layer)) {
+            if (
+                self::table_field_exists('local_course_banner_builder_elements', 'customsizekeepaspect') &&
+                    array_key_exists('customsizekeepaspect', $layer)
+            ) {
                 $record->customsizekeepaspect = empty($layer['customsizekeepaspect']) ? 0 : 1;
             }
-            if (self::table_field_exists('local_course_banner_builder_elements', 'dynamicimagesizeenabled') &&
-                    array_key_exists('dynamicimagesizeenabled', $layer)) {
+            if (
+                self::table_field_exists('local_course_banner_builder_elements', 'dynamicimagesizeenabled') &&
+                    array_key_exists('dynamicimagesizeenabled', $layer)
+            ) {
                 $record->dynamicimagesizeenabled = empty($layer['dynamicimagesizeenabled']) ? 0 : 1;
             }
-            if (self::table_field_exists('local_course_banner_builder_elements', 'imagecenterfixed') &&
-                    array_key_exists('imagecenterfixed', $layer)) {
+            if (
+                self::table_field_exists('local_course_banner_builder_elements', 'imagecenterfixed') &&
+                    array_key_exists('imagecenterfixed', $layer)
+            ) {
                 $record->imagecenterfixed = empty($layer['imagecenterfixed']) ? 0 : 1;
             }
-            if (self::table_field_exists('local_course_banner_builder_elements', 'imageaboveoverlayenabled') &&
-                    array_key_exists('imageaboveoverlayenabled', $layer)) {
+            if (
+                self::table_field_exists('local_course_banner_builder_elements', 'imageaboveoverlayenabled') &&
+                    array_key_exists('imageaboveoverlayenabled', $layer)
+            ) {
                 $record->imageaboveoverlayenabled = empty($layer['imageaboveoverlayenabled']) ? 0 : 1;
             }
-            if (self::table_field_exists('local_course_banner_builder_elements', 'imagebelowinheritedenabled') &&
-                    array_key_exists('imagebelowinheritedenabled', $layer)) {
+            if (
+                self::table_field_exists('local_course_banner_builder_elements', 'imagebelowinheritedenabled') &&
+                    array_key_exists('imagebelowinheritedenabled', $layer)
+            ) {
                 $record->imagebelowinheritedenabled = empty($layer['imagebelowinheritedenabled']) ? 0 : 1;
             }
-            if (self::table_field_exists('local_course_banner_builder_elements', 'imageaboveinheritedenabled') &&
-                    array_key_exists('imageaboveinheritedenabled', $layer)) {
+            if (
+                self::table_field_exists('local_course_banner_builder_elements', 'imageaboveinheritedenabled') &&
+                    array_key_exists('imageaboveinheritedenabled', $layer)
+            ) {
                 $record->imageaboveinheritedenabled = empty($layer['imageaboveinheritedenabled']) ? 0 : 1;
-                if (!empty($record->imageaboveinheritedenabled) &&
-                        (self::source_has_border_layer($source) || self::source_has_overlay_layer($source))) {
+                if (
+                    !empty($record->imageaboveinheritedenabled) &&
+                        (self::source_has_border_layer($source) || self::source_has_overlay_layer($source))
+                ) {
                     $record->imageaboveinheritedenabled = 0;
                     $record->dynamicimagesizeenabled = 1;
                 }
@@ -5359,8 +5419,10 @@ class manager {
                     $record->imageaboveinheritedenabled = 0;
                 }
             }
-            if (self::table_field_exists('local_course_banner_builder_elements', 'imageopacity') &&
-                    array_key_exists('imageopacity', $layer)) {
+            if (
+                self::table_field_exists('local_course_banner_builder_elements', 'imageopacity') &&
+                    array_key_exists('imageopacity', $layer)
+            ) {
                 $imageopacity = $layer['imageopacity'] ?? 100;
                 $imageopacity = $imageopacity === '' || !is_numeric($imageopacity) ? 100 : (float)$imageopacity;
                 $record->imageopacity = self::normalise_unit_float($imageopacity / 100, 1);
@@ -6967,7 +7029,11 @@ class manager {
         $ordered = [];
         $visited = [];
         $rootindex = 0;
-        $walk = function (string $key, int $level, int $rootid) use (
+        $walk = function (
+            string $key,
+            int $level,
+            int $rootid
+        ) use (
             &$walk,
             &$ordered,
             &$visited,
@@ -7093,8 +7159,10 @@ class manager {
 
         foreach (self::get_enabled_category_elements_for_course($course) as $layerspec) {
             $record = $layerspec['record'];
-            if (self::get_banner_image_file($record) || !empty($record->borderenabled) ||
-                    self::record_overlay_targets_banner($record) || self::record_overlay_targets_slideshow($record)) {
+            if (
+                self::get_banner_image_file($record) || !empty($record->borderenabled) ||
+                    self::record_overlay_targets_banner($record) || self::record_overlay_targets_slideshow($record)
+            ) {
                 return true;
             }
         }
@@ -9357,8 +9425,10 @@ class manager {
             return self::export_modal_preview_border_layer($record, $iscontext, $isinherited);
         }
 
-        if (self::record_overlay_targets_banner($record) ||
-                ($includealloverlays && self::record_overlay_targets_slideshow($record))) {
+        if (
+            self::record_overlay_targets_banner($record) ||
+                ($includealloverlays && self::record_overlay_targets_slideshow($record))
+        ) {
             return self::export_modal_preview_overlay_layer($record, $iscontext, $isinherited);
         }
 
@@ -11218,8 +11288,10 @@ class manager {
             $summary = [];
             $transaction = $DB->start_delegated_transaction();
             try {
-                if (in_array(self::EXPORT_SECTION_PLUGIN_SETTINGS, $sections, true) &&
-                        !empty($data['sections'][self::EXPORT_SECTION_PLUGIN_SETTINGS])) {
+                if (
+                    in_array(self::EXPORT_SECTION_PLUGIN_SETTINGS, $sections, true) &&
+                        !empty($data['sections'][self::EXPORT_SECTION_PLUGIN_SETTINGS])
+                ) {
                     if ($replaceall) {
                         self::delete_plugin_config_values();
                     }
@@ -11227,8 +11299,10 @@ class manager {
                         $data['sections'][self::EXPORT_SECTION_PLUGIN_SETTINGS]
                     );
                 }
-                if (in_array(self::EXPORT_SECTION_COURSE_BANNERS, $sections, true) &&
-                        !empty($data['sections'][self::EXPORT_SECTION_COURSE_BANNERS])) {
+                if (
+                    in_array(self::EXPORT_SECTION_COURSE_BANNERS, $sections, true) &&
+                        !empty($data['sections'][self::EXPORT_SECTION_COURSE_BANNERS])
+                ) {
                     if ($replaceall) {
                         self::delete_all_configuration(false);
                     }
@@ -11237,12 +11311,16 @@ class manager {
                         $options
                     );
                 }
-                if (in_array(self::EXPORT_SECTION_SLIDESHOW, $sections, true) &&
-                        !empty($data['sections'][self::EXPORT_SECTION_SLIDESHOW])) {
+                if (
+                    in_array(self::EXPORT_SECTION_SLIDESHOW, $sections, true) &&
+                        !empty($data['sections'][self::EXPORT_SECTION_SLIDESHOW])
+                ) {
                     $summary += self::import_slideshow_configuration($data['sections'][self::EXPORT_SECTION_SLIDESHOW]);
                 }
-                if (in_array(self::EXPORT_SECTION_SITE_BANNERS, $sections, true) &&
-                        !empty($data['sections'][self::EXPORT_SECTION_SITE_BANNERS])) {
+                if (
+                    in_array(self::EXPORT_SECTION_SITE_BANNERS, $sections, true) &&
+                        !empty($data['sections'][self::EXPORT_SECTION_SITE_BANNERS])
+                ) {
                     $summary += self::import_site_banner_configuration($data['sections'][self::EXPORT_SECTION_SITE_BANNERS]);
                 }
                 $transaction->allow_commit();
@@ -11741,8 +11819,10 @@ class manager {
         array $fieldmap,
         bool $createcategories = true
     ): ?\stdClass {
-        if (($sourcedata['sourcetype'] ?? '') === self::SOURCE_TYPE_SITE ||
-                (string)($sourcedata['sourcekey'] ?? '') === self::SITE_SOURCE_KEY) {
+        if (
+            ($sourcedata['sourcetype'] ?? '') === self::SOURCE_TYPE_SITE ||
+                (string)($sourcedata['sourcekey'] ?? '') === self::SITE_SOURCE_KEY
+        ) {
             return self::get_site_source();
         }
 
@@ -11836,8 +11916,10 @@ class manager {
                 $record->{$field} = (float)($elementdata[$field] ?? $record->{$field});
             }
         }
-        if (self::table_field_exists('local_course_banner_builder_elements', 'imageopacity') ||
-                property_exists($record, 'imageopacity')) {
+        if (
+            self::table_field_exists('local_course_banner_builder_elements', 'imageopacity') ||
+                property_exists($record, 'imageopacity')
+        ) {
             if (array_key_exists('imageopacitypercent', $elementdata)) {
                 $record->imageopacity = self::normalise_unit_float((float)$elementdata['imageopacitypercent'] / 100, 1);
             } else {
@@ -12049,8 +12131,10 @@ class manager {
         $overviewlayers = [];
         foreach (self::sort_layer_specs($layerspecs) as $layerspec) {
             $record = $layerspec['record'];
-            if (self::get_banner_image_file($record) || !empty($record->borderenabled) ||
-                    self::record_overlay_targets_banner($record)) {
+            if (
+                self::get_banner_image_file($record) || !empty($record->borderenabled) ||
+                    self::record_overlay_targets_banner($record)
+            ) {
                 $overviewlayers[] = $layerspec;
             }
         }

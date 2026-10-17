@@ -312,7 +312,8 @@ function local_course_banner_builder_render_title_settings_modal(
     $checkbox = function (string $name, string $label, bool $checked) use ($modalid): string {
         $id = $modalid . '-' . $name;
         return html_writer::div(
-            html_writer::tag('label',
+            html_writer::tag(
+                'label',
                 html_writer::empty_tag('input', [
                     'type' => 'checkbox',
                     'name' => $name,
@@ -585,41 +586,74 @@ function local_course_banner_builder_render_title_settings_modal(
         ]
     );
     $toolbar = html_writer::div(
-        $previewtoolbarbutton('fa-undo', get_string('undopreviewchange', 'local_course_banner_builder'),
-            'local-course-banner-builder-title-preview-undo', ['disabled' => 'disabled']) .
-        $previewtoolbarbutton('fa-magnet', get_string('togglepreviewsnap', 'local_course_banner_builder'),
-            'local-course-banner-builder-toggle-title-preview-snap', [
+        $previewtoolbarbutton(
+            'fa-undo',
+            get_string('undopreviewchange', 'local_course_banner_builder'),
+            'local-course-banner-builder-title-preview-undo',
+            ['disabled' => 'disabled']
+        ) .
+        $previewtoolbarbutton(
+            'fa-magnet',
+            get_string('togglepreviewsnap', 'local_course_banner_builder'),
+            'local-course-banner-builder-toggle-title-preview-snap',
+            [
                 'class' => 'btn btn-primary local-course-banner-builder-source-preview-visibility-toggle',
                 'aria-pressed' => 'true',
-            ]) .
-        $previewtoolbarbutton('fa-crosshairs', get_string('recenterpreviewelement', 'local_course_banner_builder'),
-            'local-course-banner-builder-title-preview-recenter') .
+            ]
+        ) .
+        $previewtoolbarbutton(
+            'fa-crosshairs',
+            get_string('recenterpreviewelement', 'local_course_banner_builder'),
+            'local-course-banner-builder-title-preview-recenter'
+        ) .
         $stylebutton('bold', 'fa-bold', get_string('bannertitlebold', 'local_course_banner_builder')) .
         $stylebutton('italic', 'fa-italic', get_string('bannertitleitalic', 'local_course_banner_builder')) .
         $stylebutton('underline', 'fa-underline', get_string('bannertitleunderline', 'local_course_banner_builder')) .
         $stylebutton('strike', 'fa-strikethrough', get_string('bannertitlestrike', 'local_course_banner_builder')) .
         $stylebutton('allcaps', 'fa-font', get_string('bannertitleallcaps', 'local_course_banner_builder')) .
-        $previewtoolbarbutton('fa-align-left', get_string('bannertextalign:left', 'local_course_banner_builder'),
-            'local-course-banner-builder-set-title-align', [
+        $previewtoolbarbutton(
+            'fa-align-left',
+            get_string('bannertextalign:left', 'local_course_banner_builder'),
+            'local-course-banner-builder-set-title-align',
+            [
                 'data-title-align' => 'left',
                 'aria-pressed' => $values['align'] === 'left' ? 'true' : 'false',
-            ]) .
-        $previewtoolbarbutton('fa-align-center', get_string('bannertextalign:center', 'local_course_banner_builder'),
-            'local-course-banner-builder-set-title-align', [
+            ]
+        ) .
+        $previewtoolbarbutton(
+            'fa-align-center',
+            get_string('bannertextalign:center', 'local_course_banner_builder'),
+            'local-course-banner-builder-set-title-align',
+            [
                 'data-title-align' => 'center',
                 'aria-pressed' => $values['align'] === 'center' ? 'true' : 'false',
-            ]) .
-        $previewtoolbarbutton('fa-align-right', get_string('bannertextalign:right', 'local_course_banner_builder'),
-            'local-course-banner-builder-set-title-align', [
+            ]
+        ) .
+        $previewtoolbarbutton(
+            'fa-align-right',
+            get_string('bannertextalign:right', 'local_course_banner_builder'),
+            'local-course-banner-builder-set-title-align',
+            [
                 'data-title-align' => 'right',
                 'aria-pressed' => $values['align'] === 'right' ? 'true' : 'false',
-            ]) .
-        $stylebutton('aboveborder', 'fa-level-up',
-            get_string('bannertitleaboveborder', 'local_course_banner_builder')) .
-        $stylebutton('aboveoverlay', 'fa-layer-group',
-            get_string('bannertitleaboveoverlay', 'local_course_banner_builder')) .
-        $previewtoolbarbutton('fa-redo', get_string('redopreviewchange', 'local_course_banner_builder'),
-            'local-course-banner-builder-title-preview-redo', ['disabled' => 'disabled']),
+            ]
+        ) .
+        $stylebutton(
+            'aboveborder',
+            'fa-level-up',
+            get_string('bannertitleaboveborder', 'local_course_banner_builder')
+        ) .
+        $stylebutton(
+            'aboveoverlay',
+            'fa-layer-group',
+            get_string('bannertitleaboveoverlay', 'local_course_banner_builder')
+        ) .
+        $previewtoolbarbutton(
+            'fa-redo',
+            get_string('redopreviewchange', 'local_course_banner_builder'),
+            'local-course-banner-builder-title-preview-redo',
+            ['disabled' => 'disabled']
+        ),
         'local-course-banner-builder-source-preview-visibility-toggle-row local-course-banner-builder-slideshow-preview-toolbar local-course-banner-builder-title-preview-toolbar'
     );
     $hiddenstyles = $styleinput('bold', true) .
@@ -660,13 +694,17 @@ function local_course_banner_builder_render_title_settings_modal(
         ]);
     };
     $titlecornerswitch = static function (float $radius): string {
-        $html = html_writer::div(get_string('slideshowtogglecorners', 'local_course_banner_builder'),
-            'local-course-banner-builder-title-slider-label');
+        $html = html_writer::div(
+            get_string('slideshowtogglecorners', 'local_course_banner_builder'),
+            'local-course-banner-builder-title-slider-label'
+        );
         $html .= html_writer::start_div('btn-group local-course-banner-builder-title-corner-buttons', ['role' => 'group']);
-        foreach ([
+        foreach (
+            [
             'rounded' => ['slideshowcornersrounded', 18],
             'square' => ['slideshowcornerssquare', 0],
-        ] as $value => $options) {
+            ] as $value => $options
+        ) {
             $active = ($value === 'rounded' && $radius > 0) || ($value === 'square' && $radius <= 0);
             $html .= html_writer::tag('button', get_string($options[0], 'local_course_banner_builder'), [
                 'type' => 'button',
@@ -685,10 +723,12 @@ function local_course_banner_builder_render_title_settings_modal(
         $html .= html_writer::start_div('btn-group local-course-banner-builder-title-frame-type-buttons', [
             'role' => 'group',
         ]);
-        foreach ([
+        foreach (
+            [
             'box' => 'bannertitleframetype:box',
             'highlight' => 'bannertitleframetype:highlight',
-        ] as $value => $stringkey) {
+            ] as $value => $stringkey
+        ) {
             $active = $value === $current;
             $html .= html_writer::tag('button', get_string($stringkey, 'local_course_banner_builder'), [
                 'type' => 'button',
@@ -927,7 +967,8 @@ function local_course_banner_builder_render_title_settings_modal(
         'modal-footer local-course-banner-builder-submit-actions ' .
             'local-course-banner-builder-title-submit-actions local-course-banner-builder-slideshow-modal-footer'
     );
-    $body = html_writer::tag('form',
+    $body = html_writer::tag(
+        'form',
         html_writer::div($editorcontent, 'local-course-banner-builder-title-editor-scroll') . $footer,
         [
             'method' => 'post',
@@ -1127,12 +1168,14 @@ function local_course_banner_builder_render_source_visual_editor_image_layer(arr
             'onpointerdown' => 'return window.localCourseBannerBuilderHandleModalResizeHandlePointerDown(event, this);',
             'aria-hidden' => 'true',
         ]);
-        foreach ([
+        foreach (
+            [
             'top' => 'local-course-banner-builder-preview-resize-handle--top',
             'right' => 'local-course-banner-builder-preview-resize-handle--right',
             'bottom' => 'local-course-banner-builder-preview-resize-handle--bottom',
             'left' => 'local-course-banner-builder-preview-resize-handle--left',
-        ] as $edge => $class) {
+            ] as $edge => $class
+        ) {
             $content .= html_writer::span('', 'local-course-banner-builder-preview-resize-handle ' . $class, [
                 'data-preview-resize-handle' => '1',
                 'data-preview-resize-mode' => 'edge',
@@ -1542,8 +1585,10 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
         'local-course-banner-builder-preview-opacity-panel',
         ['data-source-preview-opacity-panel' => '1', 'hidden' => 'hidden']
     );
-    $previewcontrols = html_writer::tag('button', $buttoncontent('fa-plus', get_string('addlayer', 'local_course_banner_builder')),
-            [
+    $previewcontrols = html_writer::tag(
+        'button',
+        $buttoncontent('fa-plus', get_string('addlayer', 'local_course_banner_builder')),
+        [
                 'type' => 'button',
                 'class' => implode(' ', [
                     'btn btn-outline-secondary local-course-banner-builder-dashed-action',
@@ -1556,8 +1601,10 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
                 'data-bs-toggle' => 'modal',
                 'data-bs-target' => '#local-course-banner-builder-add-layer-modal',
             ] + $disabledattributes
-        ) .
-        ($previewborderediturl ? html_writer::tag('button', $buttoncontent('fa-border-all', get_string('editborderlayer', 'local_course_banner_builder')),
+    ) .
+        ($previewborderediturl ? html_writer::tag(
+            'button',
+            $buttoncontent('fa-border-all', get_string('editborderlayer', 'local_course_banner_builder')),
             [
                 'type' => 'button',
                 'class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action local-course-banner-builder-source-preview-button',
@@ -1565,7 +1612,9 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
                 'data-edit-layer-modal' => 'local-course-banner-builder-edit-border-layer-modal',
             ] + $disabledattributes
         ) : '') .
-        ($previewoverlayediturl ? html_writer::tag('button', $buttoncontent('fa-adjust', get_string('editoverlaylayer', 'local_course_banner_builder')),
+        ($previewoverlayediturl ? html_writer::tag(
+            'button',
+            $buttoncontent('fa-adjust', get_string('editoverlaylayer', 'local_course_banner_builder')),
             [
                 'type' => 'button',
                 'class' => 'btn btn-outline-secondary local-course-banner-builder-dashed-action local-course-banner-builder-source-preview-button',
@@ -1668,7 +1717,8 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
         $iconbutton('fa-thumb-tack', get_string('imagecenterfixed', 'local_course_banner_builder'), 'local-course-banner-builder-toggle-source-preview-center-fixed') .
         $iconbutton('fa-arrow-down', get_string('pushbehindpreviewlayer', 'local_course_banner_builder'), 'local-course-banner-builder-push-source-preview-layer-behind') .
         $iconbutton('fa-arrow-up', get_string('pullforwardpreviewlayer', 'local_course_banner_builder'), 'local-course-banner-builder-pull-source-preview-layer-forward') .
-        html_writer::tag('button',
+        html_writer::tag(
+            'button',
             html_writer::tag('i', '', ['class' => 'fa fa-eye-slash', 'aria-hidden' => 'true']) .
                 html_writer::span(get_string('showhideallpreviewimages', 'local_course_banner_builder'), 'sr-only'),
             [
@@ -1734,8 +1784,10 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
         ]
     );
     $previewmodecontrol = html_writer::div(
-        html_writer::span(get_string('sourcepreviewmode', 'local_course_banner_builder'),
-            'local-course-banner-builder-source-preview-mode-label') .
+        html_writer::span(
+            get_string('sourcepreviewmode', 'local_course_banner_builder'),
+            'local-course-banner-builder-source-preview-mode-label'
+        ) .
         html_writer::div(
             html_writer::tag('button', get_string('sourcepreviewmodedesktop', 'local_course_banner_builder'), [
                 'type' => 'button',
@@ -1759,8 +1811,11 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
             ]
         ) .
         $largepreviewbutton .
-        html_writer::div(get_string('sourcepreviewmodehelp', 'local_course_banner_builder'),
-            'local-course-banner-builder-source-preview-mode-help', ['id' => $previewmodehelpid]),
+        html_writer::div(
+            get_string('sourcepreviewmodehelp', 'local_course_banner_builder'),
+            'local-course-banner-builder-source-preview-mode-help',
+            ['id' => $previewmodehelpid]
+        ),
         'local-course-banner-builder-source-preview-mode-control',
         ['data-source-preview-mode-control' => '1']
     );
@@ -2008,7 +2063,8 @@ function local_course_banner_builder_render_banner_format_modal(
     echo html_writer::div($cards, 'local-course-banner-builder-format-grid');
     echo html_writer::end_div();
     echo html_writer::div(
-        html_writer::tag('button',
+        html_writer::tag(
+            'button',
             html_writer::tag('i', '', ['class' => 'fa fa-save me-2', 'aria-hidden' => 'true']) .
                 html_writer::span(get_string('savebannerformat', 'local_course_banner_builder')),
             ['type' => 'submit', 'class' => 'btn btn-primary local-course-banner-builder-source-settings-submit']
@@ -2309,7 +2365,8 @@ if ($updatebannertitlesettings && confirm_sesskey()) {
             in_array($align, ['left', 'center', 'right'], true) ? $align : 'center',
             'local_course_banner_builder'
         );
-        foreach ([
+        foreach (
+            [
             'bold',
             'italic',
             'underline',
@@ -2322,7 +2379,8 @@ if ($updatebannertitlesettings && confirm_sesskey()) {
             'frameshadowenabled',
             'shadowenabled',
             'overlayenabled',
-        ] as $flag) {
+            ] as $flag
+        ) {
             set_config($prefix . $flag, optional_param($flag, 0, PARAM_BOOL) ? 1 : 0, 'local_course_banner_builder');
         }
         $frametype = optional_param('frametype', 'box', PARAM_ALPHA);
@@ -3486,12 +3544,18 @@ $guidecontext = [
             'guidedpathcontent' => get_string('guidesteplayersdescription', 'local_course_banner_builder'),
             'guidedpathsteps' => [
                 'items' => [
-                    get_string($issitebanneradmin ? 'tour:sitebanner:current:preview:title' : 'tour:coursebanners:current:preview:title',
-                        'local_course_banner_builder'),
-                    get_string($issitebanneradmin ? 'tour:sitebanner:current:settings:title' : 'tour:coursebanners:current:sourcesettings:title',
-                        'local_course_banner_builder'),
-                    get_string($issitebanneradmin ? 'tour:sitebanner:current:layers:title' : 'tour:coursebanners:current:layertable:title',
-                        'local_course_banner_builder'),
+                    get_string(
+                        $issitebanneradmin ? 'tour:sitebanner:current:preview:title' : 'tour:coursebanners:current:preview:title',
+                        'local_course_banner_builder'
+                    ),
+                    get_string(
+                        $issitebanneradmin ? 'tour:sitebanner:current:settings:title' : 'tour:coursebanners:current:sourcesettings:title',
+                        'local_course_banner_builder'
+                    ),
+                    get_string(
+                        $issitebanneradmin ? 'tour:sitebanner:current:layers:title' : 'tour:coursebanners:current:layertable:title',
+                        'local_course_banner_builder'
+                    ),
                 ],
             ],
             'guidedpathtitle' => get_string($guidestringprefix . 'layers:title', 'local_course_banner_builder'),
@@ -3622,7 +3686,8 @@ if ($issitebanneradmin) {
         'local-course-banner-builder-secondary-group-label'
     );
     echo html_writer::start_div('local-course-banner-builder-secondary-group-controls');
-    echo html_writer::tag('form',
+    echo html_writer::tag(
+        'form',
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]) .
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'updatesitebannerenabled', 'value' => 1]) .
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sitebannerenabled', 'value' => $siteenabled ? 0 : 1]) .
@@ -3661,7 +3726,8 @@ if ($issitebanneradmin) {
     );
     echo html_writer::start_div('local-course-banner-builder-secondary-group-controls');
     echo html_writer::div(
-        html_writer::tag('button',
+        html_writer::tag(
+            'button',
             html_writer::tag('i', '', ['class' => 'fa fa-font me-2', 'aria-hidden' => 'true']) .
                 html_writer::span(get_string('editsitebannertitle', 'local_course_banner_builder')),
             [
@@ -3723,7 +3789,8 @@ if ($issitebanneradmin) {
         'local-course-banner-builder-secondary-group-label'
     );
     echo html_writer::start_div('local-course-banner-builder-secondary-group-controls');
-    echo html_writer::tag('form',
+    echo html_writer::tag(
+        'form',
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]) .
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'updatecoursebannerenabled', 'value' => 1]) .
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'coursebannerenabled', 'value' => $coursebannersenabled ? 0 : 1]) .
@@ -3748,7 +3815,8 @@ if ($issitebanneradmin) {
             'action' => (new moodle_url($adminpagepath, $selectedsourceparams))->out(false),
         ], $statuspopoverattributes(get_string('coursebannersenabled_help', 'local_course_banner_builder')))
     );
-    echo html_writer::tag('form',
+    echo html_writer::tag(
+        'form',
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]) .
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'updatecourseactivitybanners', 'value' => 1]) .
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'coursebanneractivitiesenabled', 'value' => $activitybannersenabled ? 0 : 1]) .
@@ -3784,7 +3852,8 @@ if ($issitebanneradmin) {
         'local-course-banner-builder-secondary-group-label'
     );
     echo html_writer::start_div('local-course-banner-builder-secondary-group-controls');
-    echo html_writer::tag('form',
+    echo html_writer::tag(
+        'form',
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]) .
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'updatecoursedefaultimagebanners', 'value' => 1]) .
         html_writer::empty_tag('input', [
@@ -3814,7 +3883,8 @@ if ($issitebanneradmin) {
             'action' => (new moodle_url($adminpagepath, $selectedsourceparams))->out(false),
         ], $statuspopoverattributes(get_string('coursebannerdefaultimageenabled_help', 'local_course_banner_builder')))
     );
-    echo html_writer::tag('form',
+    echo html_writer::tag(
+        'form',
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]) .
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'updatecoursecustomoverviewimages', 'value' => 1]) .
         html_writer::empty_tag('input', [
@@ -3857,7 +3927,8 @@ if ($issitebanneradmin) {
         'local-course-banner-builder-secondary-group-label'
     );
     echo html_writer::start_div('local-course-banner-builder-secondary-group-controls');
-    echo html_writer::tag('form',
+    echo html_writer::tag(
+        'form',
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]) .
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'forcecourseoverviewreplacement', 'value' => 1]) .
         html_writer::tag(
@@ -3889,11 +3960,14 @@ if ($issitebanneradmin) {
     );
     echo html_writer::start_div('local-course-banner-builder-secondary-group-controls');
     $titleeditactions = '';
-    foreach ([
+    foreach (
+        [
         'course' => 'editcoursebannertitle',
         'activity' => 'editactivitybannertitle',
-    ] as $titlecontext => $stringkey) {
-        $titleeditactions .= html_writer::tag('button',
+        ] as $titlecontext => $stringkey
+    ) {
+        $titleeditactions .= html_writer::tag(
+            'button',
             html_writer::tag('i', '', ['class' => 'fa fa-font me-2', 'aria-hidden' => 'true']) .
                 html_writer::span(get_string($stringkey, 'local_course_banner_builder')),
             [
@@ -3916,10 +3990,12 @@ if ($issitebanneradmin) {
     echo html_writer::end_div();
     echo html_writer::end_div();
     echo html_writer::end_tag('details');
-    foreach ([
+    foreach (
+        [
         'course' => 'editcoursebannertitle',
         'activity' => 'editactivitybannertitle',
-    ] as $titlecontext => $stringkey) {
+        ] as $titlecontext => $stringkey
+    ) {
         echo local_course_banner_builder_render_title_settings_modal(
             $titlecontext,
             get_string($stringkey, 'local_course_banner_builder'),
@@ -4002,8 +4078,8 @@ if (!$issitebanneradmin) {
         $categorymanagementurl = new moodle_url('/course/management.php');
         $categorymanagementhelp = get_string('managecategorieslink_help', 'local_course_banner_builder');
         echo html_writer::tag(
-        'h3',
-        html_writer::span(get_string('categories', 'local_course_banner_builder')) .
+            'h3',
+            html_writer::span(get_string('categories', 'local_course_banner_builder')) .
             html_writer::link(
                 $categorymanagementurl,
                 html_writer::tag('i', '', [
@@ -4023,7 +4099,7 @@ if (!$issitebanneradmin) {
                     'title' => get_string('managecategorieslink', 'local_course_banner_builder'),
                 ]
             ),
-        ['class' => 'h5 local-course-banner-builder-source-title']
+            ['class' => 'h5 local-course-banner-builder-source-title']
         );
         echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'categoryid', 'id' => 'id_categoryid', 'value' => $selectedcategoryid]);
         $selectedcategorybuttonlabel = $selectedcategorylabel ?: get_string('choosecategorydefault', 'local_course_banner_builder');
@@ -4081,9 +4157,9 @@ if (!$issitebanneradmin) {
             $optioncontent = html_writer::span(s($option['label']), 'local-course-banner-builder-source-option-label');
             if (!empty($option['isused'])) {
                 $optioncontent .= html_writer::span(
-                html_writer::tag('i', '', ['class' => 'fa fa-check', 'aria-hidden' => 'true']),
-                'local-course-banner-builder-source-used-icon',
-                [
+                    html_writer::tag('i', '', ['class' => 'fa fa-check', 'aria-hidden' => 'true']),
+                    'local-course-banner-builder-source-used-icon',
+                    [
                     'role' => 'button',
                     'data-container' => 'body',
                     'data-toggle' => 'popover',
@@ -4094,7 +4170,7 @@ if (!$issitebanneradmin) {
                     'data-trigger' => 'hover',
                     'tabindex' => '0',
                     'aria-label' => get_string('sourcealreadyconfiguredhelp', 'local_course_banner_builder'),
-                ]
+                    ]
                 );
             }
             echo html_writer::tag('button', $optioncontent, $attributes);
@@ -4103,10 +4179,10 @@ if (!$issitebanneradmin) {
         echo html_writer::end_div();
         echo html_writer::end_div();
         echo html_writer::tag(
-        'div',
-        get_string('matchingcategories', 'local_course_banner_builder') . ' ' .
+            'div',
+            get_string('matchingcategories', 'local_course_banner_builder') . ' ' .
             html_writer::span((string)count($categoryoptions), '', ['id' => 'local-course-banner-builder-category-count']),
-        ['class' => 'form-text text-muted mb-2']
+            ['class' => 'form-text text-muted mb-2']
         );
         $selectsourcebuttonattributes = [
         'type' => 'submit',
@@ -4196,9 +4272,9 @@ if (!$issitebanneradmin) {
                 $optioncontent = html_writer::span(s($option['label']), 'local-course-banner-builder-source-option-label');
                 if (!empty($option['isused'])) {
                     $optioncontent .= html_writer::span(
-                    html_writer::tag('i', '', ['class' => 'fa fa-check', 'aria-hidden' => 'true']),
-                    'local-course-banner-builder-source-used-icon',
-                    [
+                        html_writer::tag('i', '', ['class' => 'fa fa-check', 'aria-hidden' => 'true']),
+                        'local-course-banner-builder-source-used-icon',
+                        [
                         'role' => 'button',
                         'data-container' => 'body',
                         'data-toggle' => 'popover',
@@ -4209,7 +4285,7 @@ if (!$issitebanneradmin) {
                         'data-trigger' => 'hover',
                         'tabindex' => '0',
                         'aria-label' => get_string('sourcealreadyconfiguredhelp', 'local_course_banner_builder'),
-                    ]
+                        ]
                     );
                 }
                 echo html_writer::tag('button', $optioncontent, [
@@ -4227,10 +4303,10 @@ if (!$issitebanneradmin) {
         echo html_writer::end_div();
         echo html_writer::end_div();
         echo html_writer::tag(
-        'div',
-        get_string('matchingcustomfields', 'local_course_banner_builder') . ' ' .
+            'div',
+            get_string('matchingcustomfields', 'local_course_banner_builder') . ' ' .
             html_writer::span((string)count($customfieldoptions), '', ['id' => 'local-course-banner-builder-customfield-count']),
-        ['class' => 'form-text text-muted mb-2']
+            ['class' => 'form-text text-muted mb-2']
         );
         $selectcustomfieldbuttonattributes = [
         'type' => 'submit',
@@ -4428,7 +4504,8 @@ if ($selectedsource) {
     }
 
         echo html_writer::start_div('local-course-banner-builder-submit-actions local-course-banner-builder-source-settings-submit-actions');
-        echo html_writer::tag('button',
+        echo html_writer::tag(
+            'button',
             html_writer::tag('i', '', ['class' => 'fa fa-save me-2', 'aria-hidden' => 'true']) .
                 html_writer::span(get_string(
                     $sitesourcelabel ? 'savesitebannersourcesettings' : 'savecategorysettings',
@@ -4448,11 +4525,13 @@ if ($selectedsource) {
         echo html_writer::end_div();
 
     if ($formmode === 'create') {
-        foreach ([
+        foreach (
+            [
             'local-course-banner-builder-edit-border-layer-modal' => get_string('editborder', 'local_course_banner_builder'),
             'local-course-banner-builder-edit-overlay-layer-modal' => get_string('editoverlaylayer', 'local_course_banner_builder'),
             'local-course-banner-builder-edit-image-layer-modal' => get_string('editimage', 'local_course_banner_builder'),
-        ] as $emptymodalid => $emptymodaltitle) {
+            ] as $emptymodalid => $emptymodaltitle
+        ) {
             local_course_banner_builder_render_layer_modal(
                 $emptymodalid,
                 $emptymodaltitle,

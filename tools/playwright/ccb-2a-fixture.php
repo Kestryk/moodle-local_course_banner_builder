@@ -36,7 +36,7 @@ $titlefields = [
     'shadowdirection', 'overlaycolor', 'overlayopacity', 'activitytitlemode',
 ];
 
-$gettitleconfig = static function(string $context) use ($DB, $titlefields): array {
+$gettitleconfig = static function (string $context) use ($DB, $titlefields): array {
     $result = [];
     foreach ($titlefields as $field) {
         $name = 'bannertitle_' . $context . '_' . $field;
@@ -50,17 +50,29 @@ $gettitleconfig = static function(string $context) use ($DB, $titlefields): arra
     return $result;
 };
 
-$snapshot = static function() use ($DB, $gettitleconfig, $courseid, $stablecategoryid): array {
-    $course = $DB->get_record('course', ['id' => $courseid],
-        'id,category,fullname,format,showgrades', MUST_EXIST);
-    $cm = $DB->get_record('course_modules', ['id' => 12, 'course' => $courseid],
-        'id,course', MUST_EXIST);
+$snapshot = static function () use ($DB, $gettitleconfig, $courseid, $stablecategoryid): array {
+    $course = $DB->get_record(
+        'course',
+        ['id' => $courseid],
+        'id,category,fullname,format,showgrades',
+        MUST_EXIST
+    );
+    $cm = $DB->get_record(
+        'course_modules',
+        ['id' => 12, 'course' => $courseid],
+        'id,course',
+        MUST_EXIST
+    );
     // Keep the restoration snapshot independent from request/user state. The
     // CLI runner may execute while an authenticated browser session is active;
     // direct DB reads are sufficient for these immutable authorities and avoid
     // manager helpers that resolve the current Moodle user.
-    $sourceSettings = $DB->get_record('local_course_banner_builder_order',
-        ['categoryid' => $stablecategoryid], '*', IGNORE_MISSING);
+    $sourceSettings = $DB->get_record(
+        'local_course_banner_builder_order',
+        ['categoryid' => $stablecategoryid],
+        '*',
+        IGNORE_MISSING
+    );
     $elements = $DB->count_records('local_course_banner_builder_elements', ['categoryid' => $stablecategoryid]);
     return [
         'course' => (array)$course,
@@ -81,7 +93,7 @@ $snapshot = static function() use ($DB, $gettitleconfig, $courseid, $stablecateg
     ];
 };
 
-$emit = static function(array $value): void {
+$emit = static function (array $value): void {
     echo json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR), PHP_EOL;
 };
 
@@ -181,10 +193,16 @@ if ($command === 'cleanup') {
             set_config('bannertitle_' . $context . '_' . $field, $value, 'local_course_banner_builder');
         }
     }
-    set_config('coursebanneractivitiesenabled', (int)$manifest['coursebanneractivitiesenabled'],
-        'local_course_banner_builder');
-    set_config('coursebannerenabled', (int)$manifest['coursebannerenabled'],
-        'local_course_banner_builder');
+    set_config(
+        'coursebanneractivitiesenabled',
+        (int)$manifest['coursebanneractivitiesenabled'],
+        'local_course_banner_builder'
+    );
+    set_config(
+        'coursebannerenabled',
+        (int)$manifest['coursebannerenabled'],
+        'local_course_banner_builder'
+    );
     \local_course_banner_builder\manager::set_course_banner_format((string)$manifest['coursebannerformat']);
 
     $temporaryid = (int)($manifest['temporary']['categoryid'] ?? $categoryid);
@@ -210,14 +228,21 @@ if ($command === 'cleanup') {
     }
     $exists = $DB->record_exists('course_categories', ['id' => $temporaryid]);
     $elements = $temporaryid > 0 ? $DB->count_records(
-        'local_course_banner_builder_elements', ['categoryid' => $temporaryid]
+        'local_course_banner_builder_elements',
+        ['categoryid' => $temporaryid]
     ) : 0;
-    $finalcourse = $DB->get_record('course', ['id' => $courseid],
-        'id,category,fullname,format,showgrades', MUST_EXIST);
+    $finalcourse = $DB->get_record(
+        'course',
+        ['id' => $courseid],
+        'id,category,fullname,format,showgrades',
+        MUST_EXIST
+    );
     $finalbannerformat = \local_course_banner_builder\manager::get_course_banner_format();
-    if ((int)$finalcourse->category !== $stablecategoryid ||
+    if (
+        (int)$finalcourse->category !== $stablecategoryid ||
             $finalcourse->fullname !== $capturedCourse->fullname || $exists || $elements !== 0 ||
-            $finalbannerformat !== (string)$manifest['coursebannerformat']) {
+            $finalbannerformat !== (string)$manifest['coursebannerformat']
+    ) {
         throw new \moodle_exception('Independent geometry fixture cleanup verification failed.');
     }
     $emit([
@@ -247,7 +272,8 @@ if ($command === 'verify') {
     $course = $DB->get_record('course', ['id' => $courseid], 'id,category,fullname', MUST_EXIST);
     $categoryExists = $categoryid > 0 && $DB->record_exists('course_categories', ['id' => $categoryid]);
     $elements = $categoryid > 0 ? $DB->count_records(
-        'local_course_banner_builder_elements', ['categoryid' => $categoryid]
+        'local_course_banner_builder_elements',
+        ['categoryid' => $categoryid]
     ) : 0;
     $emit(['course' => (array)$course, 'temporaryCategoryExists' => $categoryExists,
         'temporaryElements' => $elements]);

@@ -149,10 +149,12 @@ if ($command === 'setup') {
             'summaryformat' => FORMAT_PLAIN,
         ]);
         $courseid = (int)$course->id;
-        foreach ([
+        foreach (
+            [
             \local_course_banner_builder\manager::SLIDESHOW_CONTEXT_COURSE,
             \local_course_banner_builder\manager::SLIDESHOW_CONTEXT_SITE,
-        ] as $context) {
+            ] as $context
+        ) {
             \local_course_banner_builder\manager::set_slideshow_config(
                 $context,
                 local_course_banner_builder_slideshow_fixture_profile($context)

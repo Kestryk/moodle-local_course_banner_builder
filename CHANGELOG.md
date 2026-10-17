@@ -1,3 +1,5 @@
+- 2026-10-18 Codechecker : normalisation mécanique des espaces et appels PHP ; jetons exécutables et rendu conservés, sans publication.
+
 # Changelog
 
 ## Unreleased - 2026-09-03 (Wave 20 corrective)

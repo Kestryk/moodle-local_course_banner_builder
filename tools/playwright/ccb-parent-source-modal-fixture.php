@@ -11,11 +11,11 @@ $USER = get_admin();
 $command = $argv[1] ?? '';
 $manifestpath = $argv[2] ?? '';
 
-$emit = static function(array $value): void {
+$emit = static function (array $value): void {
     echo json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR), PHP_EOL;
 };
 
-$removefixture = static function(array $categoryids): array {
+$removefixture = static function (array $categoryids): array {
     global $DB;
     $remaining = 0;
     foreach (array_reverse($categoryids) as $categoryid) {

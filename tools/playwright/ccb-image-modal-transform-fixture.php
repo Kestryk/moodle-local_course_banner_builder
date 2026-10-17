@@ -20,7 +20,7 @@ global $DB, $USER;
 $USER = get_admin();
 
 $prefix = 'CCB QA IMG-06 ';
-$emit = static function(array $value): void {
+$emit = static function (array $value): void {
     echo json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR), PHP_EOL;
 };
 

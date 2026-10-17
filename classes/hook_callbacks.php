@@ -120,8 +120,10 @@ class hook_callbacks {
                 }
             }
 
-            if ($isactivitypage && ($courseenabled || $activityenabled) &&
-                    trim($coursetitle) !== '' && $activitytitle !== '') {
+            if (
+                $isactivitypage && ($courseenabled || $activityenabled) &&
+                    trim($coursetitle) !== '' && $activitytitle !== ''
+            ) {
                 $semanticactivitytitle = trim($coursetitle . "\n" . $activitytitle);
             }
         }
@@ -199,8 +201,10 @@ class hook_callbacks {
         if (self::is_technical_output_page($page)) {
             return false;
         }
-        if ($path === '' || $path === '/course/view.php' || str_starts_with($path, '/login/') ||
-            $path === '/pluginfile.php') {
+        if (
+            $path === '' || $path === '/course/view.php' || str_starts_with($path, '/login/') ||
+            $path === '/pluginfile.php'
+        ) {
             return false;
         }
 
@@ -282,7 +286,7 @@ class hook_callbacks {
      * @return bool
      */
     protected static function banner_title_texts_match(string $first, string $second): bool {
-        $normalise = static function(string $text): string {
+        $normalise = static function (string $text): string {
             $text = trim(strip_tags($text));
             $text = preg_replace('/\s+/u', ' ', $text) ?? $text;
             return \core_text::strtolower(trim($text));
@@ -1110,12 +1114,14 @@ class hook_callbacks {
             'style' => $wrapperstyle,
         ]);
 
-        foreach ([
+        foreach (
+            [
             'top' => 'local-course-banner-builder-fixed-border-side local-course-banner-builder-fixed-border-side-top',
             'right' => 'local-course-banner-builder-fixed-border-side local-course-banner-builder-fixed-border-side-right',
             'bottom' => 'local-course-banner-builder-fixed-border-side local-course-banner-builder-fixed-border-side-bottom',
             'left' => 'local-course-banner-builder-fixed-border-side local-course-banner-builder-fixed-border-side-left',
-        ] as $side => $class) {
+            ] as $side => $class
+        ) {
             $out .= \html_writer::div('', $class, [
                 'aria-hidden' => 'true',
                 'style' => (string)(($border['sidestyles'][$side] ?? '')),
@@ -1149,11 +1155,13 @@ class hook_callbacks {
         }
         $out = [];
         foreach (['top', 'right', 'bottom', 'left'] as $side) {
-            if (preg_match(
-                '/(--local-course-banner-builder-preview-' . $side . '-width\s*:\s*[^;]+;?)/i',
-                $wrapperstyle,
-                $match
-            )) {
+            if (
+                preg_match(
+                    '/(--local-course-banner-builder-preview-' . $side . '-width\s*:\s*[^;]+;?)/i',
+                    $wrapperstyle,
+                    $match
+                )
+            ) {
                 $declaration = trim($match[1]);
                 $out[] = str_ends_with($declaration, ';') ? $declaration : $declaration . ';';
             }
@@ -2950,8 +2958,10 @@ JS;
         $slideshowpayload = null;
         if ($iscoursebannerpage && manager::is_course_banner_enabled()) {
             $candidate = manager::get_course_slideshow_payload($PAGE->course);
-            if (!empty($candidate['enabled']) && !empty($candidate['hasSlides']) &&
-                ($hascourselayers || $themehasbanner || $serverpayload !== null)) {
+            if (
+                !empty($candidate['enabled']) && !empty($candidate['hasSlides']) &&
+                ($hascourselayers || $themehasbanner || $serverpayload !== null)
+            ) {
                 $slideshowpayload = $candidate;
             }
         } else if (self::is_site_banner_page($PAGE) && manager::is_site_banner_enabled()) {

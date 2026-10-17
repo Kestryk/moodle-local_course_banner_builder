@@ -243,8 +243,10 @@ class manage_banner_form extends \moodleform {
                 'static',
                 'layeradvancedhelp',
                 '',
-                \html_writer::div(get_string('layeradvanced_help', 'local_course_banner_builder'),
-                    'form-text text-muted local-course-banner-builder-advanced-help')
+                \html_writer::div(
+                    get_string('layeradvanced_help', 'local_course_banner_builder'),
+                    'form-text text-muted local-course-banner-builder-advanced-help'
+                )
             );
         }
 
@@ -286,51 +288,51 @@ class manage_banner_form extends \moodleform {
             $mform->setDefault('customsizekeepaspect', 1);
 
             $mform->addElement(
-            'advcheckbox',
-            'dynamicimagesizeenabled',
-            get_string('dynamicimagesizeenabled', 'local_course_banner_builder')
+                'advcheckbox',
+                'dynamicimagesizeenabled',
+                get_string('dynamicimagesizeenabled', 'local_course_banner_builder')
             );
             $mform->setDefault('dynamicimagesizeenabled', 0);
             $mform->addHelpButton('dynamicimagesizeenabled', 'dynamicimagesizeenabled', 'local_course_banner_builder');
 
             $mform->addElement(
-            'advcheckbox',
-            'imagecenterfixed',
-            get_string('imagecenterfixed', 'local_course_banner_builder')
+                'advcheckbox',
+                'imagecenterfixed',
+                get_string('imagecenterfixed', 'local_course_banner_builder')
             );
             $mform->setDefault('imagecenterfixed', 0);
             $mform->addHelpButton('imagecenterfixed', 'imagecenterfixed', 'local_course_banner_builder');
 
             $mform->addElement(
-            'advcheckbox',
-            'imageaboveoverlayenabled',
-            get_string('imageaboveoverlayenabled', 'local_course_banner_builder')
+                'advcheckbox',
+                'imageaboveoverlayenabled',
+                get_string('imageaboveoverlayenabled', 'local_course_banner_builder')
             );
             $mform->setDefault('imageaboveoverlayenabled', 0);
             $mform->addHelpButton('imageaboveoverlayenabled', 'imageaboveoverlayenabled', 'local_course_banner_builder');
 
             $mform->addElement(
-            'advcheckbox',
-            'imagebelowinheritedenabled',
-            get_string('imagebelowinheritedenabled', 'local_course_banner_builder')
+                'advcheckbox',
+                'imagebelowinheritedenabled',
+                get_string('imagebelowinheritedenabled', 'local_course_banner_builder')
             );
             $mform->setDefault('imagebelowinheritedenabled', 0);
             $mform->addHelpButton('imagebelowinheritedenabled', 'imagebelowinheritedenabled', 'local_course_banner_builder');
 
             $mform->addElement(
-            'advcheckbox',
-            'imageaboveinheritedenabled',
-            get_string('imageaboveinheritedenabled', 'local_course_banner_builder')
+                'advcheckbox',
+                'imageaboveinheritedenabled',
+                get_string('imageaboveinheritedenabled', 'local_course_banner_builder')
             );
             $mform->setDefault('imageaboveinheritedenabled', 0);
             $mform->addHelpButton('imageaboveinheritedenabled', 'imageaboveinheritedenabled', 'local_course_banner_builder');
 
             $mform->addElement(
-            'select',
-            'positionanchor',
-            get_string('positionanchor', 'local_course_banner_builder'),
-            \local_course_banner_builder\manager::get_position_anchor_options(),
-            ['data-layer-position-anchor' => '1']
+                'select',
+                'positionanchor',
+                get_string('positionanchor', 'local_course_banner_builder'),
+                \local_course_banner_builder\manager::get_position_anchor_options(),
+                ['data-layer-position-anchor' => '1']
             );
             $mform->setType('positionanchor', PARAM_ALPHAEXT);
             $mform->setDefault('positionanchor', \local_course_banner_builder\manager::POSITION_CENTER);
@@ -351,10 +353,9 @@ class manage_banner_form extends \moodleform {
             $this->add_offset_field($mform, 'offsetbottompercent', get_string('layeroffsetbottompercent', 'local_course_banner_builder'), 'bottom', $offsetattrs);
             $this->add_offset_field($mform, 'offsetleftpercent', get_string('layeroffsetleftpercent', 'local_course_banner_builder'), 'left', $offsetattrs);
             $mform->addElement('static', 'layeroffsethelp', '', \html_writer::div(
-            get_string('layeroffsethelp', 'local_course_banner_builder'),
-            'form-text text-muted'
+                get_string('layeroffsethelp', 'local_course_banner_builder'),
+                'form-text text-muted'
             ));
-
         }
         if ($showadvanced) {
             $mform->addElement('hidden', 'imageopacity', 100, [
@@ -665,7 +666,8 @@ class manage_banner_form extends \moodleform {
         $bordercolorgroup[] = $mform->createElement('text', 'bordercolor', '', [
             'data-border-color-text' => '1',
         ]);
-        $bordercolorgroup[] = $mform->createElement('html',
+        $bordercolorgroup[] = $mform->createElement(
+            'html',
             \html_writer::empty_tag('input', [
                 'type' => 'color',
                 'id' => 'id_bordercolor_picker',
@@ -1003,23 +1005,23 @@ class manage_banner_form extends \moodleform {
         $activethemename = (string)($PAGE->theme->name ?? 'EasyEdu');
         $activethemename = $activethemename !== '' ? ucfirst($activethemename) : 'EasyEdu';
         $toolbarcontent = !empty($previewdefinition['hascontextlayers']) ? \html_writer::div(
-                \html_writer::tag(
-                    'label',
-                    \html_writer::empty_tag('input', [
+            \html_writer::tag(
+                'label',
+                \html_writer::empty_tag('input', [
                         'type' => 'checkbox',
                         'id' => $toggleid,
                         'data-preview-context-toggle' => '1',
                     ]) . \html_writer::span('', 'local-course-banner-builder-toggle-slider easyedu-toggle-switch__slider'),
-                    [
+                [
                         'class' => 'local-course-banner-builder-toggle easyedu-toggle-switch easyedu-toggle-switch--32px mb-0',
                     ]
-                ) .
+            ) .
                 \html_writer::tag('label', get_string('bannerpreviewtogglecontext', 'local_course_banner_builder'), [
                     'class' => 'mb-0',
                     'for' => $toggleid,
                 ]),
-                'local-course-banner-builder-banner-preview-toolbar-toggle'
-            ) : '';
+            'local-course-banner-builder-banner-preview-toolbar-toggle'
+        ) : '';
 
         $toolbar = $toolbarcontent === '' ? '' : \html_writer::div(
             $toolbarcontent,
@@ -1369,8 +1371,10 @@ class manage_banner_form extends \moodleform {
         $previewstyle .= ' --local-course-banner-builder-slideshow-action-y: ' .
             number_format((float)($config['actiony'] ?? \local_course_banner_builder\manager::SLIDESHOW_DEFAULT_ACTION_Y), 3, '.', '') . '%;';
         $labely = (float)($config['labely'] ?? \local_course_banner_builder\manager::SLIDESHOW_DEFAULT_LABEL_Y);
-        if ($bannerformat === \local_course_banner_builder\manager::BANNER_FORMAT_FULLWIDTH_TOP_COMPACT &&
-                abs($labely - \local_course_banner_builder\manager::SLIDESHOW_DEFAULT_LABEL_Y) < 0.001) {
+        if (
+            $bannerformat === \local_course_banner_builder\manager::BANNER_FORMAT_FULLWIDTH_TOP_COMPACT &&
+                abs($labely - \local_course_banner_builder\manager::SLIDESHOW_DEFAULT_LABEL_Y) < 0.001
+        ) {
             $labely = 18.0;
         }
         $previewstyle .= ' --local-course-banner-builder-slideshow-label-x: ' .
@@ -1629,12 +1633,14 @@ class manage_banner_form extends \moodleform {
                 'data-preview-resize-edge' => 'bottom-right',
                 'aria-hidden' => 'true',
             ]);
-            foreach ([
+            foreach (
+                [
                 'top' => 'local-course-banner-builder-preview-resize-handle--top',
                 'right' => 'local-course-banner-builder-preview-resize-handle--right',
                 'bottom' => 'local-course-banner-builder-preview-resize-handle--bottom',
                 'left' => 'local-course-banner-builder-preview-resize-handle--left',
-            ] as $edge => $class) {
+                ] as $edge => $class
+            ) {
                 $content .= \html_writer::span('', 'local-course-banner-builder-preview-resize-handle ' . $class, [
                     'data-preview-resize-handle' => '1',
                     'data-preview-resize-mode' => 'edge',
@@ -1769,8 +1775,10 @@ class manage_banner_form extends \moodleform {
 
         return \html_writer::div(
             \html_writer::div(
-                \html_writer::div(get_string('layertypechoice', 'local_course_banner_builder'),
-                    'local-course-banner-builder-slideshow-side-title') .
+                \html_writer::div(
+                    get_string('layertypechoice', 'local_course_banner_builder'),
+                    'local-course-banner-builder-slideshow-side-title'
+                ) .
                 \html_writer::div(
                     $imagebutton . $borderbutton . $overlaybutton,
                     'btn-group local-course-banner-builder-layer-type-toggle',

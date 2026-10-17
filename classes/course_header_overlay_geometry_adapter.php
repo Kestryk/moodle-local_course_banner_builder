@@ -97,8 +97,10 @@ final class course_header_overlay_geometry_adapter {
             'width: ' . self::format_percentage(((float)$layer['width'] / (float)$target['width']) * 100.0) . ';',
             'height: ' . self::format_percentage(((float)$layer['height'] / (float)$target['height']) * 100.0) . ';',
         ];
-        if ($fitmode === self::FIT_CUSTOM && !empty($record['customsizekeepaspect']) &&
-                $imagewidth > 0 && $imageheight > 0) {
+        if (
+            $fitmode === self::FIT_CUSTOM && !empty($record['customsizekeepaspect']) &&
+                $imagewidth > 0 && $imageheight > 0
+        ) {
             $wrapperstyles[] = 'aspect-ratio: ' . $effectivedimensions['width'] . ' / ' .
                 $effectivedimensions['height'] . ';';
         }

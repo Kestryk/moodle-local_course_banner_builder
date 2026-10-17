@@ -14,12 +14,19 @@ $USER = get_admin();
 $command = $argv[1] ?? '';
 $manifestpath = $argv[2] ?? '';
 
-$emit = static function(array $value): void {
+$emit = static function (array $value): void {
     echo json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR), PHP_EOL;
 };
 
-$createimage = static function(\stdClass $source, int $categoryid, string $name, string $colour,
-        int $sortorder, bool $dynamic = false, bool $aboveoverlay = false): int {
+$createimage = static function (
+    \stdClass $source,
+    int $categoryid,
+    string $name,
+    string $colour,
+    int $sortorder,
+    bool $dynamic = false,
+    bool $aboveoverlay = false
+): int {
     global $USER;
     $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" role="img">' .
         '<rect width="1200" height="300" fill="' . s($colour) . '"/>' .
@@ -63,7 +70,7 @@ $createimage = static function(\stdClass $source, int $categoryid, string $name,
     return (int)\local_course_banner_builder\manager::save_source_banner($source, $data);
 };
 
-$createborder = static function(\stdClass $source, int $categoryid): int {
+$createborder = static function (\stdClass $source, int $categoryid): int {
     $data = (object)[
         'categoryid' => $categoryid,
         'sourcekey' => $source->sourcekey,
@@ -83,7 +90,7 @@ $createborder = static function(\stdClass $source, int $categoryid): int {
     return (int)\local_course_banner_builder\manager::save_source_banner($source, $data);
 };
 
-$createoverlay = static function(\stdClass $source, int $categoryid): int {
+$createoverlay = static function (\stdClass $source, int $categoryid): int {
     $data = (object)[
         'categoryid' => $categoryid,
         'sourcekey' => $source->sourcekey,
