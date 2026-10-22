@@ -28,3 +28,17 @@ this patch; do not revert newer changes or site/banner configuration.
 
 PHP syntax passes. Moodle Codechecker reports two pre-existing foreach spacing
 errors (parent line 1117, patched line 1119); this change adds no new errors.
+
+The reusable native probe is `tools/playwright/ccb-native-banner-first-paint.cjs`.
+Pass the base URL, banner page path and absolute evidence directory; set
+`PLAYWRIGHT_MODULE` to an installed Playwright module if necessary. It uses an
+authorised `CCB_STORAGE_STATE`, or the site's existing guest login, without
+creating accounts. It asserts first-paint visibility, final containment at
+1600/390, no JavaScript exceptions and the no-script fallback.
+
+The final native checks passed on both staging and production at 1600/390,
+including static visibility with JavaScript disabled. Remote guest access led
+to the course enrolment page, which renders the same native course banner;
+the authenticated course-content reproduction was performed locally. The site
+banner variant is not rendered for guest users and is not claimed as a remote
+authenticated site-banner test.
