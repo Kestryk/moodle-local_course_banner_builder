@@ -1,5 +1,10 @@
 # EasyEdu agent contract
 
+Native banner shells must not paint in their temporary body-level parent.
+Preserve the shared pre-mount/mounted visibility state and the no-script
+fallback when changing hook output or mount timing. Sample first-paint geometry,
+not only the settled banner, before claiming this regression is fixed.
+
 For cross-repository EasyEdu context, start with
 `<EASYEDU_PLATFORM_ROOT>\AI\README.md` when it is available locally. Then read
 `AI\course-banner-builder\context.md` in the platform repository before editing

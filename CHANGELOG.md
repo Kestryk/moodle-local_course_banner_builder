@@ -8,6 +8,14 @@
 
 # Changelog
 
+## Unreleased — 2026-10-22
+
+### Fixed
+
+- Keep native site and course banners invisible until their existing mount
+  state places them beside the page header, preventing an initial oversized
+  banner flash during navigation. Preserve the static banner without JavaScript.
+
 ## Unreleased - 2026-09-03 (Wave 20 corrective)
 
 ### Fixed
