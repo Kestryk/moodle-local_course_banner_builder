@@ -699,12 +699,10 @@ function local_course_banner_builder_render_title_settings_modal(
             'local-course-banner-builder-title-slider-label'
         );
         $html .= html_writer::start_div('btn-group local-course-banner-builder-title-corner-buttons', ['role' => 'group']);
-        foreach (
-            [
+        foreach ([
             'rounded' => ['slideshowcornersrounded', 18],
             'square' => ['slideshowcornerssquare', 0],
-            ] as $value => $options
-        ) {
+            ] as $value => $options) {
             $active = ($value === 'rounded' && $radius > 0) || ($value === 'square' && $radius <= 0);
             $html .= html_writer::tag('button', get_string($options[0], 'local_course_banner_builder'), [
                 'type' => 'button',
@@ -723,12 +721,10 @@ function local_course_banner_builder_render_title_settings_modal(
         $html .= html_writer::start_div('btn-group local-course-banner-builder-title-frame-type-buttons', [
             'role' => 'group',
         ]);
-        foreach (
-            [
+        foreach ([
             'box' => 'bannertitleframetype:box',
             'highlight' => 'bannertitleframetype:highlight',
-            ] as $value => $stringkey
-        ) {
+            ] as $value => $stringkey) {
             $active = $value === $current;
             $html .= html_writer::tag('button', get_string($stringkey, 'local_course_banner_builder'), [
                 'type' => 'button',
@@ -1168,14 +1164,12 @@ function local_course_banner_builder_render_source_visual_editor_image_layer(arr
             'onpointerdown' => 'return window.localCourseBannerBuilderHandleModalResizeHandlePointerDown(event, this);',
             'aria-hidden' => 'true',
         ]);
-        foreach (
-            [
+        foreach ([
             'top' => 'local-course-banner-builder-preview-resize-handle--top',
             'right' => 'local-course-banner-builder-preview-resize-handle--right',
             'bottom' => 'local-course-banner-builder-preview-resize-handle--bottom',
             'left' => 'local-course-banner-builder-preview-resize-handle--left',
-            ] as $edge => $class
-        ) {
+            ] as $edge => $class) {
             $content .= html_writer::span('', 'local-course-banner-builder-preview-resize-handle ' . $class, [
                 'data-preview-resize-handle' => '1',
                 'data-preview-resize-mode' => 'edge',
@@ -1369,6 +1363,37 @@ function local_course_banner_builder_get_source_preview_context_toggle_labels(
 }
 
 /**
+ * Tell whether a source can be edited and saved from the admin page.
+ *
+ * Settings are normally required before the first layer is added. A source
+ * that already owns layers (for example the site source, whose settings are
+ * pure defaults) must stay editable, otherwise visual changes such as
+ * "Fit to preview" can be made but never saved (K22-32).
+ *
+ * @param stdClass $source
+ * @param stdClass|null $settings Settings already loaded for this source.
+ * @return bool
+ */
+function local_course_banner_builder_source_is_editable(\stdClass $source, ?\stdClass $settings = null): bool {
+    $settings = $settings ?? \local_course_banner_builder\manager::get_source_settings($source);
+    return !empty($settings->id) || !empty(\local_course_banner_builder\manager::get_source_elements($source));
+}
+
+/**
+ * Return stored source settings, saving the defaults of a source that already has layers.
+ *
+ * @param stdClass $source
+ * @return stdClass Settings; the id stays empty when the source is not editable yet.
+ */
+function local_course_banner_builder_get_editable_source_settings(\stdClass $source): \stdClass {
+    $settings = \local_course_banner_builder\manager::get_source_settings($source);
+    if (empty($settings->id) && local_course_banner_builder_source_is_editable($source, $settings)) {
+        $settings = \local_course_banner_builder\manager::get_or_create_source_settings($source);
+    }
+    return $settings;
+}
+
+/**
  * Render the selected source visual editor.
  *
  * @param stdClass $source
@@ -1420,7 +1445,7 @@ function local_course_banner_builder_render_source_visual_editor(\stdClass $sour
         ? $mobilepreviewnaturalheight
         : min($mobilepreviewmaxheight, max(128.0, $mobilepreviewnaturalheight));
     $mobilepreviewheightcss = rtrim(rtrim(number_format($mobilepreviewheight, 4, '.', ''), '0'), '.');
-    $hassourcesettings = !empty($sourcesettings->id);
+    $hassourcesettings = local_course_banner_builder_source_is_editable($source, $sourcesettings);
     $disabledattributes = $hassourcesettings ? [] : [
         'disabled' => 'disabled',
         'aria-disabled' => 'true',
@@ -2365,8 +2390,7 @@ if ($updatebannertitlesettings && confirm_sesskey()) {
             in_array($align, ['left', 'center', 'right'], true) ? $align : 'center',
             'local_course_banner_builder'
         );
-        foreach (
-            [
+        foreach ([
             'bold',
             'italic',
             'underline',
@@ -2379,8 +2403,7 @@ if ($updatebannertitlesettings && confirm_sesskey()) {
             'frameshadowenabled',
             'shadowenabled',
             'overlayenabled',
-            ] as $flag
-        ) {
+            ] as $flag) {
             set_config($prefix . $flag, optional_param($flag, 0, PARAM_BOOL) ? 1 : 0, 'local_course_banner_builder');
         }
         $frametype = optional_param('frametype', 'box', PARAM_ALPHA);
@@ -2729,7 +2752,7 @@ if (
     confirm_sesskey() &&
     $selectedsource
 ) {
-    $storedsettings = \local_course_banner_builder\manager::get_source_settings($selectedsource);
+    $storedsettings = local_course_banner_builder_get_editable_source_settings($selectedsource);
     if (empty($storedsettings->id)) {
         http_response_code(422);
         header('Content-Type: application/json');
@@ -2757,7 +2780,7 @@ if (
 }
 
 if ($updatepreviewlayers && confirm_sesskey() && $selectedsource) {
-    $storedsettings = \local_course_banner_builder\manager::get_source_settings($selectedsource);
+    $storedsettings = local_course_banner_builder_get_editable_source_settings($selectedsource);
     if (empty($storedsettings->id)) {
         redirect(
             new moodle_url($adminpagepath, $selectedsourceparams),
@@ -2941,7 +2964,7 @@ if ($form->is_cancelled()) {
 
 if ($data = $form->get_data()) {
     if ($selectedsource) {
-        $storedsettings = \local_course_banner_builder\manager::get_source_settings($selectedsource);
+        $storedsettings = local_course_banner_builder_get_editable_source_settings($selectedsource);
         if (empty($storedsettings->id)) {
             redirect(
                 new moodle_url($adminpagepath, $selectedsourceparams),
@@ -3960,12 +3983,10 @@ if ($issitebanneradmin) {
     );
     echo html_writer::start_div('local-course-banner-builder-secondary-group-controls');
     $titleeditactions = '';
-    foreach (
-        [
+    foreach ([
         'course' => 'editcoursebannertitle',
         'activity' => 'editactivitybannertitle',
-        ] as $titlecontext => $stringkey
-    ) {
+        ] as $titlecontext => $stringkey) {
         $titleeditactions .= html_writer::tag(
             'button',
             html_writer::tag('i', '', ['class' => 'fa fa-font me-2', 'aria-hidden' => 'true']) .
@@ -3990,12 +4011,10 @@ if ($issitebanneradmin) {
     echo html_writer::end_div();
     echo html_writer::end_div();
     echo html_writer::end_tag('details');
-    foreach (
-        [
+    foreach ([
         'course' => 'editcoursebannertitle',
         'activity' => 'editactivitybannertitle',
-        ] as $titlecontext => $stringkey
-    ) {
+        ] as $titlecontext => $stringkey) {
         echo local_course_banner_builder_render_title_settings_modal(
             $titlecontext,
             get_string($stringkey, 'local_course_banner_builder'),
@@ -4525,13 +4544,11 @@ if ($selectedsource) {
         echo html_writer::end_div();
 
     if ($formmode === 'create') {
-        foreach (
-            [
+        foreach ([
             'local-course-banner-builder-edit-border-layer-modal' => get_string('editborder', 'local_course_banner_builder'),
             'local-course-banner-builder-edit-overlay-layer-modal' => get_string('editoverlaylayer', 'local_course_banner_builder'),
             'local-course-banner-builder-edit-image-layer-modal' => get_string('editimage', 'local_course_banner_builder'),
-            ] as $emptymodalid => $emptymodaltitle
-        ) {
+            ] as $emptymodalid => $emptymodaltitle) {
             local_course_banner_builder_render_layer_modal(
                 $emptymodalid,
                 $emptymodaltitle,
