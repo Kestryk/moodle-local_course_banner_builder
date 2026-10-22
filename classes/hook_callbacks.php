@@ -381,12 +381,14 @@ class hook_callbacks {
     protected static function get_course_banner_runtime_css(): string {
         return implode("\n", [
             '.local-course-banner-builder-native-shell {',
+            '    visibility: hidden;',
             '    position: relative;',
             '    z-index: 0;',
             '    isolation: isolate;',
             '    margin: calc(var(--navbar-height, 60px) + 0.75rem) auto 0.75rem;',
             '}',
             '.local-course-banner-builder-native-shell--mounted {',
+            '    visibility: visible;',
             '    margin: 0;',
             '}',
             '.local-course-banner-builder-native-shell--format-standard {',
@@ -3037,6 +3039,9 @@ JS;
         if ($payload !== null) {
             $hook->add_html(self::get_native_page_title_policy_html($payload));
             $hook->add_html(\html_writer::tag('style', self::get_course_banner_runtime_css()));
+            $hook->add_html(\html_writer::tag('noscript', \html_writer::tag('style',
+                '.local-course-banner-builder-native-shell { visibility: visible; }'
+            )));
             $hook->add_html(self::render_native_course_banner_html($payload));
             $hook->add_html(\html_writer::tag('script', self::get_native_course_banner_mount_script()));
             return;
@@ -3049,6 +3054,9 @@ JS;
 
         $hook->add_html(self::get_native_page_title_policy_html($sitepayload));
         $hook->add_html(\html_writer::tag('style', self::get_course_banner_runtime_css()));
+        $hook->add_html(\html_writer::tag('noscript', \html_writer::tag('style',
+            '.local-course-banner-builder-native-shell { visibility: visible; }'
+        )));
         $hook->add_html(self::render_site_banner_html($sitepayload));
         $hook->add_html(\html_writer::tag('script', self::get_site_banner_mount_script()));
     }
