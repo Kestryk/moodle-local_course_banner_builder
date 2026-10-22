@@ -344,6 +344,7 @@ class hook_callbacks {
      */
     protected static function get_course_banner_runtime_css(): string {
         return implode("\n", [
+            manager::get_kit_font_face_css(),
             '.local-course-banner-builder-native-shell {',
             '    position: relative;',
             '    z-index: 0;',
@@ -1326,7 +1327,8 @@ class hook_callbacks {
                 'min-width: 0;',
                 'color: ' . $color . ';',
                 'font-size: ' . self::banner_title_base_font_size_css() . ';',
-                'font-family: ' . ($fontfamily !== '' ? s($fontfamily) : 'inherit') . ';',
+                // Whitelisted value; html_writer escapes the style attribute (s() here double-escaped quotes).
+                'font-family: ' . ($fontfamily !== '' ? $fontfamily : 'inherit') . ';',
                 'font-weight: ' . ($bold ? '800' : '500') . ';',
                 'font-style: ' . ($italic ? 'italic' : 'normal') . ';',
                 'text-decoration: ' . (implode(' ', array_filter([

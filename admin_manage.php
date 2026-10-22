@@ -3187,6 +3187,7 @@ $PAGE->requires->js_call_amd('local_course_banner_builder/easyedu_guide_adapter'
 ]);
 
 echo $OUTPUT->header();
+echo html_writer::tag('style', \local_course_banner_builder\manager::get_kit_font_face_css());
 echo html_writer::start_div(implode(' ', $adminclasses), [
     'aria-busy' => 'false',
     'data-easyedu-motion-policy' => 'enabled',

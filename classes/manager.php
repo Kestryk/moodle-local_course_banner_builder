@@ -153,6 +153,8 @@ class manager {
     public const SLIDESHOW_DEFAULT_TITLE_FONT_FAMILY = '';
     /** @var string */
     public const SLIDESHOW_DEFAULT_BODY_FONT_FAMILY = '';
+    /** @var string Font stack of the EasyEdu Kit typeface bundled in fonts/InterVariable.woff2. */
+    public const KIT_FONT_FAMILY = '"EasyEdu Inter", "Segoe UI", sans-serif';
     /** @var bool */
     public const SLIDESHOW_DEFAULT_TITLE_BOLD = true;
     /** @var bool */
@@ -196,6 +198,7 @@ class manager {
     /** @var array */
     protected const SLIDESHOW_FONT_FAMILY_OPTIONS = [
         '' => 'Theme default',
+        self::KIT_FONT_FAMILY => 'EasyEdu Inter (Kit)',
         'Arial, Helvetica, sans-serif' => 'Arial',
         '"Trebuchet MS", Helvetica, sans-serif' => 'Trebuchet MS',
         'Verdana, Geneva, sans-serif' => 'Verdana',
@@ -1280,6 +1283,20 @@ class manager {
      */
     public static function get_slideshow_font_family_options(): array {
         return self::SLIDESHOW_FONT_FAMILY_OPTIONS;
+    }
+
+    /**
+     * Return the @font-face rule loading the bundled EasyEdu Kit typeface.
+     *
+     * The other font options are plain CSS family names that only render when
+     * installed on the visitor's device; this one ships with the plugin.
+     *
+     * @return string
+     */
+    public static function get_kit_font_face_css(): string {
+        $url = new \moodle_url('/local/course_banner_builder/fonts/InterVariable.woff2');
+        return '@font-face { font-family: "EasyEdu Inter"; src: url("' . $url->out(false) . '") format("woff2"); ' .
+            'font-style: normal; font-weight: 100 900; font-display: swap; }';
     }
 
     /**
@@ -5843,7 +5860,8 @@ class manager {
             'min-width: 0;',
             'color: ' . self::normalise_banner_title_hex((string)($config['color'] ?? '#FFFFFF'), '#FFFFFF') . ';',
             'font-size: clamp(0.62rem, min(7.4cqh, 2.65cqw), 2.35rem);',
-            'font-family: ' . ($fontfamily !== '' ? s($fontfamily) : 'inherit') . ';',
+            // Whitelisted value; the consumer escapes the style attribute (s() here double-escaped quotes).
+            'font-family: ' . ($fontfamily !== '' ? $fontfamily : 'inherit') . ';',
             'font-weight: ' . (!empty($config['bold']) ? '800' : '500') . ';',
             'font-style: ' . (!empty($config['italic']) ? 'italic' : 'normal') . ';',
             'text-decoration: ' . (implode(' ', array_filter([

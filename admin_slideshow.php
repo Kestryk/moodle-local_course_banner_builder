@@ -2712,6 +2712,7 @@ function local_course_banner_builder_render_slideshow_form(string $context): str
 }
 
 echo $OUTPUT->header();
+echo html_writer::tag('style', manager::get_kit_font_face_css());
 
 $slideshowpageloadinglabel = get_string('actioninprogress', 'local_course_banner_builder');
 $slideshowpageskeleton = html_writer::start_div(
