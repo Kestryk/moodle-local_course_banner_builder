@@ -3001,6 +3001,7 @@ JS;
                 'hasNativeBackground' => $allownativebanner ? manager::course_has_native_banner_background($PAGE->course) : false,
                 'bannerFormat' => manager::get_course_banner_format(),
                 'themeName' => (string)($PAGE->theme->name ?? ''),
+                'cardTitle' => manager::get_course_card_title_options(),
             ],
         ]);
 

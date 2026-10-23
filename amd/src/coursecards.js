@@ -31,6 +31,16 @@ define(['core/config'], function (Config) {
     const NATIVE_BANNER_CLASS = 'local-course-banner-builder-native-course-banner';
     const COURSE_CARD_THUMB_CLASS = 'local-course-banner-builder-course-card-thumb';
     const COURSE_CARD_ROOT_CLASS = 'local-course-banner-builder-course-card-root';
+    const CARD_TITLE_CLASS = 'local-course-banner-builder-course-card-title';
+    const CARD_TITLE_SCRIM_CLASS = 'local-course-banner-builder-course-card-title-scrim';
+    const CARD_TITLE_PROCESSED_ATTRIBUTE = 'data-course-banner-builder-card-title-processed';
+
+    const CARD_TITLE_TEXT_TARGETS = [
+        '.coursename',
+        '.card-title',
+        '[data-region="coursename"]',
+        '.dashboard-card-title'
+    ].join(',');
 
     const BACKGROUND_TARGETS = [
         '.dashboard-card-img',
@@ -289,12 +299,90 @@ define(['core/config'], function (Config) {
     };
 
     /**
+     * Resolve the element that should host the card title overlay so it sits
+     * on top of the thumbnail surface rather than over the text area below it.
+     *
+     * @param {Element} target
+     * @returns {Element|null}
+     */
+    const getCardTitleHost = function (target) {
+        if (target.tagName === 'IMG') {
+            const parent = target.parentElement;
+            if (!parent) {
+                return null;
+            }
+            parent.style.cssText += ';position:relative;overflow:hidden';
+            return parent;
+        }
+        if (!target.style.position) {
+            target.style.position = 'relative';
+        }
+        target.style.overflow = target.style.overflow || 'hidden';
+        return target;
+    };
+
+    /**
+     * Read the course title already rendered by Moodle's own card markup, so
+     * no extra request or privileged lookup is needed per card.
+     *
+     * @param {Element} root
+     * @returns {String}
+     */
+    const getCardTitleText = function (root) {
+        const node = root.querySelector(CARD_TITLE_TEXT_TARGETS);
+        const text = node ? node.textContent : '';
+        return text ? text.replace(/\s+/g, ' ').trim() : '';
+    };
+
+    /**
+     * Echo the configured course banner title on a card thumbnail, scaled and
+     * clamped for the small surface instead of forcing it to fit.
+     *
+     * @param {Element} target
+     * @param {Element} root
+     * @param {String} courseId
+     */
+    const applyCardTitle = function (target, root, courseId) {
+        const options = currentCourseOptions.cardTitle;
+        if (!options || !options.enabled) {
+            return;
+        }
+
+        const host = getCardTitleHost(target);
+        if (!host || host.getAttribute(CARD_TITLE_PROCESSED_ATTRIBUTE) === courseId) {
+            return;
+        }
+
+        const text = getCardTitleText(root || target);
+        if (!text) {
+            return;
+        }
+
+        host.setAttribute(CARD_TITLE_PROCESSED_ATTRIBUTE, courseId);
+
+        if (options.scrimstyle) {
+            const scrim = document.createElement('div');
+            scrim.className = CARD_TITLE_SCRIM_CLASS;
+            scrim.setAttribute('aria-hidden', 'true');
+            scrim.setAttribute('style', options.scrimstyle);
+            host.appendChild(scrim);
+        }
+
+        const title = document.createElement('div');
+        title.className = CARD_TITLE_CLASS + ' ' + CARD_TITLE_CLASS + '--' + (options.align || 'center');
+        title.setAttribute('aria-hidden', 'true');
+        title.setAttribute('style', options.style || '');
+        title.textContent = text;
+        host.appendChild(title);
+    };
+
+    /**
      * Replace a background image when it points to a generated banner.
      *
      * @param {Element} target
      * @param {String} courseId
      */
-    const replaceBackground = function (target, courseId) {
+    const replaceBackground = function (target, courseId, root) {
         if (target.getAttribute(PROCESSED_ATTRIBUTE) === courseId) {
             return;
         }
@@ -304,6 +392,8 @@ define(['core/config'], function (Config) {
         if (!isManagedBannerUrl(computedUrl)) {
             return;
         }
+
+        applyCardTitle(target, root, courseId);
 
         const cardUrl = getCardUrl(courseId, isSquareCourseBoxTarget(target));
         target.setAttribute(PROCESSED_ATTRIBUTE, courseId);
@@ -324,10 +414,12 @@ define(['core/config'], function (Config) {
      * @param {HTMLImageElement} target
      * @param {String} courseId
      */
-    const replaceImageSource = function (target, courseId) {
+    const replaceImageSource = function (target, courseId, root) {
         if (target.getAttribute(PROCESSED_ATTRIBUTE) === courseId || !isManagedBannerUrl(target.src)) {
             return;
         }
+
+        applyCardTitle(target, root, courseId);
 
         const cardUrl = getCardUrl(courseId, isSquareCourseBoxTarget(target));
         target.setAttribute(PROCESSED_ATTRIBUTE, courseId);
@@ -356,13 +448,13 @@ define(['core/config'], function (Config) {
 
         const root = courseElement.closest(ROOT_SELECTORS) || courseElement;
         if (root.matches(BACKGROUND_TARGETS)) {
-            replaceBackground(root, courseId);
+            replaceBackground(root, courseId, root);
         }
         root.querySelectorAll(BACKGROUND_TARGETS).forEach(function (target) {
-            replaceBackground(target, courseId);
+            replaceBackground(target, courseId, root);
         });
         root.querySelectorAll('img').forEach(function (target) {
-            replaceImageSource(target, courseId);
+            replaceImageSource(target, courseId, root);
         });
     };
 
