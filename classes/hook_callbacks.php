@@ -117,7 +117,9 @@ class hook_callbacks {
             ($customcourseimageurl ?: ($hasbackground ? manager::get_course_banner_image_url($courseid) : null));
         $iscourseviewpage = self::is_course_view_page($page);
         $isactivitypage = self::is_course_activity_page($page);
-        $titlecontext = $iscourseviewpage ? 'course' : 'activity';
+        // Only real module pages use activity title settings. Course sections,
+        // course settings and course-scoped tools keep the course title policy.
+        $titlecontext = $isactivitypage ? 'activity' : 'course';
         $coursetitle = (string)($page->course->fullname ?? '');
         $activitytitle = self::get_course_page_secondary_title($page);
         $semanticactivitytitle = '';
