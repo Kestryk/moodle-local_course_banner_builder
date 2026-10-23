@@ -1022,3 +1022,7 @@ $string['usedsourceprefix'] = '';
 $string['viewconfigured'] = 'Calques de bannière configurés';
 $string['webimages'] = 'Images web';
 $string['yes'] = 'Oui';
+$string['hidepagetitle_site'] = 'Masquer le titre natif des pages avec une bannière de site';
+$string['hidepagetitle_site_desc'] = 'Lorsqu’une bannière de site est affichée, masquer le titre de page Moodle et placer la bannière avant l’en-tête de page. Le fil d’Ariane et les actions de l’en-tête restent disponibles. Le titre intégré à la bannière ne change pas.';
+$string['hidepagetitle_course'] = 'Masquer le titre natif des pages avec une bannière de cours';
+$string['hidepagetitle_course_desc'] = 'Lorsqu’une bannière de cours est affichée, masquer le titre Moodle du cours et de ses activités et placer la bannière avant l’en-tête de page. Les règles de choix et de visibilité des sources restent applicables. Le titre intégré à la bannière ne change pas.';

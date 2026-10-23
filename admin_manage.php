@@ -2255,6 +2255,19 @@ $PAGE->requires->strings_for_js([
 ], 'local_course_banner_builder');
 $PAGE->navbar->add($adminpagetitle, new moodle_url($adminpagepath));
 
+// Native heading visibility is independent of the title layer inside the banner.
+$nativeheadingscope = $issitebanneradmin ? 'site' : 'course';
+$nativeheadingkey = 'hidepagetitle_' . $nativeheadingscope;
+if (optional_param('updatenativeheading', 0, PARAM_BOOL) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_sesskey();
+    set_config(
+        $nativeheadingkey,
+        optional_param('s_local_course_banner_builder_' . $nativeheadingkey, 0, PARAM_BOOL) ? 1 : 0,
+        'local_course_banner_builder'
+    );
+    redirect(new moodle_url($adminpagepath, $selectedsourceparams), get_string('changessaved'));
+}
+
 if ($selectedsource) {
     $PAGE->navbar->add($selectedsource->label, $url);
 }
@@ -3187,6 +3200,20 @@ $PAGE->requires->js_call_amd('local_course_banner_builder/easyedu_guide_adapter'
 ]);
 
 echo $OUTPUT->header();
+$nativeheadingsetting = new admin_setting_configcheckbox(
+    'local_course_banner_builder/' . $nativeheadingkey,
+    get_string($nativeheadingkey, 'local_course_banner_builder'),
+    get_string($nativeheadingkey . '_desc', 'local_course_banner_builder'),
+    0
+);
+echo html_writer::start_tag('form', ['method' => 'post', 'action' => $url->out(false), 'class' => 'mb-3']);
+echo html_writer::input_hidden_params(new moodle_url($adminpagepath, [
+    'sesskey' => sesskey(),
+    'updatenativeheading' => 1,
+]));
+echo $nativeheadingsetting->output_html(get_config('local_course_banner_builder', $nativeheadingkey) ?: 0);
+echo html_writer::tag('button', get_string('savechanges'), ['type' => 'submit', 'class' => 'btn btn-primary']);
+echo html_writer::end_tag('form');
 echo html_writer::start_div(implode(' ', $adminclasses), [
     'aria-busy' => 'false',
     'data-easyedu-motion-policy' => 'enabled',

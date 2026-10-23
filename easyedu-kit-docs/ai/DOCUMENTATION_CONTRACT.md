@@ -25,3 +25,9 @@ changelog updates, AI-contract decisions, checks run and skipped, evidence,
 risks, cleanup, rollback notes and the next step. Git remains authoritative;
 Syncthing and future BookStack/design/automation integrations are secondary
 publishing or transport layers only.
+
+
+Native page-heading suppression requires a renderable banner payload and its
+independent site/course setting. Preserve source resolution and header actions;
+never hide the whole page header or couple this policy to banner title layers.
+See docs/native-page-heading.md for native reversal and integration checks.

@@ -79,6 +79,15 @@ if ($hassiteconfig || has_capability('local/course_banner_builder:manage', conte
         1
     ));
 
+    foreach (['site', 'course'] as $scope) {
+        $settings->add(new admin_setting_configcheckbox(
+            'local_course_banner_builder/hidepagetitle_' . $scope,
+            get_string('hidepagetitle_' . $scope, 'local_course_banner_builder'),
+            get_string('hidepagetitle_' . $scope . '_desc', 'local_course_banner_builder'),
+            0
+        ));
+    }
+
     $customfieldoptions = \local_course_banner_builder\manager::get_course_customfield_options();
     if (!empty($customfieldoptions)) {
         $settings->add(new admin_setting_configmultiselect(

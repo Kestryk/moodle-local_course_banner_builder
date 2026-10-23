@@ -1,3 +1,5 @@
+- 2026-10-23 [K23-17] Add independent site/course options to hide Moodle’s native page heading when a CCB banner is displayed, and place that banner before the header. Preserve banner title layers, source resolution, breadcrumbs and header actions; both options default to off.
+
 - 2026-10-18 Codechecker : compléter les docblocks/en-têtes et normaliser les fixtures PHP sans modifier leurs instructions ni leurs données ; gardes de bootstrap laissées à arbitrer.
 
 - 2026-10-18 Codechecker : normalisation mécanique des espaces et appels PHP ; jetons exécutables et rendu conservés, sans publication.

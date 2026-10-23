@@ -1026,3 +1026,7 @@ $string['usedsourceprefix'] = '✓';
 $string['viewconfigured'] = 'Configured banner layers';
 $string['webimages'] = 'Web images';
 $string['yes'] = 'Yes';
+$string['hidepagetitle_site'] = 'Hide the native page title on site banner pages';
+$string['hidepagetitle_site_desc'] = 'When a site banner is displayed, hide Moodle’s page heading and place the banner before the page header. Breadcrumbs and header actions remain available. This does not change the title inside the banner.';
+$string['hidepagetitle_course'] = 'Hide the native page title on course banner pages';
+$string['hidepagetitle_course_desc'] = 'When a course banner is displayed, hide Moodle’s page heading on the course and its activities and place the banner before the page header. Banner source selection and visibility rules still apply. This does not change the title inside the banner.';

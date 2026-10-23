@@ -30,6 +30,39 @@ defined('MOODLE_INTERNAL') || die();
  */
 class hook_callbacks {
     /**
+     * Read the independent native-heading policy for a banner scope.
+     *
+     * @param string $scope Site or course banner scope.
+     * @return bool
+     */
+    protected static function hides_native_page_title(string $scope): bool {
+        return in_array($scope, ['site', 'course'], true) &&
+            (bool)get_config('local_course_banner_builder', 'hidepagetitle_' . $scope);
+    }
+
+    /**
+     * Hide only native heading text, preserving breadcrumbs and header actions.
+     *
+     * Called only after the ordinary source and banner eligibility checks succeed.
+     *
+     * @param array $payload Renderable banner payload.
+     * @return string
+     */
+    protected static function get_native_page_title_policy_html(array $payload): string {
+        if (empty($payload['hidepagetitle'])) {
+            return '';
+        }
+        return \html_writer::tag(
+            'style',
+            '.local-course-banner-builder-hide-native-page-title #page-header .page-header-headings,' .
+            '.local-course-banner-builder-hide-native-page-title #page-header h1 { display: none; }'
+        ) . \html_writer::tag(
+            'script',
+            'document.documentElement.classList.add("local-course-banner-builder-hide-native-page-title");'
+        );
+    }
+
+    /**
      * Whether banner hooks may safely use Moodle configuration tables.
      *
      * @return bool
@@ -130,6 +163,7 @@ class hook_callbacks {
 
         return [
             'courseid' => $courseid,
+            'hidepagetitle' => self::hides_native_page_title('course'),
             'bannerurl' => $bannerurl ? $bannerurl->out(false) : '',
             'overlays' => $overlays,
             'border' => $border,
@@ -1606,6 +1640,7 @@ class hook_callbacks {
             'local-course-banner-builder-native-shell--format-' . $format, [
             'id' => 'local-course-banner-builder-native-shell',
             'data-banner-format' => $format,
+            'data-hide-native-page-title' => !empty($payload['hidepagetitle']) ? '1' : '0',
             'data-replace-moodle-title' => (
                 !empty($payload['replacemoodletitle']) || !empty($payload['replacecoursetitle'])
             ) ? '1' : '0',
@@ -1633,6 +1668,7 @@ class hook_callbacks {
         }
 
         $definition['bannerformat'] = manager::get_site_banner_format();
+        $definition['hidepagetitle'] = self::hides_native_page_title('site');
         // Site identity may add context beyond the current Moodle page h1.
         // It is rendered as a secondary heading and deduplicated against that
         // h1 at mount time when both strings are equivalent.
@@ -1722,6 +1758,7 @@ class hook_callbacks {
             [
                 'id' => 'local-course-banner-builder-site-shell',
                 'data-banner-format' => $format,
+                'data-hide-native-page-title' => !empty($payload['hidepagetitle']) ? '1' : '0',
             ]
         );
     }
@@ -1847,8 +1884,9 @@ class hook_callbacks {
                     document.body.classList.add('local-course-banner-builder-native-course-title-replaced');
                 }
             }
-            const method = isFullWidthTop ? 'beforebegin' : 'afterend';
-            const alreadyPlaced = isFullWidthTop ?
+            const placeBeforeHeader = isFullWidthTop || shell.getAttribute('data-hide-native-page-title') === '1';
+            const method = placeBeforeHeader ? 'beforebegin' : 'afterend';
+            const alreadyPlaced = placeBeforeHeader ?
                 shell.nextElementSibling === pageHeader :
                 shell.previousElementSibling === pageHeader;
             if (!alreadyPlaced) {
@@ -2026,8 +2064,9 @@ JS;
         const isFullWidthTop = format === 'fullwidthtop' || format === 'fullwidthtopcompact' ||
             format === 'fullwidthtopinset';
         if (pageHeader) {
-            const method = isFullWidthTop ? 'beforebegin' : 'afterend';
-            const alreadyPlaced = isFullWidthTop ?
+            const placeBeforeHeader = isFullWidthTop || shell.getAttribute('data-hide-native-page-title') === '1';
+            const method = placeBeforeHeader ? 'beforebegin' : 'afterend';
+            const alreadyPlaced = placeBeforeHeader ?
                 shell.nextElementSibling === pageHeader :
                 shell.previousElementSibling === pageHeader;
             if (!alreadyPlaced) {
@@ -2994,6 +3033,7 @@ JS;
 
         $payload = self::get_native_course_banner_payload($PAGE);
         if ($payload !== null) {
+            $hook->add_html(self::get_native_page_title_policy_html($payload));
             $hook->add_html(\html_writer::tag('style', self::get_course_banner_runtime_css()));
             $hook->add_html(self::render_native_course_banner_html($payload));
             $hook->add_html(\html_writer::tag('script', self::get_native_course_banner_mount_script()));
@@ -3005,6 +3045,7 @@ JS;
             return;
         }
 
+        $hook->add_html(self::get_native_page_title_policy_html($sitepayload));
         $hook->add_html(\html_writer::tag('style', self::get_course_banner_runtime_css()));
         $hook->add_html(self::render_site_banner_html($sitepayload));
         $hook->add_html(\html_writer::tag('script', self::get_site_banner_mount_script()));
