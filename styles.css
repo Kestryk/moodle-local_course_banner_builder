@@ -1590,9 +1590,7 @@ img.local-course-banner-builder-course-card-thumb {
   z-index: 6;
   margin: 0;
   padding: 0.35rem 0.6rem;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: 800;
@@ -1604,6 +1602,14 @@ img.local-course-banner-builder-course-card-thumb {
   text-shadow: 0 0.1rem 0.4rem rgba(0, 0, 0, 0.55);
   font-size: clamp(0.72rem, 1.4vw, 0.95rem);
   pointer-events: none;
+}
+
+.local-course-banner-builder-course-card-title__text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .local-course-banner-builder-course-card-title--left {

@@ -330,7 +330,26 @@ define(['core/config'], function (Config) {
      */
     const getCardTitleText = function (root) {
         const node = root.querySelector(CARD_TITLE_TEXT_TARGETS);
-        const text = node ? node.textContent : '';
+        if (!node) {
+            return '';
+        }
+        // The overview template renders a full accessible name and a second,
+        // shortened visual name. Its multiline title is the unabridged value;
+        // a generic [title] lookup could instead select the favourite icon.
+        const fullName = node.querySelector('.multiline[title]');
+        const fullText = fullName ? fullName.getAttribute('title').trim() : '';
+        if (fullText) {
+            return fullText.replace(/\s+/g, ' ');
+        }
+        // Other native card layouts have a single visual name. Never paint
+        // their screen-reader labels or favourite/icon content on the image.
+        const visualName = node.cloneNode(true);
+        visualName.querySelectorAll(
+            '.visually-hidden, .sr-only, [hidden], [data-region="favourite-icon"], .icon, svg'
+        ).forEach(function (label) {
+            label.remove();
+        });
+        const text = visualName.textContent;
         return text ? text.replace(/\s+/g, ' ').trim() : '';
     };
 
@@ -372,7 +391,10 @@ define(['core/config'], function (Config) {
         title.className = CARD_TITLE_CLASS + ' ' + CARD_TITLE_CLASS + '--' + (options.align || 'center');
         title.setAttribute('aria-hidden', 'true');
         title.setAttribute('style', options.style || '');
-        title.textContent = text;
+        const titleText = document.createElement('span');
+        titleText.className = CARD_TITLE_CLASS + '__text';
+        titleText.textContent = text;
+        title.appendChild(titleText);
         host.appendChild(title);
     };
 

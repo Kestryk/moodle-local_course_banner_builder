@@ -1,5 +1,11 @@
 # EasyEdu documentation contract
 
+Native course-card title tests must retain Moodle's real accessible and visual
+name duplicates plus favourite-icon labels. Prefer the explicit full-name
+attribute, never a generic titled descendant. Keep the visual clamp on a
+padding-free child and verify actual compact screenshots, not only computed
+line-clamp. See docs/testing/course-card-title-2026-10-23.md.
+
 This portable contract applies to every AI agent working on Course Banner
 Builder. The canonical wording is maintained in the EasyEdu platform
 repository under `AI/DOCUMENTATION_CONTRACT.md`.
