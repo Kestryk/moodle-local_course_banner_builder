@@ -89,9 +89,30 @@ final class local_course_banner_builder_hook_callbacks_runtime_css_test extends 
             '    container-type: size;' . "\n" .
             '    min-height: 0;';
         $this->assertStringContainsString($base, $css);
-        $this->assertStringNotContainsString(
-            '.local-course-banner-builder-native-course-banner--format-standard {',
+        $this->assertDoesNotMatchRegularExpression(
+            '/^\\.local-course-banner-builder-native-course-banner--format-standard \\{/m',
             $css
         );
+    }
+
+    /**
+     * Standard mounted banners inherit their content edges without extra insets.
+     */
+    public function test_mounted_standard_banner_uses_the_content_edges(): void {
+        $css = $this->runtime_css();
+        $shell = '.local-course-banner-builder-native-shell--format-standard {';
+        $this->assertMatchesRegularExpression(
+            '/' . preg_quote($shell, '/') . '[^}]*padding-left: 0 !important;' .
+                '[^}]*padding-right: 0 !important;/s',
+            $css
+        );
+        $this->assertStringContainsString(
+            '.local-course-banner-builder-native-shell--mounted > ' .
+                '.local-course-banner-builder-native-course-banner--format-standard {' . "\n" .
+                '    margin-top: 0;' . "\n" . '}',
+            $css
+        );
+        $this->assertStringContainsString('    visibility: hidden;', $css);
+        $this->assertStringContainsString('    visibility: visible;', $css);
     }
 }
