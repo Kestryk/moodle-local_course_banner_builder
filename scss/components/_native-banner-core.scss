@@ -397,6 +397,12 @@
     max-width: 1320px !important;
     margin-right: auto !important;
     margin-left: auto !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+.local-course-banner-builder-native-shell--mounted > .local-course-banner-builder-native-course-banner--format-standard {
+    margin-top: 0;
 }
 
 .local-course-banner-builder-title-preview-toolbar,

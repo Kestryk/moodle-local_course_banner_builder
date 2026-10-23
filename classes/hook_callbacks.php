@@ -397,6 +397,12 @@ class hook_callbacks {
             '    max-width: 1320px !important;',
             '    margin-right: auto !important;',
             '    margin-left: auto !important;',
+            '    padding-left: 0 !important;',
+            '    padding-right: 0 !important;',
+            '}',
+            '.local-course-banner-builder-native-shell--mounted > ' .
+                '.local-course-banner-builder-native-course-banner--format-standard {',
+            '    margin-top: 0;',
             '}',
             'html.local-course-banner-builder-fullwidth-banner-mounted,',
             'body.local-course-banner-builder-fullwidth-banner-mounted {',
@@ -3039,7 +3045,8 @@ JS;
         if ($payload !== null) {
             $hook->add_html(self::get_native_page_title_policy_html($payload));
             $hook->add_html(\html_writer::tag('style', self::get_course_banner_runtime_css()));
-            $hook->add_html(\html_writer::tag('noscript', \html_writer::tag('style',
+            $hook->add_html(\html_writer::tag('noscript', \html_writer::tag(
+                'style',
                 '.local-course-banner-builder-native-shell { visibility: visible; }'
             )));
             $hook->add_html(self::render_native_course_banner_html($payload));
@@ -3054,7 +3061,8 @@ JS;
 
         $hook->add_html(self::get_native_page_title_policy_html($sitepayload));
         $hook->add_html(\html_writer::tag('style', self::get_course_banner_runtime_css()));
-        $hook->add_html(\html_writer::tag('noscript', \html_writer::tag('style',
+        $hook->add_html(\html_writer::tag('noscript', \html_writer::tag(
+            'style',
             '.local-course-banner-builder-native-shell { visibility: visible; }'
         )));
         $hook->add_html(self::render_site_banner_html($sitepayload));

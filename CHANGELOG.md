@@ -1,3 +1,5 @@
+- 2026-10-23 Align standard native banners with their page content: remove inherited shell side padding and the mounted banner's extra top margin. Preserve other banner formats, titles and pre-mount visibility protection.
+
 - 2026-10-23 Fix missing course banner titles on section pages, course settings and course-scoped tools when activity titles are disabled. Keep actual activity pages on their existing title policy.
 
 - 2026-10-23 [K23-17] Add independent site/course options to hide Moodle’s native page heading when a CCB banner is displayed, and place that banner before the header. Preserve banner title layers, source resolution, breadcrumbs and header actions; both options default to off.
