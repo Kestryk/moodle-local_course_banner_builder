@@ -33,6 +33,31 @@ resynchronisation when the expected revision is absent. Source changes,
 disabled layers and deleted sources therefore retract stale generated cards
 through the existing synchronisation path.
 
+## Core cache invalidation
+
+Moodle's own course cards do not read the generated file directly: they go
+through `\core_course\external\course_summary_exporter::get_course_image()`,
+which reads core's `course_image` application cache. That cache has **no
+`invalidationevents`** wired in core (`course/db/caches.php`) and explicitly
+caches a negative/empty result so a card viewed before a banner was configured
+stays blank forever, independently of the plugin's own files and of
+`cache_helper::purge_by_event('changesincourse')`. `sync_course_overview_image()`
+therefore also calls `\cache::make('core', 'course_image')->delete($courseid)`
+on every path that changes (or confirms the absence of) the managed overview
+file. See `docs/testing/course-card-banner-title.md` (K23-32) for the full
+diagnosis.
+
+## Card title
+
+When `bannertitle_course_enabled` is on, `coursecards.js` echoes the course
+banner title on cards it has identified as CCB-managed, reusing the banner
+title's own typography tokens (colour, font family, weight, caps, overlay
+scrim) at a fixed, clamped card scale (`-webkit-line-clamp: 2` + ellipsis).
+The full banner title's absolute position, custom point size, frame and
+shadow settings are not reused — they target the full-size banner canvas and
+do not translate to a card. The title text itself is read from the card's own
+already-rendered title node, not fetched again per course.
+
 ## Validation boundary
 
 `tools/test-ccb-course-card-thumbnail-contract.ps1` guards the PHP hook and

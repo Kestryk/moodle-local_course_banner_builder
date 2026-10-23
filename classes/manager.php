@@ -1190,6 +1190,71 @@ class manager {
     }
 
     /**
+     * Build the shared, compact title-overlay options used to echo the course
+     * banner title on native course-card thumbnails (Dashboard, My courses,
+     * course category listings).
+     *
+     * This intentionally reuses the same admin-configured course banner title
+     * tokens (font family, colour, weight, caps, overlay scrim) instead of
+     * introducing a separate scale: only the absolute position, custom font
+     * size, frame and shadow settings are dropped because they target the
+     * full-size banner canvas and do not translate to a small card surface.
+     * Card-specific sizing, clamping and truncation are handled entirely in
+     * CSS/JS so an overly long title degrades gracefully instead of being
+     * forced to fit.
+     *
+     * @return array
+     */
+    public static function get_course_card_title_options(): array {
+        $prefix = 'bannertitle_course_';
+        if (!(bool)get_config('local_course_banner_builder', $prefix . 'enabled')) {
+            return ['enabled' => false];
+        }
+
+        $fontfamily = (string)get_config('local_course_banner_builder', $prefix . 'fontfamily');
+        if ($fontfamily !== '' && !array_key_exists($fontfamily, self::get_slideshow_font_family_options())) {
+            $fontfamily = '';
+        }
+        $color = (string)get_config('local_course_banner_builder', $prefix . 'color');
+        $color = preg_match('/^#[0-9a-f]{6}$/i', $color) ? $color : '#FFFFFF';
+        $bold = (bool)get_config('local_course_banner_builder', $prefix . 'bold');
+        $italic = (bool)get_config('local_course_banner_builder', $prefix . 'italic');
+        $allcaps = (bool)get_config('local_course_banner_builder', $prefix . 'allcaps');
+        $align = (string)get_config('local_course_banner_builder', $prefix . 'align');
+        $align = in_array($align, ['left', 'center', 'right'], true) ? $align : 'center';
+
+        $style = [
+            'color: ' . $color . ';',
+            'font-family: ' . ($fontfamily !== '' ? \s($fontfamily) : 'inherit') . ';',
+            'font-weight: ' . ($bold ? '800' : '700') . ';',
+            'font-style: ' . ($italic ? 'italic' : 'normal') . ';',
+            'text-transform: ' . ($allcaps ? 'uppercase' : 'none') . ';',
+        ];
+
+        $scrimstyle = '';
+        if ((bool)get_config('local_course_banner_builder', $prefix . 'overlayenabled')) {
+            $scrimcolor = (string)get_config('local_course_banner_builder', $prefix . 'overlaycolor');
+            $scrimcolor = preg_match('/^#[0-9a-f]{6}$/i', $scrimcolor) ? strtolower(ltrim($scrimcolor, '#')) : '000000';
+            $scrimopacity = max(0, min(100, (float)(get_config('local_course_banner_builder', $prefix . 'overlayopacity') ?: 25)));
+            $scrimstyle = 'background: linear-gradient(to top, rgba(' .
+                hexdec(substr($scrimcolor, 0, 2)) . ', ' .
+                hexdec(substr($scrimcolor, 2, 2)) . ', ' .
+                hexdec(substr($scrimcolor, 4, 2)) . ', ' .
+                round(min(1, ($scrimopacity / 100) + 0.35), 3) . ') 0%, rgba(' .
+                hexdec(substr($scrimcolor, 0, 2)) . ', ' .
+                hexdec(substr($scrimcolor, 2, 2)) . ', ' .
+                hexdec(substr($scrimcolor, 4, 2)) . ', 0) 100%);';
+        }
+
+        return [
+            'enabled' => true,
+            'align' => $align,
+            'style' => implode(' ', $style),
+            'scrimstyle' => $scrimstyle,
+        ];
+    }
+
+    /**
      * Normalise one slideshow context key.
      *
      * @param string $context
@@ -7535,6 +7600,7 @@ class manager {
         if ($forcecustomreplacement || !self::course_custom_overview_images_enabled()) {
             self::delete_custom_course_overview_images($context->id);
         } else if (self::course_has_custom_overview_image($context->id)) {
+            self::invalidate_course_image_cache((int)$course->id);
             self::purge_course_caches();
             return;
         }
@@ -7542,6 +7608,7 @@ class manager {
         $records = self::get_enabled_category_elements_for_course($course);
         if (empty($records)) {
             self::purge_course_caches();
+            self::invalidate_course_image_cache((int)$course->id);
             return;
         }
 
@@ -7561,6 +7628,7 @@ class manager {
 
         if (!$sourcefile && !$generatedfilepath) {
             self::purge_course_caches();
+            self::invalidate_course_image_cache((int)$course->id);
             return;
         }
 
@@ -7605,6 +7673,36 @@ class manager {
             ], $squarecardfilepath);
         }
         self::purge_course_caches();
+        self::invalidate_course_image_cache((int)$course->id);
+    }
+
+    /**
+     * Invalidate core's course-card image cache for one course.
+     *
+     * Moodle's course listing cards (Dashboard, My courses, course category
+     * cards) read the managed overview file through core's own
+     * `core/course_image` MUC cache (see `\core_course\cache\course_image`).
+     * That cache has no `changesincourse` invalidation event wired to it, so
+     * writing or deleting the plugin-managed overview file is not enough: the
+     * card surface keeps serving its previously cached (and possibly empty)
+     * value until this cache entry is explicitly cleared.
+     *
+     * @param int $courseid
+     * @return void
+     */
+    protected static function invalidate_course_image_cache(int $courseid): void {
+        if ($courseid <= 0) {
+            return;
+        }
+
+        try {
+            \cache::make('core', 'course_image')->delete($courseid);
+        } catch (\Throwable $e) {
+            debugging(
+                'Course image cache invalidation failed for course ' . $courseid . ': ' . $e->getMessage(),
+                DEBUG_DEVELOPER
+            );
+        }
     }
 
     /**

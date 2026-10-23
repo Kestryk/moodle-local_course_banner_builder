@@ -94,4 +94,26 @@ Assert-Contract (
     $build -match 'local-course-banner-builder-course-card-root'
 ) 'the official AMD build contains the audited course-card lifecycle'
 
+Assert-Contract (
+    $manager -match "cache::make\('core',\s*'course_image'\)->delete\(" -and
+    $manager -match 'protected static function invalidate_course_image_cache\(' -and
+    $manager -match '(?s)sync_course_overview_image\(.+?invalidate_course_image_cache\('
+) "K23-32: syncing the managed overview file also clears core's own course_image cache, which has no changesincourse invalidation event and otherwise keeps serving a stale (often empty) value on cards"
+
+Assert-Contract (
+    $hooks -match "'cardTitle'\s*=>\s*manager::get_course_card_title_options\(\)" -and
+    $manager -match 'public static function get_course_card_title_options\(\): array'
+) 'K23-32: the footer hook exposes the shared card-title options built from the existing banner title tokens'
+
+Assert-Contract (
+    $source -match 'const applyCardTitle = function' -and
+    $source -match 'options\.enabled' -and
+    $scss -match '-webkit-line-clamp:\s*2' -and
+    $css -match '-webkit-line-clamp:\s*2'
+) 'K23-32: the course-card title overlay is only injected when configured, and long titles clamp in CSS rather than being forced to fit'
+
+Assert-Contract (
+    $build -match 'local-course-banner-builder-course-card-title'
+) 'K23-32: the official AMD build contains the card-title overlay logic'
+
 Write-Host 'EED-CCB-2026-0047 course-card thumbnail contract passed.'

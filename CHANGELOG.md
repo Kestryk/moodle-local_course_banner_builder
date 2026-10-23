@@ -1,3 +1,5 @@
+- 2026-10-23 [K23-32] Fix course cards (Dashboard, My courses, course category listings) never showing the generated course banner after a source/layer change: invalidate core's own `course_image` MUC cache, which has no `changesincourse` invalidation event and was serving a stale (often empty) value independently of the plugin's own files/caches. Also echo the configured course banner title on card thumbnails, reusing the existing banner title typography tokens at a card-appropriate, clamped scale instead of forcing long titles to fit.
+
 - 2026-10-23 Align standard native banners with their page content: remove inherited shell side padding and the mounted banner's extra top margin. Preserve other banner formats, titles and pre-mount visibility protection.
 
 - 2026-10-23 Fix missing course banner titles on section pages, course settings and course-scoped tools when activity titles are disabled. Keep actual activity pages on their existing title policy.
