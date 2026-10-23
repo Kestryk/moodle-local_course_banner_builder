@@ -23,7 +23,9 @@ for an eligible payload. The existing banner mount then places that shell before
 `#page-header`, instead of after it in the standard format. Only native heading
 text is hidden; breadcrumbs and header actions are preserved. Neither all of
 `#page-header` nor headers on unrelated pages are hidden. Disabling the option
-and loading the page again restores the original heading and banner placement.
+and loading the page again restores the pre-existing heading and banner policy.
+An older, separately enabled course-title replacement still applies; this option
+does not silently disable that independent setting.
 
 Standard Moodle admin checkboxes are used. The banner administration forms retain
 the existing system capability check, require POST and a valid sesskey, and never
