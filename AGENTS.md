@@ -2,7 +2,9 @@
 
 Thumbnail and full-size banner titles both use unshadowed text. Thumbnail font
 size is the responsive base multiplied by the configured title percentage,
-not the full-banner pixel size. Preserve the padding-free two-line clamp.
+not the full-banner pixel size. Thumbnail density applies one additional 0.88
+factor; configured frame padding in em scales with that font once, not twice.
+Preserve the padding-free two-line clamp and the full-size banner settings.
 
 Native banner shells must not paint in their temporary body-level parent.
 Preserve the shared pre-mount/mounted visibility state and the no-script

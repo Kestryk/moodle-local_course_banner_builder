@@ -870,12 +870,16 @@ img.local-course-banner-builder-course-card-thumb {
     }
 }
 
+// Thumbnail-only density. Configured frame padding uses em and therefore
+// follows this font scale once; full-size banner typography stays unchanged.
+$course-card-title-density: 0.88;
+
 .local-course-banner-builder-course-card-title {
     position: absolute;
     inset: 0;
     z-index: 6;
     margin: 0;
-    padding: 0.35rem 0.6rem;
+    padding: (0.35rem * $course-card-title-density) (0.6rem * $course-card-title-density);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -888,7 +892,7 @@ img.local-course-banner-builder-course-card-thumb {
     word-break: break-word;
     hyphens: auto;
     text-shadow: none;
-    font-size: calc(clamp(0.72rem, 1.4vw, 0.95rem) * var(--local-course-banner-builder-card-title-scale, 1));
+    font-size: calc(clamp(0.72rem, 1.4vw, 0.95rem) * var(--local-course-banner-builder-card-title-scale, 1) * $course-card-title-density);
     pointer-events: none;
 }
 
@@ -934,6 +938,6 @@ img.local-course-banner-builder-course-card-thumb {
 }
 
 .coursebox .local-course-banner-builder-course-card-title {
-    font-size: calc(clamp(0.62rem, 1.1vw, 0.8rem) * var(--local-course-banner-builder-card-title-scale, 1));
-    padding: 0.25rem 0.4rem;
+    font-size: calc(clamp(0.62rem, 1.1vw, 0.8rem) * var(--local-course-banner-builder-card-title-scale, 1) * $course-card-title-density);
+    padding: (0.25rem * $course-card-title-density) (0.4rem * $course-card-title-density);
 }

@@ -1,5 +1,9 @@
 Full-size banner and course-card thumbnail titles carry no text shadow. Thumbnail typography keeps its responsive base size and multiplies it by the configured course-title percentage; retain the padding-free two-line clamp and image-only containing block. Do not turn the percentage into a fixed pixel size.
 
+Thumbnail-only density is 0.88 of that responsive/configured size. Apply it once:
+frame padding already uses em, while the overlay's rem gutter is scaled explicitly.
+Do not reduce the full-size banner or change pill shape/alignment.
+
 Catalogue IMG overlays require an image-only containing block, including before aggregate CSS loads. Never infer thumbnail height from an arbitrary parent. Preserve the background-image Card path and padding-free clamp; verify both contexts separately.
 
 # EasyEdu documentation contract

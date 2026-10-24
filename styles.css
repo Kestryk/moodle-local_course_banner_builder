@@ -1600,7 +1600,7 @@ img.local-course-banner-builder-course-card-thumb {
   inset: 0;
   z-index: 6;
   margin: 0;
-  padding: 0.35rem 0.6rem;
+  padding: 0.308rem 0.528rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1613,7 +1613,7 @@ img.local-course-banner-builder-course-card-thumb {
   word-break: break-word;
   hyphens: auto;
   text-shadow: none;
-  font-size: calc(clamp(0.72rem, 1.4vw, 0.95rem) * var(--local-course-banner-builder-card-title-scale, 1));
+  font-size: calc(clamp(0.72rem, 1.4vw, 0.95rem) * var(--local-course-banner-builder-card-title-scale, 1) * 0.88);
   pointer-events: none;
 }
 
@@ -1651,8 +1651,8 @@ img.local-course-banner-builder-course-card-thumb {
 }
 
 .coursebox .local-course-banner-builder-course-card-title {
-  font-size: calc(clamp(0.62rem, 1.1vw, 0.8rem) * var(--local-course-banner-builder-card-title-scale, 1));
-  padding: 0.25rem 0.4rem;
+  font-size: calc(clamp(0.62rem, 1.1vw, 0.8rem) * var(--local-course-banner-builder-card-title-scale, 1) * 0.88);
+  padding: 0.22rem 0.352rem;
 }
 
 .local-course-banner-builder-title-color-field {
