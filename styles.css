@@ -1619,13 +1619,16 @@ img.local-course-banner-builder-course-card-thumb {
 
 .local-course-banner-builder-course-card-title__frame {
   display: block;
-  width: 100%;
+  flex: 0 1 auto;
+  width: auto;
+  max-width: 100%;
   min-width: 0;
 }
 
 .local-course-banner-builder-course-card-title__text {
   display: -webkit-box;
-  width: 100%;
+  width: auto;
+  max-width: 100%;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   overflow: hidden;
@@ -1633,14 +1636,17 @@ img.local-course-banner-builder-course-card-thumb {
 }
 
 .local-course-banner-builder-course-card-title--left {
+  justify-content: flex-start;
   text-align: left;
 }
 
 .local-course-banner-builder-course-card-title--center {
+  justify-content: center;
   text-align: center;
 }
 
 .local-course-banner-builder-course-card-title--right {
+  justify-content: flex-end;
   text-align: right;
 }
 

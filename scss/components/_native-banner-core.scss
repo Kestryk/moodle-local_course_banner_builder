@@ -895,9 +895,14 @@ img.local-course-banner-builder-course-card-thumb {
 .local-course-banner-builder-course-card-title__frame {
     // Kit highlight/box background behind the title (K23-46): kept as a
     // separate, unpadded-by-default wrapper so the clamped text box below
-    // never carries the padding itself (see its own comment).
+    // never carries the padding itself (see its own comment). Intrinsic width
+    // (K23-54b): the pill hugs the title text like the course-page banner
+    // title instead of stretching across the whole thumbnail; it only grows
+    // up to the thumbnail width, where the two-line clamp takes over.
     display: block;
-    width: 100%;
+    flex: 0 1 auto;
+    width: auto;
+    max-width: 100%;
     min-width: 0;
 }
 
@@ -905,7 +910,8 @@ img.local-course-banner-builder-course-card-thumb {
     // Clamp a padding-free text box: padding on the clamped box can expose
     // the following line's glyphs despite a two-line clamp in Chromium.
     display: -webkit-box;
-    width: 100%;
+    width: auto;
+    max-width: 100%;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     overflow: hidden;
@@ -913,14 +919,17 @@ img.local-course-banner-builder-course-card-thumb {
 }
 
 .local-course-banner-builder-course-card-title--left {
+    justify-content: flex-start;
     text-align: left;
 }
 
 .local-course-banner-builder-course-card-title--center {
+    justify-content: center;
     text-align: center;
 }
 
 .local-course-banner-builder-course-card-title--right {
+    justify-content: flex-end;
     text-align: right;
 }
 

@@ -129,3 +129,16 @@ gradient card image. Verified headless at 1600px: computed `text-shadow` is
 `none` on the full banner title and a configured value (not `none`) on the
 thumbnail title; `tools/test-course-card-title-native-fragment.cjs` asserts
 the thumbnail side.
+
+## Follow-up — pill hugs the title text (K23-54b, 24/10/2026)
+
+The `__frame` wrapper (K23-46 highlight/box background) and the clamped `__text`
+were both `width: 100%`, so the coloured pill stretched across the whole thumbnail.
+Both now use their intrinsic width (`width: auto; max-width: 100%`, shrinkable flex
+item) and the `--left/--center/--right` modifiers also set `justify-content`.
+Harness (1600px, 300px thumbnail, pill frame style), "ENTRETIEN NATURALISATION":
+catalogue pill 287.2px for 194.1px of text before, 209.4px after (text + frame
+padding), centred offset 0px; Dashboard card 280.8px before, 248.7px after.
+Long titles still cap at the thumbnail width with the two-line clamp.
+`tools/test-course-card-catalog-anchor.cjs` now reads the clamp on `__text`
+(it still read `firstElementChild`, the frame, since K23-46).

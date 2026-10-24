@@ -38,7 +38,9 @@ const {chromium} = require(process.env.EASYEDU_PLAYWRIGHT_MODULE || 'playwright'
                         const image = document.querySelector('img').getBoundingClientRect();
                         const title = document.querySelector('.local-course-banner-builder-course-card-title');
                         const bounds = title.getBoundingClientRect();
-                        const text = title.firstElementChild;
+                        // The clamped box is the inner __text node (the K23-46
+                        // __frame wrapper carries the highlight background).
+                        const text = title.querySelector('.local-course-banner-builder-course-card-title__text');
                         return {text: title.textContent, count: document.querySelectorAll('.' + title.classList[0]).length,
                             delta: Math.max(Math.abs(bounds.x - image.x), Math.abs(bounds.y - image.y),
                                 Math.abs(bounds.width - image.width), Math.abs(bounds.height - image.height)),
