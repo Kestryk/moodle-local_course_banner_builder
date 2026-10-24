@@ -15,3 +15,10 @@ No theme/core margins or settings are changed by the product code. Mount and res
 reuse one alignment implementation per existing site/course runtime, with the same
 scheduled follow-up measurements. Tests compare real native banner rectangles to
 the measured content frame; production changes require local before/after proof.
+
+Ordinary formats apply their horizontal correction synchronously after measuring
+width, so repeated resize/mount calls do not leave left:0 waiting for another
+animation frame. Full-width formats retain their existing requestAnimationFrame
+correction and navbar-offset timing. A staging course sample at768px exposed the
+intermediate left reset; it returned to0px after settling, and is retained as a
+separate diagnostic rather than discarded as a final-layout PASS.

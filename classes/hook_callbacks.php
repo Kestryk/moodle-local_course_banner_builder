@@ -1968,13 +1968,18 @@ class hook_callbacks {
             shell.style.setProperty('margin-right', '0px', 'important');
             shell.style.setProperty('padding-left', '0px', 'important');
             shell.style.setProperty('padding-right', '0px', 'important');
-            window.requestAnimationFrame(function () {
+            const alignLeft = function () {
                 const rect = shell.getBoundingClientRect();
                 const delta = targetLeft - rect.left;
                 if (Math.abs(delta) > 0.5) {
                     shell.style.setProperty('left', delta + 'px', 'important');
                 }
-            });
+            };
+            if (isFullWidthTop) {
+                window.requestAnimationFrame(alignLeft);
+            } else {
+                alignLeft();
+            }
         }
         if (!isFullWidthTop || !navbar) {
             return;
@@ -2268,13 +2273,18 @@ JS;
             shell.style.setProperty('margin-right', '0px', 'important');
             shell.style.setProperty('padding-left', '0px', 'important');
             shell.style.setProperty('padding-right', '0px', 'important');
-            window.requestAnimationFrame(function () {
+            const alignLeft = function () {
                 const rect = shell.getBoundingClientRect();
                 const delta = targetLeft - rect.left;
                 if (Math.abs(delta) > 0.5) {
                     shell.style.setProperty('left', delta + 'px', 'important');
                 }
-            });
+            };
+            if (isFullWidthTop) {
+                window.requestAnimationFrame(alignLeft);
+            } else {
+                alignLeft();
+            }
         }
         if (!isFullWidthTop || !navbar) {
             return;
