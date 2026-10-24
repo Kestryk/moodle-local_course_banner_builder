@@ -61,3 +61,16 @@ course page: banner and `#region-main` still match exactly (393–1207,
 and the `fullwidthtopinset` side-inset calculation are otherwise untouched
 except that their base width now comes from the content frame instead of
 the raw scrolling frame.
+
+## Follow-up — visible content edge (K23-54b, 24/10/2026)
+
+`#region-main` is the layout column, but the visible content sits inset inside it
+(padded `[role="main"]` wrapper, `.block.card` gutter on Dashboard/My courses, course
+sections, catalogue tree): 15px per side on every page type. `measureContentEdges()`
+now walks down from `#region-main` through unframed full-width wrappers, stops at the
+first framed box or multi-child level, and aligns the banner to that outer edge. No
+Moodle/theme margin is changed; fallback is the previous `#region-main` box.
+
+Measured on :8054 (1600px and 1280px viewports), banner vs visible content:
+Dashboard, My courses, catalogue, course page: 15px/15px before, 0px/0px after.
+Simulated community layout (no wrapper padding, 22px block-region margin): 0px/0px.

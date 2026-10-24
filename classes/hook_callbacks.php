@@ -1819,6 +1819,94 @@ class hook_callbacks {
         return findScrollFrame(shell);
     };
 
+    // #region-main is the layout column, but the visible content often sits
+    // inset inside it: a padded [role="main"] wrapper, a block region whose
+    // .block.card blocks carry their own gutter (Dashboard, My courses), the
+    // course sections, the catalogue tree... (K23-54 follow-up: 15px offset on
+    // every page type, not only the Dashboard). Measure the real outer edge of
+    // the visible content instead of trusting the column box, without touching
+    // any Moodle/theme margin: walk down through unframed full-width
+    // wrappers and stop at the first framed box (border, background, shadow)
+    // or at a level holding several content children.
+    const measureContentEdges = function (frame, shell) {
+        if (!frame || frame === document.documentElement || !frame.getBoundingClientRect) {
+            return null;
+        }
+        const frameRect = frame.getBoundingClientRect();
+        if (frameRect.width <= 0) {
+            return null;
+        }
+        const isTransparent = function (colour) {
+            return !colour || colour === 'transparent' || /rgba\([^)]*,\s*0\)$/.test(colour);
+        };
+        const hasVisibleFrame = function (style) {
+            return !isTransparent(style.backgroundColor) || style.backgroundImage !== 'none' ||
+                parseFloat(style.borderLeftWidth) > 0 || parseFloat(style.borderRightWidth) > 0 ||
+                (style.boxShadow && style.boxShadow !== 'none');
+        };
+        const contentBox = function (node) {
+            const rect = node.getBoundingClientRect();
+            const style = window.getComputedStyle(node);
+            const left = rect.left + parseFloat(style.borderLeftWidth || 0) + parseFloat(style.paddingLeft || 0);
+            const right = rect.right - parseFloat(style.borderRightWidth || 0) - parseFloat(style.paddingRight || 0);
+            return {left: left, right: right};
+        };
+        const contentChildren = function (node) {
+            return Array.from(node.children).filter(function (child) {
+                if (child === shell || child.contains(shell) ||
+                        (child.id && child.id.indexOf('local-course-banner-builder') === 0)) {
+                    return false;
+                }
+                if (/^(SCRIPT|STYLE|LINK|TEMPLATE|NOSCRIPT)$/.test(child.tagName)) {
+                    return false;
+                }
+                const style = window.getComputedStyle(child);
+                if (style.display === 'none' || style.visibility === 'hidden' ||
+                        style.position === 'absolute' || style.position === 'fixed') {
+                    return false;
+                }
+                const rect = child.getBoundingClientRect();
+                return rect.width > 1 && rect.height > 1;
+            });
+        };
+        const minWidth = frameRect.width * 0.6;
+        let node = frame;
+        let edges = contentBox(frame);
+        for (let depth = 0; depth < 8; depth++) {
+            const box = contentBox(node);
+            const boxWidth = box.right - box.left;
+            const children = contentChildren(node).filter(function (child) {
+                return child.getBoundingClientRect().width >= boxWidth * 0.5;
+            });
+            if (!children.length) {
+                edges = box;
+                break;
+            }
+            let left = Infinity;
+            let right = -Infinity;
+            children.forEach(function (child) {
+                const rect = child.getBoundingClientRect();
+                left = Math.min(left, rect.left);
+                right = Math.max(right, rect.right);
+            });
+            if (right - left < minWidth) {
+                edges = box;
+                break;
+            }
+            edges = {left: left, right: right};
+            const only = children.length === 1 ? children[0] : null;
+            if (!only || hasVisibleFrame(window.getComputedStyle(only))) {
+                break;
+            }
+            node = only;
+        }
+        const width = edges.right - edges.left;
+        if (!(width >= minWidth) || edges.left < frameRect.left - 1 || edges.right > frameRect.right + 1) {
+            return null;
+        }
+        return {left: edges.left, width: width};
+    };
+
     const measureScrollbarWidth = function () {
         const probe = document.createElement('div');
         probe.style.cssText = 'position:absolute;top:-9999px;left:-9999px;width:100px;height:100px;overflow:scroll;visibility:hidden;';
@@ -1845,21 +1933,27 @@ class hook_callbacks {
         void scrollFrame.offsetWidth;
         const frame = findContentFrame(shell);
         void frame.offsetWidth;
-        const frameRect = frame === document.documentElement ?
+        const contentEdges = measureContentEdges(frame, shell);
+        const frameRect = contentEdges ? contentEdges : (frame === document.documentElement ?
             {left: 0, width: (document.documentElement.clientWidth || window.innerWidth || 0)} :
-            frame.getBoundingClientRect();
+            frame.getBoundingClientRect());
         const frameScrollbarWidth = Math.max(0, Math.round((frame.offsetWidth || 0) - (frame.clientWidth || 0)));
         const hasFrameScrollbar = frame.scrollHeight > frame.clientHeight + 1;
-        const overlayScrollbarReserve = hasFrameScrollbar && frameScrollbarWidth === 0 && frame !== document.documentElement ?
+        const overlayScrollbarReserve = !contentEdges && hasFrameScrollbar && frameScrollbarWidth === 0 &&
+            frame !== document.documentElement ?
             measureScrollbarWidth() :
             0;
-        const baseWidth = Math.floor(frame.clientWidth || frameRect.width || document.documentElement.clientWidth || window.innerWidth || 0);
+        const baseWidth = contentEdges ?
+            contentEdges.width :
+            Math.floor(frame.clientWidth || frameRect.width || document.documentElement.clientWidth || window.innerWidth || 0);
         const format = shell.getAttribute('data-banner-format') || 'standard';
         const sideInset = format === 'fullwidthtopinset' ?
             Math.round(Math.min(48, Math.max(24, baseWidth * 0.024))) :
             0;
         const usableWidth = Math.max(0, baseWidth - overlayScrollbarReserve - (sideInset * 2));
-        const targetLeft = Math.round((frameRect.left || 0) + sideInset);
+        const targetLeft = contentEdges ?
+            contentEdges.left + sideInset :
+            Math.round((frameRect.left || 0) + sideInset);
         if (usableWidth > 0) {
             shell.style.setProperty('box-sizing', 'border-box', 'important');
             shell.style.setProperty('position', 'relative', 'important');
@@ -2022,6 +2116,94 @@ JS;
         return findScrollFrame(shell);
     };
 
+    // #region-main is the layout column, but the visible content often sits
+    // inset inside it: a padded [role="main"] wrapper, a block region whose
+    // .block.card blocks carry their own gutter (Dashboard, My courses), the
+    // course sections, the catalogue tree... (K23-54 follow-up: 15px offset on
+    // every page type, not only the Dashboard). Measure the real outer edge of
+    // the visible content instead of trusting the column box, without touching
+    // any Moodle/theme margin: walk down through unframed full-width
+    // wrappers and stop at the first framed box (border, background, shadow)
+    // or at a level holding several content children.
+    const measureContentEdges = function (frame, shell) {
+        if (!frame || frame === document.documentElement || !frame.getBoundingClientRect) {
+            return null;
+        }
+        const frameRect = frame.getBoundingClientRect();
+        if (frameRect.width <= 0) {
+            return null;
+        }
+        const isTransparent = function (colour) {
+            return !colour || colour === 'transparent' || /rgba\([^)]*,\s*0\)$/.test(colour);
+        };
+        const hasVisibleFrame = function (style) {
+            return !isTransparent(style.backgroundColor) || style.backgroundImage !== 'none' ||
+                parseFloat(style.borderLeftWidth) > 0 || parseFloat(style.borderRightWidth) > 0 ||
+                (style.boxShadow && style.boxShadow !== 'none');
+        };
+        const contentBox = function (node) {
+            const rect = node.getBoundingClientRect();
+            const style = window.getComputedStyle(node);
+            const left = rect.left + parseFloat(style.borderLeftWidth || 0) + parseFloat(style.paddingLeft || 0);
+            const right = rect.right - parseFloat(style.borderRightWidth || 0) - parseFloat(style.paddingRight || 0);
+            return {left: left, right: right};
+        };
+        const contentChildren = function (node) {
+            return Array.from(node.children).filter(function (child) {
+                if (child === shell || child.contains(shell) ||
+                        (child.id && child.id.indexOf('local-course-banner-builder') === 0)) {
+                    return false;
+                }
+                if (/^(SCRIPT|STYLE|LINK|TEMPLATE|NOSCRIPT)$/.test(child.tagName)) {
+                    return false;
+                }
+                const style = window.getComputedStyle(child);
+                if (style.display === 'none' || style.visibility === 'hidden' ||
+                        style.position === 'absolute' || style.position === 'fixed') {
+                    return false;
+                }
+                const rect = child.getBoundingClientRect();
+                return rect.width > 1 && rect.height > 1;
+            });
+        };
+        const minWidth = frameRect.width * 0.6;
+        let node = frame;
+        let edges = contentBox(frame);
+        for (let depth = 0; depth < 8; depth++) {
+            const box = contentBox(node);
+            const boxWidth = box.right - box.left;
+            const children = contentChildren(node).filter(function (child) {
+                return child.getBoundingClientRect().width >= boxWidth * 0.5;
+            });
+            if (!children.length) {
+                edges = box;
+                break;
+            }
+            let left = Infinity;
+            let right = -Infinity;
+            children.forEach(function (child) {
+                const rect = child.getBoundingClientRect();
+                left = Math.min(left, rect.left);
+                right = Math.max(right, rect.right);
+            });
+            if (right - left < minWidth) {
+                edges = box;
+                break;
+            }
+            edges = {left: left, right: right};
+            const only = children.length === 1 ? children[0] : null;
+            if (!only || hasVisibleFrame(window.getComputedStyle(only))) {
+                break;
+            }
+            node = only;
+        }
+        const width = edges.right - edges.left;
+        if (!(width >= minWidth) || edges.left < frameRect.left - 1 || edges.right > frameRect.right + 1) {
+            return null;
+        }
+        return {left: edges.left, width: width};
+    };
+
     const measureScrollbarWidth = function () {
         const probe = document.createElement('div');
         probe.style.cssText = 'position:absolute;top:-9999px;left:-9999px;width:100px;height:100px;overflow:scroll;visibility:hidden;';
@@ -2048,21 +2230,27 @@ JS;
         void scrollFrame.offsetWidth;
         const frame = findContentFrame(shell);
         void frame.offsetWidth;
-        const frameRect = frame === document.documentElement ?
+        const contentEdges = measureContentEdges(frame, shell);
+        const frameRect = contentEdges ? contentEdges : (frame === document.documentElement ?
             {left: 0, width: (document.documentElement.clientWidth || window.innerWidth || 0)} :
-            frame.getBoundingClientRect();
+            frame.getBoundingClientRect());
         const frameScrollbarWidth = Math.max(0, Math.round((frame.offsetWidth || 0) - (frame.clientWidth || 0)));
         const hasFrameScrollbar = frame.scrollHeight > frame.clientHeight + 1;
-        const overlayScrollbarReserve = hasFrameScrollbar && frameScrollbarWidth === 0 && frame !== document.documentElement ?
+        const overlayScrollbarReserve = !contentEdges && hasFrameScrollbar && frameScrollbarWidth === 0 &&
+            frame !== document.documentElement ?
             measureScrollbarWidth() :
             0;
-        const baseWidth = Math.floor(frame.clientWidth || frameRect.width || document.documentElement.clientWidth || window.innerWidth || 0);
+        const baseWidth = contentEdges ?
+            contentEdges.width :
+            Math.floor(frame.clientWidth || frameRect.width || document.documentElement.clientWidth || window.innerWidth || 0);
         const format = shell.getAttribute('data-banner-format') || 'standard';
         const sideInset = format === 'fullwidthtopinset' ?
             Math.round(Math.min(48, Math.max(24, baseWidth * 0.024))) :
             0;
         const usableWidth = Math.max(0, baseWidth - overlayScrollbarReserve - (sideInset * 2));
-        const targetLeft = Math.round((frameRect.left || 0) + sideInset);
+        const targetLeft = contentEdges ?
+            contentEdges.left + sideInset :
+            Math.round((frameRect.left || 0) + sideInset);
         if (usableWidth > 0) {
             shell.style.setProperty('box-sizing', 'border-box', 'important');
             shell.style.setProperty('position', 'relative', 'important');
