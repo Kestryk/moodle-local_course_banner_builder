@@ -1,3 +1,5 @@
+- 2026-10-24 Remove shadows from course thumbnail titles too, and respect the configured course-title size percentage on their responsive typography.
+
 - 2026-10-24 [K23-54] Align the full-width banner (course, catalogue, dashboard, course settings) with the native Moodle content column instead of the raw scrolling frame, which could be wider than the actual visible content (docked drawer, theme content-width limit). Fixes misalignment between the banner and the native content below it on every view, not just the course page.
 
 - 2026-10-24 [K23-70] Remove the text shadow from the full-size course banner title only (course page); restore/keep it on course-card thumbnail titles (catalogue, dashboard, My courses) where it preserves legibility over the gradient image.

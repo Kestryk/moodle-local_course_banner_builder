@@ -1196,10 +1196,9 @@ class manager {
      *
      * This intentionally reuses the same admin-configured course banner title
      * tokens (font family, colour, weight, caps, overlay scrim, highlight/box
-     * frame) instead of introducing a separate scale: only the absolute
-     * position, custom font size and shadow settings are dropped because they
-     * target the full-size banner canvas and do not translate to a small card
-     * surface. The frame/highlight background behind the title is kept (K23-46)
+     * frame), including the configured font-size percentage on the responsive
+     * thumbnail base. Absolute banner position and text shadow do not carry
+     * over to the small surface. The frame/highlight background is kept
      * because it is part of the title's own style recipe, not a banner-only
      * placement detail; it is expressed in em units so it scales down with the
      * card's own clamped font size instead of needing a second scale.
@@ -1228,7 +1227,10 @@ class manager {
         $align = in_array($align, ['left', 'center', 'right'], true) ? $align : 'center';
 
         // These allowlisted families go to a JSON/DOM style value, not an HTML attribute.
+        $fontsize = (float)get_config('local_course_banner_builder', $prefix . 'fontsize');
+        $titlescale = max(25, min(480, $fontsize ?: 100)) / 100;
         $style = [
+            '--local-course-banner-builder-card-title-scale: ' . $titlescale . ';',
             'color: ' . $color . ';',
             'font-family: ' . ($fontfamily !== '' ? $fontfamily : 'inherit') . ';',
             'font-weight: ' . ($bold ? '800' : '500') . ';',

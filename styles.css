@@ -1612,8 +1612,8 @@ img.local-course-banner-builder-course-card-thumb {
   white-space: normal;
   word-break: break-word;
   hyphens: auto;
-  text-shadow: 0 0.1rem 0.4rem rgba(0, 0, 0, 0.55);
-  font-size: clamp(0.72rem, 1.4vw, 0.95rem);
+  text-shadow: none;
+  font-size: calc(clamp(0.72rem, 1.4vw, 0.95rem) * var(--local-course-banner-builder-card-title-scale, 1));
   pointer-events: none;
 }
 
@@ -1645,7 +1645,7 @@ img.local-course-banner-builder-course-card-thumb {
 }
 
 .coursebox .local-course-banner-builder-course-card-title {
-  font-size: clamp(0.62rem, 1.1vw, 0.8rem);
+  font-size: calc(clamp(0.62rem, 1.1vw, 0.8rem) * var(--local-course-banner-builder-card-title-scale, 1));
   padding: 0.25rem 0.4rem;
 }
 

@@ -1,5 +1,9 @@
 # EasyEdu agent contract
 
+Thumbnail and full-size banner titles both use unshadowed text. Thumbnail font
+size is the responsive base multiplied by the configured title percentage,
+not the full-banner pixel size. Preserve the padding-free two-line clamp.
+
 Native banner shells must not paint in their temporary body-level parent.
 Preserve the shared pre-mount/mounted visibility state and the no-script
 fallback when changing hook output or mount timing. Sample first-paint geometry,

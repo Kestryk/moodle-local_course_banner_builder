@@ -1,4 +1,4 @@
-Full-size course banner titles (course page) carry no text shadow; course-card thumbnail titles (catalogue, dashboard, My courses) keep their text shadow for legibility over the gradient image. These are two distinct selectors (`.local-course-banner-builder-banner-title-overlay` vs `.local-course-banner-builder-course-card-title`) — never merge their shadow treatment.
+Full-size banner and course-card thumbnail titles carry no text shadow. Thumbnail typography keeps its responsive base size and multiplies it by the configured course-title percentage; retain the padding-free two-line clamp and image-only containing block. Do not turn the percentage into a fixed pixel size.
 
 Catalogue IMG overlays require an image-only containing block, including before aggregate CSS loads. Never infer thumbnail height from an arbitrary parent. Preserve the background-image Card path and padding-free clamp; verify both contexts separately.
 
