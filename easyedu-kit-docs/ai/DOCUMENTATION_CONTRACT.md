@@ -1,3 +1,5 @@
+Banner content-edge measurement applies to every format. Keep full-width-only page flags and navbar offsets out of standard/contentwide. Preserve the existing inset variant, title ownership and pre-mount visibility. See docs/testing/banner-all-formats-alignment-2026-10-24.md.
+
 Full-size banner and course-card thumbnail titles carry no text shadow. Thumbnail typography keeps its responsive base size and multiplies it by the configured course-title percentage; retain the padding-free two-line clamp and image-only containing block. Do not turn the percentage into a fixed pixel size.
 
 Catalogue IMG overlays require an image-only containing block, including before aggregate CSS loads. Never infer thumbnail height from an arbitrary parent. Preserve the background-image Card path and padding-free clamp; verify both contexts separately.

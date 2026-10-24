@@ -1158,14 +1158,12 @@ class hook_callbacks {
             'style' => $wrapperstyle,
         ]);
 
-        foreach (
-            [
+        foreach ([
             'top' => 'local-course-banner-builder-fixed-border-side local-course-banner-builder-fixed-border-side-top',
             'right' => 'local-course-banner-builder-fixed-border-side local-course-banner-builder-fixed-border-side-right',
             'bottom' => 'local-course-banner-builder-fixed-border-side local-course-banner-builder-fixed-border-side-bottom',
             'left' => 'local-course-banner-builder-fixed-border-side local-course-banner-builder-fixed-border-side-left',
-            ] as $side => $class
-        ) {
+        ] as $side => $class) {
             $out .= \html_writer::div('', $class, [
                 'aria-hidden' => 'true',
                 'style' => (string)(($border['sidestyles'][$side] ?? '')),
@@ -1916,21 +1914,27 @@ class hook_callbacks {
         return width;
     };
 
-    const alignFullWidthBanner = function (shell) {
+    const alignBannerToContent = function (shell) {
         const navbar = document.querySelector('.navbar.fixed-top, nav.fixed-top, header.navbar, .primary-navigation');
         if (!shell) {
             return;
         }
-        document.documentElement.classList.add('local-course-banner-builder-fullwidth-banner-mounted');
-        if (document.body) {
-            document.body.classList.add('local-course-banner-builder-fullwidth-banner-mounted');
+        const format = shell.getAttribute('data-banner-format') || 'standard';
+        const isFullWidthTop = format === 'fullwidthtop' || format === 'fullwidthtopcompact' ||
+            format === 'fullwidthtopinset';
+        // Every format shares content edges; only full-width formats own page/nav offsets.
+        if (isFullWidthTop) {
+            document.documentElement.classList.add('local-course-banner-builder-fullwidth-banner-mounted');
+            if (document.body) {
+                document.body.classList.add('local-course-banner-builder-fullwidth-banner-mounted');
+            }
+            void document.documentElement.offsetWidth;
+            const scrollFrame = findScrollFrame(shell);
+            if (scrollFrame && scrollFrame.classList) {
+                scrollFrame.classList.add('local-course-banner-builder-fullwidth-scroll-frame');
+            }
+            void scrollFrame.offsetWidth;
         }
-        void document.documentElement.offsetWidth;
-        const scrollFrame = findScrollFrame(shell);
-        if (scrollFrame && scrollFrame.classList) {
-            scrollFrame.classList.add('local-course-banner-builder-fullwidth-scroll-frame');
-        }
-        void scrollFrame.offsetWidth;
         const frame = findContentFrame(shell);
         void frame.offsetWidth;
         const contentEdges = measureContentEdges(frame, shell);
@@ -1946,7 +1950,6 @@ class hook_callbacks {
         const baseWidth = contentEdges ?
             contentEdges.width :
             Math.floor(frame.clientWidth || frameRect.width || document.documentElement.clientWidth || window.innerWidth || 0);
-        const format = shell.getAttribute('data-banner-format') || 'standard';
         const sideInset = format === 'fullwidthtopinset' ?
             Math.round(Math.min(48, Math.max(24, baseWidth * 0.024))) :
             0;
@@ -1973,7 +1976,7 @@ class hook_callbacks {
                 }
             });
         }
-        if (!navbar) {
+        if (!isFullWidthTop || !navbar) {
             return;
         }
         shell.style.setProperty('--local-course-banner-builder-fullwidth-nav-offset', '0px');
@@ -2043,14 +2046,12 @@ class hook_callbacks {
                 }
             }
             shell.classList.add('local-course-banner-builder-native-shell--mounted');
-            if (isFullWidthTop) {
-                alignFullWidthBanner(shell);
-                [80, 320, 900, 1800].forEach(function (delay) {
-                    window.setTimeout(function () {
-                        alignFullWidthBanner(shell);
-                    }, delay);
-                });
-            }
+            alignBannerToContent(shell);
+            [80, 320, 900, 1800].forEach(function (delay) {
+                window.setTimeout(function () {
+                    alignBannerToContent(shell);
+                }, delay);
+            });
         } else if (semanticTitle) {
             semanticTitle.remove();
         }
@@ -2213,21 +2214,27 @@ JS;
         return width;
     };
 
-    const alignFullWidthBanner = function (shell) {
+    const alignBannerToContent = function (shell) {
         const navbar = document.querySelector('.navbar.fixed-top, nav.fixed-top, header.navbar, .primary-navigation');
         if (!shell) {
             return;
         }
-        document.documentElement.classList.add('local-course-banner-builder-fullwidth-banner-mounted');
-        if (document.body) {
-            document.body.classList.add('local-course-banner-builder-fullwidth-banner-mounted');
+        const format = shell.getAttribute('data-banner-format') || 'standard';
+        const isFullWidthTop = format === 'fullwidthtop' || format === 'fullwidthtopcompact' ||
+            format === 'fullwidthtopinset';
+        // Every format shares content edges; only full-width formats own page/nav offsets.
+        if (isFullWidthTop) {
+            document.documentElement.classList.add('local-course-banner-builder-fullwidth-banner-mounted');
+            if (document.body) {
+                document.body.classList.add('local-course-banner-builder-fullwidth-banner-mounted');
+            }
+            void document.documentElement.offsetWidth;
+            const scrollFrame = findScrollFrame(shell);
+            if (scrollFrame && scrollFrame.classList) {
+                scrollFrame.classList.add('local-course-banner-builder-fullwidth-scroll-frame');
+            }
+            void scrollFrame.offsetWidth;
         }
-        void document.documentElement.offsetWidth;
-        const scrollFrame = findScrollFrame(shell);
-        if (scrollFrame && scrollFrame.classList) {
-            scrollFrame.classList.add('local-course-banner-builder-fullwidth-scroll-frame');
-        }
-        void scrollFrame.offsetWidth;
         const frame = findContentFrame(shell);
         void frame.offsetWidth;
         const contentEdges = measureContentEdges(frame, shell);
@@ -2243,7 +2250,6 @@ JS;
         const baseWidth = contentEdges ?
             contentEdges.width :
             Math.floor(frame.clientWidth || frameRect.width || document.documentElement.clientWidth || window.innerWidth || 0);
-        const format = shell.getAttribute('data-banner-format') || 'standard';
         const sideInset = format === 'fullwidthtopinset' ?
             Math.round(Math.min(48, Math.max(24, baseWidth * 0.024))) :
             0;
@@ -2270,7 +2276,7 @@ JS;
                 }
             });
         }
-        if (!navbar) {
+        if (!isFullWidthTop || !navbar) {
             return;
         }
         shell.style.setProperty('--local-course-banner-builder-fullwidth-nav-offset', '0px');
@@ -2318,14 +2324,12 @@ JS;
             }
             reconcileSecondaryBannerTitle(shell, pageHeader);
             shell.classList.add('local-course-banner-builder-native-shell--mounted');
-            if (isFullWidthTop) {
-                alignFullWidthBanner(shell);
-                [80, 320, 900, 1800].forEach(function (delay) {
-                    window.setTimeout(function () {
-                        alignFullWidthBanner(shell);
-                    }, delay);
-                });
-            }
+            alignBannerToContent(shell);
+            [80, 320, 900, 1800].forEach(function (delay) {
+                window.setTimeout(function () {
+                    alignBannerToContent(shell);
+                }, delay);
+            });
             return;
         }
 
@@ -2333,6 +2337,9 @@ JS;
         if (regionMain && shell.nextElementSibling !== regionMain) {
             regionMain.insertAdjacentElement('beforebegin', shell);
             shell.classList.add('local-course-banner-builder-native-shell--mounted');
+        }
+        if (regionMain) {
+            alignBannerToContent(shell);
         }
     };
 
