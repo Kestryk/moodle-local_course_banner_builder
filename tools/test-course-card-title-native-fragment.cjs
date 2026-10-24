@@ -69,8 +69,8 @@ const css = fs.readFileSync(path.join(root, 'styles.css'), 'utf8');
                     assert.equal(result.family, '"Trebuchet MS", Helvetica, sans-serif');
                     assert.equal(result.weight, '500');
                     assert.equal(result.color, 'rgb(18, 52, 86)');
-                    assert.notEqual(result.shadow, 'none',
-                        'K23-70: thumbnail/card title keeps its shadow for legibility (full-size banner is the only one without it)');
+                    assert.equal(result.shadow, 'none',
+                        'K23-88: thumbnail/card title no longer has a shadow (only the full-size banner keeps its reserved option)');
                 }
                 assert.deepEqual(errors, []);
                 checks++;
