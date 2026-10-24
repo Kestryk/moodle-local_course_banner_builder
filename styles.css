@@ -1583,6 +1583,18 @@ img.local-course-banner-builder-course-card-thumb {
   pointer-events: none;
 }
 
+.local-course-banner-builder-course-card-image-host {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  vertical-align: top;
+  line-height: 0;
+}
+.local-course-banner-builder-course-card-image-host > img {
+  display: block;
+}
+
 .local-course-banner-builder-course-card-title {
   position: absolute;
   inset: 0;

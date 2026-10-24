@@ -1,3 +1,5 @@
+Catalogue IMG overlays require an image-only containing block, including before aggregate CSS loads. Never infer thumbnail height from an arbitrary parent. Preserve the background-image Card path and padding-free clamp; verify both contexts separately.
+
 # EasyEdu documentation contract
 
 Native course-card title tests must retain Moodle's real accessible and visual

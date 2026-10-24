@@ -855,6 +855,21 @@ img.local-course-banner-builder-course-card-thumb {
     pointer-events: none;
 }
 
+// An IMG's inline parent is not necessarily its thumbnail surface (catalogue).
+// Keep native image sizing, link semantics and lazy loading; own only the anchor.
+.local-course-banner-builder-course-card-image-host {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    vertical-align: top;
+    line-height: 0;
+
+    > img {
+        display: block;
+    }
+}
+
 .local-course-banner-builder-course-card-title {
     position: absolute;
     inset: 0;

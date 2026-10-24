@@ -311,8 +311,22 @@ define(['core/config'], function (Config) {
             if (!parent) {
                 return null;
             }
-            parent.style.cssText += ';position:relative;overflow:hidden';
-            return parent;
+            // In the catalogue the parent may also contain course details,
+            // or an inline link whose box does not match the painted image.
+            // Anchor the overlay to an image-only formatting box instead.
+            const hostClass = 'local-course-banner-builder-course-card-image-host';
+            if (parent.classList.contains(hostClass)) {
+                return parent;
+            }
+            const host = document.createElement('span');
+            host.className = hostClass;
+            // The AMD enhancer can run before Moodle's aggregate stylesheet:
+            // establish the containing block before the title can paint.
+            host.style.cssText = 'position:relative;display:inline-block;overflow:hidden;' +
+                'max-width:100%;vertical-align:top;line-height:0';
+            parent.insertBefore(host, target);
+            host.appendChild(target);
+            return host;
         }
         if (!target.style.position) {
             target.style.position = 'relative';
