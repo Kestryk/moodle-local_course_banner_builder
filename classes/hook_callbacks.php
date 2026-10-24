@@ -1798,6 +1798,27 @@ class hook_callbacks {
         return document.documentElement;
     };
 
+    // The scroll frame above is only the page-level overflow-x guard target:
+    // it is often wider than the actual visible content column (a docked
+    // drawer taking flex space, or the theme's "limit content width"
+    // setting), so it must not be used as the width reference for alignment
+    // (K23-54 regression: the full-width banner used it and bled past the
+    // real content edges on every view, not just the catalogue/dashboard).
+    // #region-main is already correctly laid out by Moodle/the theme on
+    // every page type (course, catalogue, dashboard, settings), so align the
+    // banner to it instead of the raw scrolling frame.
+    const findContentFrame = function (shell) {
+        const regionMain = document.getElementById('region-main');
+        if (regionMain) {
+            return regionMain;
+        }
+        const mainInner = (shell.closest && shell.closest('.main-inner')) || document.querySelector('.main-inner');
+        if (mainInner) {
+            return mainInner;
+        }
+        return findScrollFrame(shell);
+    };
+
     const measureScrollbarWidth = function () {
         const probe = document.createElement('div');
         probe.style.cssText = 'position:absolute;top:-9999px;left:-9999px;width:100px;height:100px;overflow:scroll;visibility:hidden;';
@@ -1817,10 +1838,12 @@ class hook_callbacks {
             document.body.classList.add('local-course-banner-builder-fullwidth-banner-mounted');
         }
         void document.documentElement.offsetWidth;
-        const frame = findScrollFrame(shell);
-        if (frame && frame.classList) {
-            frame.classList.add('local-course-banner-builder-fullwidth-scroll-frame');
+        const scrollFrame = findScrollFrame(shell);
+        if (scrollFrame && scrollFrame.classList) {
+            scrollFrame.classList.add('local-course-banner-builder-fullwidth-scroll-frame');
         }
+        void scrollFrame.offsetWidth;
+        const frame = findContentFrame(shell);
         void frame.offsetWidth;
         const frameRect = frame === document.documentElement ?
             {left: 0, width: (document.documentElement.clientWidth || window.innerWidth || 0)} :
@@ -1978,6 +2001,27 @@ JS;
         return document.documentElement;
     };
 
+    // The scroll frame above is only the page-level overflow-x guard target:
+    // it is often wider than the actual visible content column (a docked
+    // drawer taking flex space, or the theme's "limit content width"
+    // setting), so it must not be used as the width reference for alignment
+    // (K23-54 regression: the full-width banner used it and bled past the
+    // real content edges on every view, not just the catalogue/dashboard).
+    // #region-main is already correctly laid out by Moodle/the theme on
+    // every page type (course, catalogue, dashboard, settings), so align the
+    // banner to it instead of the raw scrolling frame.
+    const findContentFrame = function (shell) {
+        const regionMain = document.getElementById('region-main');
+        if (regionMain) {
+            return regionMain;
+        }
+        const mainInner = (shell.closest && shell.closest('.main-inner')) || document.querySelector('.main-inner');
+        if (mainInner) {
+            return mainInner;
+        }
+        return findScrollFrame(shell);
+    };
+
     const measureScrollbarWidth = function () {
         const probe = document.createElement('div');
         probe.style.cssText = 'position:absolute;top:-9999px;left:-9999px;width:100px;height:100px;overflow:scroll;visibility:hidden;';
@@ -1997,10 +2041,12 @@ JS;
             document.body.classList.add('local-course-banner-builder-fullwidth-banner-mounted');
         }
         void document.documentElement.offsetWidth;
-        const frame = findScrollFrame(shell);
-        if (frame && frame.classList) {
-            frame.classList.add('local-course-banner-builder-fullwidth-scroll-frame');
+        const scrollFrame = findScrollFrame(shell);
+        if (scrollFrame && scrollFrame.classList) {
+            scrollFrame.classList.add('local-course-banner-builder-fullwidth-scroll-frame');
         }
+        void scrollFrame.offsetWidth;
+        const frame = findContentFrame(shell);
         void frame.offsetWidth;
         const frameRect = frame === document.documentElement ?
             {left: 0, width: (document.documentElement.clientWidth || window.innerWidth || 0)} :
