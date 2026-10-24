@@ -821,7 +821,7 @@
   white-space: pre-wrap;
   overflow-wrap: normal;
   word-break: normal;
-  text-shadow: 0 0.15rem 0.7rem rgba(0, 0, 0, 0.45);
+  text-shadow: none;
   pointer-events: none;
 }
 

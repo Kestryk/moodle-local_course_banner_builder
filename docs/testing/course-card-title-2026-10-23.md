@@ -117,3 +117,15 @@ The runtime CCB files, touched settings and preferences are restored after the
 test, and both temporary courses are deleted. No remote deployment is included.
 Detailed evidence is outside Git in the review report
 `RAPPORT-K23-44-K23-32BIS-20261024.md`.
+
+## Thumbnail shadow policy (K23-70, 24/10/2026)
+
+The text shadow is removed from the full-size course banner title only
+(`.local-course-banner-builder-banner-title-overlay`, course page), where it
+was unconfigured and unwanted. Course-card thumbnail titles
+(`.local-course-banner-builder-course-card-title`, catalogue/dashboard/My
+courses) keep their shadow — it preserves legibility of the title over the
+gradient card image. Verified headless at 1600px: computed `text-shadow` is
+`none` on the full banner title and a configured value (not `none`) on the
+thumbnail title; `tools/test-course-card-title-native-fragment.cjs` asserts
+the thumbnail side.

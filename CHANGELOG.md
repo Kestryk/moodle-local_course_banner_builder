@@ -1,3 +1,5 @@
+- 2026-10-24 [K23-70] Remove the text shadow from the full-size course banner title only (course page); restore/keep it on course-card thumbnail titles (catalogue, dashboard, My courses) where it preserves legibility over the gradient image.
+
 - 2026-10-24 Anchor catalogue thumbnail titles to the image itself, keeping them over the picture even when its parent is taller. Preserve dashboard Cards and the two-line title clamp.
 
 - 2026-10-24 Center course-card titles inside their thumbnails and preserve configured font families, colours, weights and capitalization. Keep long titles limited to two lines and retain the existing banner images.
