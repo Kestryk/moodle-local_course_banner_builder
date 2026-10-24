@@ -6,6 +6,12 @@ attribute, never a generic titled descendant. Keep the visual clamp on a
 padding-free child and verify actual compact screenshots, not only computed
 line-clamp. See docs/testing/course-card-title-2026-10-23.md.
 
+Course-card title typography is transported as CSS through JSON/DOM, not as
+pre-escaped HTML. Preserve the strict font-family allowlist and let html_writer
+escape native-banner attributes once. Check quoted font families and both
+configured weights against the full banner, with text-box centering measured
+inside the actual thumbnail. Keep the existing image and title-clamp contracts.
+
 This portable contract applies to every AI agent working on Course Banner
 Builder. The canonical wording is maintained in the EasyEdu platform
 repository under `AI/DOCUMENTATION_CONTRACT.md`.

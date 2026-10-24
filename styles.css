@@ -1585,12 +1585,13 @@ img.local-course-banner-builder-course-card-thumb {
 
 .local-course-banner-builder-course-card-title {
   position: absolute;
-  inset-inline: 0;
-  bottom: 0;
+  inset: 0;
   z-index: 6;
   margin: 0;
   padding: 0.35rem 0.6rem;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: 800;
@@ -1606,6 +1607,7 @@ img.local-course-banner-builder-course-card-thumb {
 
 .local-course-banner-builder-course-card-title__text {
   display: -webkit-box;
+  width: 100%;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   overflow: hidden;

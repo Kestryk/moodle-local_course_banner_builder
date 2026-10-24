@@ -1,3 +1,5 @@
+- 2026-10-24 Center course-card titles inside their thumbnails and preserve configured font families, colours, weights and capitalization. Keep long titles limited to two lines and retain the existing banner images.
+
 - 2026-10-23 Extract one complete course name for card banner titles without painting native screen-reader labels, favourite text or duplicate names. Clamp a padding-free child so compact thumbnails cannot show a fragment of a third line.
 
 - 2026-10-23 [K23-32] Fix course cards (Dashboard, My courses, course category listings) never showing the generated course banner after a source/layer change: invalidate core's own `course_image` MUC cache, which has no `changesincourse` invalidation event and was serving a stale (often empty) value independently of the plugin's own files/caches. Also echo the configured course banner title on card thumbnails, reusing the existing banner title typography tokens at a card-appropriate, clamped scale instead of forcing long titles to fit.

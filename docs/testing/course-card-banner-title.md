@@ -46,8 +46,8 @@ courses the current viewer may not even be enrolled in on a category listing).
 The full banner title system supports absolute `x`/`y` positioning, custom
 point sizes up to 480px, frames and shadows tuned for a 1200×… canvas; none of
 that is reused as-is for a ~360×180 card. Only the typography tokens (colour,
-font-family, weight, caps, overlay scrim) are reused; layout is a fixed bottom
-strip with `-webkit-line-clamp: 2` + ellipsis, so an overly long title is
+font-family, weight, caps, overlay scrim) are reused; layout is a centered
+overlay with `-webkit-line-clamp: 2` + ellipsis (K23-32 bis), so an overly long title is
 truncated cleanly instead of being forced to fit or overflowing the card.
 
 ## Validation

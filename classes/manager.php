@@ -1223,10 +1223,11 @@ class manager {
         $align = (string)get_config('local_course_banner_builder', $prefix . 'align');
         $align = in_array($align, ['left', 'center', 'right'], true) ? $align : 'center';
 
+        // These allowlisted families go to a JSON/DOM style value, not an HTML attribute.
         $style = [
             'color: ' . $color . ';',
-            'font-family: ' . ($fontfamily !== '' ? \s($fontfamily) : 'inherit') . ';',
-            'font-weight: ' . ($bold ? '800' : '700') . ';',
+            'font-family: ' . ($fontfamily !== '' ? $fontfamily : 'inherit') . ';',
+            'font-weight: ' . ($bold ? '800' : '500') . ';',
             'font-style: ' . ($italic ? 'italic' : 'normal') . ';',
             'text-transform: ' . ($allcaps ? 'uppercase' : 'none') . ';',
         ];

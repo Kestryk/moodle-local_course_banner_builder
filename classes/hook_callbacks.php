@@ -1370,7 +1370,7 @@ class hook_callbacks {
                 'min-width: 0;',
                 'color: ' . $color . ';',
                 'font-size: ' . self::banner_title_base_font_size_css() . ';',
-                'font-family: ' . ($fontfamily !== '' ? s($fontfamily) : 'inherit') . ';',
+                'font-family: ' . ($fontfamily !== '' ? $fontfamily : 'inherit') . ';',
                 'font-weight: ' . ($bold ? '800' : '500') . ';',
                 'font-style: ' . ($italic ? 'italic' : 'normal') . ';',
                 'text-decoration: ' . (implode(' ', array_filter([
