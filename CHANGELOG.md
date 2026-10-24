@@ -1,3 +1,5 @@
+- 2026-10-24 Remove the unconfigured text shadow from course-card titles. Preserve their configured frame, typography and two-line clamp.
+
 - 2026-10-24 Anchor catalogue thumbnail titles to the image itself, keeping them over the picture even when its parent is taller. Preserve dashboard Cards and the two-line title clamp.
 
 - 2026-10-24 Center course-card titles inside their thumbnails and preserve configured font families, colours, weights and capitalization. Keep long titles limited to two lines and retain the existing banner images.

@@ -1612,7 +1612,7 @@ img.local-course-banner-builder-course-card-thumb {
   white-space: normal;
   word-break: break-word;
   hyphens: auto;
-  text-shadow: 0 0.1rem 0.4rem rgba(0, 0, 0, 0.55);
+  text-shadow: none;
   font-size: clamp(0.72rem, 1.4vw, 0.95rem);
   pointer-events: none;
 }

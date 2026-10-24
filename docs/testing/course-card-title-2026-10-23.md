@@ -117,3 +117,10 @@ The runtime CCB files, touched settings and preferences are restored after the
 test, and both temporary courses are deleted. No remote deployment is included.
 Detailed evidence is outside Git in the review report
 `RAPPORT-K23-44-K23-32BIS-20261024.md`.
+
+## Thumbnail shadow policy
+
+Course-card titles have no implicit text shadow. Their typography and frame
+come from the existing course-card options; full-size banner shadow settings
+remain independent. Verify the computed shadow of the title, frame and clamped
+text is none, with the same typography and bounds before/after at 1600/768/390.

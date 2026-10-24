@@ -1,3 +1,5 @@
+Course-card titles must not add an unconfigured text shadow. Keep their configured frame, typography, image and clamp; full-size banner shadow settings remain independent.
+
 Catalogue IMG overlays require an image-only containing block, including before aggregate CSS loads. Never infer thumbnail height from an arbitrary parent. Preserve the background-image Card path and padding-free clamp; verify both contexts separately.
 
 # EasyEdu documentation contract

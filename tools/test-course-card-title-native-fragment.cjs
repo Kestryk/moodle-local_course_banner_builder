@@ -47,7 +47,7 @@ const css = fs.readFileSync(path.join(root, 'styles.css'), 'utf8');
                     const text = title?.querySelector('.local-course-banner-builder-course-card-title__text');
                     const style = text && getComputedStyle(text);
                     return {count: document.querySelectorAll('.local-course-banner-builder-course-card-title').length,
-                        text: title?.textContent, clamp: style?.webkitLineClamp, padding: style?.padding,
+                        text: title?.textContent, clamp: style?.webkitLineClamp, padding: style?.padding, shadow: style?.textShadow,
                         height: text?.getBoundingClientRect().height, lineHeight: parseFloat(style?.lineHeight),
                         centerDelta: text ? (() => {
                             const a = text.getBoundingClientRect();
@@ -69,6 +69,7 @@ const css = fs.readFileSync(path.join(root, 'styles.css'), 'utf8');
                     assert.equal(result.family, '"Trebuchet MS", Helvetica, sans-serif');
                     assert.equal(result.weight, '500');
                     assert.equal(result.color, 'rgb(18, 52, 86)');
+                    assert.equal(result.shadow, 'none', 'No unconfigured thumbnail title shadow');
                 }
                 assert.deepEqual(errors, []);
                 checks++;
