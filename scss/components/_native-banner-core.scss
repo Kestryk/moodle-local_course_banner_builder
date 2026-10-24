@@ -892,6 +892,15 @@ img.local-course-banner-builder-course-card-thumb {
     pointer-events: none;
 }
 
+.local-course-banner-builder-course-card-title__frame {
+    // Kit highlight/box background behind the title (K23-46): kept as a
+    // separate, unpadded-by-default wrapper so the clamped text box below
+    // never carries the padding itself (see its own comment).
+    display: block;
+    width: 100%;
+    min-width: 0;
+}
+
 .local-course-banner-builder-course-card-title__text {
     // Clamp a padding-free text box: padding on the clamped box can expose
     // the following line's glyphs despite a two-line clamp in Chromium.

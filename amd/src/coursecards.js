@@ -408,7 +408,19 @@ define(['core/config'], function (Config) {
         const titleText = document.createElement('span');
         titleText.className = CARD_TITLE_CLASS + '__text';
         titleText.textContent = text;
-        title.appendChild(titleText);
+
+        // Wrap the text in its own frame so the Kit's highlight/box background
+        // (K23-46) hugs the title instead of covering the whole thumbnail; the
+        // two-line clamp stays on the inner text node so padding on the frame
+        // cannot expose the next line's glyphs (see the SCSS note above).
+        const frame = document.createElement('span');
+        frame.className = CARD_TITLE_CLASS + '__frame';
+        if (options.framestyle) {
+            frame.setAttribute('style', options.framestyle);
+        }
+        frame.appendChild(titleText);
+
+        title.appendChild(frame);
         host.appendChild(title);
     };
 

@@ -1195,10 +1195,14 @@ class manager {
      * course category listings).
      *
      * This intentionally reuses the same admin-configured course banner title
-     * tokens (font family, colour, weight, caps, overlay scrim) instead of
-     * introducing a separate scale: only the absolute position, custom font
-     * size, frame and shadow settings are dropped because they target the
-     * full-size banner canvas and do not translate to a small card surface.
+     * tokens (font family, colour, weight, caps, overlay scrim, highlight/box
+     * frame) instead of introducing a separate scale: only the absolute
+     * position, custom font size and shadow settings are dropped because they
+     * target the full-size banner canvas and do not translate to a small card
+     * surface. The frame/highlight background behind the title is kept (K23-46)
+     * because it is part of the title's own style recipe, not a banner-only
+     * placement detail; it is expressed in em units so it scales down with the
+     * card's own clamped font size instead of needing a second scale.
      * Card-specific sizing, clamping and truncation are handled entirely in
      * CSS/JS so an overly long title degrades gracefully instead of being
      * forced to fit.
@@ -1247,11 +1251,38 @@ class manager {
                 hexdec(substr($scrimcolor, 4, 2)) . ', 0) 100%);';
         }
 
+        $framestyle = '';
+        if ((bool)get_config('local_course_banner_builder', $prefix . 'frameenabled')) {
+            $framecolor = (string)get_config('local_course_banner_builder', $prefix . 'framecolor');
+            $framecolor = preg_match('/^#[0-9a-f]{6}$/i', $framecolor) ? $framecolor : '#000000';
+            $frameopacity = max(0, min(100, (float)(get_config('local_course_banner_builder', $prefix . 'frameopacity') ?: 35)));
+            $frameradius = max(0, min(80, (float)(get_config('local_course_banner_builder', $prefix . 'frameradius') ?: 12)));
+            $framepadding = max(0, min(240, (float)(get_config('local_course_banner_builder', $prefix . 'framepadding') ?: 18)));
+            $frameborderwidth = max(0, min(10, (float)(get_config('local_course_banner_builder', $prefix . 'frameborderwidth') ?: 0)));
+            $framebordercolor = (string)get_config('local_course_banner_builder', $prefix . 'framebordercolor');
+            $framebordercolor = preg_match('/^#[0-9a-f]{6}$/i', $framebordercolor) ? $framebordercolor : '#FFFFFF';
+
+            $framerules = [
+                'display: inline-block;',
+                'max-width: 100%;',
+                'background: ' . self::banner_title_preview_rgba($framecolor, $frameopacity) . ';',
+                // Radius and padding are expressed in em so the frame shrinks with
+                // the card's own clamped font-size instead of overpowering it.
+                'border-radius: ' . round($frameradius / 16, 3) . 'em;',
+                'padding: ' . self::banner_title_frame_padding_css($framepadding) . ';',
+            ];
+            if ($frameborderwidth > 0) {
+                $framerules[] = 'border: ' . round(min($frameborderwidth, 3) / 16, 3) . 'em solid ' . $framebordercolor . ';';
+            }
+            $framestyle = implode(' ', $framerules);
+        }
+
         return [
             'enabled' => true,
             'align' => $align,
             'style' => implode(' ', $style),
             'scrimstyle' => $scrimstyle,
+            'framestyle' => $framestyle,
         ];
     }
 

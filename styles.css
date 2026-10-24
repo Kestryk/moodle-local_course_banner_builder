@@ -1617,6 +1617,12 @@ img.local-course-banner-builder-course-card-thumb {
   pointer-events: none;
 }
 
+.local-course-banner-builder-course-card-title__frame {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
 .local-course-banner-builder-course-card-title__text {
   display: -webkit-box;
   width: 100%;
