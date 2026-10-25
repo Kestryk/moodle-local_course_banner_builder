@@ -1,5 +1,9 @@
 # Smaller course thumbnail titles
 
+Historical 24 October measurements follow. The further approved reduction on
+25 October supersedes the density value below; see
+[the proportional density protocol](course-card-title-density-2026-10-25.md).
+
 Course thumbnail typography uses a density factor of `0.88` after the existing
 responsive base and configured course-title percentage. The percentage continues
 to apply; it is not replaced by a fixed pixel size. This is a thumbnail-only

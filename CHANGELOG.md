@@ -1,3 +1,5 @@
+- 2026-10-25 Reduce course thumbnail title typography and proportional pill spacing by a further 28%, preserving centering, rounded shape, two-line truncation and full-size banner titles.
+
 - 2026-10-24 Make course thumbnail titles and their pill padding 12% smaller while preserving the configured title percentage, centered rounded shape and two-line limit.
 
 - 2026-10-24 Remove shadows from course thumbnail titles too, and respect the configured course-title size percentage on their responsive typography.

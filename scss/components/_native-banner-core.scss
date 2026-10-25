@@ -872,14 +872,18 @@ img.local-course-banner-builder-course-card-thumb {
 
 // Thumbnail-only density. Configured frame padding uses em and therefore
 // follows this font scale once; full-size banner typography stays unchanged.
-$course-card-title-density: 0.88;
+$course-card-title-reduction: 0.72;
+$course-card-title-density: 0.88 * $course-card-title-reduction;
+// Shrink the available frame width too: a clamped long title must not grow
+// into the space released by its smaller em padding.
+$course-card-title-inset: (1 - $course-card-title-reduction) * 50%;
 
 .local-course-banner-builder-course-card-title {
     position: absolute;
     inset: 0;
     z-index: 6;
     margin: 0;
-    padding: (0.35rem * $course-card-title-density) (0.6rem * $course-card-title-density);
+    padding: (0.35rem * $course-card-title-density) calc($course-card-title-inset + 0.6rem * $course-card-title-density);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -939,5 +943,5 @@ $course-card-title-density: 0.88;
 
 .coursebox .local-course-banner-builder-course-card-title {
     font-size: calc(clamp(0.62rem, 1.1vw, 0.8rem) * var(--local-course-banner-builder-card-title-scale, 1) * $course-card-title-density);
-    padding: (0.25rem * $course-card-title-density) (0.4rem * $course-card-title-density);
+    padding: (0.25rem * $course-card-title-density) calc($course-card-title-inset + 0.4rem * $course-card-title-density);
 }
