@@ -1,3 +1,5 @@
+> Historical mechanism: superseded by [shared observed content alignment](banner-content-alignment-2026-10-25.md). Preserve these measurements as historical evidence; horizontal policy no longer varies by format.
+
 # Full-width banner alignment (K23-54)
 
 The full-width formats (`fullwidthtop`, `fullwidthtopcompact`,

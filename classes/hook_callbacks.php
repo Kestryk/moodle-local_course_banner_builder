@@ -1774,13 +1774,181 @@ class hook_callbacks {
     }
 
     /**
+     * Share horizontal alignment independently of page type, banner format and vertical placement.
+     *
+     * @return string
+     */
+    protected static function get_banner_content_alignment_script(): string {
+        return <<<'JS'
+    const observeContentAlignment = (function () {
+        const controllers = new WeakMap();
+        const transparent = colour => !colour || colour === 'transparent' || /rgba\([^)]*,\s*0\)$/.test(colour);
+        const framed = style => !transparent(style.backgroundColor) || style.backgroundImage !== 'none' ||
+            parseFloat(style.borderLeftWidth) > 0 || parseFloat(style.borderRightWidth) > 0 ||
+            (style.boxShadow && style.boxShadow !== 'none');
+        const contentBox = node => {
+            const rect = node.getBoundingClientRect();
+            const style = window.getComputedStyle(node);
+            return {
+                left: rect.left + (parseFloat(style.borderLeftWidth) || 0) + (parseFloat(style.paddingLeft) || 0),
+                right: rect.right - (parseFloat(style.borderRightWidth) || 0) - (parseFloat(style.paddingRight) || 0)
+            };
+        };
+        const visibleChildren = (node, shell) => Array.from(node.children).filter(child => {
+            if (child === shell || child.contains(shell) ||
+                    child.classList.contains('local-course-banner-builder-native-shell') ||
+                    /^(SCRIPT|STYLE|LINK|TEMPLATE|NOSCRIPT)$/.test(child.tagName)) {
+                return false;
+            }
+            const style = window.getComputedStyle(child);
+            const rect = child.getBoundingClientRect();
+            return style.display !== 'none' && style.visibility !== 'hidden' &&
+                !['absolute', 'fixed'].includes(style.position) && rect.width > 1 && rect.height > 1;
+        });
+        const measure = (root, shell) => {
+            const nodes = new Set([root]);
+            let node = root;
+            let edges = contentBox(root);
+            // Traverse structural wrappers, stopping at the first visible frame or sibling row.
+            for (let depth = 0; depth < 12; depth++) {
+                const box = contentBox(node);
+                const children = visibleChildren(node, shell).filter(child =>
+                    child.getBoundingClientRect().width >= (box.right - box.left) * 0.5);
+                if (!children.length) {
+                    edges = box;
+                    break;
+                }
+                children.forEach(child => nodes.add(child));
+                const rects = children.map(child => child.getBoundingClientRect());
+                edges = {left: Math.min(...rects.map(rect => rect.left)), right: Math.max(...rects.map(rect => rect.right))};
+                if (children.length !== 1 || framed(window.getComputedStyle(children[0]))) {
+                    break;
+                }
+                node = children[0];
+            }
+            return {edges: edges, nodes: nodes};
+        };
+        return function (shell) {
+            if (controllers.has(shell)) {
+                controllers.get(shell)();
+                return;
+            }
+            let pending = 0;
+            let root = null;
+            let observed = new Set();
+            const set = (name, value) => {
+                if (shell.style.getPropertyValue(name) !== value || shell.style.getPropertyPriority(name) !== 'important') {
+                    shell.style.setProperty(name, value, 'important');
+                }
+            };
+            const sync = () => {
+                pending = 0;
+                if (!shell.isConnected) {
+                    stop();
+                    return;
+                }
+                const nextRoot = document.getElementById('region-main') || document.querySelector('main, [role="main"]') ||
+                    shell.closest('.main-inner') || shell.parentElement;
+                if (!nextRoot || nextRoot.getBoundingClientRect().width <= 1) {
+                    return;
+                }
+                if (root !== nextRoot) {
+                    root = nextRoot;
+                    mutations.disconnect();
+                    mutations.observe(root, {childList: true, subtree: true});
+                }
+                const result = measure(root, shell);
+                // Ancestors can shift a fixed-width content column without resizing the column itself.
+                for (let parent = root.parentElement; parent; parent = parent.parentElement) {
+                    result.nodes.add(parent);
+                }
+                if (resize) {
+                    observed.forEach(node => { if (!result.nodes.has(node)) { resize.unobserve(node); } });
+                    result.nodes.forEach(node => { if (!observed.has(node)) { resize.observe(node); } });
+                    observed = result.nodes;
+                }
+                const width = result.edges.right - result.edges.left;
+                if (!(width > 1)) {
+                    return;
+                }
+                set('box-sizing', 'border-box');
+                set('position', 'relative');
+                set('right', 'auto');
+                set('margin-left', '0px');
+                set('margin-right', '0px');
+                set('padding-left', '0px');
+                set('padding-right', '0px');
+                const parent = shell.parentElement;
+                const parentStyle = window.getComputedStyle(parent);
+                const parentWidth = parent.getBoundingClientRect().width - (parseFloat(parentStyle.borderLeftWidth) || 0) -
+                    (parseFloat(parentStyle.borderRightWidth) || 0) - (parseFloat(parentStyle.paddingLeft) || 0) -
+                    (parseFloat(parentStyle.paddingRight) || 0);
+                // Keep the common parent responsive between observer deliveries during a drawer transition.
+                const responsiveWidth = 'calc(100% + ' + (width - parentWidth) + 'px)';
+                set('width', responsiveWidth);
+                set('max-width', responsiveWidth);
+                const left = parseFloat(shell.style.left) || 0;
+                const delta = result.edges.left - shell.getBoundingClientRect().left;
+                if (Math.abs(delta) > 0.01) {
+                    set('left', (left + delta) + 'px');
+                }
+            };
+            const schedule = () => { if (!pending) { pending = window.requestAnimationFrame(sync); } };
+            const widths = new WeakMap();
+            const resize = typeof window.ResizeObserver === 'function' ? new window.ResizeObserver(entries => {
+                let changed = false;
+                entries.forEach(entry => {
+                    const width = entry.target.getBoundingClientRect().width;
+                    const previous = widths.get(entry.target);
+                    widths.set(entry.target, width);
+                    changed = changed || previous !== width;
+                });
+                if (changed) {
+                    // ResizeObserver runs before paint; another RAF would trail drawer animation by a frame.
+                    if (pending) { window.cancelAnimationFrame(pending); }
+                    sync();
+                }
+            }) : null;
+            const mutations = new MutationObserver(records => {
+                if (records.some(record => record.target !== shell && !shell.contains(record.target))) {
+                    schedule();
+                }
+            });
+            const layout = new MutationObserver(schedule);
+            for (const node of [document.body, document.getElementById('page')]) {
+                if (node) { layout.observe(node, {attributes: true, attributeFilter: ['class', 'style']}); }
+            }
+            const stop = event => {
+                if (event && event.persisted) { return; }
+                if (pending) { window.cancelAnimationFrame(pending); }
+                if (resize) { resize.disconnect(); }
+                mutations.disconnect();
+                layout.disconnect();
+                window.removeEventListener('resize', schedule);
+                document.removeEventListener('transitionend', schedule, true);
+                window.removeEventListener('pagehide', stop);
+                controllers.delete(shell);
+            };
+            controllers.set(shell, schedule);
+            window.addEventListener('resize', schedule);
+            document.addEventListener('transitionend', schedule, true);
+            window.addEventListener('pagehide', stop);
+            sync();
+        };
+    })();
+JS;
+    }
+
+    /**
      * Build a tiny script that moves the server-rendered native banner into the Boost course header.
      *
      * @return string
      */
     protected static function get_native_course_banner_mount_script(): string {
+        $alignment = self::get_banner_content_alignment_script();
         return <<<JS
 (function () {
+{$alignment}
     const findScrollFrame = function (shell) {
         const page = document.getElementById('page');
         if (page && page.contains(shell) && page.classList.contains('drawers')) {
@@ -1798,124 +1966,6 @@ class hook_callbacks {
         return document.documentElement;
     };
 
-    // The scroll frame above is only the page-level overflow-x guard target:
-    // it is often wider than the actual visible content column (a docked
-    // drawer taking flex space, or the theme's "limit content width"
-    // setting), so it must not be used as the width reference for alignment
-    // (K23-54 regression: the full-width banner used it and bled past the
-    // real content edges on every view, not just the catalogue/dashboard).
-    // #region-main is already correctly laid out by Moodle/the theme on
-    // every page type (course, catalogue, dashboard, settings), so align the
-    // banner to it instead of the raw scrolling frame.
-    const findContentFrame = function (shell) {
-        const regionMain = document.getElementById('region-main');
-        if (regionMain) {
-            return regionMain;
-        }
-        const mainInner = (shell.closest && shell.closest('.main-inner')) || document.querySelector('.main-inner');
-        if (mainInner) {
-            return mainInner;
-        }
-        return findScrollFrame(shell);
-    };
-
-    // #region-main is the layout column, but the visible content often sits
-    // inset inside it: a padded [role="main"] wrapper, a block region whose
-    // .block.card blocks carry their own gutter (Dashboard, My courses), the
-    // course sections, the catalogue tree... (K23-54 follow-up: 15px offset on
-    // every page type, not only the Dashboard). Measure the real outer edge of
-    // the visible content instead of trusting the column box, without touching
-    // any Moodle/theme margin: walk down through unframed full-width
-    // wrappers and stop at the first framed box (border, background, shadow)
-    // or at a level holding several content children.
-    const measureContentEdges = function (frame, shell) {
-        if (!frame || frame === document.documentElement || !frame.getBoundingClientRect) {
-            return null;
-        }
-        const frameRect = frame.getBoundingClientRect();
-        if (frameRect.width <= 0) {
-            return null;
-        }
-        const isTransparent = function (colour) {
-            return !colour || colour === 'transparent' || /rgba\([^)]*,\s*0\)$/.test(colour);
-        };
-        const hasVisibleFrame = function (style) {
-            return !isTransparent(style.backgroundColor) || style.backgroundImage !== 'none' ||
-                parseFloat(style.borderLeftWidth) > 0 || parseFloat(style.borderRightWidth) > 0 ||
-                (style.boxShadow && style.boxShadow !== 'none');
-        };
-        const contentBox = function (node) {
-            const rect = node.getBoundingClientRect();
-            const style = window.getComputedStyle(node);
-            const left = rect.left + parseFloat(style.borderLeftWidth || 0) + parseFloat(style.paddingLeft || 0);
-            const right = rect.right - parseFloat(style.borderRightWidth || 0) - parseFloat(style.paddingRight || 0);
-            return {left: left, right: right};
-        };
-        const contentChildren = function (node) {
-            return Array.from(node.children).filter(function (child) {
-                if (child === shell || child.contains(shell) ||
-                        (child.id && child.id.indexOf('local-course-banner-builder') === 0)) {
-                    return false;
-                }
-                if (/^(SCRIPT|STYLE|LINK|TEMPLATE|NOSCRIPT)$/.test(child.tagName)) {
-                    return false;
-                }
-                const style = window.getComputedStyle(child);
-                if (style.display === 'none' || style.visibility === 'hidden' ||
-                        style.position === 'absolute' || style.position === 'fixed') {
-                    return false;
-                }
-                const rect = child.getBoundingClientRect();
-                return rect.width > 1 && rect.height > 1;
-            });
-        };
-        const minWidth = frameRect.width * 0.6;
-        let node = frame;
-        let edges = contentBox(frame);
-        for (let depth = 0; depth < 8; depth++) {
-            const box = contentBox(node);
-            const boxWidth = box.right - box.left;
-            const children = contentChildren(node).filter(function (child) {
-                return child.getBoundingClientRect().width >= boxWidth * 0.5;
-            });
-            if (!children.length) {
-                edges = box;
-                break;
-            }
-            let left = Infinity;
-            let right = -Infinity;
-            children.forEach(function (child) {
-                const rect = child.getBoundingClientRect();
-                left = Math.min(left, rect.left);
-                right = Math.max(right, rect.right);
-            });
-            if (right - left < minWidth) {
-                edges = box;
-                break;
-            }
-            edges = {left: left, right: right};
-            const only = children.length === 1 ? children[0] : null;
-            if (!only || hasVisibleFrame(window.getComputedStyle(only))) {
-                break;
-            }
-            node = only;
-        }
-        const width = edges.right - edges.left;
-        if (!(width >= minWidth) || edges.left < frameRect.left - 1 || edges.right > frameRect.right + 1) {
-            return null;
-        }
-        return {left: edges.left, width: width};
-    };
-
-    const measureScrollbarWidth = function () {
-        const probe = document.createElement('div');
-        probe.style.cssText = 'position:absolute;top:-9999px;left:-9999px;width:100px;height:100px;overflow:scroll;visibility:hidden;';
-        document.body.appendChild(probe);
-        const width = Math.max(0, probe.offsetWidth - probe.clientWidth);
-        probe.remove();
-        return width;
-    };
-
     const alignFullWidthBanner = function (shell) {
         const navbar = document.querySelector('.navbar.fixed-top, nav.fixed-top, header.navbar, .primary-navigation');
         if (!shell) {
@@ -1931,48 +1981,6 @@ class hook_callbacks {
             scrollFrame.classList.add('local-course-banner-builder-fullwidth-scroll-frame');
         }
         void scrollFrame.offsetWidth;
-        const frame = findContentFrame(shell);
-        void frame.offsetWidth;
-        const contentEdges = measureContentEdges(frame, shell);
-        const frameRect = contentEdges ? contentEdges : (frame === document.documentElement ?
-            {left: 0, width: (document.documentElement.clientWidth || window.innerWidth || 0)} :
-            frame.getBoundingClientRect());
-        const frameScrollbarWidth = Math.max(0, Math.round((frame.offsetWidth || 0) - (frame.clientWidth || 0)));
-        const hasFrameScrollbar = frame.scrollHeight > frame.clientHeight + 1;
-        const overlayScrollbarReserve = !contentEdges && hasFrameScrollbar && frameScrollbarWidth === 0 &&
-            frame !== document.documentElement ?
-            measureScrollbarWidth() :
-            0;
-        const baseWidth = contentEdges ?
-            contentEdges.width :
-            Math.floor(frame.clientWidth || frameRect.width || document.documentElement.clientWidth || window.innerWidth || 0);
-        const format = shell.getAttribute('data-banner-format') || 'standard';
-        const sideInset = format === 'fullwidthtopinset' ?
-            Math.round(Math.min(48, Math.max(24, baseWidth * 0.024))) :
-            0;
-        const usableWidth = Math.max(0, baseWidth - overlayScrollbarReserve - (sideInset * 2));
-        const targetLeft = contentEdges ?
-            contentEdges.left + sideInset :
-            Math.round((frameRect.left || 0) + sideInset);
-        if (usableWidth > 0) {
-            shell.style.setProperty('box-sizing', 'border-box', 'important');
-            shell.style.setProperty('position', 'relative', 'important');
-            shell.style.setProperty('left', '0px', 'important');
-            shell.style.setProperty('right', 'auto', 'important');
-            shell.style.setProperty('width', usableWidth + 'px', 'important');
-            shell.style.setProperty('max-width', usableWidth + 'px', 'important');
-            shell.style.setProperty('margin-left', '0px', 'important');
-            shell.style.setProperty('margin-right', '0px', 'important');
-            shell.style.setProperty('padding-left', '0px', 'important');
-            shell.style.setProperty('padding-right', '0px', 'important');
-            window.requestAnimationFrame(function () {
-                const rect = shell.getBoundingClientRect();
-                const delta = targetLeft - rect.left;
-                if (Math.abs(delta) > 0.5) {
-                    shell.style.setProperty('left', delta + 'px', 'important');
-                }
-            });
-        }
         if (!navbar) {
             return;
         }
@@ -2042,7 +2050,6 @@ class hook_callbacks {
                     semanticTitle.hidden = false;
                 }
             }
-            shell.classList.add('local-course-banner-builder-native-shell--mounted');
             if (isFullWidthTop) {
                 alignFullWidthBanner(shell);
                 [80, 320, 900, 1800].forEach(function (delay) {
@@ -2051,6 +2058,8 @@ class hook_callbacks {
                     }, delay);
                 });
             }
+            observeContentAlignment(shell);
+            shell.classList.add('local-course-banner-builder-native-shell--mounted');
         } else if (semanticTitle) {
             semanticTitle.remove();
         }
@@ -2076,8 +2085,10 @@ JS;
      * @return string
      */
     protected static function get_site_banner_mount_script(): string {
+        $alignment = self::get_banner_content_alignment_script();
         return <<<JS
 (function () {
+{$alignment}
     const findScrollFrame = function (shell) {
         const page = document.getElementById('page');
         if (page && page.contains(shell) && page.classList.contains('drawers')) {
@@ -2095,124 +2106,6 @@ JS;
         return document.documentElement;
     };
 
-    // The scroll frame above is only the page-level overflow-x guard target:
-    // it is often wider than the actual visible content column (a docked
-    // drawer taking flex space, or the theme's "limit content width"
-    // setting), so it must not be used as the width reference for alignment
-    // (K23-54 regression: the full-width banner used it and bled past the
-    // real content edges on every view, not just the catalogue/dashboard).
-    // #region-main is already correctly laid out by Moodle/the theme on
-    // every page type (course, catalogue, dashboard, settings), so align the
-    // banner to it instead of the raw scrolling frame.
-    const findContentFrame = function (shell) {
-        const regionMain = document.getElementById('region-main');
-        if (regionMain) {
-            return regionMain;
-        }
-        const mainInner = (shell.closest && shell.closest('.main-inner')) || document.querySelector('.main-inner');
-        if (mainInner) {
-            return mainInner;
-        }
-        return findScrollFrame(shell);
-    };
-
-    // #region-main is the layout column, but the visible content often sits
-    // inset inside it: a padded [role="main"] wrapper, a block region whose
-    // .block.card blocks carry their own gutter (Dashboard, My courses), the
-    // course sections, the catalogue tree... (K23-54 follow-up: 15px offset on
-    // every page type, not only the Dashboard). Measure the real outer edge of
-    // the visible content instead of trusting the column box, without touching
-    // any Moodle/theme margin: walk down through unframed full-width
-    // wrappers and stop at the first framed box (border, background, shadow)
-    // or at a level holding several content children.
-    const measureContentEdges = function (frame, shell) {
-        if (!frame || frame === document.documentElement || !frame.getBoundingClientRect) {
-            return null;
-        }
-        const frameRect = frame.getBoundingClientRect();
-        if (frameRect.width <= 0) {
-            return null;
-        }
-        const isTransparent = function (colour) {
-            return !colour || colour === 'transparent' || /rgba\([^)]*,\s*0\)$/.test(colour);
-        };
-        const hasVisibleFrame = function (style) {
-            return !isTransparent(style.backgroundColor) || style.backgroundImage !== 'none' ||
-                parseFloat(style.borderLeftWidth) > 0 || parseFloat(style.borderRightWidth) > 0 ||
-                (style.boxShadow && style.boxShadow !== 'none');
-        };
-        const contentBox = function (node) {
-            const rect = node.getBoundingClientRect();
-            const style = window.getComputedStyle(node);
-            const left = rect.left + parseFloat(style.borderLeftWidth || 0) + parseFloat(style.paddingLeft || 0);
-            const right = rect.right - parseFloat(style.borderRightWidth || 0) - parseFloat(style.paddingRight || 0);
-            return {left: left, right: right};
-        };
-        const contentChildren = function (node) {
-            return Array.from(node.children).filter(function (child) {
-                if (child === shell || child.contains(shell) ||
-                        (child.id && child.id.indexOf('local-course-banner-builder') === 0)) {
-                    return false;
-                }
-                if (/^(SCRIPT|STYLE|LINK|TEMPLATE|NOSCRIPT)$/.test(child.tagName)) {
-                    return false;
-                }
-                const style = window.getComputedStyle(child);
-                if (style.display === 'none' || style.visibility === 'hidden' ||
-                        style.position === 'absolute' || style.position === 'fixed') {
-                    return false;
-                }
-                const rect = child.getBoundingClientRect();
-                return rect.width > 1 && rect.height > 1;
-            });
-        };
-        const minWidth = frameRect.width * 0.6;
-        let node = frame;
-        let edges = contentBox(frame);
-        for (let depth = 0; depth < 8; depth++) {
-            const box = contentBox(node);
-            const boxWidth = box.right - box.left;
-            const children = contentChildren(node).filter(function (child) {
-                return child.getBoundingClientRect().width >= boxWidth * 0.5;
-            });
-            if (!children.length) {
-                edges = box;
-                break;
-            }
-            let left = Infinity;
-            let right = -Infinity;
-            children.forEach(function (child) {
-                const rect = child.getBoundingClientRect();
-                left = Math.min(left, rect.left);
-                right = Math.max(right, rect.right);
-            });
-            if (right - left < minWidth) {
-                edges = box;
-                break;
-            }
-            edges = {left: left, right: right};
-            const only = children.length === 1 ? children[0] : null;
-            if (!only || hasVisibleFrame(window.getComputedStyle(only))) {
-                break;
-            }
-            node = only;
-        }
-        const width = edges.right - edges.left;
-        if (!(width >= minWidth) || edges.left < frameRect.left - 1 || edges.right > frameRect.right + 1) {
-            return null;
-        }
-        return {left: edges.left, width: width};
-    };
-
-    const measureScrollbarWidth = function () {
-        const probe = document.createElement('div');
-        probe.style.cssText = 'position:absolute;top:-9999px;left:-9999px;width:100px;height:100px;overflow:scroll;visibility:hidden;';
-        document.body.appendChild(probe);
-        const width = Math.max(0, probe.offsetWidth - probe.clientWidth);
-        probe.remove();
-        return width;
-    };
-
     const alignFullWidthBanner = function (shell) {
         const navbar = document.querySelector('.navbar.fixed-top, nav.fixed-top, header.navbar, .primary-navigation');
         if (!shell) {
@@ -2228,48 +2121,6 @@ JS;
             scrollFrame.classList.add('local-course-banner-builder-fullwidth-scroll-frame');
         }
         void scrollFrame.offsetWidth;
-        const frame = findContentFrame(shell);
-        void frame.offsetWidth;
-        const contentEdges = measureContentEdges(frame, shell);
-        const frameRect = contentEdges ? contentEdges : (frame === document.documentElement ?
-            {left: 0, width: (document.documentElement.clientWidth || window.innerWidth || 0)} :
-            frame.getBoundingClientRect());
-        const frameScrollbarWidth = Math.max(0, Math.round((frame.offsetWidth || 0) - (frame.clientWidth || 0)));
-        const hasFrameScrollbar = frame.scrollHeight > frame.clientHeight + 1;
-        const overlayScrollbarReserve = !contentEdges && hasFrameScrollbar && frameScrollbarWidth === 0 &&
-            frame !== document.documentElement ?
-            measureScrollbarWidth() :
-            0;
-        const baseWidth = contentEdges ?
-            contentEdges.width :
-            Math.floor(frame.clientWidth || frameRect.width || document.documentElement.clientWidth || window.innerWidth || 0);
-        const format = shell.getAttribute('data-banner-format') || 'standard';
-        const sideInset = format === 'fullwidthtopinset' ?
-            Math.round(Math.min(48, Math.max(24, baseWidth * 0.024))) :
-            0;
-        const usableWidth = Math.max(0, baseWidth - overlayScrollbarReserve - (sideInset * 2));
-        const targetLeft = contentEdges ?
-            contentEdges.left + sideInset :
-            Math.round((frameRect.left || 0) + sideInset);
-        if (usableWidth > 0) {
-            shell.style.setProperty('box-sizing', 'border-box', 'important');
-            shell.style.setProperty('position', 'relative', 'important');
-            shell.style.setProperty('left', '0px', 'important');
-            shell.style.setProperty('right', 'auto', 'important');
-            shell.style.setProperty('width', usableWidth + 'px', 'important');
-            shell.style.setProperty('max-width', usableWidth + 'px', 'important');
-            shell.style.setProperty('margin-left', '0px', 'important');
-            shell.style.setProperty('margin-right', '0px', 'important');
-            shell.style.setProperty('padding-left', '0px', 'important');
-            shell.style.setProperty('padding-right', '0px', 'important');
-            window.requestAnimationFrame(function () {
-                const rect = shell.getBoundingClientRect();
-                const delta = targetLeft - rect.left;
-                if (Math.abs(delta) > 0.5) {
-                    shell.style.setProperty('left', delta + 'px', 'important');
-                }
-            });
-        }
         if (!navbar) {
             return;
         }
@@ -2317,7 +2168,6 @@ JS;
                 pageHeader.insertAdjacentElement(method, shell);
             }
             reconcileSecondaryBannerTitle(shell, pageHeader);
-            shell.classList.add('local-course-banner-builder-native-shell--mounted');
             if (isFullWidthTop) {
                 alignFullWidthBanner(shell);
                 [80, 320, 900, 1800].forEach(function (delay) {
@@ -2326,6 +2176,8 @@ JS;
                     }, delay);
                 });
             }
+            observeContentAlignment(shell);
+            shell.classList.add('local-course-banner-builder-native-shell--mounted');
             return;
         }
 
@@ -2333,6 +2185,7 @@ JS;
         if (regionMain && shell.nextElementSibling !== regionMain) {
             regionMain.insertAdjacentElement('beforebegin', shell);
             shell.classList.add('local-course-banner-builder-native-shell--mounted');
+            observeContentAlignment(shell);
         }
     };
 

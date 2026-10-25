@@ -1,3 +1,5 @@
+> Historical mechanism: superseded by [shared observed content alignment](banner-content-alignment-2026-10-25.md). Preserve these measurements as historical evidence; horizontal policy no longer varies by format.
+
 # Standard banner alignment
 
 The standard native banner shell reuses Moodle's `header-maxwidth` class for
