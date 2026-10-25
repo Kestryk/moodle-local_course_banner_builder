@@ -1158,14 +1158,12 @@ class hook_callbacks {
             'style' => $wrapperstyle,
         ]);
 
-        foreach (
-            [
+        foreach ([
             'top' => 'local-course-banner-builder-fixed-border-side local-course-banner-builder-fixed-border-side-top',
             'right' => 'local-course-banner-builder-fixed-border-side local-course-banner-builder-fixed-border-side-right',
             'bottom' => 'local-course-banner-builder-fixed-border-side local-course-banner-builder-fixed-border-side-bottom',
             'left' => 'local-course-banner-builder-fixed-border-side local-course-banner-builder-fixed-border-side-left',
-            ] as $side => $class
-        ) {
+            ] as $side => $class) {
             $out .= \html_writer::div('', $class, [
                 'aria-hidden' => 'true',
                 'style' => (string)(($border['sidestyles'][$side] ?? '')),
