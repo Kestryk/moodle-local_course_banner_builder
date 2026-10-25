@@ -1,3 +1,5 @@
+- 2026-10-25 Align every native banner format with the visible content frame through one shared controller; observe live content and ancestor sizes so Moodle drawer transitions keep both edges aligned.
+
 - 2026-10-25 Reduce course thumbnail title typography and proportional pill spacing by a further 28%, preserving centering, rounded shape, two-line truncation and full-size banner titles.
 
 - 2026-10-24 Make course thumbnail titles and their pill padding 12% smaller while preserving the configured title percentage, centered rounded shape and two-line limit.

@@ -1,3 +1,5 @@
+Native banner horizontal alignment is independent of page type and format. Both mount paths use the single content-alignment controller, observing the visible frame and ancestors; ResizeObserver updates geometry before paint, without a trailing RAF. Keep vertical format policy, hidden pre-mount/no-script fallback, title and image settings separate. See docs/testing/banner-content-alignment-2026-10-25.md.
+
 Full-size banner and course-card thumbnail titles carry no text shadow. Thumbnail typography keeps its responsive base size and multiplies it by the configured course-title percentage; retain the padding-free two-line clamp and image-only containing block. Do not turn the percentage into a fixed pixel size.
 
 Thumbnail-only density is 0.6336 of that responsive/configured size (0.88 then

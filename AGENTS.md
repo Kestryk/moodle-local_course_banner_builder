@@ -1,3 +1,5 @@
+Native banner horizontal alignment is independent of page type and format. Both mount paths use the single content-alignment controller, observing the visible frame and ancestors; ResizeObserver updates geometry before paint, without a trailing RAF. Keep vertical format policy, hidden pre-mount/no-script fallback, title and image settings separate. See docs/testing/banner-content-alignment-2026-10-25.md.
+
 # EasyEdu agent contract
 
 Thumbnail and full-size banner titles both use unshadowed text. Thumbnail font
