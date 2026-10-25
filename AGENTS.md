@@ -2,8 +2,11 @@
 
 Thumbnail and full-size banner titles both use unshadowed text. Thumbnail font
 size is the responsive base multiplied by the configured title percentage,
-not the full-banner pixel size. Thumbnail density applies one additional 0.88
-factor; configured frame padding in em scales with that font once, not twice.
+not the full-banner pixel size. Thumbnail density uses a cumulative 0.6336
+factor (0.88 then 0.72); configured frame padding in em scales with that font
+once, not twice. Scale the available frame width too, so long-title pills
+cannot grow when their padding shrinks. See
+docs/testing/course-card-title-density-2026-10-25.md.
 Preserve the padding-free two-line clamp and the full-size banner settings.
 
 Native banner shells must not paint in their temporary body-level parent.
