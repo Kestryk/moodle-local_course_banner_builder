@@ -1,0 +1,169 @@
+{
+  "schemaVersion": 1,
+  "revision": "2d91d19bef4d1353c77730026cc8dab8b88d8d9b",
+  "engine": "1.0.1",
+  "files": [
+    {
+      "target": "scss/easyedu/_theme-overrides.example.scss",
+      "source": "scss/easyedu/_theme-overrides.example.scss",
+      "sha256": "359d638b29efb9740f54adb484bcf79f04f3cb187659b6255bec7fbe908de221"
+    }
+  ],
+  "unverified": [
+    {
+      "target": "easyedu-guide-kit/amd/src/easyedu_guide.js",
+      "source": "guide/amd/src/easyedu_guide.js",
+      "reason": "consumer differs from declared canonical revision"
+    },
+    {
+      "target": "easyedu-guide-kit/templates/easyedu_guide.mustache",
+      "source": "guide/templates/easyedu_guide.mustache",
+      "reason": "consumer differs from declared canonical revision"
+    },
+    {
+      "target": "easyedu-motion-kit/amd/src/easyedu_motion.js",
+      "source": "motion/amd/src/easyedu_motion.js",
+      "reason": "consumer differs from declared canonical revision"
+    },
+    {
+      "target": "scss/easyedu/_components.scss",
+      "source": "scss/easyedu/_components.scss",
+      "reason": "consumer differs from declared canonical revision"
+    },
+    {
+      "target": "scss/easyedu/_index.scss",
+      "source": "scss/easyedu/_index.scss",
+      "reason": "consumer differs from declared canonical revision"
+    },
+    {
+      "target": "scss/easyedu/_tokens.scss",
+      "source": "scss/easyedu/_tokens.scss",
+      "reason": "consumer differs from declared canonical revision"
+    },
+    {
+      "target": "scss/easyedu/components/_animations.scss",
+      "source": "scss/easyedu/components/_animations.scss",
+      "reason": "consumer differs from declared canonical revision"
+    },
+    {
+      "target": "scss/easyedu/components/_buttons.scss",
+      "source": "scss/easyedu/components/_buttons.scss",
+      "reason": "consumer differs from declared canonical revision"
+    },
+    {
+      "target": "scss/easyedu/components/_cards.scss",
+      "source": "scss/easyedu/components/_cards.scss",
+      "reason": "consumer differs from declared canonical revision"
+    },
+    {
+      "target": "scss/easyedu/components/_course_banner_builder.scss",
+      "source": "scss/easyedu/components/_course_banner_builder.scss",
+      "reason": "consumer differs from declared canonical revision"
+    },
+    {
+      "target": "scss/easyedu/components/_feedback.scss",
+      "source": "scss/easyedu/components/_feedback.scss",
+      "reason": "consumer differs from declared canonical revision"
+    },
+    {
+      "target": "scss/easyedu/components/_focus.scss",
+      "source": "scss/easyedu/components/_focus.scss",
+      "reason": "consumer differs from declared canonical revision"
+    },
+    {
+      "target": "scss/easyedu/components/_forms.scss",
+      "source": "scss/easyedu/components/_forms.scss",
+      "reason": "consumer differs from declared canonical revision"
+    },
+    {
+      "target": "scss/easyedu/components/_guide.scss",
+      "source": "scss/easyedu/components/_guide.scss",
+      "reason": "consumer differs from declared canonical revision"
+    },
+    {
+      "target": "scss/easyedu/components/_loading.scss",
+      "source": "scss/easyedu/components/_loading.scss",
+      "reason": "consumer differs from declared canonical revision"
+    },
+    {
+      "target": "scss/easyedu/components/_menus.scss",
+      "source": "scss/easyedu/components/_menus.scss",
+      "reason": "consumer differs from declared canonical revision"
+    },
+    {
+      "target": "scss/easyedu/components/_modals.scss",
+      "source": "scss/easyedu/components/_modals.scss",
+      "reason": "consumer differs from declared canonical revision"
+    },
+    {
+      "target": "scss/easyedu/components/_navigation-skeleton.scss",
+      "source": "scss/easyedu/components/_navigation-skeleton.scss",
+      "reason": "consumer differs from declared canonical revision"
+    },
+    {
+      "target": "scss/easyedu/components/_navigation.scss",
+      "source": "scss/easyedu/components/_navigation.scss",
+      "reason": "consumer differs from declared canonical revision"
+    },
+    {
+      "target": "scss/easyedu/components/_overlays.scss",
+      "source": "scss/easyedu/components/_overlays.scss",
+      "reason": "consumer differs from declared canonical revision"
+    },
+    {
+      "target": "scss/easyedu/components/_pagination.scss",
+      "source": "scss/easyedu/components/_pagination.scss",
+      "reason": "consumer differs from declared canonical revision"
+    },
+    {
+      "target": "scss/easyedu/components/_panels.scss",
+      "source": "scss/easyedu/components/_panels.scss",
+      "reason": "consumer differs from declared canonical revision"
+    },
+    {
+      "target": "scss/easyedu/components/_responsive.scss",
+      "source": "scss/easyedu/components/_responsive.scss",
+      "reason": "consumer differs from declared canonical revision"
+    },
+    {
+      "target": "scss/easyedu/components/_tables.scss",
+      "source": "scss/easyedu/components/_tables.scss",
+      "reason": "consumer differs from declared canonical revision"
+    },
+    {
+      "target": "scss/easyedu/components/_tooltips.scss",
+      "source": "scss/easyedu/components/_tooltips.scss",
+      "reason": "consumer differs from declared canonical revision"
+    },
+    {
+      "target": "scss/easyedu/components/_typography.scss",
+      "source": "scss/easyedu/components/_typography.scss",
+      "reason": "consumer differs from declared canonical revision"
+    },
+    {
+      "target": "amd/src/easyedu_navigation.js",
+      "source": "navigation/amd/src/easyedu_navigation.js",
+      "reason": "adapted module differs from canonical source"
+    },
+    {
+      "target": "amd/src/easyedu_navigation_guide.js",
+      "source": "navigation/amd/src/easyedu_navigation_guide.js",
+      "reason": "adapted module differs from canonical source"
+    },
+    {
+      "target": "amd/src/easyedu_guide.js",
+      "source": "guide/amd/src/easyedu_guide.js",
+      "reason": "adapted module differs from canonical source"
+    },
+    {
+      "target": "templates/easyedu_navigation.mustache",
+      "source": "navigation/templates/easyedu_navigation.mustache",
+      "reason": "template differs from canonical source"
+    },
+    {
+      "target": "templates/easyedu_navigation_items.mustache",
+      "source": "navigation/templates/easyedu_navigation_items.mustache",
+      "reason": "template differs from canonical source"
+    }
+  ]
+}
